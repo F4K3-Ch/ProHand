@@ -134,12 +134,14 @@
         $attachments_result = $stmt->get_result();
         $stmt->close();
 
-        // Determine client profile picture
+        // Profile picture path
         $profile_dir = '../uploads/profile_pictures/';
-        $client_picture = $profile_dir . 'default.jpg';
 
+        // Determine which profile picture to use based on availability and file existence
         if (!empty($errand['client_profile_picture']) && file_exists($profile_dir . basename($errand['client_profile_picture']))) {
             $client_picture = $profile_dir . basename($errand['client_profile_picture']);
+        } else {
+            $client_picture = $profile_dir . 'default.jpg';
         }
     } elseif ($is_finished) {
         // Fetch finished errand info and client info
@@ -176,12 +178,14 @@
         $attachments_result = $stmt->get_result();
         $stmt->close();
 
-        // Determine client profile picture
+        // Profile picture path
         $profile_dir = '../uploads/history/profile_pictures/';
-        $client_picture = $profile_dir . 'default.jpg';
 
+        // Determine which profile picture to use based on availability and file existence
         if (!empty($errand['client_profile_picture']) && file_exists($profile_dir . basename($errand['client_profile_picture']))) {
             $client_picture = $profile_dir . basename($errand['client_profile_picture']);
+        } else {
+            $client_picture = $profile_dir . 'default.jpg';
         }
     }
 ?>

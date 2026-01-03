@@ -61,7 +61,6 @@ CREATE TABLE IF NOT EXISTS errand_attachments (
 CREATE TABLE IF NOT EXISTS notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    errand_id INT NULL DEFAULT NULL,
     type ENUM('errand','system','alert') NOT NULL,
     message TEXT NOT NULL,
     link VARCHAR(255) NULL DEFAULT NULL,

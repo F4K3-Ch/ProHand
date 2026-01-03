@@ -20,12 +20,14 @@
         $tasker = $tasker_result->fetch_assoc();
         $tasker_full_name = trim($tasker['first_name'] . ' ' . $tasker['middle_name'] . ' ' . $tasker['last_name']);
 
-        // Determine profile picture path
+        // Profile picture path
         $profile_dir = '../uploads/profile_pictures/';
-        $profile_picture = $profile_dir . 'default.jpg';
 
+        // Determine which profile picture to use based on availability and file existence
         if (!empty($tasker['profile_picture']) && file_exists($profile_dir . basename($tasker['profile_picture']))) {
             $profile_picture = $profile_dir . basename($tasker['profile_picture']);
+        } else {
+            $profile_picture = $profile_dir . 'default.jpg';
         }
     } else {
         session_unset();

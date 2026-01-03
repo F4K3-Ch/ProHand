@@ -274,13 +274,14 @@
                     <?php if ($all_users_result->num_rows > 0): ?>
                         <?php while ($row = $all_users_result->fetch_assoc()): ?>
                             <?php
-                                // Determine profile picture path
+                                // Profile picture path
                                 $profile_dir = '../uploads/profile_pictures/';
-                                $profile_picture = $profile_dir . 'default.jpg';
                                 
-                                // Check if user has profile picture and file exists
+                                // Determine which profile picture to use based on availability and file existence
                                 if (!empty($row['profile_picture']) && file_exists($profile_dir . basename($row['profile_picture']))) {
                                     $profile_picture = $profile_dir . basename($row['profile_picture']);
+                                } else {
+                                    $profile_picture = $profile_dir . 'default.jpg';
                                 }
                             ?>
                             <tr>

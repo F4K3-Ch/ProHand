@@ -130,22 +130,22 @@
         $attachments_result = $stmt->get_result();
         $stmt->close();
 
-        // Profile pictures for client and tasker
+        // Profile picture path
         $profile_dir = '../uploads/profile_pictures/';
         $default_picture = $profile_dir . 'default.jpg';
 
-        // Default to placeholder
-        $client_picture = $default_picture;
-        $tasker_picture = $default_picture;
-
-        // Determine client profile picture
+        // Determine which profile picture to use based on availability and file existence
         if (!empty($errand['client_profile_picture']) && file_exists($profile_dir . basename($errand['client_profile_picture']))) {
             $client_picture = $profile_dir . basename($errand['client_profile_picture']);
+        } else {
+            $client_picture = $default_picture;
         }
 
-        // Determine tasker profile picture
+        // Determine which profile picture to use based on availability and file existence
         if (!empty($errand['tasker_profile_picture']) && file_exists($profile_dir . basename($errand['tasker_profile_picture']))) {
             $tasker_picture = $profile_dir . basename($errand['tasker_profile_picture']);
+        } else {
+            $tasker_picture = $default_picture;
         }
     } elseif ($is_finished) {
         // Fetch finished errand + client + tasker info
@@ -183,22 +183,22 @@
         $attachments_result = $stmt->get_result();
         $stmt->close();
 
-        // Profile pictures for client and tasker
+        // Profile picture path
         $profile_dir = '../uploads/history/profile_pictures/';
         $default_picture = $profile_dir . 'default.jpg';
 
-        // Default to placeholder
-        $client_picture = $default_picture;
-        $tasker_picture = $default_picture;
-
-        // Determine client profile picture
+        // Determine which profile picture to use based on availability and file existence
         if (!empty($errand['client_profile_picture']) && file_exists($profile_dir . basename($errand['client_profile_picture']))) {
             $client_picture = $profile_dir . basename($errand['client_profile_picture']);
+        } else {
+            $client_picture = $default_picture;
         }
 
-        // Determine tasker profile picture
+        // Determine which profile picture to use based on availability and file existence
         if (!empty($errand['tasker_profile_picture']) && file_exists($profile_dir . basename($errand['tasker_profile_picture']))) {
             $tasker_picture = $profile_dir . basename($errand['tasker_profile_picture']);
+        } else {
+            $tasker_picture = $default_picture;
         }
     }
 ?>

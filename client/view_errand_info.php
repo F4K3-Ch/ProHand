@@ -119,12 +119,13 @@
         $attachments_result = $stmt->get_result();
         $stmt->close();
 
-        // Determine tasker profile picture
+        // Profile picture path
         $profile_dir = '../uploads/profile_pictures/';
-        $tasker_picture = $profile_dir . 'default.jpg';
 
         if (!empty($errand['tasker_profile_picture']) && file_exists($profile_dir . basename($errand['tasker_profile_picture']))) {
             $tasker_picture = $profile_dir . basename($errand['tasker_profile_picture']);
+        } else {
+            $tasker_picture = $profile_dir . 'default.jpg';
         }
     } elseif ($is_finished) {
         // Fetch archived errand details
@@ -161,12 +162,14 @@
         $attachments_result = $stmt->get_result();
         $stmt->close();
 
-        // Determine tasker profile picture
+        // Profile picture path
         $profile_dir = '../uploads/history/profile_pictures/';
-        $tasker_picture = $profile_dir . 'default.jpg';
 
+        // Determine which profile picture to use based on availability and file existence
         if (!empty($errand['tasker_profile_picture']) && file_exists($profile_dir . basename($errand['tasker_profile_picture']))) {
             $tasker_picture = $profile_dir . basename($errand['tasker_profile_picture']);
+        } else {
+            $tasker_picture = $profile_dir . 'default.jpg';
         }
     }
 ?>

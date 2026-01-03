@@ -51,13 +51,16 @@
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
         $user_full_name = trim($user['first_name'] . ' ' . $user['middle_name'] . ' ' . $user['last_name']);
-        // Determine profile picture path
-        $profile_dir = '../uploads/profile_pictures/';
-        $user_profile_picture = $profile_dir . 'default.jpg';
         $role = $user['role'];
 
+        // Profile picture path
+        $profile_dir = '../uploads/profile_pictures/';
+
+        // Determine which profile picture to use based on availability and file existence
         if (!empty($user['profile_picture']) && file_exists($profile_dir . basename($user['profile_picture']))) {
             $user_profile_picture = $profile_dir . basename($user['profile_picture']);
+        } else {
+            $user_profile_picture = $profile_dir . 'default.jpg';
         }
     } else {
         $_SESSION['error'] = "User not found!";

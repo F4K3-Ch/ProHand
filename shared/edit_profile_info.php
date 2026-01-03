@@ -21,12 +21,14 @@
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
 
-        // Determine profile picture path
+        // Profile picture path
         $profile_dir = '../uploads/profile_pictures/';
-        $profile_picture = $profile_dir . 'default.jpg';
 
+        // Determine which profile picture to use based on availability and file existence
         if (!empty($user['profile_picture']) && file_exists($profile_dir . basename($user['profile_picture']))) {
             $profile_picture = $profile_dir . basename($user['profile_picture']);
+        } else {
+            $profile_picture = $profile_dir . 'default.jpg';
         }
     } else {
         $_SESSION['error'] = "User not found. Please login.";
