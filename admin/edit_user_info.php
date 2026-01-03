@@ -53,7 +53,7 @@
         $user_full_name = trim($user['first_name'] . ' ' . $user['middle_name'] . ' ' . $user['last_name']);
         $role = $user['role'];
 
-        // Profile picture path
+        // Profile picture directory
         $profile_dir = '../uploads/profile_pictures/';
 
         // Determine which profile picture to use based on availability and file existence
@@ -78,7 +78,8 @@
                 if (file_exists($old_file)) unlink($old_file);
             }
 
-            $db_default_path = '/uploads/profile_pictures/default.jpg';
+            // Default profile picture DB path
+            $db_default_path = 'uploads/profile_pictures/default.jpg';
             $stmt = $conn->prepare("UPDATE users SET profile_picture = ? WHERE id = ?");
             $stmt->bind_param("si", $db_default_path, $user_id);
 
@@ -159,7 +160,8 @@
                         $destination = $profile_dir . $new_file_name;
 
                         if (move_uploaded_file($file_tmp, $destination)) {
-                        $profile_picture_path = '/uploads/profile_pictures/' . $new_file_name;
+                            // Profile picture DB path
+                            $profile_picture_path = 'uploads/profile_pictures/' . $new_file_name;
 
                             // Update user profile_picture in DB
                             $update_stmt = $conn->prepare("UPDATE users SET profile_picture = ? WHERE id = ?");

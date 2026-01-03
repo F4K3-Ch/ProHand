@@ -108,7 +108,7 @@
         $tasker_full_name = trim(($errand['tasker_first_name'] ?? '') . ' ' . ($errand['tasker_middle_name'] ?? '') . ' ' . ($errand['tasker_last_name'] ?? ''));
 
         // Default client profile picture DB
-        $client_profile_history = '/uploads/history/profile_pictures/default.jpg';
+        $client_profile_history = 'uploads/history/profile_pictures/default.jpg';
 
         // Copy client profile picture
         if (!empty($errand['client_picture']) && basename($errand['client_picture']) !== 'default.jpg') {
@@ -120,7 +120,7 @@
             $unique_client_name = $errand['client_id'] . '_' . time() . '_' . rand(1000,9999) . '.' . $extension;
 
             // NEW history path for DB
-            $client_profile_history = '/uploads/history/profile_pictures/' . $unique_client_name;
+            $client_profile_history = 'uploads/history/profile_pictures/' . $unique_client_name;
 
             // Filesystem paths
             $client_profile_original_fs = __DIR__ . '/../' . ltrim($errand['client_picture'], '/');
@@ -133,7 +133,7 @@
         }
 
         // Default tasker profile picture DB
-        $tasker_profile_history = '/uploads/history/profile_pictures/default.jpg';
+        $tasker_profile_history = 'uploads/history/profile_pictures/default.jpg';
 
         // Copy tasker profile picture
         if (!empty($errand['tasker_picture']) && basename($errand['tasker_picture']) !== 'default.jpg') {
@@ -145,7 +145,7 @@
             $unique_tasker_name = $errand['tasker_id'] . '_' . time() . '_' . rand(1000,9999) . '.' . $extension;
 
             // NEW history path for DB
-            $tasker_profile_history = '/uploads/history/profile_pictures/' . $unique_tasker_name;
+            $tasker_profile_history = 'uploads/history/profile_pictures/' . $unique_tasker_name;
 
             // Filesystem paths
             $tasker_profile_original_fs = __DIR__ . '/../' . ltrim($errand['tasker_picture'], '/');
@@ -250,7 +250,7 @@
             $unique_name = $errand_id . '_' . time() . '_' . rand(1000, 9999) . '.' . $extension;
 
             // NEW history path for DB
-            $history_file_path = '/uploads/history/attachments/' . $unique_name;
+            $history_file_path = 'uploads/history/attachments/' . $unique_name;
 
             // Filesystem paths
             $original_file_fs = __DIR__ . '/../' . ltrim($file['file_path'], '/');

@@ -274,7 +274,7 @@
                     <?php if ($all_users_result->num_rows > 0): ?>
                         <?php while ($row = $all_users_result->fetch_assoc()): ?>
                             <?php
-                                // Profile picture path
+                                // Profile picture directory
                                 $profile_dir = '../uploads/profile_pictures/';
                                 
                                 // Determine which profile picture to use based on availability and file existence

@@ -68,8 +68,9 @@
         // Insert user with default profile picture
         if (empty($error)) {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            // Default profile picture
-            $default_profile_picture = '/uploads/profile_pictures/default.jpg';
+
+            // Default profile picture DB path
+            $default_profile_picture = 'uploads/profile_pictures/default.jpg';
 
             $insert_stmt = $conn->prepare("
                 INSERT INTO users (

@@ -36,7 +36,7 @@
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
 
-        // Determine profile picture path
+        // Profile picture directory
         $profile_dir = '../uploads/profile_pictures/';
 
         // Determine which profile picture to use based on availability and file existence

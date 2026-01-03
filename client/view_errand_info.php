@@ -119,7 +119,7 @@
         $attachments_result = $stmt->get_result();
         $stmt->close();
 
-        // Profile picture path
+        // Profile picture directory
         $profile_dir = '../uploads/profile_pictures/';
 
         if (!empty($errand['tasker_profile_picture']) && file_exists($profile_dir . basename($errand['tasker_profile_picture']))) {
@@ -162,7 +162,7 @@
         $attachments_result = $stmt->get_result();
         $stmt->close();
 
-        // Profile picture path
+        // Profile picture directory
         $profile_dir = '../uploads/history/profile_pictures/';
 
         // Determine which profile picture to use based on availability and file existence

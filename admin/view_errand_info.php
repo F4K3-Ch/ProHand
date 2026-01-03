@@ -130,7 +130,7 @@
         $attachments_result = $stmt->get_result();
         $stmt->close();
 
-        // Profile picture path
+        // Profile picture directory
         $profile_dir = '../uploads/profile_pictures/';
         $default_picture = $profile_dir . 'default.jpg';
 
@@ -183,7 +183,7 @@
         $attachments_result = $stmt->get_result();
         $stmt->close();
 
-        // Profile picture path
+        // Profile picture directory
         $profile_dir = '../uploads/history/profile_pictures/';
         $default_picture = $profile_dir . 'default.jpg';
 

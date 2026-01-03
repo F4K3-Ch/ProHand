@@ -94,7 +94,7 @@
                             } else {
                                 $unique_name = "client_" . $client_id . "_" . time() . "_" . uniqid() . "." . $file_type;
                                 $destination_path = $base_dir . $unique_name;
-                                $db_path = "/uploads/attachments/" . $unique_name;
+                                $db_path = "uploads/attachments/" . $unique_name;
 
                                 if (move_uploaded_file($tmp_path, $destination_path)) {
                                     $attach_stmt = $conn->prepare("

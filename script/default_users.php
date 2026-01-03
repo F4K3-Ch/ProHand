@@ -30,7 +30,7 @@
         ]
     ];
 
-    $default_profile_picture = "/uploads/profile_pictures/default.jpg";
+    $default_profile_picture = "uploads/profile_pictures/default.jpg";
 
     foreach ($default_users as $user) {
         $password_hashed = password_hash("123", PASSWORD_DEFAULT);

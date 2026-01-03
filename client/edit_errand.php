@@ -123,9 +123,6 @@
             $stmt->close();
 
             if ($update_result) {
-                $base_dir = "../uploads/attachments/";
-                $base_url = "/uploads/attachments/";
-
                 // Handle deletions
                 if (isset($_POST['delete_attachments']) && is_array($_POST['delete_attachments'])) {
                     foreach ($_POST['delete_attachments'] as $attachment_id) {
@@ -174,8 +171,8 @@
                                 $error = "File '$original_name' is too large. Maximum size is 10MB.";
                             } else {
                                 $unique_name = "client_" . $client_id . "_" . time() . "_" . uniqid() . "." . $file_type;
-                                $destination_path = $base_dir . $unique_name;
-                                $db_path = $base_url . $unique_name;
+                                $destination_path = "../uploads/attachments/" . $unique_name;
+                                $db_path = "uploads/attachments/" . $unique_name;
 
                                 if (move_uploaded_file($tmp_path, $destination_path)) {
                                     $attach_stmt = $conn->prepare("
