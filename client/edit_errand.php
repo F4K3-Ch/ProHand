@@ -274,7 +274,7 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css' rel='stylesheet'> 
-    <link rel="stylesheet" href="../assets/style/style.css?v=<?= filemtime('../assets/style/style.css'); ?>">
+    <link rel="stylesheet" href="../assets/style/style.css">
     <title>ProHand</title>
 </head>
 <body>
