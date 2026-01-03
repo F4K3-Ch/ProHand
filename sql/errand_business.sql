@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     first_name VARCHAR(50) NOT NULL,
     middle_name VARCHAR(50) NULL DEFAULT NULL,
     password VARCHAR(255) NOT NULL,
-    profile_picture VARCHAR(255) DEFAULT '/uploads/profile_pictures/default.jpg',
+    profile_picture VARCHAR(255) DEFAULT 'uploads/profile_pictures/default.jpg',
     contact_number VARCHAR(20) NOT NULL,
     role ENUM('client','tasker','admin') NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS errand_attachments (
 CREATE TABLE IF NOT EXISTS notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
+    errand_id INT NULL DEFAULT NULL,
     type ENUM('errand','system','alert') NOT NULL,
     message TEXT NOT NULL,
     link VARCHAR(255) NULL DEFAULT NULL,
@@ -89,7 +90,7 @@ CREATE TABLE IF NOT EXISTS history (
     client_middle_name VARCHAR(50),
     client_email VARCHAR(100),
     client_contact_number VARCHAR(20),
-    client_profile_picture VARCHAR(255) DEFAULT '/uploads/history/profile_pictures/default.jpg',
+    client_profile_picture VARCHAR(255) DEFAULT 'uploads/history/profile_pictures/default.jpg',
 
     tasker_id INT,
     tasker_last_name VARCHAR(50),
@@ -97,7 +98,7 @@ CREATE TABLE IF NOT EXISTS history (
     tasker_middle_name VARCHAR(50),
     tasker_email VARCHAR(100),
     tasker_contact_number VARCHAR(20),
-    tasker_profile_picture VARCHAR(255) DEFAULT '/uploads/history/profile_pictures/default.jpg',
+    tasker_profile_picture VARCHAR(255) DEFAULT 'uploads/history/profile_pictures/default.jpg',
 
     created_at DATETIME,
     accepted_at DATETIME,
