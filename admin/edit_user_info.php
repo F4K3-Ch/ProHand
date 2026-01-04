@@ -374,7 +374,7 @@
                                 <input type="file" id="profile-picture" name="profile_picture" accept="image/*" onchange="this.form.submit()">
                             </form>
 
-                            <form method="POST" onsubmit="return confirm('Remove your profile picture?');">
+                            <form method="POST" onsubmit="return confirm('Remove user profile picture?');">
                                 <button type="submit" name="remove_picture" class="photo-remove-icon">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
