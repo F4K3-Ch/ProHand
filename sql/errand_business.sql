@@ -1,4 +1,4 @@
--- Create Database
+hi-- Create Database
 CREATE DATABASE IF NOT EXISTS errand_business_db;
 USE errand_business_db;
 
