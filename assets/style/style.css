@@ -411,6 +411,31 @@ span {
 }
 
 
+/* =========================
+    Auth Back button
+========================= */
+/* Back button for login and register */
+.btn-back-auth {
+    background-color: var(--color-btn-bg);
+    color: var(--color-btn-text);
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 4px;
+    position: fixed;          /* fix at top */
+    top: 15px;
+    left: 10px;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    z-index: 1000;
+    gap: 3px;
+    transition: all 0.2s ease;
+}
+
+.btn-back-auth:hover {
+    background-color: var(--color-btn-hover-bg);
+}
+
 /* ===========================
     Register Page
 =========================== */
@@ -536,28 +561,6 @@ span {
     display: flex;
     flex-direction: column;
     color: var(--color-text);
-}
-
-/* Back button */
-.btn-back-login {
-    background-color: var(--color-btn-bg);
-    color: var(--color-btn-text);
-    font-size: 0.9rem;
-    font-weight: 500;
-    border-radius: 4px;
-    position: fixed;          /* fix at top */
-    top: 15px;
-    left: 10px;
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    z-index: 1000;
-    gap: 3px;
-    transition: all 0.2s ease;
-}
-
-.btn-back-login:hover {
-    background-color: var(--color-btn-hover-bg);
 }
 
 /* Main wrapper */
