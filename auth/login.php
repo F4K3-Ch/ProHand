@@ -71,7 +71,7 @@
 <body class="login-page">
 
     <!-- Back button -->
-    <a href="../index.html" class="btn-back-login">
+    <a href="../index.html" class="btn-back-auth">
         <i class="fa-solid fa-arrow-left"></i>
         Back
     </a>
