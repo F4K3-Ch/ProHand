@@ -75,10 +75,10 @@
 
             // Insert into notifications table
             $notif_stmt = $conn->prepare("
-                INSERT INTO notifications (user_id, errand_id, type, message, link)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO notifications (user_id, type, message, link)
+                VALUES (?, ?, ?, ?)
             ");
-            $notif_stmt->bind_param("iisss", $client_id, $errand_id, $notif_type, $notif_message, $notif_link);
+            $notif_stmt->bind_param("isss", $client_id, $notif_type, $notif_message, $notif_link);
             $notif_stmt->execute();
             $notif_stmt->close();
         }
@@ -104,10 +104,10 @@
 
             // Insert into notifications table
             $notif_stmt = $conn->prepare("
-                INSERT INTO notifications (user_id, errand_id, type, message, link)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO notifications (user_id, type, message, link)
+                VALUES (?, ?, ?, ?)
             ");
-            $notif_stmt->bind_param("iisss", $tasker_id, $errand_id, $notif_type, $notif_message, $notif_link);
+            $notif_stmt->bind_param("isss", $tasker_id, $notif_type, $notif_message, $notif_link);
             $notif_stmt->execute();
             $notif_stmt->close();
         }
@@ -144,10 +144,10 @@
 
                     // Insert into notifications table
                     $notif_stmt = $conn->prepare("
-                        INSERT INTO notifications (user_id, errand_id, type, message, link)
-                        VALUES (?, ?, ?, ?, ?)
+                        INSERT INTO notifications (user_id, type, message, link)
+                        VALUES (?, ?, ?, ?)
                     ");
-                    $notif_stmt->bind_param("iisss", $admin_id, $errand_id, $notif_type, $notif_message, $notif_link);
+                    $notif_stmt->bind_param("isss", $admin_id, $notif_type, $notif_message, $notif_link);
                     $notif_stmt->execute();
                     $notif_stmt->close();
                 }
@@ -186,10 +186,10 @@
 
                     // Insert into notifications table
                     $notif_stmt = $conn->prepare("
-                        INSERT INTO notifications (user_id, errand_id, type, message, link)
-                        VALUES (?, ?, ?, ?, ?)
+                        INSERT INTO notifications (user_id, type, message, link)
+                        VALUES (?, ?, ?, ?)
                     ");
-                    $notif_stmt->bind_param("iisss", $admin_id, $errand_id, $notif_type, $notif_message, $notif_link);
+                    $notif_stmt->bind_param("isss", $admin_id, $notif_type, $notif_message, $notif_link);
                     $notif_stmt->execute();
                     $notif_stmt->close();
                 }
