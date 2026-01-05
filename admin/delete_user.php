@@ -168,7 +168,7 @@
             }
         } elseif ($role === 'client') {
             // Check if client has errands
-            $stmt = $conn->prepare("SELECT id, title FROM errands WHERE client_id = ? AND tasker_id IS NOT NULL");
+            $stmt = $conn->prepare("SELECT id, title FROM errands WHERE client_id = ?");
             $stmt->bind_param("i", $user_id);
             $stmt->execute();
             $errand_result = $stmt->get_result();

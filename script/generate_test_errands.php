@@ -3,7 +3,7 @@ session_start();
 require_once "../shared/db.php";
 
 // Set this to the client ID you want to assign the errands to
-$client_id = 7; // your example user
+$client_id = 30; // your example user
 
 // Set How many Errands you want to create
 $num_errands = 3;
