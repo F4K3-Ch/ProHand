@@ -138,8 +138,8 @@
 
                 // Redirect only if no errors after attachments
                 if (empty($error)) {
-                    $_SESSION['success'] = "Errand created successfully!";
-                    header("Location: view_errand_info.php?errand_id=" . $errand_id);
+                    $_SESSION['success'] = "Errand: \"{$title}\" (ID: {$errand_id}) created successfully!";
+                    header("Location: client_dashboard.php");
                     exit;
                 }
             } else {
