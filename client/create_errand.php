@@ -211,7 +211,7 @@
                 
                 <div class="create-errand-input-box">
                     <label>Fee (₱)</label>
-                    <input type="number" step="0.01" name="fee" value="<?= htmlspecialchars((string)$fee_input) ?>" required>
+                    <input type="number" step="0.01" name="fee" value="<?= htmlspecialchars($fee_input) ?>" required>
                 </div>
 
                 <div class="create-errand-input-box">
