@@ -70,9 +70,6 @@
     --shadow-default:
         0 4px 12px rgba(0,0,0,0.1),
         0 2px 4px rgba(0,0,0,0.06);
-
-    --color-error: #86181d;    
-    --color-success: #22863a;
     
     --sidebar-link-hover-bg: rgba(0, 0, 0, 0.05);
     --sidebar-link-hover-blur: 4px;
@@ -83,7 +80,7 @@
 }
 
 /* Dark Mode */
-/* :root {
+:root {
     --color-bg: #1a1a1a;
     --color-card-bg: #222222;
 
@@ -114,26 +111,27 @@
         0 4px 12px rgba(0,0,0,0.4),
         0 2px 4px rgba(0,0,0,0.3);
 
-    --color-error: #ff7b7b;  
-    --color-success: #7ee787; 
-
     --sidebar-link-hover-bg: rgba(255, 255, 255, 0.08);
     --sidebar-link-hover-blur: 4px;
 
     --scrollbar-track: #1a1a1a; 
     --scrollbar-thumb: #444c56;
     --scrollbar-thumb-hover: #5a636e;
-} */
+}
 
 /* ===========================
     Universal Message Styles
 =========================== */
+/* Error */
 .error {
-    color: var(--color-error);
+    color: #dc2626;
+    background-color: rgba(220, 38, 38, 0.15);  
 }
 
+/* Success */
 .success {
-    color: var(--color-success);
+    color: #16a34a;
+    background-color: rgba(22, 163, 74, 0.15);  
 }
 
 /* ===========================
@@ -451,7 +449,8 @@ span {
 .register-container {
     background-color: var(--color-card-bg);
     box-shadow: var(--shadow-default);
-    width: 400px;
+    max-width: 400px;
+    width: 100%;
     min-height: 650px;
     padding: 30px 25px; /* vertical horizontal */
     border-radius: 10px;
@@ -465,23 +464,25 @@ span {
     font-size: 1.5rem;
     font-weight: 600;
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .register-error-success-message {
-    min-height: 30px;
+    min-height: 35px;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
-    overflow: hidden;  
+    overflow: hidden;
+    margin-bottom: 5px;
 }
 
 .register-error-success-message p {
     margin: 0;
-    padding: 0;
     font-size: 0.9rem;
     word-wrap: break-word;
+    padding: 8px;
+    border-radius: 6px;
 }
 
 .register-input-box {
@@ -589,7 +590,7 @@ span {
     flex-direction: column;
     align-items: center; /* vertically centers the text with the image */
     gap: 10px; /* space between image and text */
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .login-logo .logo-img{
@@ -604,19 +605,21 @@ span {
 }
 
 .login-error-success-message {
-    min-height: 30px;
+    min-height: 35px;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
-    overflow: hidden;  
+    overflow: hidden;
+    margin-bottom: 5px;
 }
 
 .login-error-success-message p {
     margin: 0;
-    padding: 0;
     font-size: 1rem;
     word-wrap: break-word;
+    padding: 8px;
+    border-radius: 6px;
 }
 
 .login-input-box {
@@ -855,19 +858,32 @@ body {
     transition: 0.3s ease;
 }
 
+/* ===========================
+    Main
+=========================== */
+.main {
+    margin-left: 200px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    justify-content: flex-start; 
+    align-items: stretch;
+}
+
 /* Fixed Position Wrapper */
 .fixed-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    position: fixed;
-    left: 210px;
-    right: 10px;
+    position: fixed;        /* stays over content */
+    left: 200px;
+    right: 1px;
     z-index: 999;
-    padding: 10px 0 0; /* top right&left bot */
-    background: var(--color-bg); /* so content behind it isn’t visible */
-    overflow-y: auto; /* optional if content gets tall */
-    max-height: 100vh; /* optional: keeps it within screen */
+    top: 0;                 /* start at top of main area */
+    overflow-y: auto;       /* allow scrolling inside wrapper */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 9px;          /* optional inner spacing */
 }
 
 /* Header */
@@ -979,18 +995,38 @@ body {
 }
 
 /* ===========================
-    Main
+    Dashboard
 =========================== */
-.main {
-    margin-left: 200px;
+.dashboard {
     margin-top: 77px;
-    padding: 10px;
     display: flex;
     flex-direction: column;
+    justify-content: flex-start; 
+    align-items: stretch;
+}
+
+.error-success-message {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.error-success-message p {
+    font-size: 1rem;
+    word-wrap: break-word;
+    padding: 8px;
+    border-radius: 6px;
+}
+
+/* ===========================
+    Contents
+=========================== */
+.contents {
+    display: flex;
     gap: 10px;
+    flex-direction: column;
     width: 100%;
-    justify-content: center; 
-    align-items: center;
+    justify-content: flex-start; 
+    align-items: stretch;
 }
 
 /* Total Cards */
@@ -1008,21 +1044,7 @@ body {
     color: var(--color-text);
     font-size: 1.2rem;       
     font-weight: 600;
-}
-
-.error-success-message {
-    min-height: 20px;
-    justify-content: center;
-    align-items: center;
-    text-align: left;
-    overflow: hidden;  
-}
-
-.error-success-message p {
-    margin: 0;
-    padding: 0;
-    font-size: 1rem;
-    word-wrap: break-word;
+    margin-bottom: 4px;
 }
 
 .total-cards-container {
@@ -1055,9 +1077,9 @@ body {
 }
 
 .total-card h3 {
-    font-size: 0.8rem;
+    font-size: 1rem;
     font-weight: 600;
-    margin-bottom: 2px;
+    margin-bottom: 5px;
 }
 
 .total-card p {
@@ -1067,8 +1089,8 @@ body {
 
 /* Circle Base */
 .status-circle {
-    width: 13px;
-    height: 13px;
+    width: 15px;
+    height: 15px;
     border-radius: 50%;
 }
 
@@ -1640,24 +1662,28 @@ body {
 .profile-container h1,
 .tasker-profile-container h1 {
     color: var(--color-text);
-    font-size: 1.5rem;
+    font-size: 1.7rem;
     font-weight: 600;
     text-align: center;
+    margin-bottom: 3px; 
 }
 
 .view-main-error-success-message {
-    min-height: 35px;
+    min-height: 15px;
+    display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
-    overflow: hidden;  
+    overflow: hidden;
+    margin-bottom: 5px; 
 }
 
 .view-main-error-success-message p {
     margin: 0;
-    padding: 0;
     font-size: 0.9rem;
     word-wrap: break-word;
+    padding: 8px;
+    border-radius: 6px;
 }
 
 /* Profile Photo Section */
@@ -1954,26 +1980,28 @@ body {
 
 .change-password-container h1 {
     color: var(--color-text);
-    font-size: 1.5rem;
+    font-size: 1.7rem;
     font-weight: 600;
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .change-password-error-success-message {
-    min-height: 30px;
+    min-height: 15px;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
-    overflow: hidden;  
+    overflow: hidden;
+    margin-bottom: 5px;
 }
 
 .change-password-error-success-message p {
     margin: 0;
-    padding: 0;
     font-size: 0.9rem;
     word-wrap: break-word;
+    padding: 8px;
+    border-radius: 6px;
 }
 
 .change-password-box {
@@ -2035,7 +2063,7 @@ body {
     width: 100%;
     min-height: 650px;
     padding: 30px 25px; /* vertical horizontal */
-    border-radius: 6px;
+    border-radius: 10px;
     text-align: center;
     transition: 0.3s;
 }
@@ -2045,23 +2073,25 @@ body {
     font-size: 1.5rem;
     font-weight: 600;
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .add-user-error-success-message {
-    min-height: 30px;
+    min-height: 35px;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
-    overflow: hidden;  
+    overflow: hidden;
+    margin-bottom: 5px;
 }
 
 .add-user-error-success-message p {
     margin: 0;
-    padding: 0;
     font-size: 0.9rem;
     word-wrap: break-word;
+    padding: 8px;
+    border-radius: 6px;
 }
 
 .add-user-input-box {
@@ -2842,19 +2872,24 @@ body {
 }
 
 /* Notification */
-.notification-main {
-    margin-left: 200px;
+.notifications {
     margin-top: 77px;
-    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; 
+    align-items: stretch;
+}
+
+.notifications-contents {
     display: flex;
     flex-direction: column;
     width: 100%;
-    justify-content: center; 
-    align-items: center;
+    justify-content: flex-start; 
+    align-items: stretch;
 }
 
 /* Container */
-.notifications-container {
+.notifications-contents {
     width: 100%;
     background: var(--color-card-bg);
     border: 1px solid var(--color-border);
@@ -2880,12 +2915,18 @@ body {
     border-radius: 8px;
 }
 
-.notif-container-header {
+.notif-contents-header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
+}
+
+.notif-contents-header h3{
+    color: var(--color-text);
+    font-size: 1.2rem;
+    font-weight: 600;
 }
 
 .btn-delete-all {
@@ -2895,21 +2936,6 @@ body {
     cursor: pointer;
     border-radius: 3px;
     border: none;
-}
-
-.notif-error-success-message {
-    min-height: 25px;
-    justify-content: center;
-    align-items: center;
-    text-align: left;
-    overflow: hidden; 
-}
-
-.notif-error-success-message p {
-    margin: 0;
-    padding: 0;
-    font-size: 1.2rem;
-    word-wrap: break-word;
 }
 
 .notif-message {
@@ -2951,7 +2977,6 @@ body {
 }
 
 .no-found-notif {
-    margin-bottom: 30px;
     font-size: 1.3rem;
     text-align: center;
 }

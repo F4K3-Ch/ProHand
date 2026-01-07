@@ -86,104 +86,109 @@
         }
     ?>
 
-    <!-- Fix Wrapper -->
-    <div class="fixed-wrapper">
-        <!-- Header -->
-        <header class="header"> 
-            <div class="header-left">
-                <div class="logo">
-                    <img src="../assets/img/ProHand(Adapt).png" alt="ProHand Logo" class="logo-img">
+    <!-- Main -->
+    <main class="main">
+        <!-- Fixed Wrapper -->
+        <div class="fixed-wrapper">
+            <!-- Header -->
+            <header class="header"> 
+                <div class="header-left">
+                    <div class="logo">
+                        <img src="../assets/img/ProHand(Adapt).png" alt="ProHand Logo" class="logo-img">
 
-                    <div class="title">
-                        <h1>Pro<span>Hand</span></h1>
-                        <h2>Notifications</h2>
+                        <div class="title">
+                            <h1>Pro<span>Hand</span></h1>
+                            <h2>Notifications</h2>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="header-right">
-                <form class="search-form" method="GET">
-                    <div class="search-wrapper">
-                        <input type="text" name="search" placeholder="Search"
-                            value="<?= htmlspecialchars($search ?? '') ?>">
+                <div class="header-right">
+                    <form class="search-form" method="GET">
+                        <div class="search-wrapper">
+                            <input type="text" name="search" placeholder="Search"
+                                value="<?= htmlspecialchars($search ?? '') ?>">
 
-                        <?php if (!empty($search)): ?>
-                            <a href="notifications.php" class="clear">
-                                Clear
-                            </a>
-                        <?php endif; ?>
-                    </div>
-                    <button type="submit" class="btn-search">Search</button>
-                </form>
-            </div>
-        </header>
-    </div>
-
-    <!-- Main Content -->
-    <main class="notification-main">
-
-        <div class="notifications-container">
-
-                <div class="notif-container-header">
-                    <!-- Success/Error Message -->
-                    <div class="notif-error-success-message">
-                        <?php if (isset($_SESSION['success'])): ?>
-                            <p class="success"><?= htmlspecialchars($_SESSION['success']); ?></p>
-                            <?php unset($_SESSION['success']); ?>
-                        <?php elseif (isset($_SESSION['error'])): ?>
-                            <p class="error"><?= htmlspecialchars($_SESSION['error']); ?></p>
-                            <?php unset($_SESSION['error']); ?>
-                        <?php endif; ?>
-                    </div>
-
-            <?php if ($notif_result->num_rows > 0): ?>
-                    
-                    <form action="delete_notification.php" method="POST">
-                        <button type="submit" name="delete_all" class="btn-delete-all" onclick="return confirm('Are you sure you want to delete all notifications?')">
-                            Delete All Notifications
-                        </button>
+                            <?php if (!empty($search)): ?>
+                                <a href="notifications.php" class="clear">
+                                    Clear
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                        <button type="submit" class="btn-search">Search</button>
                     </form>
                 </div>
-
-                <ul class="notifications-list">
-                    <?php while ($notif = $notif_result->fetch_assoc()): ?>
-                        <li class="notification-card">
-                            <div class="notif-message">
-                                <h3><?= ucfirst($notif['type']); ?></h3>
-                                <p><?= nl2br(htmlspecialchars($notif['message'])); ?></p>
-                                <small><?= date('F j, Y g:i A', strtotime($notif['created_at'])); ?></small>
-                            </div>
-
-                            <div class="notification-buttons">
-                                <?php if (!empty($notif['link'])): ?>
-                                    <?php
-                                        // Start with the original notification link
-                                        $link = $notif['link'];
-
-                                        // Check if the link already has a query string
-                                        if (strpos($link, '?') !== false) {
-                                            // Already has query parameters, append using &
-                                            $link = $link . '&from=notification';
-                                        } else {
-                                            // No query parameters, start query string with ?
-                                            $link = $link . '?from=notification';
-                                        }
-                                    ?>
-                                    <a href="<?= htmlspecialchars($link); ?>" class="btn-view">View</a>
-                                <?php endif; ?>
-                                
-                                <form method="POST" action="delete_notification.php" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this notification?');">
-                                    <input type="hidden" name="notification_id" value="<?= $notif['id']; ?>">
-                                    <button type="submit" class="btn-delete">Delete</button>
-                                </form>
-                            </div>
-                        </li>
-                    <?php endwhile; ?>
-                </ul>
-            <?php else: ?>
+            </header>
         </div>
-                <p class="no-found-notif">No notifications found.</p>
+
+        <!-- Notification -->
+        <div class="notifications">
+            <!-- Success/Error Message -->
+            <?php if (isset($_SESSION['success']) || isset($_SESSION['error'])): ?>
+                <div class="error-success-message">
+                    <?php if (isset($_SESSION['success'])): ?>
+                        <p class="success"><?= htmlspecialchars($_SESSION['success']); ?></p>
+                        <?php unset($_SESSION['success']); ?>
+                    <?php elseif (isset($_SESSION['error'])): ?>
+                        <p class="error"><?= htmlspecialchars($_SESSION['error']); ?></p>
+                        <?php unset($_SESSION['error']); ?>
+                    <?php endif; ?>
+                </div>
             <?php endif; ?>
+
+            <!-- Notification Contents -->
+            <div class="notifications-contents">
+                <?php if ($notif_result->num_rows > 0): ?>
+                    <div class="notif-contents-header">
+                        <h3>Notifications</h3>
+
+                        <form action="delete_notification.php" method="POST">
+                            <button type="submit" name="delete_all" class="btn-delete-all" onclick="return confirm('Are you sure you want to delete all notifications?')">
+                                Delete All Notifications
+                            </button>
+                        </form>
+                    </div>
+
+                    <ul class="notifications-list">
+                        <?php while ($notif = $notif_result->fetch_assoc()): ?>
+                            <li class="notification-card">
+                                <div class="notif-message">
+                                    <h3><?= ucfirst($notif['type']); ?></h3>
+                                    <p><?= nl2br(htmlspecialchars($notif['message'])); ?></p>
+                                    <small><?= date('F j, Y g:i A', strtotime($notif['created_at'])); ?></small>
+                                </div>
+
+                                <div class="notification-buttons">
+                                    <?php if (!empty($notif['link'])): ?>
+                                        <?php
+                                            // Start with the original notification link
+                                            $link = $notif['link'];
+
+                                            // Check if the link already has a query string
+                                            if (strpos($link, '?') !== false) {
+                                                // Already has query parameters, append using &
+                                                $link = $link . '&from=notification';
+                                            } else {
+                                                // No query parameters, start query string with ?
+                                                $link = $link . '?from=notification';
+                                            }
+                                        ?>
+                                        <a href="<?= htmlspecialchars($link); ?>" class="btn-view">View</a>
+                                    <?php endif; ?>
+                                    
+                                    <form method="POST" action="delete_notification.php" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this notification?');">
+                                        <input type="hidden" name="notification_id" value="<?= $notif['id']; ?>">
+                                        <button type="submit" class="btn-delete">Delete</button>
+                                    </form>
+                                </div>
+                            </li>
+                        <?php endwhile; ?>
+                    </ul>
+                <?php else: ?>
+                    <p class="no-found-notif">No notifications found.</p>
+                <?php endif; ?>
+            </div>
+        </div>
     </main>
 </body>
 </html>
