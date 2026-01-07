@@ -150,20 +150,20 @@
 
     <!-- Main Content -->
     <main class="main">
+        <!-- Success/Error Message -->
+        <div class="error-success-message">
+            <?php if (isset($_SESSION['success'])): ?>
+                <p class="success"><?= htmlspecialchars($_SESSION['success']); ?></p>
+                <?php unset($_SESSION['success']); ?>
+            <?php elseif (isset($_SESSION['error'])): ?>
+                <p class="error"><?= htmlspecialchars($_SESSION['error']); ?></p>
+                <?php unset($_SESSION['error']); ?>
+            <?php endif; ?>
+        </div>
+
         <!-- Dashboard Total Cards -->
         <section class="totals">
             <h3>Errand Status Metrics</h3>
-
-            <!-- Success/Error Message -->
-            <div class="error-success-message">
-                <?php if (isset($_SESSION['success'])): ?>
-                    <p class="success"><?= htmlspecialchars($_SESSION['success']); ?></p>
-                    <?php unset($_SESSION['success']); ?>
-                <?php elseif (isset($_SESSION['error'])): ?>
-                    <p class="error"><?= htmlspecialchars($_SESSION['error']); ?></p>
-                    <?php unset($_SESSION['error']); ?>
-                <?php endif; ?>
-            </div>
 
             <div class="total-cards-container">
                 <div class="total-card bg-pending">
