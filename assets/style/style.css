@@ -2863,19 +2863,24 @@ body {
 }
 
 /* Notification */
-.notification-main {
-    margin-left: 200px;
+.notifications {
     margin-top: 77px;
-    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; 
+    align-items: stretch;
+}
+
+.notifications-contents {
     display: flex;
     flex-direction: column;
     width: 100%;
-    justify-content: center; 
-    align-items: center;
+    justify-content: flex-start; 
+    align-items: stretch;
 }
 
 /* Container */
-.notifications-container {
+.notifications-contents {
     width: 100%;
     background: var(--color-card-bg);
     border: 1px solid var(--color-border);
@@ -2901,12 +2906,18 @@ body {
     border-radius: 8px;
 }
 
-.notif-container-header {
+.notif-contents-header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
+}
+
+.notif-contents-header h3{
+    color: var(--color-text);
+    font-size: 1.2rem;
+    font-weight: 600;
 }
 
 .btn-delete-all {
@@ -2916,21 +2927,6 @@ body {
     cursor: pointer;
     border-radius: 3px;
     border: none;
-}
-
-.notif-error-success-message {
-    min-height: 25px;
-    justify-content: center;
-    align-items: center;
-    text-align: left;
-    overflow: hidden; 
-}
-
-.notif-error-success-message p {
-    margin: 0;
-    padding: 0;
-    font-size: 1.2rem;
-    word-wrap: break-word;
 }
 
 .notif-message {
@@ -2972,7 +2968,6 @@ body {
 }
 
 .no-found-notif {
-    margin-bottom: 30px;
     font-size: 1.3rem;
     text-align: center;
 }
