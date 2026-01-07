@@ -160,9 +160,9 @@
     <!-- Sidebar -->
     <?php include '../includes/admin_sidebar.php'; ?>
 
-    <!-- Dashboard wrapper -->
+    <!-- Main -->
     <main class="main">
-        <!-- Fix Wrapper -->
+        <!-- Fixed Wrapper -->
         <div class="fixed-wrapper">
             <!-- Header -->
             <header class="header">

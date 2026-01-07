@@ -113,144 +113,152 @@
     <!-- Sidebar -->
     <?php include '../includes/client_sidebar.php'; ?>
 
-    <!-- Fix Wrapper -->
-    <div class="fixed-wrapper">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-left">
-                <div class="logo">
-                    <img src="../assets/img/ProHand(Adapt).png" alt="ProHand Logo" class="logo-img">
-
-                    <div class="title">
-                        <h1>Pro<span>Hand</span></h1>
-                        <h2>Finished Errands</h2>
-                    </div>
-                </div>
-            </div>
-
-            <div class="header-right">
-                <form class="search-form" method="GET">
-                    <div class="search-wrapper">
-                        <input type="text" name="search" placeholder="Search"
-                            value="<?= htmlspecialchars($search ?? '') ?>">
-
-                        <?php if (!empty($search)): ?>
-                            <a href="client_finished_errands.php" class="clear">
-                                Clear
-                            </a>
-                        <?php endif; ?>
-                    </div>
-                    <button type="submit" class="btn-search">Search</button>
-                </form>
-            </div>
-        </header>
-    </div>
-
-    <!-- Main Content -->
+    <!-- Main -->
     <main class="main">
-        <!-- Dashboard Total Cards -->
-        <section class="totals">
-            <h3>Errand Status Metrics</h3>
+        <!-- Fixed Wrapper -->
+        <div class="fixed-wrapper">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <div class="logo">
+                        <img src="../assets/img/ProHand(Adapt).png" alt="ProHand Logo" class="logo-img">
 
+                        <div class="title">
+                            <h1>Pro<span>Hand</span></h1>
+                            <h2>Finished Errands</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <form class="search-form" method="GET">
+                        <div class="search-wrapper">
+                            <input type="text" name="search" placeholder="Search"
+                                value="<?= htmlspecialchars($search ?? '') ?>">
+
+                            <?php if (!empty($search)): ?>
+                                <a href="client_finished_errands.php" class="clear">
+                                    Clear
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                        <button type="submit" class="btn-search">Search</button>
+                    </form>
+                </div>
+            </header>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="dashboard">
             <!-- Success/Error Message -->
-            <div class="error-success-message">
-                <?php if (isset($_SESSION['success'])): ?>
-                    <p class="success"><?= htmlspecialchars($_SESSION['success']); ?></p>
-                    <?php unset($_SESSION['success']); ?>
-                <?php elseif (isset($_SESSION['error'])): ?>
-                    <p class="error"><?= htmlspecialchars($_SESSION['error']); ?></p>
-                    <?php unset($_SESSION['error']); ?>
-                <?php endif; ?>
-            </div>
-
-            <div class="total-cards-container">
-                <div class="total-card bg-completed">
-                    <div class="card-header">
-                        <span class="status-circle circle-complete"></span>
-                        <h3>Completed</h3>
-                    </div>
-                    <p><?= number_format($status_counts['completed']); ?></p>
-                </div>
-
-                <div class="total-card bg-failed">
-                    <div class="card-header">
-                        <span class="status-circle circle-failed"></span>
-                        <h3>Failed</h3>
-                    </div>
-                    <p><?= number_format($status_counts['failed']); ?></p>
-                </div>
-
-                <div class="total-card bg-total">
-                    <div class="card-header">
-                        <span class="status-circle circle-total"></span>
-                        <h3>Your Total Finished Errands</h3>
-                    </div>
-                    <p><?= number_format($total_errands); ?></p>
-                </div>
-            </div>  
-        </section>
-        
-        <!-- Finished Errands Table -->
-        <div class="finished-errands-table">
-            <h4>My Finished Errands</h4>
-            <div class="table-scroll">
-                <table>
-                    <tr>
-                        <th>Errand ID</th>
-                        <th>Title</th>
-                        <th>Tasker</th>
-                        <th>Location</th>
-                        <th>Created At</th>
-                        <th>Finished At</th>
-                        <th>Fee</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                    <?php if ($result_archived->num_rows > 0): ?>
-                        <?php while ($row = $result_archived->fetch_assoc()): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($row['errand_id']); ?></td>
-                            <td><?= htmlspecialchars($row['title']); ?></td>
-                            <td><?= htmlspecialchars($row['tasker_first_name'] . ' ' . $row['tasker_middle_name'] . ' ' . $row['tasker_last_name']); ?></td>
-                            <td><?= htmlspecialchars($row['location']); ?></td>
-                            <td><?= htmlspecialchars(date('F j, Y g:i A', strtotime($row['created_at']))); ?></td>
-                                <td>
-                                    <?php if (!empty($row['completed_at'])): ?>
-                                        <?= htmlspecialchars(date("F j, Y g:i A", strtotime($row['completed_at']))); ?>
-                                    <?php elseif (!empty($row['failed_at'])): ?>
-                                        <?= htmlspecialchars(date("F j, Y g:i A", strtotime($row['failed_at']))); ?>
-                                    <?php else: ?>
-                                        &mdash;  <!--dash symbol -->
-                                    <?php endif; ?>
-                                </td>
-                            <td>₱<?= number_format($row['fee'], 2); ?></td>
-                            <td>
-                                <span class="status-badge status-<?= $row['status']; ?>">
-                                    <?= htmlspecialchars($status_labels[$row['status']]); ?>
-                                </span>
-                            </td>
-                            <td>
-                                <div class="button-row">
-                                    <!-- View Button -->
-                                    <form method="GET" action="view_errand_info.php">
-                                        <input type="hidden" name="errand_id" value="<?= $row['errand_id']; ?>">
-                                        <input type="hidden" name="from" value="finished">
-                                        <button type="submit" class="btn-view">View</button>
-                                    </form>
-
-                                    <!-- Delete Button -->
-                                    <form method="POST" action="../shared/delete_finished_errand.php" onsubmit="return confirm('Are you sure you want to delete this archive errand?');">
-                                        <input type="hidden" name="id" value="<?= $row['id']; ?>">
-                                        <button type="submit" class="btn-delete">Delete</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        <?php endwhile; ?>
-                    <?php else: ?>
-                        <tr><td class="no-found" colspan="9">No errands found.</td></tr>
+            <?php if (isset($_SESSION['success']) || isset($_SESSION['error'])): ?>
+                <div class="error-success-message">
+                    <?php if (isset($_SESSION['success'])): ?>
+                        <p class="success"><?= htmlspecialchars($_SESSION['success']); ?></p>
+                        <?php unset($_SESSION['success']); ?>
+                    <?php elseif (isset($_SESSION['error'])): ?>
+                        <p class="error"><?= htmlspecialchars($_SESSION['error']); ?></p>
+                        <?php unset($_SESSION['error']); ?>
                     <?php endif; ?>
-                </table>
+                </div>
+            <?php endif; ?>
+
+            <!-- Contents -->
+            <div class="contents">
+                <!-- Dashboard Total Cards -->
+                <section class="totals">
+                    <h3>Errand Status Metrics</h3>
+
+                    <div class="total-cards-container">
+                        <div class="total-card bg-completed">
+                            <div class="card-header">
+                                <span class="status-circle circle-complete"></span>
+                                <h3>Completed</h3>
+                            </div>
+                            <p><?= number_format($status_counts['completed']); ?></p>
+                        </div>
+
+                        <div class="total-card bg-failed">
+                            <div class="card-header">
+                                <span class="status-circle circle-failed"></span>
+                                <h3>Failed</h3>
+                            </div>
+                            <p><?= number_format($status_counts['failed']); ?></p>
+                        </div>
+
+                        <div class="total-card bg-total">
+                            <div class="card-header">
+                                <span class="status-circle circle-total"></span>
+                                <h3>Your Total Finished Errands</h3>
+                            </div>
+                            <p><?= number_format($total_errands); ?></p>
+                        </div>
+                    </div>  
+                </section>
+        
+                <!-- Finished Errands Table -->
+                <div class="finished-errands-table">
+                    <h4>My Finished Errands</h4>
+                    <div class="table-scroll">
+                        <table>
+                            <tr>
+                                <th>Errand ID</th>
+                                <th>Title</th>
+                                <th>Tasker</th>
+                                <th>Location</th>
+                                <th>Created At</th>
+                                <th>Finished At</th>
+                                <th>Fee</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                            <?php if ($result_archived->num_rows > 0): ?>
+                                <?php while ($row = $result_archived->fetch_assoc()): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($row['errand_id']); ?></td>
+                                    <td><?= htmlspecialchars($row['title']); ?></td>
+                                    <td><?= htmlspecialchars($row['tasker_first_name'] . ' ' . $row['tasker_middle_name'] . ' ' . $row['tasker_last_name']); ?></td>
+                                    <td><?= htmlspecialchars($row['location']); ?></td>
+                                    <td><?= htmlspecialchars(date('F j, Y g:i A', strtotime($row['created_at']))); ?></td>
+                                        <td>
+                                            <?php if (!empty($row['completed_at'])): ?>
+                                                <?= htmlspecialchars(date("F j, Y g:i A", strtotime($row['completed_at']))); ?>
+                                            <?php elseif (!empty($row['failed_at'])): ?>
+                                                <?= htmlspecialchars(date("F j, Y g:i A", strtotime($row['failed_at']))); ?>
+                                            <?php else: ?>
+                                                &mdash;  <!--dash symbol -->
+                                            <?php endif; ?>
+                                        </td>
+                                    <td>₱<?= number_format($row['fee'], 2); ?></td>
+                                    <td>
+                                        <span class="status-badge status-<?= $row['status']; ?>">
+                                            <?= htmlspecialchars($status_labels[$row['status']]); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="button-row">
+                                            <!-- View Button -->
+                                            <form method="GET" action="view_errand_info.php">
+                                                <input type="hidden" name="errand_id" value="<?= $row['errand_id']; ?>">
+                                                <input type="hidden" name="from" value="finished">
+                                                <button type="submit" class="btn-view">View</button>
+                                            </form>
+
+                                            <!-- Delete Button -->
+                                            <form method="POST" action="../shared/delete_finished_errand.php" onsubmit="return confirm('Are you sure you want to delete this archive errand?');">
+                                                <input type="hidden" name="id" value="<?= $row['id']; ?>">
+                                                <button type="submit" class="btn-delete">Delete</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <?php endwhile; ?>
+                            <?php else: ?>
+                                <tr><td class="no-found" colspan="9">No errands found.</td></tr>
+                            <?php endif; ?>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
