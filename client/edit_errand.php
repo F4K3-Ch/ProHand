@@ -289,7 +289,7 @@
             <h1>Edit Errand</h1>
 
             <!-- Success/Error Message -->
-            <div class="edit-errand-error-success-message">
+            <div class="view-main-error-success-message">
                 <?php if (isset($_SESSION['success'])): ?>
                     <p class="success"><?= htmlspecialchars($_SESSION['success']); ?></p>
                     <?php unset($_SESSION['success']); ?>
