@@ -449,7 +449,8 @@ span {
 .register-container {
     background-color: var(--color-card-bg);
     box-shadow: var(--shadow-default);
-    width: 400px;
+    max-width: 400px;
+    width: 100%;
     min-height: 650px;
     padding: 30px 25px; /* vertical horizontal */
     border-radius: 10px;
@@ -473,7 +474,7 @@ span {
     align-items: center;
     text-align: center;
     overflow: hidden;
-    margin-bottom: 5px;  
+    margin-bottom: 5px;
 }
 
 .register-error-success-message p {
@@ -1661,24 +1662,28 @@ body {
 .profile-container h1,
 .tasker-profile-container h1 {
     color: var(--color-text);
-    font-size: 1.5rem;
+    font-size: 1.7rem;
     font-weight: 600;
     text-align: center;
+    margin-bottom: 3px; 
 }
 
 .view-main-error-success-message {
-    min-height: 35px;
+    min-height: 15px;
+    display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
-    overflow: hidden;  
+    overflow: hidden;
+    margin-bottom: 5px; 
 }
 
 .view-main-error-success-message p {
     margin: 0;
-    padding: 0;
     font-size: 0.9rem;
     word-wrap: break-word;
+    padding: 8px;
+    border-radius: 6px;
 }
 
 /* Profile Photo Section */
@@ -1975,26 +1980,28 @@ body {
 
 .change-password-container h1 {
     color: var(--color-text);
-    font-size: 1.5rem;
+    font-size: 1.7rem;
     font-weight: 600;
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .change-password-error-success-message {
-    min-height: 30px;
+    min-height: 15px;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
-    overflow: hidden;  
+    overflow: hidden;
+    margin-bottom: 5px;
 }
 
 .change-password-error-success-message p {
     margin: 0;
-    padding: 0;
     font-size: 0.9rem;
     word-wrap: break-word;
+    padding: 8px;
+    border-radius: 6px;
 }
 
 .change-password-box {
@@ -2056,7 +2063,7 @@ body {
     width: 100%;
     min-height: 650px;
     padding: 30px 25px; /* vertical horizontal */
-    border-radius: 6px;
+    border-radius: 10px;
     text-align: center;
     transition: 0.3s;
 }
@@ -2066,23 +2073,25 @@ body {
     font-size: 1.5rem;
     font-weight: 600;
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .add-user-error-success-message {
-    min-height: 30px;
+    min-height: 35px;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
-    overflow: hidden;  
+    overflow: hidden;
+    margin-bottom: 5px;
 }
 
 .add-user-error-success-message p {
     margin: 0;
-    padding: 0;
     font-size: 0.9rem;
     word-wrap: break-word;
+    padding: 8px;
+    border-radius: 6px;
 }
 
 .add-user-input-box {
