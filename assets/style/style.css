@@ -874,14 +874,15 @@ body {
 .fixed-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    position: fixed;
-    left: 210px;
-    right: 10px;
+    position: fixed;        /* stays over content */
+    left: 200px;
+    right: 1px;
     z-index: 999;
-    background: var(--color-bg); /* so content behind it isn’t visible */
-    overflow-y: auto; /* optional if content gets tall */
-    max-height: 100vh; /* optional: keeps it within screen */
+    top: 0;                 /* start at top of main area */
+    overflow-y: auto;       /* allow scrolling inside wrapper */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 9px;          /* optional inner spacing */
 }
 
 /* Header */
