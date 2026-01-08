@@ -276,7 +276,7 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <?php include '../includes/client_sidebar.php'; ?>
+    <?php include '../includes/sidebar.php'; ?>
 
     <!-- Back button -->
     <a href="view_errand_info.php?errand_id=<?= $errand_id; ?>" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Back</a>

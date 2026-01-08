@@ -122,7 +122,7 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <?php include '../includes/admin_sidebar.php'; ?>
+    <?php include '../includes/sidebar.php'; ?>
 
     <!-- Main -->
     <main class="main">

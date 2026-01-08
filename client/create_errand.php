@@ -165,7 +165,7 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <?php include '../includes/client_sidebar.php'; ?>
+    <?php include '../includes/sidebar.php'; ?>
 
     <!-- Back button -->
     <a href="client_dashboard.php" class="btn-back"><i class="fa-solid fa-arrow-left"></i>Back</a>

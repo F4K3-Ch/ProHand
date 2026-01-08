@@ -64,18 +64,7 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <?php
-        if ($role === 'admin') {
-            include '../includes/admin_sidebar.php';
-        } elseif ($role === 'client') {
-            include '../includes/client_sidebar.php';
-        } elseif ($role === 'tasker') {
-            include '../includes/tasker_sidebar.php';
-        } else {
-            header("Location: ../auth/login.php");
-            exit;
-        }
-    ?>
+    <?php include '../includes/sidebar.php'; ?>
 
     <!-- Back button -->
     <a href="<?= $back_url; ?>" class="btn-back">

@@ -104,7 +104,7 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <?php include '../includes/tasker_sidebar.php'; ?>
+    <?php include '../includes/sidebar.php'; ?>
 
     <!-- Main -->
     <main class="main">
@@ -182,7 +182,7 @@
                         <div class="total-card bg-total">
                             <div class="card-header">
                                 <span class="status-circle circle-total"></span>
-                                <h3>Your Total Active Errands</h3>
+                                <h3>Total Active Errands</h3>
                             </div>
                             <p><?= number_format($total_errands); ?></p>
                         </div>

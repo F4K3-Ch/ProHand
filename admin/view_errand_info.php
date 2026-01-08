@@ -215,7 +215,7 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <?php include '../includes/admin_sidebar.php'; ?>
+    <?php include '../includes/sidebar.php'; ?>
 
     <!-- Back button -->
     <a href="<?= $back_url; ?>" class="btn-back">
