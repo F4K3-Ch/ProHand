@@ -883,7 +883,7 @@ body {
     overflow-y: auto;       /* allow scrolling inside wrapper */
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    padding: 9px;          /* optional inner spacing */
+    padding: 10px 10px 0;   /* top | left-right | bottom */
 }
 
 /* Header */
