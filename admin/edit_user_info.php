@@ -337,7 +337,7 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <?php include '../includes/admin_sidebar.php'; ?>
+    <?php include '../includes/sidebar.php'; ?>
 
     <!-- Back button -->
     <a href="view_user_info.php?id=<?= $user['id']; ?>" class="btn-back"><i class="fa-solid fa-arrow-left"></i>Back</a>

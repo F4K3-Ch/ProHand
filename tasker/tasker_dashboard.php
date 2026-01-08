@@ -88,7 +88,7 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <?php include '../includes/tasker_sidebar.php'; ?>
+    <?php include '../includes/sidebar.php'; ?>
 
     <!-- Main -->
     <main class="main">

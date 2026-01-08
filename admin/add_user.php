@@ -154,7 +154,7 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <?php include '../includes/admin_sidebar.php'; ?>
+    <?php include '../includes/sidebar.php'; ?>
 
     <!-- Back button -->
     <a href="manage_users.php" class="btn-back"><i class="fa-solid fa-arrow-left"></i>Back</a>
