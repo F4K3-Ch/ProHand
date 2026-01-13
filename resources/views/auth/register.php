@@ -1,6 +1,7 @@
 <?php
     session_start();
-    require_once "../shared/db.php";
+    require_once "../../config/database.php";
+    require_once "../../app/classes/auth.php";
 
     // Initialize form variables
     $error = "";
@@ -13,80 +14,42 @@
     // Redirect logged-in users
     if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
         if ($_SESSION['role'] === 'admin') {
-            header("Location: ../admin/admin_dashboard.php");
+            header("Location: ../../resources/views/admin/admin_dashboard.php");
             exit;
         } elseif ($_SESSION['role'] === 'tasker') {
-            header("Location: ../tasker/tasker_dashboard.php");
+            header("Location: ../../resources/views/tasker/tasker_dashboard.php");
             exit;
         } elseif ($_SESSION['role'] === 'client') {
-            header("Location: ../client/client_dashboard.php");
+            header("Location: ../../resources/views/client/client_dashboard.php");
             exit;
         }
     }
 
     if ($_SERVER['REQUEST_METHOD'] === "POST") {
+        $auth = new Auth($conn);
+        $data = [
+            'email' => $_POST['email'],
+            'first_name' => $_POST['first_name'],
+            'middle_name' => $_POST['middle_name'],
+            'last_name' => $_POST['last_name'],
+            'contact_number' => $_POST['contact_number'],
+            'password' => $_POST['password'],
+            'confirm_password' => $_POST['confirm_password']
+        ];
+        $result = $auth->register($data);
+
         $email = trim($_POST['email']);
         $first_name = trim($_POST['first_name']);
         $middle_name = trim($_POST['middle_name']);
         $last_name = trim($_POST['last_name']);
         $contact_number = trim($_POST['contact_number']);
-        $password = $_POST['password'];
-        $confirm_password = $_POST['confirm_password'];
 
-        // Validate email and password
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $error = "Invalid email format.";
-        } elseif ($password !== $confirm_password) {
-            $error = "Passwords do not match!";
-        }
-
-        // Check for duplicate email
-        if (empty($error)) {
-            $check_stmt = $conn->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
-            $check_stmt->bind_param("s", $email);
-            $check_stmt->execute();
-            $check_stmt->store_result();
-            if ($check_stmt->num_rows > 0) {
-                $error = "Email is already registered!";
-            }
-            $check_stmt->close();
-        }
-
-        // Insert user with default profile picture
-        if (empty($error)) {
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $role = "client"; // Default role: client
-            
-            // Default profile picture DB path
-            $default_profile_picture = 'uploads/profile_pictures/default.jpg';
-
-            $insert_stmt = $conn->prepare("
-                INSERT INTO users (
-                    email, first_name, middle_name, last_name, password, 
-                    profile_picture, contact_number, role
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ");
-
-            $insert_stmt->bind_param(
-                "ssssssss",
-                $email,
-                $first_name,
-                $middle_name,
-                $last_name,
-                $hashed_password,
-                $default_profile_picture,
-                $contact_number,
-                $role
-            );
-
-            if ($insert_stmt->execute()) {
-                $insert_stmt->close();
-                $_SESSION['success'] = "Registration successful! You can login now.";
-                header("Location: login.php");
-                exit;
-            } else {
-                $error = "Error: Could not complete registration.";
-            }
+        if ($result['success']) {
+            $_SESSION['success'] = "Registration successful! You can login now.";
+            header("Location: login.php");
+            exit;
+        } else {
+            $error = $result['error'];
         }
     }
 ?>
@@ -96,15 +59,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <?php include '../includes/web_logo.php'; ?>
-    <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css' rel='stylesheet'> 
-    <link rel="stylesheet" href="../assets/style/style.css">
+    <?php include '../../resources/views/includes/web_logo.php'; ?>
+    <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="../../public/assets/style/style.css">
     <title>Register for ProHand</title>
 </head>
 <body class="register-page">
 
     <!-- Back button -->
-    <a href="../index.html" class="btn-back-auth">
+    <a href="../../public/index.html" class="btn-back-auth">
         <i class="fa-solid fa-arrow-left"></i> 
         Back
     </a>
