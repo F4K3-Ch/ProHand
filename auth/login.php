@@ -67,7 +67,6 @@
     <link rel="stylesheet" href="../assets/style/style.css">
     <title>Log into ProHand</title>
 </head>
-
 <body class="login-page">
 
     <!-- Back button -->
