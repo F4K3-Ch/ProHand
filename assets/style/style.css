@@ -5,8 +5,15 @@
     text-decoration: none;
     border: none;
     outline: none;
-    font-family: sans-serif;
     scroll-behavior: smooth;
+    
+    /* Proper Modern Font Stack */
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+
+    /* The "Anti-Pixel" Smoothness Fix */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 /* ===========================
