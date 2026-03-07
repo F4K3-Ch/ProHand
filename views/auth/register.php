@@ -1,8 +1,21 @@
 <?php
     session_start();
-    require_once "../shared/db.php";
 
-    // Initialize form variables
+    // 1. Manually pull the classes 
+    require_once "../../src/Classes/Database.php";
+    require_once "../../src/Classes/Auth.php";
+    require_once "../../src/Classes/User.php";
+
+    // 2. Initialize the objects
+    $database = new Database();
+    $db = $database->getConnection();
+    $user = new User($db);
+    $auth = new Auth($db);
+
+    // 3. Security: If the user is already logged in, send them to their dashboard
+    $auth->redirectIfLoggedIn();
+
+    // 4. Initialize form variables for the HTML
     $error = "";
     $email = "";
     $first_name = "";
@@ -10,84 +23,46 @@
     $last_name = "";
     $contact_number = "";
 
-    // Redirect logged-in users
-    if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
-        if ($_SESSION['role'] === 'admin') {
-            header("Location: ../admin/admin_dashboard.php");
-            exit;
-        } elseif ($_SESSION['role'] === 'tasker') {
-            header("Location: ../tasker/tasker_dashboard.php");
-            exit;
-        } elseif ($_SESSION['role'] === 'client') {
-            header("Location: ../client/client_dashboard.php");
-            exit;
-        }
-    }
-
     if ($_SERVER['REQUEST_METHOD'] === "POST") {
-        $email = trim($_POST['email']);
-        $first_name = trim($_POST['first_name']);
-        $middle_name = trim($_POST['middle_name']);
-        $last_name = trim($_POST['last_name']);
-        $contact_number = trim($_POST['contact_number']);
-        $password = $_POST['password'];
+        // Capture and trim data
+        $data = [
+            'email'          => trim($_POST['email']),
+            'first_name'     => trim($_POST['first_name']),
+            'middle_name'    => trim($_POST['middle_name']),
+            'last_name'      => trim($_POST['last_name']),
+            'contact_number' => trim($_POST['contact_number']),
+            'password'       => $_POST['password']
+        ];
+        
         $confirm_password = $_POST['confirm_password'];
 
-        // Validate email and password
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        // Basic Validation
+        if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
             $error = "Invalid email format.";
-        } elseif ($password !== $confirm_password) {
+        } elseif ($data['password'] !== $confirm_password) {
             $error = "Passwords do not match!";
         }
 
-        // Check for duplicate email
         if (empty($error)) {
-            $check_stmt = $conn->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
-            $check_stmt->bind_param("s", $email);
-            $check_stmt->execute();
-            $check_stmt->store_result();
-            if ($check_stmt->num_rows > 0) {
-                $error = "Email is already registered!";
-            }
-            $check_stmt->close();
-        }
+            // Call the register method from our User class
+            $result = $user->register($data);
 
-        // Insert user with default profile picture
-        if (empty($error)) {
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $role = "client"; // Default role: client
-            
-            // Default profile picture DB path
-            $default_profile_picture = 'uploads/profile_pictures/default.jpg';
-
-            $insert_stmt = $conn->prepare("
-                INSERT INTO users (
-                    email, first_name, middle_name, last_name, password, 
-                    profile_picture, contact_number, role
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ");
-
-            $insert_stmt->bind_param(
-                "ssssssss",
-                $email,
-                $first_name,
-                $middle_name,
-                $last_name,
-                $hashed_password,
-                $default_profile_picture,
-                $contact_number,
-                $role
-            );
-
-            if ($insert_stmt->execute()) {
-                $insert_stmt->close();
+            if ($result === true) {
                 $_SESSION['success'] = "Registration successful! You can login now.";
                 header("Location: login.php");
                 exit;
             } else {
-                $error = "Error: Could not complete registration.";
+                // $result will contain the error message (like "Email already registered")
+                $error = $result;
             }
         }
+        
+        // Keep the input values so the user doesn't have to re-type them on error
+        $email = $data['email'];
+        $first_name = $data['first_name'];
+        $middle_name = $data['middle_name'];
+        $last_name = $data['last_name'];
+        $contact_number = $data['contact_number'];
     }
 ?>
 
@@ -96,15 +71,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <?php include '../includes/web_logo.php'; ?>
+    <?php include '../../includes/web_logo.php'; ?>
     <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css' rel='stylesheet'> 
-    <link rel="stylesheet" href="../assets/style/style.css">
+    <link rel="stylesheet" href="../../public/assets/style/style.css">
     <title>Register for ProHand</title>
 </head>
 <body class="register-page">
 
-    <!-- Back button -->
-    <a href="../index.html" class="btn-back-auth">
+    <a href="../../public/index.php" class="btn-back-auth">
         <i class="fa-solid fa-arrow-left"></i> 
         Back
     </a>
@@ -112,11 +86,9 @@
     <div class="register-container">
         <h1>Register Here</h1>
 
-        <!-- Error Message -->
         <div class="register-error-success-message">
             <?php if (!empty($error)): ?>
                 <p class="error"><?= htmlspecialchars($error); ?></p>
-                <?php unset($_SESSION['error']); ?>
             <?php endif; ?>
         </div>
 
@@ -165,4 +137,3 @@
     </div>
 </body>
 </html>
-

@@ -1,0 +1,101 @@
+<?php
+session_start();
+
+// In a pure OOP approach, the index often checks if a user is already 
+// logged in to change what the "Login/Register" buttons show.
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="assets/img/ProHand(Adapt).png">
+    <link rel="stylesheet" href="assets/style/style.css">
+    <title>ProHand | Handled with Care</title>
+</head>
+<body class="landing-page">
+
+    <header class="navbar">
+        <div class="logo">
+            <img src="assets/img/ProHand(Adapt).png" alt="ProHand Logo" class="logo-img">
+            <p>Pro<span>Hand</span></p>
+        </div>
+
+        <div class="nav-actions">
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <a href="../views/<?= $_SESSION['role'] ?>/<?= $_SESSION['role'] ?>_dashboard.php" class="login-btn">Dashboard</a>
+                <a href="../views/auth/logout.php" class="register-btn">Logout</a>
+            <?php else: ?>
+                <a href="../views/auth/login.php" class="login-btn">Login</a>
+                <a href="../views/auth/register.php" class="register-btn">Register</a>
+            <?php endif; ?>
+        </div>
+    </header>
+
+    <main class="index-info-container">
+
+        <section class="hero">
+            <h1>Your Time Matters. Let Us <span>Handle</span> the Errands.</h1>
+            <p>
+                ProHand connects you with trusted taskers to run errands,
+                handle small jobs, and get things done quickly and reliably.
+            </p>
+            <div class="hero-actions">
+                <a href="../views/auth/register.php" class="get-started">Get Started</a>
+            </div>
+        </section>
+
+        <section class="services">
+            <h2 class="section-title">How It <span>Works?</span></h2>
+
+            <div class="services-container">
+                <div class="service-card">
+                    <h3>Post an Errand</h3>
+                    <p>Describe your task, set a location and budget, and submit your request.</p>
+                </div>
+
+                <div class="service-card">
+                    <h3>Tasker Accepts</h3>
+                    <p>A qualified tasker accepts and starts working based on your requirements.</p>
+                </div>
+
+                <div class="service-card">
+                    <h3>Get It Done</h3>
+                    <p>Monitor the progress of your errand. Completion is recorded and updated exclusively by the assigned tasker.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="why-prohand">
+            <h2 class="section-title">Why Choose Pro<span>Hand?</span></h2>
+
+            <div class="why-container">
+                <div class="why-card">
+                    <h3>Fast & Convenient</h3>
+                    <p>Save time by outsourcing everyday errands without disrupting your schedule.</p>
+                </div>
+
+                <div class="why-card">
+                    <h3>Trusted Taskers</h3>
+                    <p>Taskers are verified and reviewed to ensure safety, reliability, and quality.</p>
+                </div>
+
+                <div class="why-card">
+                    <h3>Transparent Pricing</h3>
+                    <p>Set your own budget upfront. No hidden fees or surprise charges.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="final-cta">
+            <h2 class="section-title">Ready to Simplify Your <span>Errands?</span></h2>
+            <p>Register as a client today and let our dedicated, verified taskers handle your errands efficiently and securely.</p>
+            <a href="../views/auth/register.php" class="get-started">Register as Client</a>
+        </section>
+
+        <footer class="index-footer">
+            <p>&copy; 2026 ProHand. All rights reserved.</p>
+        </footer>
+    </main>
+</body>
+</html>
