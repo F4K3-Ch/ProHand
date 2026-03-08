@@ -1,1 +1,1 @@
-<link rel="icon" type="image/png" href="../assets/img/ProHand(Adapt).png">
+<link rel="icon" type="image/png" href="../../public/assets/img/ProHand(Adapt).png">
