@@ -6,8 +6,9 @@
     require_once "../../src/Classes/Auth.php";
     require_once "../../src/Controllers/AuthController.php";
 
-    $database = new Database(); //
-    $db = $database->getConnection(); //
+    // Initialize Database
+    $database = new Database();
+    $db = $database->getConnection();
 
     // Initialize the Controller
     $controller = new AuthController($db);

@@ -6,7 +6,7 @@
             $this->db = $db_connection;
         }
 
-        // --- LOGIN METHOD ---
+        // LOGIN METHOD
         public function login($email, $password) {
             $stmt = $this->db->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");
             $stmt->bind_param("s", $email);
@@ -24,7 +24,7 @@
             return false;
         }
 
-        // --- REGISTER METHOD ---
+        // REGISTER METHOD
         public function register($data) {
             // Check for duplicate email
             $check_stmt = $this->db->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
@@ -57,7 +57,7 @@
             return $insert_stmt->execute() ? true : "Registration failed.";
         }
 
-        // --- LOGOUT METHOD ---
+        // LOGOUT METHOD
         public function logout() {
             session_unset();
             session_destroy();

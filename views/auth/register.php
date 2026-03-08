@@ -6,12 +6,17 @@
     require_once "../../src/Classes/Auth.php";
     require_once "../../src/Controllers/AuthController.php";
 
-    $db = (new Database())->getConnection();
-    $controller = new AuthController($db);
-    $res = $controller->register();
+    // Initialize Database
+    $database = new Database();
+    $db = $database->getConnection();
 
-    $error = $res['error'];
-    $f = $res['fields']; // Use these in your value="<?= htmlspecialchars($f['email'])"
+    // Initialize the Controller
+    $controller = new AuthController($db);
+    $result = $controller->register();
+
+    // Extract data to use in the HTML below
+    $error = $result['error'];
+    $fields = $result['fields']; 
 ?>
 
 <!DOCTYPE html>
@@ -43,27 +48,27 @@
         <form method="POST">
             <div class="register-input-box">
                 <label>Email</label>
-                <input type="email" name="email" value="<?= htmlspecialchars($f['email']); ?>" required>
+                <input type="email" name="email" value="<?= htmlspecialchars($fields['email']); ?>" required>
             </div>
 
             <div class="register-input-box">
                 <label>Last Name</label>
-                <input type="text" name="last_name" value="<?= htmlspecialchars($f['last_name']); ?>" required>
+                <input type="text" name="last_name" value="<?= htmlspecialchars($fields['last_name']); ?>" required>
             </div>
 
             <div class="register-input-box">
                 <label>First Name</label>
-                <input type="text" name="first_name" value="<?= htmlspecialchars($f['first_name']); ?>" required>
+                <input type="text" name="first_name" value="<?= htmlspecialchars($fields['first_name']); ?>" required>
             </div>
 
             <div class="register-input-box">
                 <label>Middle Name (optional)</label>
-                <input type="text" name="middle_name" value="<?= htmlspecialchars($f['middle_name']); ?>">
+                <input type="text" name="middle_name" value="<?= htmlspecialchars($fields['middle_name']); ?>">
             </div>
 
             <div class="register-input-box">
                 <label>Contact Number</label>
-                <input type="text" name="contact_number" value="<?= htmlspecialchars($f['contact_number']); ?>" required>
+                <input type="text" name="contact_number" value="<?= htmlspecialchars($fields['contact_number']); ?>" required>
             </div>
 
             <div class="register-input-box">

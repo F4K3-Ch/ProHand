@@ -1,18 +1,18 @@
 <?php
     // src/Controllers/AuthController.php
-    
+
     class AuthController {
         private $user;
         private $auth;
 
         public function __construct($db) {
-            $this->user = new User($db); //
-            $this->auth = new Auth($db); //
+            $this->user = new User($db);
+            $this->auth = new Auth($db);
         }
 
-        // --- LOGIN LOGIC ---
+        // LOGIN LOGIC
         public function login() {
-            $this->auth->redirectIfLoggedIn(); //
+            $this->auth->redirectIfLoggedIn();
             $error = "";
             $email = "";
 
@@ -20,7 +20,7 @@
                 $email = trim($_POST['email']);
                 $password = $_POST['password'];
 
-                $role = $this->user->login($email, $password); //
+                $role = $this->user->login($email, $password);
                 if ($role) {
                     header("Location: ../$role/{$role}_dashboard.php");
                     exit;
@@ -31,13 +31,16 @@
             return ['error' => $error, 'email' => $email];
         }
 
-        // --- REGISTER LOGIC ---
+        // REGISTER LOGIC
         public function register() {
-            $this->auth->redirectIfLoggedIn(); //
+            $this->auth->redirectIfLoggedIn();
             $error = "";
             $fields = [
-                'email' => '', 'first_name' => '', 'middle_name' => '', 
-                'last_name' => '', 'contact_number' => ''
+                'email' => '', 
+                'first_name' => '', 
+                'middle_name' => '', 
+                'last_name' => '', 
+                'contact_number' => ''
             ];
 
             if ($_SERVER['REQUEST_METHOD'] === "POST") {
@@ -53,7 +56,7 @@
                 if ($data['password'] !== $_POST['confirm_password']) {
                     $error = "Passwords do not match!";
                 } else {
-                    $result = $this->user->register($data); //
+                    $result = $this->user->register($data);
                     if ($result === true) {
                         $_SESSION['success'] = "Registration successful! Please login.";
                         header("Location: login.php");
@@ -67,9 +70,9 @@
             return ['error' => $error, 'fields' => $fields];
         }
 
-        // --- LOGOUT LOGIC ---
+        // LOGOUT LOGIC
         public function logout() {
-            $this->user->logout(); //
+            $this->user->logout();
             header("Location: login.php");
             exit;
         }
