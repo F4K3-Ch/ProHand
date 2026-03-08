@@ -1,39 +1,21 @@
 <?php
     session_start();
 
-    // 1. Manually pull the classes
-    require_once "../../src/Classes/Database.php";
-    require_once "../../src/Classes/Auth.php";
-    require_once "../../src/Classes/User.php";
+    require_once "../../src/Classes/Database.php"; //
+    require_once "../../src/Classes/User.php";     //
+    require_once "../../src/Classes/Auth.php";     //
+    require_once "../../src/Controllers/AuthController.php";
 
-    // 2. Setup the "Battery" (Database)
-    $database = new Database();
-    $db = $database->getConnection();
+    $database = new Database(); //
+    $db = $database->getConnection(); //
 
-    // 3. Setup the "Phone" and "Security Guard"
-    $user = new User($db);
-    $auth = new Auth($db);
+    // Initialize the Controller
+    $controller = new AuthController($db);
+    $data = $controller->login();
 
-    // 4. Use Auth to kick out already logged-in users
-    $auth->redirectIfLoggedIn();
-
-    // 5. Handle the Login attempt
-    $email = "";
-    $error = "";
-    
-    if ($_SERVER["REQUEST_METHOD"] === "POST") {
-        $email = trim($_POST['email']);
-        $password = $_POST['password'];
-
-        $role = $user->login($email, $password);
-        if ($role) {
-            // Redirection logic is clean!
-            header("Location: ../$role/{$role}_dashboard.php");
-            exit;
-        } else {
-            $error = "Invalid email or password.";
-        }
-    }
+    // Extract data to use in the HTML below
+    $error = $data['error'];
+    $email = $data['email'];
 ?>
 
 <!DOCTYPE html>

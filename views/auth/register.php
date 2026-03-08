@@ -1,69 +1,16 @@
 <?php
     session_start();
-
-    // 1. Manually pull the classes 
     require_once "../../src/Classes/Database.php";
-    require_once "../../src/Classes/Auth.php";
     require_once "../../src/Classes/User.php";
+    require_once "../../src/Classes/Auth.php";
+    require_once "../../src/Controllers/AuthController.php";
 
-    // 2. Initialize the objects
-    $database = new Database();
-    $db = $database->getConnection();
-    $user = new User($db);
-    $auth = new Auth($db);
+    $db = (new Database())->getConnection();
+    $controller = new AuthController($db);
+    $res = $controller->register();
 
-    // 3. Security: If the user is already logged in, send them to their dashboard
-    $auth->redirectIfLoggedIn();
-
-    // 4. Initialize form variables for the HTML
-    $error = "";
-    $email = "";
-    $first_name = "";
-    $middle_name = "";
-    $last_name = "";
-    $contact_number = "";
-
-    if ($_SERVER['REQUEST_METHOD'] === "POST") {
-        // Capture and trim data
-        $data = [
-            'email'          => trim($_POST['email']),
-            'first_name'     => trim($_POST['first_name']),
-            'middle_name'    => trim($_POST['middle_name']),
-            'last_name'      => trim($_POST['last_name']),
-            'contact_number' => trim($_POST['contact_number']),
-            'password'       => $_POST['password']
-        ];
-        
-        $confirm_password = $_POST['confirm_password'];
-
-        // Basic Validation
-        if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $error = "Invalid email format.";
-        } elseif ($data['password'] !== $confirm_password) {
-            $error = "Passwords do not match!";
-        }
-
-        if (empty($error)) {
-            // Call the register method from our User class
-            $result = $user->register($data);
-
-            if ($result === true) {
-                $_SESSION['success'] = "Registration successful! You can login now.";
-                header("Location: login.php");
-                exit;
-            } else {
-                // $result will contain the error message (like "Email already registered")
-                $error = $result;
-            }
-        }
-        
-        // Keep the input values so the user doesn't have to re-type them on error
-        $email = $data['email'];
-        $first_name = $data['first_name'];
-        $middle_name = $data['middle_name'];
-        $last_name = $data['last_name'];
-        $contact_number = $data['contact_number'];
-    }
+    $error = $res['error'];
+    $f = $res['fields']; // Use these in your value="<?= htmlspecialchars($f['email'])"
 ?>
 
 <!DOCTYPE html>
@@ -95,27 +42,27 @@
         <form method="POST">
             <div class="register-input-box">
                 <label>Email</label>
-                <input type="email" name="email" value="<?= htmlspecialchars($email); ?>" required>
+                <input type="email" name="email" value="<?= htmlspecialchars($f['email']); ?>" required>
             </div>
 
             <div class="register-input-box">
                 <label>Last Name</label>
-                <input type="text" name="last_name" value="<?= htmlspecialchars($last_name); ?>" required>
+                <input type="text" name="last_name" value="<?= htmlspecialchars($f['last_name']); ?>" required>
             </div>
 
             <div class="register-input-box">
                 <label>First Name</label>
-                <input type="text" name="first_name" value="<?= htmlspecialchars($first_name); ?>" required>
+                <input type="text" name="first_name" value="<?= htmlspecialchars($f['first_name']); ?>" required>
             </div>
 
             <div class="register-input-box">
                 <label>Middle Name (optional)</label>
-                <input type="text" name="middle_name" value="<?= htmlspecialchars($middle_name); ?>">
+                <input type="text" name="middle_name" value="<?= htmlspecialchars($f['middle_name']); ?>">
             </div>
 
             <div class="register-input-box">
                 <label>Contact Number</label>
-                <input type="text" name="contact_number" value="<?= htmlspecialchars($contact_number); ?>" required>
+                <input type="text" name="contact_number" value="<?= htmlspecialchars($f['contact_number']); ?>" required>
             </div>
 
             <div class="register-input-box">
