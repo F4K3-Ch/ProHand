@@ -1,52 +1,33 @@
 <?php
-    require_once "../shared/db.php";
+    /**
+     * SIDEBAR VIEW (OOP Version)
+     * This file assumes $db and $user_class are already initialized in the dashboard.
+     */
 
-    // Ensure the user is logged in
-    if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
-        header("Location: ../auth/login.php");
-        exit;
-    }
+    // 1. Check session safely
+    $user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
+    $role = $_SESSION['role'] ?? ''; // Fixes the Undefined variable $role
 
-    $user_id = (int)$_SESSION['user_id'];
-    $role = $_SESSION['role'];
+    // 2. Fetch data using the User Object
+    $sidebar_user = $user_class->getSidebarData($user_id);
 
-    // Fetch user info
-    $stmt = $conn->prepare("SELECT email, first_name, middle_name, last_name, profile_picture FROM users WHERE id = ? LIMIT 1");
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $stmt->close();
-
-    if ($result->num_rows === 1) {
-        $sidebar_user = $result->fetch_assoc();
-        $sidebar_full_name = trim($sidebar_user['first_name'] . ' ' . $sidebar_user['middle_name'] . ' ' . $sidebar_user['last_name']);
-
-        // Profile picture path
-        $profile_dir = '../uploads/profile_pictures/';
-
-        // Determine which profile picture to use based on availability and file existence
-        if (!empty($sidebar_user['profile_picture']) && file_exists($profile_dir . basename($sidebar_user['profile_picture']))) {
-            $sidebar_profile_picture = $profile_dir . basename($sidebar_user['profile_picture']);
-        } else {
-            $sidebar_profile_picture = $profile_dir . 'default.jpg';
-        }
+    // 3. Prepare display variables (Fixes the Deprecated NULL errors)
+    if ($sidebar_user) {
+        $first = $sidebar_user['first_name'] ?? '';
+        $middle = $sidebar_user['middle_name'] ?? '';
+        $last = $sidebar_user['last_name'] ?? '';
+        $sidebar_full_name = trim("$first $middle $last");
+        
+        $profile_dir = '../../public/uploads/profile_pictures/';
+        $db_pic = $sidebar_user['profile_picture'] ?? '';
+        $profile_pic = !empty($db_pic) ? basename($db_pic) : 'default.jpg';
+        $sidebar_profile_picture = $profile_dir . $profile_pic;
     } else {
-        session_unset();
-        session_destroy();
-        header("Location: ../auth/login.php");
-        exit;
+        $sidebar_full_name = "User";
+        $sidebar_profile_picture = "../../public/uploads/profile_pictures/default.jpg";
     }
 
-    // Fetch unread notifications count
-    $stmt = $conn->prepare("SELECT COUNT(*) AS unread_count FROM notifications WHERE user_id = ? AND is_read = 0");
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $notif_count_result = $stmt->get_result();
-    $notif_count = 0;
-    if ($notif_count_result->num_rows === 1) {
-        $notif_count = $notif_count_result->fetch_assoc()['unread_count'];
-    }
-    $stmt->close();
+    $notif_count = 0; 
 ?>
 
 <div class="sidebar">

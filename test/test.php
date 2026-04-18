@@ -1,101 +1,152 @@
 <?php
-session_start();
+    session_start();
+    
+    // 1. Load all required classes
+    require_once "../../src/Classes/Database.php";
+    require_once "../../src/Classes/User.php";
+    require_once "../../src/Classes/Auth.php";
+    require_once "../../src/Classes/Admin.php";
+    require_once "../../src/Controllers/AdminController.php";
 
-// In a pure OOP approach, the index often checks if a user is already 
-// logged in to change what the "Login/Register" buttons show.
+    // 2. Initialize Database and User (for Sidebar)
+    $database = new Database();
+    $db = $database->getConnection();
+    $user_class = new User($db); 
+
+    // 3. Initialize Controller and get Data
+    $controller = new AdminController($db);
+    $data = $controller->index();
+
+    // 4. Extract data for use in the HTML
+    $active_errands = $data['active_errands'];
+    $metrics = $data['metrics'];
+    $search = $data['search'];
+    $status_labels = $data['status_labels'];
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="assets/img/ProHand(Adapt).png">
-    <link rel="stylesheet" href="assets/style/style.css">
-    <title>ProHand | Handled with Care</title>
+    <?php include '../../includes/web_logo.php'; ?>
+    <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css' rel='stylesheet'> 
+    <link rel="stylesheet" href="../../public/assets/style/style.css">
+    <title>ProHand Admin | Active Errands</title>
 </head>
-<body class="landing-page">
+<body>
+    <?php include '../../includes/sidebar.php'; ?>
 
-    <header class="navbar">
-        <div class="logo">
-            <img src="assets/img/ProHand(Adapt).png" alt="ProHand Logo" class="logo-img">
-            <p>Pro<span>Hand</span></p>
+    <main class="main">
+        <header class="header"> 
+            <div class="header-left">
+                <h1>Active Errands</h1>
+                <p>Monitor and manage ongoing tasks in the system.</p>
+            </div>
+            <div class="header-right">
+                <form class="search-form" method="GET">
+                    <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Search by ID, Title, Name, or Status...">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+        </header>
+
+        <div class="dashboard">
+            <section class="totals">
+                <div class="total-card bg-pending">
+                    <div class="card-info">
+                        <h3>Pending</h3>
+                        <p><?= number_format($metrics['pending_count']); ?></p>
+                    </div>
+                    <i class="fa-solid fa-clock-rotate-left icon"></i>
+                </div>
+                <div class="total-card bg-accepted">
+                    <div class="card-info">
+                        <h3>Accepted</h3>
+                        <p><?= number_format($metrics['accepted_count']); ?></p>
+                    </div>
+                    <i class="fa-solid fa-check-double icon"></i>
+                </div>
+                <div class="total-card bg-in-process">
+                    <div class="card-info">
+                        <h3>In Process</h3>
+                        <p><?= number_format($metrics['in_process_count']); ?></p>
+                    </div>
+                    <i class="fa-solid fa-spinner icon"></i>
+                </div>
+                <div class="total-card bg-total">
+                    <div class="card-info">
+                        <h3>Total Active</h3>
+                        <p><?= number_format($metrics['total_errands']); ?></p>
+                    </div>
+                    <i class="fa-solid fa-list-check icon"></i>
+                </div>
+            </section>
+
+            <div class="admin-errands-table-container">
+                <div class="table-header">
+                    <h2>Recent Activities</h2>
+                </div>
+                <div class="admin-errands-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Errand Title</th>
+                                <th>Client</th>
+                                <th>Tasker</th>
+                                <th>Created At</th>
+                                <th>Deadline</th>
+                                <th>Fee</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if ($active_errands && $active_errands->num_rows > 0): ?>
+                                <?php while ($row = $active_errands->fetch_assoc()): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($row['id']); ?></td>
+                                    <td class="title-cell"><?= htmlspecialchars($row['title']); ?></td>
+                                    <td><?= htmlspecialchars($row['client_first_name'] . ' ' . $row['client_last_name']); ?></td>
+                                    <td>
+                                        <?php if ($row['tasker_id']): ?>
+                                            <?= htmlspecialchars($row['tasker_first_name'] . ' ' . $row['tasker_last_name']); ?>
+                                        <?php else: ?>
+                                            <span class="unassigned">Unassigned</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><?= date('M d, Y', strtotime($row['created_at'])); ?></td>
+                                    <td><?= date('M d, Y', strtotime($row['deadline'])); ?></td>
+                                    <td class="fee-cell">₱<?= number_format($row['fee'], 2); ?></td>
+                                    <td>
+                                        <span class="status-badge status-<?= $row['status']; ?>">
+                                            <?= $status_labels[$row['status']] ?? ucfirst($row['status']); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <form method="GET" action="view_errand_info.php">
+                                                <input type="hidden" name="errand_id" value="<?= $row['id']; ?>">
+                                                <input type="hidden" name="from" value="dashboard">
+                                                <button type="submit" class="btn-view">View</button>
+                                            </form>
+                                            <form method="POST" action="delete_active_errand.php" onsubmit="return confirm('Are you sure you want to delete this errand?');">
+                                                <input type="hidden" name="id" value="<?= $row['id']; ?>">
+                                                <button type="submit" class="btn-delete">Delete</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <?php endwhile; ?>
+                            <?php else: ?>
+                                <tr><td class="no-found" colspan="9">No errands found.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-
-        <div class="nav-actions">
-            <?php if (isset($_SESSION['user_id'])): ?>
-                <a href="../views/<?= $_SESSION['role'] ?>/<?= $_SESSION['role'] ?>_dashboard.php" class="login-btn">Dashboard</a>
-                <a href="../views/auth/logout.php" class="register-btn">Logout</a>
-            <?php else: ?>
-                <a href="../views/auth/login.php" class="login-btn">Login</a>
-                <a href="../views/auth/register.php" class="register-btn">Register</a>
-            <?php endif; ?>
-        </div>
-    </header>
-
-    <main class="index-info-container">
-
-        <section class="hero">
-            <h1>Your Time Matters. Let Us <span>Handle</span> the Errands.</h1>
-            <p>
-                ProHand connects you with trusted taskers to run errands,
-                handle small jobs, and get things done quickly and reliably.
-            </p>
-            <div class="hero-actions">
-                <a href="../views/auth/register.php" class="get-started">Get Started</a>
-            </div>
-        </section>
-
-        <section class="services">
-            <h2 class="section-title">How It <span>Works?</span></h2>
-
-            <div class="services-container">
-                <div class="service-card">
-                    <h3>Post an Errand</h3>
-                    <p>Describe your task, set a location and budget, and submit your request.</p>
-                </div>
-
-                <div class="service-card">
-                    <h3>Tasker Accepts</h3>
-                    <p>A qualified tasker accepts and starts working based on your requirements.</p>
-                </div>
-
-                <div class="service-card">
-                    <h3>Get It Done</h3>
-                    <p>Monitor the progress of your errand. Completion is recorded and updated exclusively by the assigned tasker.</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="why-prohand">
-            <h2 class="section-title">Why Choose Pro<span>Hand?</span></h2>
-
-            <div class="why-container">
-                <div class="why-card">
-                    <h3>Fast & Convenient</h3>
-                    <p>Save time by outsourcing everyday errands without disrupting your schedule.</p>
-                </div>
-
-                <div class="why-card">
-                    <h3>Trusted Taskers</h3>
-                    <p>Taskers are verified and reviewed to ensure safety, reliability, and quality.</p>
-                </div>
-
-                <div class="why-card">
-                    <h3>Transparent Pricing</h3>
-                    <p>Set your own budget upfront. No hidden fees or surprise charges.</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="final-cta">
-            <h2 class="section-title">Ready to Simplify Your <span>Errands?</span></h2>
-            <p>Register as a client today and let our dedicated, verified taskers handle your errands efficiently and securely.</p>
-            <a href="../views/auth/register.php" class="get-started">Register as Client</a>
-        </section>
-
-        <footer class="index-footer">
-            <p>&copy; 2026 ProHand. All rights reserved.</p>
-        </footer>
     </main>
 </body>
 </html>
