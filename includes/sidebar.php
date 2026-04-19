@@ -1,26 +1,25 @@
 <?php
-    // 1. Check session safely
     $user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
 
-    // 2. Fetch data using the User Object
-    $sidebar_user = $user_class->getUserInfo($user_id);
+    $user_data = $user_class->getUserInfo($user_id);
 
-    // 3. Prepare display variables (Fixes the Deprecated NULL errors)
-    if ($sidebar_user) {
-        $role = $sidebar_user['role'] ?? 'User';
-
-        $first = $sidebar_user['first_name'] ?? '';
-        $middle = $sidebar_user['middle_name'] ?? '';
-        $last = $sidebar_user['last_name'] ?? '';
-        $sidebar_full_name = trim("$first $middle $last");
+    if (!empty($user_data)) {
+        $role = $user_data['role'] ?? 'User';
+        $first = $user_data['first_name'] ?? '';
+        $middle = $user_data['middle_name'] ?? '';
+        $last = $user_data['last_name'] ?? '';
+        $user_full_name = trim("$first $middle $last");
+        $user_email = $user_data['email'] ?? ''; 
         
         $profile_dir = '../../public/uploads/profile_pictures/';
-        $db_pic = $sidebar_user['profile_picture'] ?? '';
+        $db_pic = $user_data['profile_picture'] ?? '';
         $profile_pic = !empty($db_pic) ? basename($db_pic) : 'default.jpg';
-        $sidebar_profile_picture = $profile_dir . $profile_pic;
+        $profile_picture = $profile_dir . $profile_pic;
     } else {
+        $role = $_SESSION['role'] ?? 'User';
         $sidebar_full_name = "User";
-        $sidebar_profile_picture = "../../public/uploads/profile_pictures/default.jpg";
+        $user_email = "";
+        $profile_picture = "../../public/uploads/profile_pictures/default.jpg";
     }
 
     $notif_count = 0; 
@@ -29,11 +28,11 @@
 <div class="sidebar">
     <div class="sidebar-top">
         <div class="profile-info">
-            <img src="<?= htmlspecialchars($sidebar_profile_picture); ?>" alt="Profile Picture" class="profile-img">
+            <img src="<?= htmlspecialchars($profile_picture); ?>" alt="Profile Picture" class="profile-img">
             <div class="profile-text">
                 <p class="role"><?= ucfirst(htmlspecialchars($role)); ?></p>
-                <p class="name"><?= htmlspecialchars($sidebar_full_name); ?></p>
-                <p class="email"><?= htmlspecialchars($sidebar_user['email']); ?></p>
+                <p class="name"><?= htmlspecialchars($user_full_name); ?></p>
+                <p class="email"><?= htmlspecialchars($user_email); ?></p>
             </div>
         </div>
 
