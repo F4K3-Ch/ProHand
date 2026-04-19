@@ -1,13 +1,14 @@
 <?php
     // 1. Check session safely
     $user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
-    $role = $_SESSION['role'] ?? ''; // Fixes the Undefined variable $role
 
     // 2. Fetch data using the User Object
-    $sidebar_user = $user_class->getSidebarData($user_id);
+    $sidebar_user = $user_class->getUserInfo($user_id);
 
     // 3. Prepare display variables (Fixes the Deprecated NULL errors)
     if ($sidebar_user) {
+        $role = $sidebar_user['role'] ?? 'User';
+
         $first = $sidebar_user['first_name'] ?? '';
         $middle = $sidebar_user['middle_name'] ?? '';
         $last = $sidebar_user['last_name'] ?? '';

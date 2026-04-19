@@ -71,10 +71,12 @@
             }
         }
 
-        public function getSidebarData($user_id) {
-            $stmt = $this->db->prepare("SELECT email, first_name, middle_name, last_name, profile_picture FROM users WHERE id = ? LIMIT 1");
+        public function getUserInfo($user_id) {
+            $stmt = $this->db->prepare("SELECT * FROM users WHERE id = ? LIMIT 1");
             $stmt->bind_param("i", $user_id);
             $stmt->execute();
-            return $stmt->get_result()->fetch_assoc();
+            $result = $stmt->get_result();
+            
+            return $result->fetch_assoc();
         }
     }
