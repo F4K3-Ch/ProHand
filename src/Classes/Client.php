@@ -8,12 +8,27 @@
         }
 
         public function getErrandsCreated($client_id, $search = '') {
+            // Handle search input
             $search_int = is_numeric($search) ? (int)$search : 0;
-            $search_query = '%' . str_replace(',', '', $search) . '%';
-            $search_status_query = '%' . str_replace(' ', '_', strtolower($search)) . '%';
+
+            // Normalize search for general fields (remove commas)
+            $search_normalized = str_replace(',', '', $search);
+            $search_query = '%' . $search_normalized . '%';
+
+            // Normalize search specifically for status
+            $search_status_normalized = str_replace(' ', '_', strtolower($search)); 
+            $search_status_query = '%' . $search_status_normalized . '%';
 
             $stmt = $this->db->prepare("
-                SELECT id, title, location, created_at, deadline, fee, status, updated_at
+                SELECT 
+                    id, 
+                    title, 
+                    location, 
+                    created_at, 
+                    deadline, 
+                    fee, 
+                    status, 
+                    updated_at
                 FROM errands
                 WHERE client_id = ? 
                 AND (
@@ -37,7 +52,7 @@
                 $search_query,          // Created date LIKE (e.g., "November 30 2005")
                 $search_query,          // Deadline date LIKE (e.g., "November 30 2005")
                 $search_query,          // Fee LIKE
-                $search_status_query,   // Status LIKE
+                $search_status_query    // Status LIKE
             );
             $stmt->execute();
             return $stmt->get_result();
@@ -51,7 +66,8 @@
                     SUM(status = 'in_process') AS in_process_count,
                     COUNT(*) AS total_errands
                 FROM errands
-                WHERE client_id = ? AND status IN ('pending', 'accepted', 'in_process')
+                WHERE client_id = ? 
+                AND status IN ('pending', 'accepted', 'in_process')
             ");
             $stmt->bind_param("i", $client_id);
             $stmt->execute();

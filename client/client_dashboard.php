@@ -63,7 +63,7 @@
         $search_query,          // Created date LIKE (e.g., "November 30 2005")
         $search_query,          // Deadline date LIKE (e.g., "November 30 2005")
         $search_query,          // Fee LIKE
-        $search_status_query,   // Status LIKE
+        $search_status_query    // Status LIKE
     );
     $stmt->execute();
     $errands_created = $stmt->get_result();
