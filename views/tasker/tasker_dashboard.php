@@ -22,12 +22,6 @@
     $metrics = $data['metrics'];
     $search = $data['search'];
     $status_labels = $data['status_labels'];
-
-    // Only tasker can access
-    if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'tasker') {
-        header("Location: ../auth/login.php");
-        exit;
-    }
 ?>
 
 <!DOCTYPE html>
