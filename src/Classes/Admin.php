@@ -26,7 +26,7 @@
             $unassigned_terms = ['unassigned', 'none', 'no tasker', 'null'];
             $is_unassigned_search = in_array(strtolower(trim($search)), $unassigned_terms) ? 1 : 0;
 
-            $sql = "
+            $stmt = $this->db->prepare("
                 SELECT 
                     e.id,
                     e.title,
@@ -57,9 +57,7 @@
                     OR (? = 1 AND e.tasker_id IS NULL)
                 )
                 ORDER BY e.updated_at DESC
-            ";
-
-            $stmt = $this->db->prepare($sql);
+            ");
             
             // The bind_param order must match the '?' in the SQL exactly:
             // i = id, s = title, s = client name, s = tasker name, s = created, s = deadline, s = fee, s = status, i = unassigned
@@ -84,15 +82,15 @@
          * Gets summary counts for the dashboard cards
          */
         public function getErrandMetrics() {
-            $query = "SELECT 
-                        SUM(status = 'pending') AS pending_count,
-                        SUM(status = 'accepted') AS accepted_count,
-                        SUM(status = 'in_process') AS in_process_count,
-                        COUNT(*) AS total_errands
-                    FROM errands
-                    WHERE status IN ('pending', 'accepted', 'in_process')";
-            
-            $result = $this->db->query($query);
+            $result = $this->db->query("
+                SELECT 
+                    SUM(status = 'pending') AS pending_count,
+                    SUM(status = 'accepted') AS accepted_count,
+                    SUM(status = 'in_process') AS in_process_count,
+                    COUNT(*) AS total_errands
+                FROM errands
+                WHERE status IN ('pending', 'accepted', 'in_process')
+            ");
             return $result->fetch_assoc();
         }
     }

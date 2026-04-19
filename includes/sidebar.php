@@ -1,9 +1,4 @@
 <?php
-    /**
-     * SIDEBAR VIEW (OOP Version)
-     * This file assumes $db and $user_class are already initialized in the dashboard.
-     */
-
     // 1. Check session safely
     $user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
     $role = $_SESSION['role'] ?? ''; // Fixes the Undefined variable $role

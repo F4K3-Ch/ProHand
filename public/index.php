@@ -1,7 +1,3 @@
-<?php
-    session_start();
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,13 +17,8 @@
         </div>
 
         <div class="nav-actions">
-            <?php if (isset($_SESSION['user_id'])): ?>
-                <a href="../views/<?= $_SESSION['role'] ?>/<?= $_SESSION['role'] ?>_dashboard.php" class="login-btn">Dashboard</a>
-                <a href="../views/auth/logout.php" class="register-btn">Logout</a>
-            <?php else: ?>
-                <a href="../views/auth/login.php" class="login-btn">Login</a>
-                <a href="../views/auth/register.php" class="register-btn">Register</a>
-            <?php endif; ?>
+            <a href="../views/auth/login.php" class="login-btn">Login</a>
+            <a href="../views/auth/register.php" class="register-btn">Register</a>
         </div>
     </header>
 

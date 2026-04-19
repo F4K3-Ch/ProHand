@@ -1,0 +1,60 @@
+<?php
+    // src/Classes/Client.php
+    class Client {
+        private $db;
+
+        public function __construct($db_connection) {
+            $this->db = $db_connection;
+        }
+
+        public function getErrandsCreated($client_id, $search = '') {
+            $search_int = is_numeric($search) ? (int)$search : 0;
+            $search_query = '%' . str_replace(',', '', $search) . '%';
+            $search_status_query = '%' . str_replace(' ', '_', strtolower($search)) . '%';
+
+            $stmt = $this->db->prepare("
+                SELECT id, title, location, created_at, deadline, fee, status, updated_at
+                FROM errands
+                WHERE client_id = ? 
+                AND (
+                    id = ?
+                    OR title LIKE ?
+                    OR location LIKE ?
+                    OR DATE_FORMAT(created_at, '%M %e %Y') LIKE ?
+                    OR DATE_FORMAT(deadline, '%M %e %Y') LIKE ?
+                    OR fee LIKE ?
+                    OR status LIKE ?
+                )
+                ORDER BY updated_at DESC
+            ");
+            
+            $stmt->bind_param(
+                "iissssss", 
+                $client_id,             // User ID
+                $search_int,            // Errand ID exact match
+                $search_query,          // Title LIKE
+                $search_query,          // Location LIKE
+                $search_query,          // Created date LIKE (e.g., "November 30 2005")
+                $search_query,          // Deadline date LIKE (e.g., "November 30 2005")
+                $search_query,          // Fee LIKE
+                $search_status_query,   // Status LIKE
+            );
+            $stmt->execute();
+            return $stmt->get_result();
+        }
+
+        public function getErrandMetrics($client_id) {
+            $stmt = $this->db->prepare("
+                SELECT 
+                    SUM(status = 'pending') AS pending_count,
+                    SUM(status = 'accepted') AS accepted_count,
+                    SUM(status = 'in_process') AS in_process_count,
+                    COUNT(*) AS total_errands
+                FROM errands
+                WHERE client_id = ? AND status IN ('pending', 'accepted', 'in_process')
+            ");
+            $stmt->bind_param("i", $client_id);
+            $stmt->execute();
+            return $stmt->get_result()->fetch_assoc();
+        }
+    }
