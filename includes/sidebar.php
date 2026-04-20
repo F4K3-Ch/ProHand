@@ -1,22 +1,15 @@
 <?php
-    // 1. Load the Database and Classes
     require_once "../../src/Classes/Database.php";
     require_once "../../src/Classes/User.php";
     require_once "../../src/Classes/Auth.php";
-
-    // 2. Load the Controller
     require_once "../../src/Controllers/SharedController.php";
 
-    // 3. Initialize your Database connection
     $database = new Database();
     $db = $database->getConnection();
-    // 1. Initialize the SharedController
+
     $controller = new SharedController($db);
-    
-    // 2. Fetch all processed data (this includes profile picture paths, name trimming, and role formatting)
     $data = $controller->profile();
 
-    // 3. Extract the variables for easy use in the HTML below
     $user_full_name  = $data['full_name'] ?? 'User';
     $profile_picture = $data['profile_picture'] ?? '../../public/uploads/profile_pictures/default.jpg';
     $role            = $data['role'] ?? 'User';

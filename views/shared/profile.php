@@ -7,7 +7,6 @@
 
     $database = new Database();
     $db = $database->getConnection();
-    $user_class = new User($db); 
 
     $controller = new SharedController($db);
     $data = $controller->profile();

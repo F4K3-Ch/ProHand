@@ -11,7 +11,6 @@
     // 2. Setup Database and User (for the Sidebar)
     $database = new Database();
     $db = $database->getConnection(); // This replaces the old $conn from db.php
-    $user_class = new User($db); 
 
     // 3. Get Data from the Controller
     $controller = new TaskerController($db);
