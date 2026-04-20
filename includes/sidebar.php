@@ -1,28 +1,27 @@
 <?php
-    $user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
+    // 1. Load the Database and Classes
+    require_once "../../src/Classes/Database.php";
+    require_once "../../src/Classes/User.php";
+    require_once "../../src/Classes/Auth.php";
 
-    $user_data = $user_class->getUserInfo($user_id);
+    // 2. Load the Controller
+    require_once "../../src/Controllers/SharedController.php";
 
-    if (!empty($user_data)) {
-        $role = $user_data['role'] ?? 'User';
-        $first = $user_data['first_name'] ?? '';
-        $middle = $user_data['middle_name'] ?? '';
-        $last = $user_data['last_name'] ?? '';
-        $user_full_name = trim("$first $middle $last");
-        $user_email = $user_data['email'] ?? ''; 
-        
-        $profile_dir = '../../public/uploads/profile_pictures/';
-        $db_pic = $user_data['profile_picture'] ?? '';
-        $profile_pic = !empty($db_pic) ? basename($db_pic) : 'default.jpg';
-        $profile_picture = $profile_dir . $profile_pic;
-    } else {
-        $role = $_SESSION['role'] ?? 'User';
-        $sidebar_full_name = "User";
-        $user_email = "";
-        $profile_picture = "../../public/uploads/profile_pictures/default.jpg";
-    }
+    // 3. Initialize your Database connection
+    $database = new Database();
+    $db = $database->getConnection();
+    // 1. Initialize the SharedController
+    $controller = new SharedController($db);
+    
+    // 2. Fetch all processed data (this includes profile picture paths, name trimming, and role formatting)
+    $data = $controller->profile();
 
-    $notif_count = 0; 
+    // 3. Extract the variables for easy use in the HTML below
+    $user_full_name  = $data['full_name'] ?? 'User';
+    $profile_picture = $data['profile_picture'] ?? '../../public/uploads/profile_pictures/default.jpg';
+    $role            = $data['role'] ?? 'User';
+    $user_email      = $data['user']['email'] ?? ''; // Access raw email from the user array inside $data
+    $notif_count     = 0; 
 ?>
 
 <div class="sidebar">
