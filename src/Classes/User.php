@@ -79,4 +79,31 @@
             
             return $result->fetch_assoc();
         }
+
+        public function isEmailTakenByOthers($email, $user_id) {
+            $stmt = $this->db->prepare("SELECT id FROM users WHERE email = ? AND id != ? LIMIT 1");
+            $stmt->bind_param("si", $email, $user_id);
+            $stmt->execute();
+            return $stmt->get_result()->num_rows > 0;
+        }
+
+        public function updateProfilePicture($user_id, $path) {
+            $stmt = $this->db->prepare("UPDATE users SET profile_picture = ? WHERE id = ?");
+            $stmt->bind_param("si", $path, $user_id);
+            return $stmt->execute();
+        }
+
+        public function updateProfileInfo($data) {
+            // Note: $data['id'] is now $data['user_id'] to match your request
+            $stmt = $this->db->prepare("UPDATE users SET email=?, first_name=?, middle_name=?, last_name=?, contact_number=? WHERE id=?");
+            $stmt->bind_param("sssssi", 
+                $data['email'], 
+                $data['first_name'], 
+                $data['middle_name'], 
+                $data['last_name'], 
+                $data['contact_number'], 
+                $data['user_id']
+            );
+            return $stmt->execute();
+        }
     }

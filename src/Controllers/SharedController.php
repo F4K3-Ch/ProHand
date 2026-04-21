@@ -60,4 +60,82 @@
                 'error'           => $_SESSION['error'] ?? null
             ];
         }
+
+        public function handleProfileUpdate($post, $files) {
+            $this->auth->checkLogin();
+            $user_id = $_SESSION['user_id'];
+            $userData = $this->user->getUserInfo($user_id);
+            
+            // Path configuration 
+            $profile_dir = '../../public/uploads/profile_pictures/';
+
+            // --- 1. REMOVE PICTURE LOGIC ---
+            if (isset($post['remove_picture'])) {
+                if (!empty($userData['profile_picture']) && basename($userData['profile_picture']) !== 'default.jpg') {
+                    $old_file = $profile_dir . basename($userData['profile_picture']);
+                    if (file_exists($old_file)) unlink($old_file);
+                }
+                
+                $this->user->updateProfilePicture($user_id, 'uploads/profile_pictures/default.jpg');
+                $_SESSION['success'] = "Profile picture removed.";
+                header("Location: edit_profile_info.php");
+                exit;
+            }
+
+            // --- 2. UPLOAD PICTURE LOGIC ---
+            if (isset($files['profile_picture']) && $files['profile_picture']['error'] === UPLOAD_ERR_OK) {
+                $file_tmp = $files['profile_picture']['tmp_name'];
+                $image_info = getimagesize($file_tmp);
+                $allowed_types = ['image/jpeg', 'image/png', 'image/jpg'];
+
+                if (!$image_info || !in_array($image_info['mime'], $allowed_types)) {
+                    $_SESSION['error'] = "Invalid image format. Use JPG or PNG.";
+                } elseif ($files['profile_picture']['size'] > 2 * 1024 * 1024) {
+                    $_SESSION['error'] = "Image too large (Max 2MB).";
+                } else {
+                    $extension = pathinfo($files['profile_picture']['name'], PATHINFO_EXTENSION);
+                    $new_name = 'user_' . $user_id . '_' . time() . '.' . $extension;
+                    $destination = $profile_dir . $new_name;
+
+                    if (move_uploaded_file($file_tmp, $destination)) {
+                        // Delete the old photo if it isn't the default
+                        if (!empty($userData['profile_picture']) && basename($userData['profile_picture']) !== 'default.jpg') {
+                            $old_file = $profile_dir . basename($userData['profile_picture']);
+                            if (file_exists($old_file)) unlink($old_file);
+                        }
+                        
+                        $this->user->updateProfilePicture($user_id, 'uploads/profile_pictures/' . $new_name);
+                        $_SESSION['success'] = "Profile picture updated!";
+                        header("Location: edit_profile_info.php");
+                        exit;
+                    }
+                }
+            }
+
+            // --- 3. TEXT INFO UPDATE LOGIC ---
+            if (isset($post['update_info'])) {
+                $email = trim($post['email']);
+                
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $_SESSION['error'] = "Invalid email format.";
+                } elseif ($this->user->isEmailTakenByOthers($email, $user_id)) {
+                    $_SESSION['error'] = "Email is already taken.";
+                } else {
+                    $data = [
+                        'email'          => $email,
+                        'first_name'     => trim($post['first_name']),
+                        'middle_name'    => trim($post['middle_name']),
+                        'last_name'      => trim($post['last_name']),
+                        'contact_number' => trim($post['contact_number']),
+                        'user_id'        => $user_id
+                    ];
+
+                    if ($this->user->updateProfileInfo($data)) {
+                        $_SESSION['success'] = "Profile information updated!";
+                        header("Location: profile.php");
+                        exit;
+                    }
+                }
+            }
+        }
     }
