@@ -106,4 +106,56 @@
             );
             return $stmt->execute();
         }
+
+        public function updatePassword($user_id, $new_password) {
+            $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+            $stmt = $this->db->prepare("UPDATE users SET password = ? WHERE id = ?");
+            $stmt->bind_param("si", $hashed_password, $user_id);
+            return $stmt->execute();
+        }
+
+        public function getNotifications($user_id, $search = '') {
+            if (!empty($search)) {
+                $search_query = '%' . str_replace(',', '', $search) . '%';
+                $stmt = $this->db->prepare("
+                    SELECT * FROM notifications 
+                    WHERE user_id = ? 
+                    AND (type LIKE ? OR message LIKE ? OR DATE_FORMAT(created_at, '%M %e %Y') LIKE ?)
+                    ORDER BY created_at DESC
+                ");
+                $stmt->bind_param("isss", $user_id, $search_query, $search_query, $search_query);
+            } else {
+                $stmt = $this->db->prepare("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC");
+                $stmt->bind_param("i", $user_id);
+            }
+            
+            $stmt->execute();
+            return $stmt->get_result();
+        }
+
+        public function markNotificationsAsRead($user_id) {
+            $stmt = $this->db->prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0");
+            $stmt->bind_param("i", $user_id);
+            return $stmt->execute();
+        }
+
+        public function getUnreadNotificationCount($user_id) {
+            $stmt = $this->db->prepare("SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0");
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $result = $stmt->get_result()->fetch_assoc();
+            return $result['count'] ?? 0;
+        }
+
+        public function deleteNotification($notification_id, $user_id) {
+            $stmt = $this->db->prepare("DELETE FROM notifications WHERE id = ? AND user_id = ?");
+            $stmt->bind_param("ii", $notification_id, $user_id);
+            return $stmt->execute();
+        }
+
+        public function deleteAllNotifications($user_id) {
+            $stmt = $this->db->prepare("DELETE FROM notifications WHERE user_id = ?");
+            $stmt->bind_param("i", $user_id);
+            return $stmt->execute();
+        }
     }

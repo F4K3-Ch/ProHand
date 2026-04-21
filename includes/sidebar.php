@@ -1,20 +1,24 @@
 <?php
-    require_once "../../src/Classes/Database.php";
+    // No need to require Database.php or Auth.php here as they are handled inside SharedController
     require_once "../../src/Classes/User.php";
-    require_once "../../src/Classes/Auth.php";
     require_once "../../src/Controllers/SharedController.php";
 
+    // Initialize the controller using the existing connection if possible, 
+    // or let the controller handle its own initialization.
     $database = new Database();
     $db = $database->getConnection();
 
     $controller = new SharedController($db);
     $data = $controller->profile();
 
+    // All these variables are now provided by your OOP Controller
     $user_full_name  = $data['full_name'] ?? 'User';
     $profile_picture = $data['profile_picture'] ?? '../../public/uploads/profile_pictures/default.jpg';
     $role            = $data['role'] ?? 'User';
-    $user_email      = $data['user']['email'] ?? ''; // Access raw email from the user array inside $data
-    $notif_count     = 0; 
+    $user_email      = $data['user']['email'] ?? ''; 
+    
+    // CHANGE THIS: Fetch the real count from the controller data
+    $notif_count     = $data['unread_notifications'] ?? 0; 
 ?>
 
 <div class="sidebar">

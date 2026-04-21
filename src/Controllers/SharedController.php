@@ -138,4 +138,93 @@
                 }
             }
         }
+
+        public function handleChangePassword($post) {
+            $this->auth->checkLogin();
+            $user_id = $_SESSION['user_id'];
+            
+            $current_password = $post['current_password'] ?? '';
+            $new_password     = $post['new_password'] ?? '';
+            $confirm_password = $post['confirm_password'] ?? '';
+
+            // 1. Fetch user data to get the current hashed password
+            $userData = $this->user->getUserInfo($user_id);
+
+            // 2. Validation
+            if (!$userData) {
+                $_SESSION['error'] = "Account not found.";
+                header("Location: ../auth/login.php");
+                exit;
+            }
+
+            if (!password_verify($current_password, $userData['password'])) {
+                $_SESSION['error'] = "Current password is incorrect.";
+                return; 
+            }
+
+            if ($new_password !== $confirm_password) {
+                $_SESSION['error'] = "New password and confirm password do not match.";
+                return;
+            }
+
+            // if (strlen($new_password) < 6) {
+            //     $_SESSION['error'] = "New password must be at least 6 characters.";
+            //     return;
+            // }
+
+            // 3. Execution
+            if ($this->user->updatePassword($user_id, $new_password)) {
+                $_SESSION['success'] = "Password changed successfully.";
+                header("Location: profile.php");
+                exit;
+            } else {
+                $_SESSION['error'] = "Failed to update password. Please try again.";
+            }
+        }
+
+        public function notifications() {
+            $this->auth->checkLogin();
+            $user_id = $_SESSION['user_id'];
+
+            // 1. Mark unread notifications as read automatically when viewing the page
+            $this->user->markNotificationsAsRead($user_id);
+
+            // 2. Handle search input
+            $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+            // 3. Fetch notifications from Model
+            $notif_result = $this->user->getNotifications($user_id, $search);
+
+            // 4. Return data to the view
+            return [
+                'notifications' => $notif_result,
+                'search'        => $search
+            ];
+        }
+
+        public function handleDeleteNotification($post) {
+            $this->auth->checkLogin();
+            $user_id = $_SESSION['user_id'];
+
+            // Single Delete
+            if (isset($post['notification_id'])) {
+                $notification_id = (int)$post['notification_id'];
+                if ($this->user->deleteNotification($notification_id, $user_id)) {
+                    $_SESSION['success'] = "Notification deleted.";
+                } else {
+                    $_SESSION['error'] = "Failed to delete notification.";
+                }
+            } 
+            // Delete All
+            elseif (isset($post['delete_all'])) {
+                if ($this->user->deleteAllNotifications($user_id)) {
+                    $_SESSION['success'] = "All notifications deleted.";
+                } else {
+                    $_SESSION['error'] = "Failed to delete notifications.";
+                }
+            }
+
+            header("Location: notifications.php");
+            exit;
+        }
     }
