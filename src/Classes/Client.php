@@ -73,4 +73,29 @@
             $stmt->execute();
             return $stmt->get_result()->fetch_assoc();
         }
+
+        public function createErrand($data) {
+            $stmt = $this->db->prepare("INSERT INTO errands (client_id, title, description, deadline, contact, location, fee, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')");
+            
+            $stmt->bind_param("isssssd", 
+                $data['client_id'],
+                $data['title'],
+                $data['description'],
+                $data['deadline'],
+                $data['contact'],
+                $data['location'],
+                $data['fee']
+            );
+
+            if ($stmt->execute()) {
+                return $this->db->insert_id;
+            }
+            return false;
+        }
+
+        public function saveErrandAttachment($errand_id, $file_path) {
+            $stmt = $this->db->prepare("INSERT INTO errand_attachments (errand_id, file_path) VALUES (?, ?)");
+            $stmt->bind_param("is", $errand_id, $file_path);
+            return $stmt->execute();
+        }
     }
