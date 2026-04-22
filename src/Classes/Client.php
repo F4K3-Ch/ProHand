@@ -93,9 +93,9 @@
             return false;
         }
 
-        public function saveErrandAttachment($errand_id, $file_path) {
-            $stmt = $this->db->prepare("INSERT INTO errand_attachments (errand_id, file_path) VALUES (?, ?)");
-            $stmt->bind_param("is", $errand_id, $file_path);
+        public function saveErrandAttachment($errand_id, $file_path, $original_name) {
+            $stmt = $this->db->prepare("INSERT INTO errand_attachments (errand_id, file_path, original_name) VALUES (?, ?, ?)");
+            $stmt->bind_param("iss", $errand_id, $file_path, $original_name);
             return $stmt->execute();
         }
     }
