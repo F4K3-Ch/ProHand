@@ -20,15 +20,22 @@
                 $email = trim($_POST['email']);
                 $password = $_POST['password'];
 
-                $role = $this->user->login($email, $password);
-                if ($role) {
-                    header("Location: ../$role/{$role}_dashboard.php");
+                $result = $this->user->login($email, $password);
+
+                // If the result is a role, redirect
+                if (in_array($result, ['admin', 'client', 'tasker'])) {
+                    header("Location: ../$result/{$result}_dashboard.php");
                     exit;
                 } else {
-                    $error = "Invalid email or password.";
+                    // Otherwise, $result contains our specific error string
+                    $error = $result;
                 }
             }
-            return ['error' => $error, 'email' => $email];
+            
+            return [
+                'error' => $error, 
+                'email' => $email
+            ];
         }
 
         // REGISTER LOGIC
