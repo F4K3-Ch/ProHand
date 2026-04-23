@@ -15,8 +15,7 @@
     $data = $controller->login();
 
     // Extract data to use in the HTML below
-    $error_email = $data['error_email'];
-    $error_password = $data['error_password'];
+    $error = $data['error'];
     $email = $data['email'];
 ?>
 
