@@ -104,4 +104,66 @@
             
             return $post;
         }
+
+        public function viewErrand($errand_id) {
+            $this->auth->restrictTo('client');
+            $client_id = $_SESSION['user_id'];
+
+            // 1. Back URL Logic
+            $from = $_GET['from'] ?? 'dashboard';
+            $back_urls = [
+                'dashboard' => 'client_dashboard.php',
+                'finished' => 'client_finished_errands.php',
+                'notification' => '../shared/notifications.php'
+            ];
+            $back_url = $back_urls[$from] ?? 'client_dashboard.php';
+
+            // 2. Initial Status Check (The UNION query)
+            $status_data = $this->client->getErrandStatus($errand_id);
+            if (!$status_data) return null;
+
+            $status = $status_data['status'];
+            $is_active = in_array($status, ['pending', 'accepted', 'in_process']);
+            $is_finished = in_array($status, ['completed', 'failed']);
+
+            if ($is_active) {
+                $result = $this->client->getActiveErrandWithTasker($errand_id, $client_id);
+                if ($result->num_rows !== 1) return null;
+                
+                $errand = $result->fetch_assoc();
+                $attachments = $this->client->getAttachments($errand_id, false);
+                
+                $profile_dir = '../../public/uploads/profile_pictures/';
+                $tasker_picture = (!empty($errand['tasker_profile_picture'])) 
+                    ? $profile_dir . basename($errand['tasker_profile_picture']) 
+                    : $profile_dir . 'default.jpg';
+
+            } elseif ($is_finished) {
+                $result = $this->client->getFinishedErrand($errand_id, $client_id);
+                if ($result->num_rows !== 1) return null;
+
+                $errand = $result->fetch_assoc();
+                $attachments = $this->client->getAttachments($errand['id'], true); // history table PK
+                
+                $profile_dir = '../../public/uploads/history/profile_pictures/';
+                $tasker_picture = (!empty($errand['tasker_profile_picture'])) 
+                    ? $profile_dir . basename($errand['tasker_profile_picture']) 
+                    : $profile_dir . 'default.jpg';
+            } else {
+                return null;
+            }
+
+            return [
+                'errand' => $errand,
+                'attachments_result' => $attachments,
+                'tasker_picture' => $tasker_picture,
+                'is_active' => $is_active,
+                'is_finished' => $is_finished,
+                'back_url' => $back_url,
+                'status_labels' => [
+                    'pending' => 'Pending', 'accepted' => 'Accepted', 
+                    'in_process' => 'In Process', 'completed' => 'Completed', 'failed' => 'Failed'
+                ]
+            ];
+        }
     }

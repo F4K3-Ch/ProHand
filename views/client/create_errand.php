@@ -108,8 +108,6 @@
         </div>
     </main>
 
-
-
     <script>
         // Initialize Flatpickr on the input with id="deadline"
         flatpickr("#deadline", {
