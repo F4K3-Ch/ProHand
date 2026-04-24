@@ -93,4 +93,63 @@
             ");
             return $result->fetch_assoc();
         }
+
+        public function getErrandStatus($errand_id) {
+            $stmt = $this->db->prepare("
+                SELECT status FROM errands WHERE id = ?
+                UNION
+                SELECT status FROM history WHERE errand_id = ?
+                LIMIT 1
+            ");
+            $stmt->bind_param("ii", $errand_id, $errand_id);
+            $stmt->execute();
+            return $stmt->get_result();
+        }
+
+        public function getActiveErrandFullDetails($errand_id) {
+            $stmt = $this->db->prepare("
+                SELECT e.*,
+                    e.id AS errand_id,
+                    c.id AS client_id,
+                    c.first_name AS client_first_name,
+                    c.middle_name AS client_middle_name, 
+                    c.last_name AS client_last_name, 
+                    c.email AS client_email, 
+                    c.contact_number AS client_contact_number, 
+                    c.profile_picture AS client_profile_picture,
+                    t.id AS tasker_id,
+                    t.first_name AS tasker_first_name, 
+                    t.middle_name AS tasker_middle_name, 
+                    t.last_name AS tasker_last_name, 
+                    t.email AS tasker_email, 
+                    t.contact_number AS tasker_contact_number, 
+                    t.profile_picture AS tasker_profile_picture
+                FROM errands AS e
+                LEFT JOIN users AS c ON e.client_id = c.id
+                LEFT JOIN users AS t ON e.tasker_id = t.id
+                WHERE e.id = ?
+                LIMIT 1
+            ");
+            $stmt->bind_param("i", $errand_id);
+            $stmt->execute();
+            return $stmt->get_result();
+        }
+
+        public function getFinishedErrandFullDetails($errand_id) {
+            $stmt = $this->db->prepare("SELECT * FROM history WHERE errand_id = ? LIMIT 1");
+            $stmt->bind_param("i", $errand_id);
+            $stmt->execute();
+            return $stmt->get_result();
+        }
+
+        public function getAttachments($id, $is_finished = false) {
+            if ($is_finished) {
+                $stmt = $this->db->prepare("SELECT id, file_path, original_name FROM history_attachments WHERE history_errand_id = ?");
+            } else {
+                $stmt = $this->db->prepare("SELECT id, file_path, original_name FROM errand_attachments WHERE errand_id = ?");
+            }
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            return $stmt->get_result();
+        }
     }
