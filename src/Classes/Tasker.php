@@ -129,4 +129,25 @@
             $stmt->execute();
             return $stmt->get_result();
         }
+
+        public function acceptErrand($errand_id, $tasker_id) {
+            // 1. Check if errand is still pending
+            $check_stmt = $this->db->prepare("SELECT title, client_id FROM errands WHERE id = ? AND status = 'pending' LIMIT 1");
+            $check_stmt->bind_param("i", $errand_id);
+            $check_stmt->execute();
+            $res = $check_stmt->get_result();
+
+            if ($res->num_rows !== 1) return false;
+            $errand = $res->fetch_assoc();
+
+            // 2. Update status to accepted
+            $update_stmt = $this->db->prepare("UPDATE errands SET status = 'accepted', tasker_id = ?, accepted_at = NOW(), updated_at = NOW() WHERE id = ? AND status = 'pending'");
+            $update_stmt->bind_param("ii", $tasker_id, $errand_id);
+            $update_stmt->execute();
+
+            if ($update_stmt->affected_rows === 1) {
+                return $errand; // Return details for notification
+            }
+            return false;
+        }
     }

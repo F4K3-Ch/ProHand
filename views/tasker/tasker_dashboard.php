@@ -8,15 +8,23 @@
     require_once "../../src/Classes/Tasker.php";
     require_once "../../src/Controllers/TaskerController.php";
 
-    // 2. Setup Database and User (for the Sidebar)
+    // 2. Setup Database
     $database = new Database();
-    $db = $database->getConnection(); // This replaces the old $conn from db.php
+    $db = $database->getConnection(); 
 
-    // 3. Get Data from the Controller
+    // 3. Initialize Controller
     $controller = new TaskerController($db);
+
+    // 4. NEW: Handle the "Accept" action if a POST request is made
+    // We check for 'accept_id' which will come from your table's form
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept_id'])) {
+        $controller->accept(); // This method will handle DB update, notifications, and redirection
+    }
+
+    // 5. Get Dashboard Data
     $data = $controller->index();
 
-    // 4. Extract data for your HTML
+    // 6. Extract data for your HTML
     $errands_pending = $data['errands_pending'];
     $metrics = $data['metrics'];
     $search = $data['search'];
@@ -136,8 +144,8 @@
                                             </form>
 
                                             <!-- Accept Button -->
-                                            <form method="POST" action="accept_errand.php">
-                                                <input type="hidden" name="id" value="<?= $row['id']; ?>">
+                                            <form method="POST">
+                                                <input type="hidden" name="accept_id" value="<?= $row['id']; ?>">
                                                 <button type="submit" class="btn-accept" onclick="return confirm('Do you want to accept this errand?');">
                                                     Accept
                                                 </button>

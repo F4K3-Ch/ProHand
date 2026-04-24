@@ -13,6 +13,10 @@
     $errand_id = (int)($_GET['errand_id'] ?? 0);
     $data = $controller->viewErrandDetails($errand_id);
 
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept_id'])) {
+        $controller->accept(); // This method will handle DB update, notifications, and redirection
+    }
+
     if (!$data) {
         $_SESSION['error'] = "Errand not found.";
         header("Location: tasker_dashboard.php");
@@ -193,8 +197,8 @@
                 <div class="info-bot-btn">
                     <?php if ($errand['status'] === 'pending'): ?>
                         <!-- Accept Button -->
-                        <form method="POST" action="accept_errand.php">
-                            <input type="hidden" name="id" value="<?= $errand['id']; ?>">
+                        <form method="POST">
+                            <input type="hidden" name="accept_id" value="<?= $errand['id']; ?>">
                             <button type="submit" class="btn-accept" onclick="return confirm('Do you want to accept this errand?');">
                                 Accept
                             </button>
