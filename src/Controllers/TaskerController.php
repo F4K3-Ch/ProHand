@@ -29,4 +29,63 @@
                 ]
             ];
         }
+
+        public function viewErrandDetails($errand_id) {
+            $this->auth->restrictTo('tasker');
+            $tasker_id = $_SESSION['user_id'];
+
+            // 1. Back URL Logic
+            $from = $_GET['from'] ?? 'dashboard';
+            $back_urls = [
+                'dashboard' => 'tasker_dashboard.php',
+                'your_task' => 'your_task.php',
+                'finished' => 'tasker_finished_errands.php',
+                'notification' => '../shared/notifications.php'
+            ];
+            $back_url = $back_urls[$from] ?? 'tasker_dashboard.php';
+
+            // 2. Status Check
+            $status_res = $this->tasker->getErrandStatus($errand_id);
+            if ($status_res->num_rows !== 1) return null;
+            
+            $status = $status_res->fetch_assoc()['status'];
+            $is_active = in_array($status, ['pending', 'accepted', 'in_process']);
+            $is_finished = in_array($status, ['completed', 'failed']);
+
+            if ($is_active) {
+                $res = $this->tasker->getActiveErrandWithClient($errand_id, $tasker_id);
+                if ($res->num_rows !== 1) return null;
+                $errand = $res->fetch_assoc();
+                $attachments = $this->tasker->getAttachments($errand_id, false);
+                $profile_dir = '../../public/uploads/profile_pictures/';
+            } elseif ($is_finished) {
+                $res = $this->tasker->getFinishedErrand($errand_id, $tasker_id);
+                if ($res->num_rows !== 1) return null;
+                $errand = $res->fetch_assoc();
+                $attachments = $this->tasker->getAttachments($errand['id'], true);
+                $profile_dir = '../../public/uploads/history/profile_pictures/';
+            } else {
+                return null;
+            }
+
+            // Client Profile Picture logic
+            $client_picture = $profile_dir . 'default.jpg';
+            if (!empty($errand['client_profile_picture'])) {
+                $pic_path = $profile_dir . basename($errand['client_profile_picture']);
+                if (file_exists($pic_path)) $client_picture = $pic_path;
+            }
+
+            return [
+                'errand' => $errand,
+                'attachments_result' => $attachments,
+                'client_picture' => $client_picture,
+                'is_active' => $is_active,
+                'is_finished' => $is_finished,
+                'back_url' => $back_url,
+                'status_labels' => [
+                    'pending' => 'Pending', 'accepted' => 'Accepted', 
+                    'in_process' => 'In Process', 'completed' => 'Completed', 'failed' => 'Failed'
+                ]
+            ];
+        }
     }
