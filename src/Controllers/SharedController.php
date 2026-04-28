@@ -49,6 +49,8 @@
             $last = $userData['last_name'] ?? '';
             $full_name = trim("$first $middle $last");
 
+            $unread_count = $this->user->getUnreadNotificationCount($user_id);
+
             // Return everything needed for Sidebar, Profile, and Notifications
             return [
                 'user'            => $userData,           // The raw array for profile inputs
@@ -56,6 +58,7 @@
                 'role'            => ucfirst($userData['role'] ?? $role),
                 'profile_picture' => $profile_picture_path,
                 'back_url'        => $back_url,
+                'unread_notifications' => $unread_count,
                 'success'         => $_SESSION['success'] ?? null,
                 'error'           => $_SESSION['error'] ?? null
             ];

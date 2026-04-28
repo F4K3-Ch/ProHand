@@ -144,7 +144,13 @@
         }
 
         public function getUnreadNotificationCount($user_id) {
+            // This query uses 'is_read' to match your markNotificationsAsRead function
             $stmt = $this->db->prepare("SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0");
+            
+            if (!$stmt) {
+                return 0;
+            }
+
             $stmt->bind_param("i", $user_id);
             $stmt->execute();
             $result = $stmt->get_result()->fetch_assoc();
@@ -160,6 +166,33 @@
         public function deleteAllNotifications($user_id) {
             $stmt = $this->db->prepare("DELETE FROM notifications WHERE user_id = ?");
             $stmt->bind_param("i", $user_id);
+            return $stmt->execute();
+        }
+
+        // Returns the full name of a user by ID
+        public function getFullName($user_id) {
+            $stmt = $this->db->prepare("SELECT first_name, middle_name, last_name FROM users WHERE id = ? LIMIT 1");
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $res = $stmt->get_result()->fetch_assoc();
+            
+            if (!$res) return "Unknown User";
+            
+            return trim($res['first_name'] . ' ' . ($res['middle_name'] ?? '') . ' ' . $res['last_name']);
+        }
+
+        // Fetches all users with a specific role
+        public function getUsersByRole($role) {
+            $stmt = $this->db->prepare("SELECT id FROM users WHERE role = ?");
+            $stmt->bind_param("s", $role);
+            $stmt->execute();
+            return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        }
+
+        // Standardized method to add notifications
+        public function addNotification($user_id, $type, $message, $link) {
+            $stmt = $this->db->prepare("INSERT INTO notifications (user_id, type, message, link) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("isss", $user_id, $type, $message, $link);
             return $stmt->execute();
         }
     }

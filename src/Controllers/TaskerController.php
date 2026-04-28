@@ -3,10 +3,12 @@
     class TaskerController {
         private $tasker;
         private $auth;
+        private $user;
 
         public function __construct($db) {
             $this->tasker = new Tasker($db); // Fixed capitalization
             $this->auth = new Auth($db);
+            $this->user = new User($db);
         }
 
         public function index() {
@@ -95,11 +97,34 @@
 
             if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept_id'])) {
                 $errand_id = (int)$_POST['accept_id'];
+                
+                // 1. Perform the database update via the Tasker Model
                 $errand = $this->tasker->acceptErrand($errand_id, $tasker_id);
 
                 if ($errand) {
-                    // Logic for Notifications (Client & Admin) goes here...
-                    // Use $errand['title'] and $errand['client_id']
+                    $errand_title = $errand['title'];
+                    $client_id = (int)$errand['client_id'];
+
+                    // 2. Fetch full names via the user object
+                    // This now works because $this->user is no longer null
+                    $tasker_name = $this->user->getFullName($tasker_id); 
+                    $client_name = $this->user->getFullName($client_id);
+
+                    // 3. Notify the Client
+                    $notif_type = "errand";
+                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was \"Accepted\" by Tasker: \"{$tasker_name}\".";
+                    $client_link = "../client/view_errand_info.php?errand_id={$errand_id}";
+                    
+                    $this->user->addNotification($client_id, $notif_type, $client_msg, $client_link);
+
+                    // 4. Notify all Admins
+                    $admin_msg = "Errand Accepted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_name}\" | Accepted by Tasker: \"{$tasker_name}\".";
+                    $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
+                    
+                    $admins = $this->user->getUsersByRole('admin');
+                    foreach ($admins as $admin) {
+                        $this->user->addNotification($admin['id'], $notif_type, $admin_msg, $admin_link);
+                    }
                     
                     $_SESSION['success'] = "You have successfully accepted the errand.";
                     header("Location: view_errand_info.php?errand_id=$errand_id");

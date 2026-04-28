@@ -19,7 +19,7 @@
     
     // CHANGE THIS: Fetch the real count from the controller data
     $notif_count     = $data['unread_notifications'] ?? 0; 
-?>
+?>  
 
 <div class="sidebar">
     <div class="sidebar-top">
