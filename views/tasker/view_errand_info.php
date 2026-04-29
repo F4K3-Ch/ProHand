@@ -13,8 +13,15 @@
     $errand_id = (int)($_GET['errand_id'] ?? 0);
     $data = $controller->viewErrandDetails($errand_id);
 
+    // Handle "Accept" POST
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept_id'])) {
-        $controller->accept(); // This method will handle DB update, notifications, and redirection
+        $controller->accept();
+    }
+
+    // Handle "In Process" POST (Add this)
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_task_id'])) {
+        $_POST['id'] = $_POST['start_task_id']; // Align key for updateStatusInProcess
+        $controller->updateStatusInProcess();
     }
 
     if (!$data) {
@@ -23,7 +30,7 @@
         exit;
     }
 
-    extract($data); 
+    extract($data);
 ?>
 
 <!DOCTYPE html>
@@ -205,8 +212,8 @@
                         </form>
                     <?php elseif ($errand['status'] === 'accepted'): ?>
                         <!-- Update Button -->
-                        <form method="POST" action="update_in_process.php">
-                            <input type="hidden" name="id" value="<?= $errand['id']; ?>">
+                        <form method="POST">
+                            <input type="hidden" name="start_task_id" value="<?= $errand['id']; ?>">
                             <input type="hidden" name="new_status" value="in_process">
                             <button type="submit" class="btn-start-errand">Start Errand</button>
                         </form>

@@ -130,27 +130,6 @@
             return $stmt->get_result();
         }
 
-        public function acceptErrand($errand_id, $tasker_id) {
-            // 1. Check if errand is still pending
-            $check_stmt = $this->db->prepare("SELECT title, client_id FROM errands WHERE id = ? AND status = 'pending' LIMIT 1");
-            $check_stmt->bind_param("i", $errand_id);
-            $check_stmt->execute();
-            $res = $check_stmt->get_result();
-
-            if ($res->num_rows !== 1) return false;
-            $errand = $res->fetch_assoc();
-
-            // 2. Update status to accepted
-            $update_stmt = $this->db->prepare("UPDATE errands SET status = 'accepted', tasker_id = ?, accepted_at = NOW(), updated_at = NOW() WHERE id = ? AND status = 'pending'");
-            $update_stmt->bind_param("ii", $tasker_id, $errand_id);
-            $update_stmt->execute();
-
-            if ($update_stmt->affected_rows === 1) {
-                return $errand; // Return details for notification
-            }
-            return false;
-        }
-
         public function getActiveTasks($tasker_id, $search = '') {
             $search_query = '%' . str_replace(',', '', $search) . '%';
 
@@ -184,5 +163,57 @@
             $stmt->bind_param("i", $tasker_id);
             $stmt->execute();
             return $stmt->get_result()->fetch_assoc();
+        }
+        
+        public function acceptErrand($errand_id, $tasker_id) {
+            // 1. Check if errand is still pending
+            $check_stmt = $this->db->prepare("SELECT title, client_id FROM errands WHERE id = ? AND status = 'pending' LIMIT 1");
+            $check_stmt->bind_param("i", $errand_id);
+            $check_stmt->execute();
+            $res = $check_stmt->get_result();
+
+            if ($res->num_rows !== 1) return false;
+            $errand = $res->fetch_assoc();
+
+            // 2. Update status to accepted
+            $update_stmt = $this->db->prepare("UPDATE errands SET status = 'accepted', tasker_id = ?, accepted_at = NOW(), updated_at = NOW() WHERE id = ? AND status = 'pending'");
+            $update_stmt->bind_param("ii", $tasker_id, $errand_id);
+            $update_stmt->execute();
+
+            if ($update_stmt->affected_rows === 1) {
+                return $errand; // Return details for notification
+            }
+            return false;
+        }
+
+        public function updateToInProcess($errand_id, $tasker_id) {
+            // 1. Fetch info and verify the tasker owns this 'accepted' errand
+            $stmt = $this->db->prepare("
+                SELECT title, client_id 
+                FROM errands 
+                WHERE id = ? AND tasker_id = ? AND status = 'accepted'
+                LIMIT 1
+            ");
+            $stmt->bind_param("ii", $errand_id, $tasker_id);
+            $stmt->execute();
+            $errand = $stmt->get_result()->fetch_assoc();
+
+            if (!$errand) return false;
+
+            // 2. Update the status and set the NEW in_process_at column
+            // We do NOT touch accepted_at here
+            $update = $this->db->prepare("
+                UPDATE errands 
+                SET status = 'in_process', 
+                    in_process_at = NOW(), 
+                    updated_at = NOW() 
+                WHERE id = ?
+            ");
+            $update->bind_param("i", $errand_id);
+            
+            if ($update->execute()) {
+                return $errand;
+            }
+            return false;
         }
     }

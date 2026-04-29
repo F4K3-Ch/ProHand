@@ -91,50 +91,6 @@
             ];
         }
 
-        public function accept() {
-            $this->auth->restrictTo('tasker');
-            $tasker_id = $_SESSION['user_id'];
-
-            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept_id'])) {
-                $errand_id = (int)$_POST['accept_id'];
-                
-                // 1. Perform the database update via the Tasker Model
-                $errand = $this->tasker->acceptErrand($errand_id, $tasker_id);
-
-                if ($errand) {
-                    $errand_title = $errand['title'];
-                    $client_id = (int)$errand['client_id'];
-
-                    // 2. Fetch full names via the user object
-                    // This now works because $this->user is no longer null
-                    $tasker_name = $this->user->getFullName($tasker_id); 
-                    $client_name = $this->user->getFullName($client_id);
-
-                    // 3. Notify the Client
-                    $notif_type = "errand";
-                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was \"Accepted\" by Tasker: \"{$tasker_name}\".";
-                    $client_link = "../client/view_errand_info.php?errand_id={$errand_id}";
-                    
-                    $this->user->addNotification($client_id, $notif_type, $client_msg, $client_link);
-
-                    // 4. Notify all Admins
-                    $admin_msg = "Errand Accepted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_name}\" | Accepted by Tasker: \"{$tasker_name}\".";
-                    $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
-                    
-                    $admins = $this->user->getUsersByRole('admin');
-                    foreach ($admins as $admin) {
-                        $this->user->addNotification($admin['id'], $notif_type, $admin_msg, $admin_link);
-                    }
-                    
-                    $_SESSION['success'] = "You have successfully accepted the errand.";
-                    header("Location: view_errand_info.php?errand_id=$errand_id");
-                    exit;
-                } else {
-                    $_SESSION['error'] = "Errand no longer available.";
-                }
-            }
-        }
-
         public function activeTasks() {
             $this->auth->restrictTo('tasker');
             $tasker_id = $_SESSION['user_id'];
@@ -156,5 +112,95 @@
                     'in_process' => 'In Process'
                 ]
             ];
+        }
+        
+        public function accept() {
+            $this->auth->restrictTo('tasker');
+            $tasker_id = $_SESSION['user_id'];
+
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept_id'])) {
+                $errand_id = (int)$_POST['accept_id'];
+                
+                // 1. Perform database update (Sets status to 'accepted' and accepted_at to NOW)
+                $errand = $this->tasker->acceptErrand($errand_id, $tasker_id);
+
+                if ($errand) {
+                    $errand_title = $errand['title'];
+                    $client_id = (int)$errand['client_id'];
+
+                    // 2. Fetch full names via the user class
+                    $tasker_full_name = $this->user->getFullName($tasker_id); 
+                    $client_full_name = $this->user->getFullName($client_id);
+
+                    $notif_type = "errand";
+
+                    // 3. Notify Client (Your original detailed format)
+                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was \"Accepted\" by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+                    $client_link = "../client/view_errand_info.php?errand_id={$errand_id}";
+                    $this->user->addNotification($client_id, $notif_type, $client_msg, $client_link);
+
+                    // 4. Notify all Admins (Your original detailed format with all IDs)
+                    $admin_msg = "Errand Accepted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+                    $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
+                    
+                    $admins = $this->user->getUsersByRole('admin');
+                    foreach ($admins as $admin) {
+                        $this->user->addNotification($admin['id'], $notif_type, $admin_msg, $admin_link);
+                    }
+                    
+                    $_SESSION['success'] = "You have successfully accepted the errand.";
+                    header("Location: view_errand_info.php?errand_id=$errand_id");
+                    exit;
+                } else {
+                    $_SESSION['error'] = "Invalid request.";
+                    header("Location: tasker_dashboard.php");
+                    exit;
+                }
+            }
+        }
+
+        public function updateStatusInProcess() {
+            $this->auth->restrictTo('tasker');
+            $tasker_id = $_SESSION['user_id'];
+            
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
+                $errand_id = (int)$_POST['id'];
+                
+                // 1. Update database (Sets status to 'in_process' and in_process_at to NOW)
+                $data = $this->tasker->updateToInProcess($errand_id, $tasker_id);
+
+                if ($data) {
+                    $errand_title = $data['title'];
+                    $client_id = (int)$data['client_id'];
+
+                    // 2. Fetch names for the notifications
+                    $tasker_full_name = $this->user->getFullName($tasker_id);
+                    $client_full_name = $this->user->getFullName($client_id);
+
+                    $notif_type = "errand";
+
+                    // 3. Notify Client (Your original format)
+                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was updated to \"In Process\" by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+                    $client_link = "../client/view_errand_info.php?errand_id=$errand_id";
+                    $this->user->addNotification($client_id, $notif_type, $client_msg, $client_link);
+
+                    // 4. Notify Admins (Your original detailed format)
+                    $admin_msg = "Errand Updated to In Process | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Updated by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+                    $admin_link = "../admin/view_errand_info.php?errand_id=$errand_id";
+                    
+                    $admins = $this->user->getUsersByRole('admin');
+                    foreach ($admins as $admin) {
+                        $this->user->addNotification($admin['id'], $notif_type, $admin_msg, $admin_link);
+                    }
+
+                    $_SESSION['success'] = "Errand status updated to \"In Process\".";
+                    header("Location: view_errand_info.php?errand_id={$errand_id}");
+                    exit;
+                } else {
+                    $_SESSION['error'] = "Invalid request.";
+                    header("Location: tasker_dashboard.php");
+                    exit;
+                }
+            }
         }
     }
