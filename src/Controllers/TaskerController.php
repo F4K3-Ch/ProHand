@@ -10,23 +10,21 @@
             $this->auth = new Auth($db);
             $this->user = new User($db);
         }
-
+        
         // tasker_dashboard.php
         public function index() {
             $this->auth->restrictTo('tasker');
             
-            $tasker_id = $_SESSION['user_id'];
             $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-            // Fetch data from Model
-            $metrics = $this->tasker->getPendingMetrics();
+            $metrics = $this->tasker->getTaskMetrics('pending');
             $errands = $this->tasker->getErrandsPending($search);
 
             return [
-                'errands_pending' => $errands, // This matches the variable in your loop
+                'errands_pending' => $errands,
                 'search'          => $search,
                 'status_counts'   => [
-                    'pending' => $metrics['pending'] ?? 0 // Ensures 'pending' key exists
+                    'pending' => $metrics['pending'] ?? 0 
                 ],
                 'total_errands'   => $metrics['total'] ?? 0,
                 'status_labels'   => [
@@ -41,44 +39,43 @@
             $tasker_id = $_SESSION['user_id'];
             $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-            // Fetch the metrics we just created
-            $metrics = $this->tasker->getAcceptedTaskMetrics($tasker_id);
+            $metrics = $this->tasker->getTaskMetrics('accepted', $tasker_id);
+            $errands = $this->tasker->getAcceptedTasks($tasker_id, $search);
 
             return [
-                'tasks' => $this->tasker->getAcceptedTasks($tasker_id, $search),
-                'search' => $search,
-                'status_counts' => [
-                    'accepted' => $metrics['accepted'] ?? 0,
+                'tasks'           => $errands,
+                'search'          => $search,
+                'status_counts'   => [
+                    'accepted'   => $metrics['accepted'] ?? 0,
                     'in_process' => $metrics['in_process'] ?? 0
                 ],
-                'total_errands' => $metrics['total'] ?? 0,
-                'status_labels' => [
-                    'accepted' => 'Accepted',
+                'total_errands'   => $metrics['total'] ?? 0,
+                'status_labels'   => [
+                    'accepted'   => 'Accepted',
                     'in_process' => 'In Process'
                 ]
             ];
-        }  
-        
+        } 
+
         // tasker_finished_errands.php
         public function finishedTasks() {
             $this->auth->restrictTo('tasker');
             $tasker_id = $_SESSION['user_id'];
-            
-            // Capture search from URL
             $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-            $data = $this->tasker->getFinishedErrands($tasker_id, $search);
+            $metrics = $this->tasker->getTaskMetrics('history', $tasker_id);
+            $errands = $this->tasker->getFinishedErrands($tasker_id, $search);
 
             return [
-                'result_archived' => $data['list'],
-                'status_counts'   => [
-                    'completed' => (int)$data['metrics']['completed_count'],
-                    'failed'    => (int)$data['metrics']['failed_count']
-                ],
-                'total_errands'   => (int)$data['metrics']['total_count'],
-                'earnings'        => (float)$data['metrics']['total_earnings'],
-                'failed_earnings' => (float)$data['metrics']['total_failed_earnings'],
+                'result_archived' => $errands,
                 'search'          => $search,
+                'status_counts'   => [
+                    'completed' => $metrics['completed_count'] ?? 0,
+                    'failed'    => $metrics['failed_count'] ?? 0
+                ],
+                'total_errands'   => $metrics['total_count'] ?? 0,
+                'earnings'        => $metrics['total_earnings'] ?? 0,
+                'failed_earnings' => $metrics['total_failed_earnings'] ?? 0,
                 'status_labels'   => [
                     'completed' => 'Completed',
                     'failed'    => 'Failed'

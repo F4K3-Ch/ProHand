@@ -58,20 +58,6 @@
             return $stmt->get_result();
         }
 
-        // tasker_dashboard.php
-        public function getPendingMetrics() {
-            // This is the global "Available" count for the dashboard
-            $stmt = $this->db->prepare("
-                SELECT 
-                    IFNULL(SUM(status = 'pending'), 0) AS pending,
-                    COUNT(*) AS total
-                FROM errands
-                WHERE status = 'pending'
-            ");
-            $stmt->execute();
-            return $stmt->get_result()->fetch_assoc();
-        }
-
         // your_task.php
         public function getAcceptedTasks($tasker_id, $search = '') {
             // Exact copy of your search logic
@@ -124,23 +110,6 @@
 
             $stmt->execute();
             return $stmt->get_result();
-        }
-
-        // your_task.php
-        public function getAcceptedTaskMetrics($tasker_id) {
-            $stmt = $this->db->prepare("
-                SELECT 
-                    IFNULL(SUM(status = 'accepted'), 0) AS accepted,
-                    IFNULL(SUM(status = 'in_process'), 0) AS in_process,
-                    COUNT(*) AS total
-                FROM errands 
-                WHERE tasker_id = ? 
-                AND status IN ('accepted', 'in_process')
-            ");
-            
-            $stmt->bind_param("i", $tasker_id);
-            $stmt->execute();
-            return $stmt->get_result()->fetch_assoc();
         }
 
         // tasker_finished_errands.php
@@ -197,24 +166,50 @@
                 $search_query
             );
             $stmt->execute();
-            $list = $stmt->get_result();
+            return $stmt->get_result();
+        }
 
-            // 2. Metrics Query
-            $stmt = $this->db->prepare("
-                SELECT 
-                    COUNT(*) as total_count,
-                    IFNULL(SUM(status = 'completed'), 0) as completed_count,
-                    IFNULL(SUM(status = 'failed'), 0) as failed_count,
-                    IFNULL(SUM(CASE WHEN status = 'completed' THEN fee ELSE 0 END), 0) as total_earnings,
-                    IFNULL(SUM(CASE WHEN status = 'failed' THEN fee ELSE 0 END), 0) as total_failed_earnings
-                FROM history 
-                WHERE tasker_id = ? AND tasker_deleted = 0
-            ");
-            $stmt->bind_param("i", $tasker_id);
+        public function getTaskMetrics($type, $tasker_id = null) {
+            if ($type === 'pending') {
+                // Dashboard: Global Available Errands
+                $stmt = $this->db->prepare("
+                    SELECT 
+                        IFNULL(SUM(status = 'pending'), 0) AS pending,
+                        COUNT(*) AS total
+                    FROM errands
+                    WHERE status = 'pending'
+                ");
+            } elseif ($type === 'active') {
+                // Your Tasks: Accepted & In Process
+                $stmt = $this->db->prepare("
+                    SELECT 
+                        IFNULL(SUM(status = 'accepted'), 0) AS accepted,
+                        IFNULL(SUM(status = 'in_process'), 0) AS in_process,
+                        COUNT(*) AS total
+                    FROM errands 
+                    WHERE tasker_id = ? 
+                    AND status IN ('accepted', 'in_process')
+                ");
+                $stmt->bind_param("i", $tasker_id);
+            } elseif ($type === 'history') {
+                // Finished Errands: Completed & Failed with Earnings
+                $stmt = $this->db->prepare("
+                    SELECT 
+                        COUNT(*) as total_count,
+                        IFNULL(SUM(status = 'completed'), 0) as completed_count,
+                        IFNULL(SUM(status = 'failed'), 0) as failed_count,
+                        IFNULL(SUM(CASE WHEN status = 'completed' THEN fee ELSE 0 END), 0) as total_earnings,
+                        IFNULL(SUM(CASE WHEN status = 'failed' THEN fee ELSE 0 END), 0) as total_failed_earnings
+                    FROM history 
+                    WHERE tasker_id = ? AND tasker_deleted = 0
+                ");
+                $stmt->bind_param("i", $tasker_id);
+            } else {
+                return null;
+            }
+
             $stmt->execute();
-            $metrics = $stmt->get_result()->fetch_assoc();
-
-            return ['list' => $list, 'metrics' => $metrics];
+            return $stmt->get_result()->fetch_assoc();
         }
 
         // view_errand_info.php
