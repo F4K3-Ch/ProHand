@@ -134,4 +134,27 @@
                 }
             }
         }
+
+        public function activeTasks() {
+            $this->auth->restrictTo('tasker');
+            $tasker_id = $_SESSION['user_id'];
+            $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+            // Fetch the metrics we just created
+            $metrics = $this->tasker->getActiveTaskMetrics($tasker_id);
+
+            return [
+                'tasks' => $this->tasker->getActiveTasks($tasker_id, $search),
+                'search' => $search,
+                'status_counts' => [
+                    'accepted' => $metrics['accepted'] ?? 0,
+                    'in_process' => $metrics['in_process'] ?? 0
+                ],
+                'total_errands' => $metrics['total'] ?? 0,
+                'status_labels' => [
+                    'accepted' => 'Accepted',
+                    'in_process' => 'In Process'
+                ]
+            ];
+        }
     }

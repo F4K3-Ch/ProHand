@@ -150,4 +150,39 @@
             }
             return false;
         }
+
+        public function getActiveTasks($tasker_id, $search = '') {
+            $search_query = '%' . str_replace(',', '', $search) . '%';
+
+            $sql = "SELECT id, title, location, created_at, deadline, fee, status, updated_at
+                    FROM errands
+                    WHERE tasker_id = ? 
+                    AND status IN ('accepted', 'in_process')
+                    AND (
+                        id LIKE ? 
+                        OR title LIKE ? 
+                        OR location LIKE ? 
+                        OR fee LIKE ?
+                    )
+                    ORDER BY updated_at DESC";
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->bind_param("issss", $tasker_id, $search_query, $search_query, $search_query, $search_query);
+            $stmt->execute();
+            return $stmt->get_result();
+        }
+
+        public function getActiveTaskMetrics($tasker_id) {
+            $sql = "SELECT 
+                        SUM(CASE WHEN status = 'accepted' THEN 1 ELSE 0 END) as accepted,
+                        SUM(CASE WHEN status = 'in_process' THEN 1 ELSE 0 END) as in_process,
+                        COUNT(*) as total
+                    FROM errands 
+                    WHERE tasker_id = ? AND status IN ('accepted', 'in_process')";
+                    
+            $stmt = $this->db->prepare($sql);
+            $stmt->bind_param("i", $tasker_id);
+            $stmt->execute();
+            return $stmt->get_result()->fetch_assoc();
+        }
     }
