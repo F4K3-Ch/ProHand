@@ -3,7 +3,7 @@
     require_once "../../src/Classes/Database.php";
     require_once "../../src/Classes/User.php";
     require_once "../../src/Classes/Auth.php";
-    require_once "../../src/Classes/Tasker.php"; // Ensure you have this class
+    require_once "../../src/Classes/Tasker.php"; 
     require_once "../../src/Controllers/TaskerController.php";
 
     $database = new Database();
@@ -18,10 +18,17 @@
         $controller->accept();
     }
 
-    // Handle "In Process" POST (Add this)
+    // Handle "In Process" POST
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_task_id'])) {
-        $_POST['id'] = $_POST['start_task_id']; // Align key for updateStatusInProcess
+        $_POST['id'] = $_POST['start_task_id']; 
         $controller->updateStatusInProcess();
+    }
+
+    // Handle "Completed" or "Failed" POST
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['final_status_id'])) {
+        $_POST['id'] = $_POST['final_status_id'];
+        // $_POST['new_status'] is passed from the button value
+        $controller->updateStatusFinal();
     }
 
     if (!$data) {
@@ -30,7 +37,7 @@
         exit;
     }
 
-    extract($data);
+    extract($data); 
 ?>
 
 <!DOCTYPE html>
@@ -226,8 +233,8 @@
                         </form>
                     <?php elseif ($errand['status'] === 'in_process'): ?>
                         <!-- Update Button -->
-                        <form method="POST" action="update_completed_failed.php">
-                            <input type="hidden" name="id" value="<?= $errand['id']; ?>">
+                        <form method="POST">
+                            <input type="hidden" name="final_status_id" value="<?= $errand['id']; ?>">
                                 <div class="update-wrapper">
                                     <select name="new_status" required>
                                         <option value="">Select</option>

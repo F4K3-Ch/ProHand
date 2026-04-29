@@ -195,4 +195,16 @@
             $stmt->bind_param("isss", $user_id, $type, $message, $link);
             return $stmt->execute();
         }
+
+        public function notifyAllAdmins($type, $message, $link) {
+            // This replicates the "SELECT id FROM users WHERE role = 'admin'" logic
+            $stmt = $this->db->prepare("SELECT id FROM users WHERE role = 'admin'");
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($admin = $result->fetch_assoc()) {
+                $this->addNotification((int)$admin['id'], $type, $message, $link);
+            }
+            $stmt->close();
+        }
     }

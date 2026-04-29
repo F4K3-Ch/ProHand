@@ -142,11 +142,7 @@
                     // 4. Notify all Admins (Your original detailed format with all IDs)
                     $admin_msg = "Errand Accepted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
                     $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
-                    
-                    $admins = $this->user->getUsersByRole('admin');
-                    foreach ($admins as $admin) {
-                        $this->user->addNotification($admin['id'], $notif_type, $admin_msg, $admin_link);
-                    }
+                    $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
                     
                     $_SESSION['success'] = "You have successfully accepted the errand.";
                     header("Location: view_errand_info.php?errand_id=$errand_id");
@@ -187,11 +183,7 @@
                     // 4. Notify Admins (Your original detailed format)
                     $admin_msg = "Errand Updated to In Process | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Updated by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
                     $admin_link = "../admin/view_errand_info.php?errand_id=$errand_id";
-                    
-                    $admins = $this->user->getUsersByRole('admin');
-                    foreach ($admins as $admin) {
-                        $this->user->addNotification($admin['id'], $notif_type, $admin_msg, $admin_link);
-                    }
+                    $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
 
                     $_SESSION['success'] = "Errand status updated to \"In Process\".";
                     header("Location: view_errand_info.php?errand_id={$errand_id}");
@@ -199,6 +191,48 @@
                 } else {
                     $_SESSION['error'] = "Invalid request.";
                     header("Location: tasker_dashboard.php");
+                    exit;
+                }
+            }
+        }
+
+        public function updateStatusFinal() {
+            $this->auth->restrictTo('tasker');
+            $tasker_id = $_SESSION['user_id'];
+            
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'], $_POST['new_status'])) {
+                $errand_id = (int)$_POST['id'];
+                $new_status = $_POST['new_status'];
+
+                // 1. Perform the database transaction (Snapshot to history and delete original)
+                $errand = $this->tasker->completeOrFailErrand($errand_id, $tasker_id, $new_status);
+
+                if ($errand) {
+                    $errand_title = $errand['title'];
+                    $client_id = (int)$errand['client_id'];
+
+                    // 2. Fetch full names via the user class for consistency
+                    $tasker_full_name = $this->user->getFullName($tasker_id); 
+                    $client_full_name = $this->user->getFullName($client_id);
+
+                    $notif_type = "errand";
+
+                    // 3. Notify Client (Matching your original format with IDs)
+                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was updated to \"" . ucfirst($new_status)  . "\" by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+                    $client_link = "../client/view_errand_info.php?errand_id=$errand_id";
+                    $this->user->addNotification($client_id, $notif_type, $client_msg, $client_link);
+
+                    // 4. Notify all Admins (Matching your original detailed format with IDs)
+                    $admin_msg = "Errand Updated to " . ucfirst($new_status)  . " | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Updated by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+                    $admin_link = "../admin/view_errand_info.php?errand_id=$errand_id";
+                    $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
+                    
+                    $_SESSION['success'] = "Errand updated to \"" . ucfirst($new_status) . "\".";
+                    header("Location: view_errand_info.php?errand_id={$errand_id}");
+                    exit;
+                } else {
+                    $_SESSION['error'] = "Failed to finalize errand. Please try again.";
+                    header("Location: your_task.php");
                     exit;
                 }
             }
