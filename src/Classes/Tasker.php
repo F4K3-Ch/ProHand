@@ -60,7 +60,7 @@
         public function getErrandMetrics() {
             $result = $this->db->query("
                 SELECT 
-                    SUM(status = 'pending') AS pending_count
+                    IFNULL(SUM(status = 'pending'), 0) AS pending_count
                 FROM errands
             ");
             return $result->fetch_assoc();
@@ -152,14 +152,16 @@
         }
 
         public function getActiveTaskMetrics($tasker_id) {
-            $sql = "SELECT 
-                        SUM(CASE WHEN status = 'accepted' THEN 1 ELSE 0 END) as accepted,
-                        SUM(CASE WHEN status = 'in_process' THEN 1 ELSE 0 END) as in_process,
-                        COUNT(*) as total
-                    FROM errands 
-                    WHERE tasker_id = ? AND status IN ('accepted', 'in_process')";
-                    
-            $stmt = $this->db->prepare($sql);
+            $stmt = $this->db->prepare("
+                SELECT 
+                    IFNULL(SUM(status = 'accepted'), 0) AS accepted,
+                    IFNULL(SUM(status = 'in_process'), 0) AS in_process,
+                    COUNT(*) AS total
+                FROM errands 
+                WHERE tasker_id = ? 
+                AND status IN ('accepted', 'in_process')
+            ");
+            
             $stmt->bind_param("i", $tasker_id);
             $stmt->execute();
             return $stmt->get_result()->fetch_assoc();

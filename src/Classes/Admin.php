@@ -84,9 +84,9 @@
         public function getErrandMetrics() {
             $result = $this->db->query("
                 SELECT 
-                    SUM(status = 'pending') AS pending_count,
-                    SUM(status = 'accepted') AS accepted_count,
-                    SUM(status = 'in_process') AS in_process_count,
+                    IFNULL(SUM(status = 'pending'), 0) AS pending_count,
+                    IFNULL(SUM(status = 'accepted'), 0) AS accepted_count,
+                    IFNULL(SUM(status = 'in_process'), 0) AS in_process_count,
                     COUNT(*) AS total_errands
                 FROM errands
                 WHERE status IN ('pending', 'accepted', 'in_process')
