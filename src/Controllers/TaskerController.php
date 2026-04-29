@@ -280,4 +280,28 @@
                 }
             }
         }
+
+        public function finishedTasks() {
+            $this->auth->restrictTo('tasker');
+            $tasker_id = $_SESSION['user_id'];
+            $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+            $data = $this->tasker->getFinishedErrands($tasker_id, $search);
+
+            return [
+                'result_archived' => $data['list'],
+                'status_counts'   => [
+                    'completed' => (int)$data['metrics']['completed_count'],
+                    'failed'    => (int)$data['metrics']['failed_count']
+                ],
+                'total_errands'   => (int)$data['metrics']['total_count'],
+                'earnings'        => (float)$data['metrics']['total_earnings'],
+                'failed_earnings' => (float)$data['metrics']['total_failed_earnings'],
+                'search'          => $search,
+                'status_labels'   => [
+                    'completed' => 'Completed',
+                    'failed'    => 'Failed'
+                ]
+            ];
+        }
     }

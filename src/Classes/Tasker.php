@@ -414,4 +414,36 @@
             
             return false;
         }
+
+        public function getFinishedErrands($tasker_id, $search = '') {
+            $search_query = '%' . $search . '%';
+            
+            // List Query
+            $stmt = $this->db->prepare("
+                SELECT * FROM history 
+                WHERE tasker_id = ? AND tasker_deleted = 0 
+                AND (title LIKE ? OR location LIKE ? OR errand_id LIKE ?)
+                ORDER BY id DESC
+            ");
+            $stmt->bind_param("isss", $tasker_id, $search_query, $search_query, $search_query);
+            $stmt->execute();
+            $list = $stmt->get_result();
+
+            // Metrics Query (Using IFNULL to prevent number_format errors)
+            $m_stmt = $this->db->prepare("
+                SELECT 
+                    COUNT(*) as total_count,
+                    IFNULL(SUM(status = 'completed'), 0) as completed_count,
+                    IFNULL(SUM(status = 'failed'), 0) as failed_count,
+                    IFNULL(SUM(CASE WHEN status = 'completed' THEN fee ELSE 0 END), 0) as total_earnings,
+                    IFNULL(SUM(CASE WHEN status = 'failed' THEN fee ELSE 0 END), 0) as total_failed_earnings
+                FROM history 
+                WHERE tasker_id = ? AND tasker_deleted = 0
+            ");
+            $m_stmt->bind_param("i", $tasker_id);
+            $m_stmt->execute();
+            $metrics = $m_stmt->get_result()->fetch_assoc();
+
+            return ['list' => $list, 'metrics' => $metrics];
+        }
     }

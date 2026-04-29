@@ -43,7 +43,7 @@
                         <img src="../../public/assets/img/ProHand(Adapt).png" alt="ProHand Logo" class="logo-img">
                         <div class="title">
                             <h1>Pro<span>Hand</span></h1>
-                            <h2>Dashboard</h2>
+                            <h2>Finished Errands</h2>
                         </div>
                     </div>
                 </div>
@@ -52,7 +52,7 @@
                         <div class="search-wrapper">
                             <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Search">
                             <?php if (!empty($search)): ?>
-                                <a href="tasker_dashboard.php" class="clear">Clear</a>
+                                <a href="tasker_finished_errands.php" class="clear">Clear</a>
                             <?php endif; ?>
                         </div>
                         <button type="submit" class="btn-search">Search</button>
