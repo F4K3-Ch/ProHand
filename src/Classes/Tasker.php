@@ -179,7 +179,7 @@
                     FROM errands
                     WHERE status = 'pending'
                 ");
-            } elseif ($type === 'active') {
+            } elseif ($type === 'accepted') {
                 // Your Tasks: Accepted & In Process
                 $stmt = $this->db->prepare("
                     SELECT 
