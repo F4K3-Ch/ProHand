@@ -232,8 +232,8 @@
                             <button type="submit" class="btn-start-errand">Start Errand</button>
                         </form>
                         <!-- Cancel Button -->
-                        <form method="POST" action="cancel_errand.php">
-                            <input type="hidden" name="id" value="<?= $errand['id']; ?>">
+                        <form method="POST">
+                            <input type="hidden" name="cancel_id" value="<?= $errand['id']; ?>">
                             <button type="submit" class="btn-cancel" onclick="return confirm('Are you sure you want to cancel this errand?');">
                                 Cancel
                             </button>

@@ -268,7 +268,7 @@
                     $admin_link = "../admin/view_errand_info.php?errand_id=$errand_id";
                     $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
 
-                    $_SESSION['success'] = "You cancelled Errand: \"{$errand_title}\". It is now back to Pending.";
+                    $_SESSION['success'] = "You cancelled Errand: \"{$errand_title}\" (ID: {$errand_id}).";
                     header("Location: tasker_dashboard.php");
                     exit;
                 } else {
