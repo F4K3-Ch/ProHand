@@ -280,6 +280,7 @@
             return $stmt->get_result();
         }
 
+        // Accept button
         public function acceptErrand($errand_id, $tasker_id) {
             // 1. Check if errand is still pending
             $check_stmt = $this->db->prepare("SELECT title, client_id FROM errands WHERE id = ? AND status = 'pending' LIMIT 1");
@@ -301,6 +302,7 @@
             return false;
         }
 
+        // Update to In Process Button
         public function updateToInProcess($errand_id, $tasker_id) {
             // 1. Fetch info and verify the tasker owns this 'accepted' errand
             $stmt = $this->db->prepare("
@@ -332,6 +334,7 @@
             return false;
         }
 
+        // Update to Completed or Failed Button
         public function completeOrFailErrand($errand_id, $tasker_id, $new_status) {
             // FIX 1: Set the timezone to Philippine Time
             date_default_timezone_set('Asia/Manila');
@@ -489,6 +492,7 @@
             }
         }
 
+        // Cancel Button
         public function resetToPending($errand_id, $tasker_id) {
             // 1. Verify that this errand belongs to the tasker and can be cancelled
             $check_stmt = $this->db->prepare("

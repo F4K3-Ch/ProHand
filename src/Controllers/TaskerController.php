@@ -143,6 +143,7 @@
             ];
         }
         
+        // Accept button
         public function accept() {
             $this->auth->restrictTo('tasker');
             $tasker_id = $_SESSION['user_id'];
@@ -184,6 +185,7 @@
             }
         }
 
+        // Update to In Process Button
         public function updateStatusInProcess() {
             $this->auth->restrictTo('tasker');
             $tasker_id = $_SESSION['user_id'];
@@ -225,6 +227,7 @@
             }
         }
 
+        // Update to Completed or Failed Button
         public function updateStatusFinal() {
             $this->auth->restrictTo('tasker');
             $tasker_id = $_SESSION['user_id'];
@@ -267,6 +270,7 @@
             }
         }
 
+        // Cancel Button
         public function cancelErrand() {
             $this->auth->restrictTo('tasker');
             $tasker_id = $_SESSION['user_id'];
