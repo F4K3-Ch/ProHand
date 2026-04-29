@@ -3,10 +3,12 @@
     class ClientController {
         private $client;
         private $auth;
+        private $user;
 
         public function __construct($db) {
-            $this->client = new Client($db); // Fixed capitalization
+            $this->client = new Client($db);
             $this->auth = new Auth($db);
+            $this->user = new User($db);
         }
 
         // client_dashboard.php
@@ -64,6 +66,77 @@
             ];
         }
 
+        // view_errand_info.php
+        public function viewErrandDetails($errand_id) {
+            $this->auth->restrictTo('client');
+            $client_id = $_SESSION['user_id'];
+
+            // 1. Back URL Logic
+            $from = $_GET['from'] ?? 'dashboard';
+            $back_urls = [
+                'dashboard'    => 'client_dashboard.php',
+                'finished'     => 'client_finished_errands.php',
+                'notification' => '../shared/notifications.php'
+            ];
+            $back_url = $back_urls[$from] ?? 'client_dashboard.php';
+
+            // 2. Status Check
+            $status_res = $this->client->getErrandStatus($errand_id);
+            if ($status_res->num_rows !== 1) return null;
+            
+            $status = $status_res->fetch_assoc()['status'];
+            $is_active = in_array($status, ['pending', 'accepted', 'in_process']);
+            $is_finished = in_array($status, ['completed', 'failed']);
+
+            if ($is_active) {
+                // Fetch from active 'errands' table
+                $res = $this->client->getActiveErrandWithTasker($errand_id, $client_id);
+                if ($res->num_rows !== 1) return null;
+
+                $errand = $res->fetch_assoc();
+                $attachments = $this->client->getAttachments($errand_id, false);
+                $profile_dir = '../../public/uploads/profile_pictures/';
+            } elseif ($is_finished) {
+                // Fetch from 'history' table
+                $res = $this->client->getFinishedErrand($errand_id, $client_id);
+                if ($res->num_rows !== 1) return null;
+
+                $errand = $res->fetch_assoc();
+                // Use history PK (id) for attachments if necessary, or errand_id based on your DB logic
+                $attachments = $this->client->getAttachments($errand['id'], true); 
+                $profile_dir = '../../public/uploads/history/profile_pictures/';
+            } else {
+                return null;
+            }
+
+            // 3. Tasker Profile Picture logic (Matches Tasker's style)
+            $tasker_picture = $profile_dir . 'default.jpg';
+            if (!empty($errand['tasker_profile_picture'])) {
+                $pic_path = $profile_dir . basename($errand['tasker_profile_picture']);
+                // Only use the path if the file actually exists on the server
+                if (file_exists($pic_path)) {
+                    $tasker_picture = $pic_path;
+                }
+            }
+
+            return [
+                'errand'             => $errand,
+                'attachments_result' => $attachments,
+                'tasker_picture'     => $tasker_picture,
+                'is_active'          => $is_active,
+                'is_finished'        => $is_finished,
+                'back_url'           => $back_url,
+                'status_labels'      => [
+                    'pending'    => 'Pending', 
+                    'accepted'   => 'Accepted', 
+                    'in_process' => 'In Process', 
+                    'completed'  => 'Completed', 
+                    'failed'     => 'Failed'
+                ]
+            ];
+        }
+
+        // Create Errand
         public function handleCreateErrand($post, $files) {
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') return null;
 
@@ -136,67 +209,5 @@
             }
             
             return $post;
-        }
-
-        public function viewErrand($errand_id) {
-            $this->auth->restrictTo('client');
-            $client_id = $_SESSION['user_id'];
-
-            // 1. Back URL Logic
-            $from = $_GET['from'] ?? 'dashboard';
-            $back_urls = [
-                'dashboard' => 'client_dashboard.php',
-                'finished' => 'client_finished_errands.php',
-                'notification' => '../shared/notifications.php'
-            ];
-            $back_url = $back_urls[$from] ?? 'client_dashboard.php';
-
-            // 2. Initial Status Check (The UNION query)
-            $status_data = $this->client->getErrandStatus($errand_id);
-            if (!$status_data) return null;
-
-            $status = $status_data['status'];
-            $is_active = in_array($status, ['pending', 'accepted', 'in_process']);
-            $is_finished = in_array($status, ['completed', 'failed']);
-
-            if ($is_active) {
-                $result = $this->client->getActiveErrandWithTasker($errand_id, $client_id);
-                if ($result->num_rows !== 1) return null;
-                
-                $errand = $result->fetch_assoc();
-                $attachments = $this->client->getAttachments($errand_id, false);
-                
-                $profile_dir = '../../public/uploads/profile_pictures/';
-                $tasker_picture = (!empty($errand['tasker_profile_picture'])) 
-                    ? $profile_dir . basename($errand['tasker_profile_picture']) 
-                    : $profile_dir . 'default.jpg';
-
-            } elseif ($is_finished) {
-                $result = $this->client->getFinishedErrand($errand_id, $client_id);
-                if ($result->num_rows !== 1) return null;
-
-                $errand = $result->fetch_assoc();
-                $attachments = $this->client->getAttachments($errand['id'], true); // history table PK
-                
-                $profile_dir = '../../public/uploads/history/profile_pictures/';
-                $tasker_picture = (!empty($errand['tasker_profile_picture'])) 
-                    ? $profile_dir . basename($errand['tasker_profile_picture']) 
-                    : $profile_dir . 'default.jpg';
-            } else {
-                return null;
-            }
-
-            return [
-                'errand' => $errand,
-                'attachments_result' => $attachments,
-                'tasker_picture' => $tasker_picture,
-                'is_active' => $is_active,
-                'is_finished' => $is_finished,
-                'back_url' => $back_url,
-                'status_labels' => [
-                    'pending' => 'Pending', 'accepted' => 'Accepted', 
-                    'in_process' => 'In Process', 'completed' => 'Completed', 'failed' => 'Failed'
-                ]
-            ];
         }
     }

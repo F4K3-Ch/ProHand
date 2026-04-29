@@ -11,7 +11,7 @@
     $controller = new ClientController($db);
 
     $errand_id = (int)($_GET['errand_id'] ?? 0);
-    $data = $controller->viewErrand($errand_id);
+    $data = $controller->viewErrandDetails($errand_id);
 
     if (!$data) {
         $_SESSION['error'] = "Errand not found.";
