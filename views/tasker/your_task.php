@@ -16,7 +16,7 @@
         $controller->cancelErrand();
     }
 
-    // Get data from OOP Controller
+    // Get data from OOP Controller 
     $data = $controller->activeTasks();
     extract($data); 
 ?>

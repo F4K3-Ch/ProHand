@@ -135,22 +135,54 @@
         }
 
         public function getActiveTasks($tasker_id, $search = '') {
-            $search_query = '%' . str_replace(',', '', $search) . '%';
+            // Exact copy of your search logic
+            $search_int = is_numeric($search) ? (int)$search : 0;
 
-            $sql = "SELECT id, title, location, created_at, deadline, fee, status, updated_at
-                    FROM errands
-                    WHERE tasker_id = ? 
-                    AND status IN ('accepted', 'in_process')
-                    AND (
-                        id LIKE ? 
-                        OR title LIKE ? 
-                        OR location LIKE ? 
-                        OR fee LIKE ?
-                    )
-                    ORDER BY updated_at DESC";
+            // Normalize search for general fields (remove commas)
+            $search_normalized = str_replace(',', '', $search);
+            $search_query = '%' . $search_normalized . '%';
 
-            $stmt = $this->db->prepare($sql);
-            $stmt->bind_param("issss", $tasker_id, $search_query, $search_query, $search_query, $search_query);
+            // Normalize search specifically for status
+            $search_status_normalized = str_replace(' ', '_', strtolower($search)); 
+            $search_status_query = '%' . $search_status_normalized . '%';
+
+            // Fetch Accepted/Active Errands using your exact SQL structure
+            $stmt = $this->db->prepare("
+                SELECT 
+                    id,
+                    title,
+                    location,
+                    created_at,
+                    deadline,
+                    fee,
+                    status,
+                    updated_at
+                FROM errands
+                WHERE tasker_id = ?
+                AND (
+                    id = ?
+                    OR title LIKE ?
+                    OR location LIKE ?
+                    OR DATE_FORMAT(created_at, '%M %e %Y') LIKE ?
+                    OR DATE_FORMAT(deadline, '%M %e %Y') LIKE ?
+                    OR fee LIKE ?
+                    OR status LIKE ?
+                )
+                ORDER BY updated_at DESC
+            ");
+
+            $stmt->bind_param(
+                "iissssss", 
+                $tasker_id,            // User ID
+                $search_int,           // Errand ID exact match
+                $search_query,          // Title LIKE
+                $search_query,          // Location LIKE
+                $search_query,          // Created date LIKE
+                $search_query,          // Deadline date LIKE
+                $search_query,          // Fee LIKE
+                $search_status_query    // Status LIKE
+            );
+
             $stmt->execute();
             return $stmt->get_result();
         }
@@ -416,20 +448,61 @@
         }
 
         public function getFinishedErrands($tasker_id, $search = '') {
-            $search_query = '%' . $search . '%';
+            // Exact copy of your search logic
+            $search_int = is_numeric($search) ? (int)$search : 0;
+            $search_normalized = str_replace(',', '', $search);
+            $search_query = '%' . $search_normalized . '%';
             
-            // List Query
+            // 1. Fetch List using your exact SQL structure
             $stmt = $this->db->prepare("
-                SELECT * FROM history 
-                WHERE tasker_id = ? AND tasker_deleted = 0 
-                AND (title LIKE ? OR location LIKE ? OR errand_id LIKE ?)
+                SELECT
+                    id,
+                    errand_id, 
+                    title, 
+                    client_first_name,
+                    client_middle_name,
+                    client_last_name,
+                    location, 
+                    created_at, 
+                    completed_at,
+                    failed_at,
+                    fee, 
+                    status,
+                    tasker_deleted
+                FROM history
+                WHERE tasker_id = ? 
+                AND tasker_deleted = 0
+                AND (
+                    errand_id = ? 
+                    OR title LIKE ?
+                    OR REPLACE(CONCAT_WS(' ', IFNULL(client_first_name,''), IFNULL(client_middle_name,''), IFNULL(client_last_name,'')), '  ', ' ') LIKE ?
+                    OR location LIKE ? 
+                    OR DATE_FORMAT(created_at, '%M %e %Y') LIKE ? 
+                    OR DATE_FORMAT(completed_at, '%M %e %Y') LIKE ?
+                    OR DATE_FORMAT(failed_at, '%M %e %Y') LIKE ?
+                    OR CAST(fee AS CHAR) LIKE ? 
+                    OR status LIKE ?
+                )
                 ORDER BY id DESC
             ");
-            $stmt->bind_param("isss", $tasker_id, $search_query, $search_query, $search_query);
+
+            $stmt->bind_param(
+                "iissssssss",
+                $tasker_id,
+                $search_int,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query
+            );
             $stmt->execute();
             $list = $stmt->get_result();
 
-            // Metrics Query (Using IFNULL to prevent number_format errors)
+            // 2. Metrics Query (Kept for your dashboard cards)
             $m_stmt = $this->db->prepare("
                 SELECT 
                     COUNT(*) as total_count,

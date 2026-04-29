@@ -284,6 +284,8 @@
         public function finishedTasks() {
             $this->auth->restrictTo('tasker');
             $tasker_id = $_SESSION['user_id'];
+            
+            // Capture search from URL
             $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
             $data = $this->tasker->getFinishedErrands($tasker_id, $search);
