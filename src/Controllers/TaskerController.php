@@ -11,6 +11,7 @@
             $this->user = new User($db);
         }
 
+        // tasker_dashboard.php
         public function index() {
             $this->auth->restrictTo('tasker');
             
@@ -18,7 +19,7 @@
             $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
             // Fetch data from Model
-            $metrics = $this->tasker->getErrandMetrics();
+            $metrics = $this->tasker->getPendingMetrics();
             $errands = $this->tasker->getErrandsPending($search);
 
             return [
@@ -34,6 +35,58 @@
             ];
         }
 
+        // your_task.php
+        public function acceptedTasks() {
+            $this->auth->restrictTo('tasker');
+            $tasker_id = $_SESSION['user_id'];
+            $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+            // Fetch the metrics we just created
+            $metrics = $this->tasker->getAcceptedTaskMetrics($tasker_id);
+
+            return [
+                'tasks' => $this->tasker->getAcceptedTasks($tasker_id, $search),
+                'search' => $search,
+                'status_counts' => [
+                    'accepted' => $metrics['accepted'] ?? 0,
+                    'in_process' => $metrics['in_process'] ?? 0
+                ],
+                'total_errands' => $metrics['total'] ?? 0,
+                'status_labels' => [
+                    'accepted' => 'Accepted',
+                    'in_process' => 'In Process'
+                ]
+            ];
+        }  
+        
+        // tasker_finished_errands.php
+        public function finishedTasks() {
+            $this->auth->restrictTo('tasker');
+            $tasker_id = $_SESSION['user_id'];
+            
+            // Capture search from URL
+            $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+            $data = $this->tasker->getFinishedErrands($tasker_id, $search);
+
+            return [
+                'result_archived' => $data['list'],
+                'status_counts'   => [
+                    'completed' => (int)$data['metrics']['completed_count'],
+                    'failed'    => (int)$data['metrics']['failed_count']
+                ],
+                'total_errands'   => (int)$data['metrics']['total_count'],
+                'earnings'        => (float)$data['metrics']['total_earnings'],
+                'failed_earnings' => (float)$data['metrics']['total_failed_earnings'],
+                'search'          => $search,
+                'status_labels'   => [
+                    'completed' => 'Completed',
+                    'failed'    => 'Failed'
+                ]
+            ];
+        }
+
+        // view_errand_info.php
         public function viewErrandDetails($errand_id) {
             $this->auth->restrictTo('tasker');
             $tasker_id = $_SESSION['user_id'];
@@ -92,29 +145,6 @@
                 ]
             ];
         }
-
-        public function activeTasks() {
-            $this->auth->restrictTo('tasker');
-            $tasker_id = $_SESSION['user_id'];
-            $search = isset($_GET['search']) ? trim($_GET['search']) : '';
-
-            // Fetch the metrics we just created
-            $metrics = $this->tasker->getActiveTaskMetrics($tasker_id);
-
-            return [
-                'tasks' => $this->tasker->getActiveTasks($tasker_id, $search),
-                'search' => $search,
-                'status_counts' => [
-                    'accepted' => $metrics['accepted'] ?? 0,
-                    'in_process' => $metrics['in_process'] ?? 0
-                ],
-                'total_errands' => $metrics['total'] ?? 0,
-                'status_labels' => [
-                    'accepted' => 'Accepted',
-                    'in_process' => 'In Process'
-                ]
-            ];
-        }   
         
         public function accept() {
             $this->auth->restrictTo('tasker');
@@ -279,31 +309,5 @@
                     exit;
                 }
             }
-        }
-
-        public function finishedTasks() {
-            $this->auth->restrictTo('tasker');
-            $tasker_id = $_SESSION['user_id'];
-            
-            // Capture search from URL
-            $search = isset($_GET['search']) ? trim($_GET['search']) : '';
-
-            $data = $this->tasker->getFinishedErrands($tasker_id, $search);
-
-            return [
-                'result_archived' => $data['list'],
-                'status_counts'   => [
-                    'completed' => (int)$data['metrics']['completed_count'],
-                    'failed'    => (int)$data['metrics']['failed_count']
-                ],
-                'total_errands'   => (int)$data['metrics']['total_count'],
-                'earnings'        => (float)$data['metrics']['total_earnings'],
-                'failed_earnings' => (float)$data['metrics']['total_failed_earnings'],
-                'search'          => $search,
-                'status_labels'   => [
-                    'completed' => 'Completed',
-                    'failed'    => 'Failed'
-                ]
-            ];
         }
     }

@@ -17,7 +17,7 @@
     }
 
     // Get data from OOP Controller 
-    $data = $controller->activeTasks();
+    $data = $controller->acceptedTasks();
     extract($data); 
 ?>
 

@@ -7,6 +7,7 @@
             $this->db = $db_connection;
         }
 
+        // tasker_dashboard.php
         public function getErrandsPending($search = '') {
             // Handle search input
             $search_int = is_numeric($search) ? (int)$search : 0;
@@ -57,7 +58,8 @@
             return $stmt->get_result();
         }
 
-        public function getErrandMetrics() {
+        // tasker_dashboard.php
+        public function getPendingMetrics() {
             // This is the global "Available" count for the dashboard
             $stmt = $this->db->prepare("
                 SELECT 
@@ -70,71 +72,8 @@
             return $stmt->get_result()->fetch_assoc();
         }
 
-        public function getErrandStatus($errand_id) {
-            $stmt = $this->db->prepare("
-                SELECT status FROM errands WHERE id = ?
-                UNION
-                SELECT status FROM history WHERE errand_id = ?
-                LIMIT 1
-            ");
-            $stmt->bind_param("ii", $errand_id, $errand_id);
-            $stmt->execute();
-            return $stmt->get_result();
-        }
-
-        public function getActiveErrandWithClient($errand_id, $tasker_id) {
-            $stmt = $this->db->prepare("
-                SELECT e.*,
-                    e.id AS errand_id,
-                    c.id AS client_id,
-                    c.first_name AS client_first_name,
-                    c.middle_name AS client_middle_name, 
-                    c.last_name AS client_last_name, 
-                    c.email AS client_email, 
-                    c.contact_number AS client_contact_number, 
-                    c.profile_picture AS client_profile_picture
-                FROM errands AS e
-                LEFT JOIN users AS c ON e.client_id = c.id
-                WHERE e.id = ?
-                AND (
-                        e.status = 'pending'
-                        OR (
-                            e.status IN ('accepted', 'in_process')
-                            AND e.tasker_id = ?
-                        )
-                    )
-                LIMIT 1
-            ");
-            $stmt->bind_param("ii", $errand_id, $tasker_id);
-            $stmt->execute();
-            return $stmt->get_result();
-        }
-
-        public function getFinishedErrand($errand_id, $tasker_id) {
-            $stmt = $this->db->prepare("
-                SELECT * FROM history
-                WHERE errand_id = ? 
-                AND tasker_id = ? 
-                AND tasker_deleted = 0
-                LIMIT 1
-            ");
-            $stmt->bind_param("ii", $errand_id, $tasker_id);
-            $stmt->execute();
-            return $stmt->get_result();
-        }
-
-        public function getAttachments($id, $is_finished = false) {
-            if ($is_finished) {
-                $stmt = $this->db->prepare("SELECT id, file_path, original_name FROM history_attachments WHERE history_errand_id = ?");
-            } else {
-                $stmt = $this->db->prepare("SELECT id, file_path, original_name FROM errand_attachments WHERE errand_id = ?");
-            }
-            $stmt->bind_param("i", $id);
-            $stmt->execute();
-            return $stmt->get_result();
-        }
-
-        public function getActiveTasks($tasker_id, $search = '') {
+        // your_task.php
+        public function getAcceptedTasks($tasker_id, $search = '') {
             // Exact copy of your search logic
             $search_int = is_numeric($search) ? (int)$search : 0;
 
@@ -187,7 +126,8 @@
             return $stmt->get_result();
         }
 
-        public function getActiveTaskMetrics($tasker_id) {
+        // your_task.php
+        public function getAcceptedTaskMetrics($tasker_id) {
             $stmt = $this->db->prepare("
                 SELECT 
                     IFNULL(SUM(status = 'accepted'), 0) AS accepted,
@@ -201,6 +141,148 @@
             $stmt->bind_param("i", $tasker_id);
             $stmt->execute();
             return $stmt->get_result()->fetch_assoc();
+        }
+
+        // tasker_finished_errands.php
+        public function getFinishedErrands($tasker_id, $search = '') {
+            // Exact copy of your search logic
+            $search_int = is_numeric($search) ? (int)$search : 0;
+            $search_normalized = str_replace(',', '', $search);
+            $search_query = '%' . $search_normalized . '%';
+            
+            // 1. Fetch List using your exact SQL structure
+            $stmt = $this->db->prepare("
+                SELECT
+                    id,
+                    errand_id, 
+                    title, 
+                    client_first_name,
+                    client_middle_name,
+                    client_last_name,
+                    location, 
+                    created_at, 
+                    completed_at,
+                    failed_at,
+                    fee, 
+                    status,
+                    tasker_deleted
+                FROM history
+                WHERE tasker_id = ? 
+                AND tasker_deleted = 0
+                AND (
+                    errand_id = ? 
+                    OR title LIKE ?
+                    OR REPLACE(CONCAT_WS(' ', IFNULL(client_first_name,''), IFNULL(client_middle_name,''), IFNULL(client_last_name,'')), '  ', ' ') LIKE ?
+                    OR location LIKE ? 
+                    OR DATE_FORMAT(created_at, '%M %e %Y') LIKE ? 
+                    OR DATE_FORMAT(completed_at, '%M %e %Y') LIKE ?
+                    OR DATE_FORMAT(failed_at, '%M %e %Y') LIKE ?
+                    OR CAST(fee AS CHAR) LIKE ? 
+                    OR status LIKE ?
+                )
+                ORDER BY id DESC
+            ");
+
+            $stmt->bind_param(
+                "iissssssss",
+                $tasker_id,
+                $search_int,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query
+            );
+            $stmt->execute();
+            $list = $stmt->get_result();
+
+            // 2. Metrics Query
+            $stmt = $this->db->prepare("
+                SELECT 
+                    COUNT(*) as total_count,
+                    IFNULL(SUM(status = 'completed'), 0) as completed_count,
+                    IFNULL(SUM(status = 'failed'), 0) as failed_count,
+                    IFNULL(SUM(CASE WHEN status = 'completed' THEN fee ELSE 0 END), 0) as total_earnings,
+                    IFNULL(SUM(CASE WHEN status = 'failed' THEN fee ELSE 0 END), 0) as total_failed_earnings
+                FROM history 
+                WHERE tasker_id = ? AND tasker_deleted = 0
+            ");
+            $stmt->bind_param("i", $tasker_id);
+            $stmt->execute();
+            $metrics = $stmt->get_result()->fetch_assoc();
+
+            return ['list' => $list, 'metrics' => $metrics];
+        }
+
+        // view_errand_info.php
+        public function getErrandStatus($errand_id) {
+            $stmt = $this->db->prepare("
+                SELECT status FROM errands WHERE id = ?
+                UNION
+                SELECT status FROM history WHERE errand_id = ?
+                LIMIT 1
+            ");
+            $stmt->bind_param("ii", $errand_id, $errand_id);
+            $stmt->execute();
+            return $stmt->get_result();
+        }
+
+        // view_errand_info.php
+        public function getActiveErrandWithClient($errand_id, $tasker_id) {
+            $stmt = $this->db->prepare("
+                SELECT e.*,
+                    e.id AS errand_id,
+                    c.id AS client_id,
+                    c.first_name AS client_first_name,
+                    c.middle_name AS client_middle_name, 
+                    c.last_name AS client_last_name, 
+                    c.email AS client_email, 
+                    c.contact_number AS client_contact_number, 
+                    c.profile_picture AS client_profile_picture
+                FROM errands AS e
+                LEFT JOIN users AS c ON e.client_id = c.id
+                WHERE e.id = ?
+                AND (
+                        e.status = 'pending'
+                        OR (
+                            e.status IN ('accepted', 'in_process')
+                            AND e.tasker_id = ?
+                        )
+                    )
+                LIMIT 1
+            ");
+            $stmt->bind_param("ii", $errand_id, $tasker_id);
+            $stmt->execute();
+            return $stmt->get_result();
+        }
+
+        // view_errand_info.php
+        public function getFinishedErrand($errand_id, $tasker_id) {
+            $stmt = $this->db->prepare("
+                SELECT * FROM history
+                WHERE errand_id = ? 
+                AND tasker_id = ? 
+                AND tasker_deleted = 0
+                LIMIT 1
+            ");
+            $stmt->bind_param("ii", $errand_id, $tasker_id);
+            $stmt->execute();
+            return $stmt->get_result();
+        }
+
+        // view_errand_info.php
+        public function getAttachments($id, $is_finished = false) {
+            if ($is_finished) {
+                $stmt = $this->db->prepare("SELECT id, file_path, original_name FROM history_attachments WHERE history_errand_id = ?");
+            } else {
+                $stmt = $this->db->prepare("SELECT id, file_path, original_name FROM errand_attachments WHERE errand_id = ?");
+            }
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            return $stmt->get_result();
         }
 
         public function acceptErrand($errand_id, $tasker_id) {
@@ -445,78 +527,5 @@
             }
             
             return false;
-        }
-
-        public function getFinishedErrands($tasker_id, $search = '') {
-            // Exact copy of your search logic
-            $search_int = is_numeric($search) ? (int)$search : 0;
-            $search_normalized = str_replace(',', '', $search);
-            $search_query = '%' . $search_normalized . '%';
-            
-            // 1. Fetch List using your exact SQL structure
-            $stmt = $this->db->prepare("
-                SELECT
-                    id,
-                    errand_id, 
-                    title, 
-                    client_first_name,
-                    client_middle_name,
-                    client_last_name,
-                    location, 
-                    created_at, 
-                    completed_at,
-                    failed_at,
-                    fee, 
-                    status,
-                    tasker_deleted
-                FROM history
-                WHERE tasker_id = ? 
-                AND tasker_deleted = 0
-                AND (
-                    errand_id = ? 
-                    OR title LIKE ?
-                    OR REPLACE(CONCAT_WS(' ', IFNULL(client_first_name,''), IFNULL(client_middle_name,''), IFNULL(client_last_name,'')), '  ', ' ') LIKE ?
-                    OR location LIKE ? 
-                    OR DATE_FORMAT(created_at, '%M %e %Y') LIKE ? 
-                    OR DATE_FORMAT(completed_at, '%M %e %Y') LIKE ?
-                    OR DATE_FORMAT(failed_at, '%M %e %Y') LIKE ?
-                    OR CAST(fee AS CHAR) LIKE ? 
-                    OR status LIKE ?
-                )
-                ORDER BY id DESC
-            ");
-
-            $stmt->bind_param(
-                "iissssssss",
-                $tasker_id,
-                $search_int,
-                $search_query,
-                $search_query,
-                $search_query,
-                $search_query,
-                $search_query,
-                $search_query,
-                $search_query,
-                $search_query
-            );
-            $stmt->execute();
-            $list = $stmt->get_result();
-
-            // 2. Metrics Query (Kept for your dashboard cards)
-            $m_stmt = $this->db->prepare("
-                SELECT 
-                    COUNT(*) as total_count,
-                    IFNULL(SUM(status = 'completed'), 0) as completed_count,
-                    IFNULL(SUM(status = 'failed'), 0) as failed_count,
-                    IFNULL(SUM(CASE WHEN status = 'completed' THEN fee ELSE 0 END), 0) as total_earnings,
-                    IFNULL(SUM(CASE WHEN status = 'failed' THEN fee ELSE 0 END), 0) as total_failed_earnings
-                FROM history 
-                WHERE tasker_id = ? AND tasker_deleted = 0
-            ");
-            $m_stmt->bind_param("i", $tasker_id);
-            $m_stmt->execute();
-            $metrics = $m_stmt->get_result()->fetch_assoc();
-
-            return ['list' => $list, 'metrics' => $metrics];
         }
     }
