@@ -17,7 +17,7 @@
             
             $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-            $metrics = $this->tasker->getTaskMetrics('pending');
+            $metrics = $this->tasker->getTaskerMetrics('pending');
             $errands = $this->tasker->getErrandsPending($search);
 
             return [
@@ -39,7 +39,7 @@
             $tasker_id = $_SESSION['user_id'];
             $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-            $metrics = $this->tasker->getTaskMetrics('accepted', $tasker_id);
+            $metrics = $this->tasker->getTaskerMetrics('accepted', $tasker_id);
             $errands = $this->tasker->getAcceptedTasks($tasker_id, $search);
 
             return [
@@ -63,7 +63,7 @@
             $tasker_id = $_SESSION['user_id'];
             $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-            $metrics = $this->tasker->getTaskMetrics('history', $tasker_id);
+            $metrics = $this->tasker->getTaskerMetrics('history', $tasker_id);
             $errands = $this->tasker->getFinishedErrands($tasker_id, $search);
 
             return [

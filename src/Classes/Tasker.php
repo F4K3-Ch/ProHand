@@ -168,7 +168,7 @@
             return $stmt->get_result();
         }
 
-        public function getTaskMetrics($type, $tasker_id = null) {
+        public function getTaskerMetrics($type, $tasker_id = null) {
             if ($type === 'pending') {
                 // Dashboard: Global Available Errands
                 $stmt = $this->db->prepare("
