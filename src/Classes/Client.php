@@ -1,10 +1,9 @@
 <?php
     // src/Classes/Client.php
-    class Client {
-        private $db;
+    class Client extends User {
 
         public function __construct($db_connection) {
-            $this->db = $db_connection;
+            parent::__construct($db_connection);
         }
 
         public function getErrandsCreated($client_id, $search = '') {
@@ -58,17 +57,92 @@
             return $stmt->get_result();
         }
 
-        public function getErrandMetrics($client_id) {
+        // client_finished_errands.php
+        public function getFinishedErrands($client_id, $search = '') {
+            // Exact copy of your search logic
+            $search_int = is_numeric($search) ? (int)$search : 0;
+            $search_normalized = str_replace(',', '', $search);
+            $search_query = '%' . $search_normalized . '%';
+            
+            // 1. Fetch List using your exact SQL structure
             $stmt = $this->db->prepare("
-                SELECT 
-                    IFNULL(SUM(status = 'pending'), 0) AS pending_count,
-                    IFNULL(SUM(status = 'accepted'), 0) AS accepted_count,
-                    IFNULL(SUM(status = 'in_process'), 0) AS in_process_count,
-                    COUNT(*) AS total_errands
-                FROM errands
+                SELECT
+                    id,
+                    errand_id, 
+                    title, 
+                    tasker_first_name,
+                    tasker_middle_name,
+                    tasker_last_name,
+                    location, 
+                    created_at, 
+                    completed_at,
+                    failed_at,
+                    fee, 
+                    status,
+                    tasker_deleted
+                FROM history
                 WHERE client_id = ? 
-                AND status IN ('pending', 'accepted', 'in_process')
+                AND client_deleted = 0
+                AND (
+                    errand_id = ? 
+                    OR title LIKE ?
+                    OR REPLACE(CONCAT_WS(' ', IFNULL(client_first_name,''), IFNULL(client_middle_name,''), IFNULL(client_last_name,'')), '  ', ' ') LIKE ?
+                    OR location LIKE ? 
+                    OR DATE_FORMAT(created_at, '%M %e %Y') LIKE ? 
+                    OR DATE_FORMAT(completed_at, '%M %e %Y') LIKE ?
+                    OR DATE_FORMAT(failed_at, '%M %e %Y') LIKE ?
+                    OR CAST(fee AS CHAR) LIKE ? 
+                    OR status LIKE ?
+                )
+                ORDER BY id DESC
             ");
+
+            $stmt->bind_param(
+                "iissssssss",
+                $client_id,
+                $search_int,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query
+            );
+            $stmt->execute();
+            return $stmt->get_result();
+        }
+
+        public function getClientMetrics($type, $client_id) {
+            if ($type === 'active') {
+                // Dashboard: Metrics for current/live errands
+                $stmt = $this->db->prepare("
+                    SELECT 
+                        IFNULL(SUM(status = 'pending'), 0) AS pending,
+                        IFNULL(SUM(status = 'accepted'), 0) AS accepted,
+                        IFNULL(SUM(status = 'in_process'), 0) AS in_process,
+                        COUNT(*) AS total
+                    FROM errands
+                    WHERE client_id = ? 
+                    AND status IN ('pending', 'accepted', 'in_process')
+                ");
+            } elseif ($type === 'history') {
+                // History: Metrics for finished errands
+                $stmt = $this->db->prepare("
+                    SELECT 
+                        IFNULL(SUM(status = 'completed'), 0) AS completed,
+                        IFNULL(SUM(status = 'failed'), 0) AS failed,
+                        COUNT(*) AS total
+                    FROM history
+                    WHERE client_id = ? 
+                    AND client_deleted = 0
+                    AND status IN ('completed', 'failed')
+                ");
+            } else {
+                return null;
+            }
+
             $stmt->bind_param("i", $client_id);
             $stmt->execute();
             return $stmt->get_result()->fetch_assoc();

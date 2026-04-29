@@ -9,25 +9,57 @@
             $this->auth = new Auth($db);
         }
 
+        // client_dashboard.php
         public function index() {
             $this->auth->restrictTo('client');
             
-            // Get the ID from the session
             $client_id = $_SESSION['user_id'];
             $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-            // Pass $client_id to the methods
-            $errands_created = $this->client->getErrandsCreated($client_id, $search);
-            $metrics = $this->client->getErrandMetrics($client_id);
+            // Using the unified getClientMetrics function we created
+            $metrics = $this->client->getClientMetrics('active', $client_id);
+            $errands = $this->client->getErrandsCreated($client_id, $search);
 
             return [
-                'errands_created' => $errands_created,
-                'metrics' => $metrics,
-                'search' => $search,
-                'status_labels' => [
-                    'pending' => 'Pending',
-                    'accepted' => 'Accepted',
+                'errands_created' => $errands,
+                'search'          => $search,
+                'status_counts'   => [
+                    'pending'    => $metrics['pending'] ?? 0,
+                    'accepted'   => $metrics['accepted'] ?? 0,
+                    'in_process' => $metrics['in_process'] ?? 0
+                ],
+                'total_errands'   => $metrics['total'] ?? 0,
+                'status_labels'   => [
+                    'pending'    => 'Pending',
+                    'accepted'   => 'Accepted',
                     'in_process' => 'In Process'
+                ]
+            ];
+        }
+
+        // client_finished_errands.php
+        public function finishedTasks() {
+            $this->auth->restrictTo('client');
+            $client_id = $_SESSION['user_id'];
+            $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+            // Fetch unified history metrics (Completed vs Failed)
+            $metrics = $this->client->getClientMetrics('history', $client_id);
+            
+            // Fetch the search-filtered list of finished errands
+            $errands = $this->client->getFinishedErrands($client_id, $search);
+
+            return [
+                'result_archived' => $errands,
+                'search'          => $search,
+                'status_counts'   => [
+                    'completed' => $metrics['completed'] ?? 0,
+                    'failed'    => $metrics['failed'] ?? 0
+                ],
+                'total_errands'   => $metrics['total'] ?? 0,
+                'status_labels'   => [
+                    'completed' => 'Completed',
+                    'failed'    => 'Failed'
                 ]
             ];
         }

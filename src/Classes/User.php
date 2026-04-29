@@ -1,9 +1,9 @@
 <?php
     class User {
-        private $db;
+        protected $db; // Think of this as a shared shelf
 
-        public function __construct($db_connection) {
-            $this->db = $db_connection;
+        public function __construct($db) {
+            $this->db = $db; // Put the database on the shelf
         }
 
         // LOGIN METHOD
@@ -206,5 +206,30 @@
                 $this->addNotification((int)$admin['id'], $type, $message, $link);
             }
             $stmt->close();
+        }
+
+        // view_errand_info.php
+        public function getErrandStatus($errand_id) {
+            $stmt = $this->db->prepare("
+                SELECT status FROM errands WHERE id = ?
+                UNION
+                SELECT status FROM history WHERE errand_id = ?
+                LIMIT 1
+            ");
+            $stmt->bind_param("ii", $errand_id, $errand_id);
+            $stmt->execute();
+            return $stmt->get_result();
+        }
+
+        // view_errand_info.php
+        public function getAttachments($id, $is_finished = false) {
+            if ($is_finished) {
+                $stmt = $this->db->prepare("SELECT id, file_path, original_name FROM history_attachments WHERE history_errand_id = ?");
+            } else {
+                $stmt = $this->db->prepare("SELECT id, file_path, original_name FROM errand_attachments WHERE errand_id = ?");
+            }
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            return $stmt->get_result();
         }
     }

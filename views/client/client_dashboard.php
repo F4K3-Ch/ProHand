@@ -1,26 +1,23 @@
 <?php
     session_start();
     
-    // 1. Load your OOP Classes using the correct paths
+    // Load your OOP Classes using the correct paths
     require_once "../../src/Classes/Database.php";
     require_once "../../src/Classes/User.php";
     require_once "../../src/Classes/Auth.php";
     require_once "../../src/Classes/Client.php";
     require_once "../../src/Controllers/ClientController.php";
 
-    // 2. Setup Database and User (for the Sidebar)
+    // Setup Database
     $database = new Database();
-    $db = $database->getConnection(); // This replaces the old $conn from db.php
+    $db = $database->getConnection(); 
 
-    // 3. Get Data from the Controller
+    // Initialize Controller
     $controller = new ClientController($db);
-    $data = $controller->index();
 
-    // 4. Extract data for your HTML
-    $errands_created = $data['errands_created'];
-    $metrics = $data['metrics'];
-    $search = $data['search'];
-    $status_labels = $data['status_labels'];
+    // Get Dashboard Data
+    $data = $controller->index();
+    extract($data); 
 ?>
 
 <!DOCTYPE html>
@@ -91,28 +88,28 @@
                                 <span class="status-circle circle-pending"></span>
                                 <h3>Pending</h3>
                             </div>
-                            <p><?= number_format($metrics['pending_count']); ?></p>
+                            <p><?= number_format($status_counts['pending']); ?></p>
                         </div>
                         <div class="total-card bg-accepted">
                             <div class="card-header">
                                 <span class="status-circle circle-accepted"></span>
                                 <h3>Accepted</h3>
                             </div>
-                            <p><?= number_format($metrics['accepted_count']); ?></p>
+                            <p><?= number_format($status_counts['accepted']); ?></p>
                         </div>
                         <div class="total-card bg-process">
                             <div class="card-header">
                                 <span class="status-circle circle-process"></span>
                                 <h3>In Process</h3>
                             </div>
-                            <p><?= number_format($metrics['in_process_count']); ?></p>
+                            <p><?= number_format($status_counts['in_process']); ?></p>
                         </div>
                         <div class="total-card bg-total">
                             <div class="card-header">
                                 <span class="status-circle circle-total"></span>
                                 <h3>Total Active Errands</h3>
                             </div>
-                            <p><?= number_format($metrics['total_errands']); ?></p>
+                            <p><?= number_format($total_errands); ?></p>
                         </div>
                     </div>
                 </section>
