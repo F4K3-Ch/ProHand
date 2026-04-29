@@ -179,7 +179,7 @@
                     WHERE status = 'pending'
                 ");
             } elseif ($type === 'accepted') {
-                // Your Tasks: Accepted & In Process
+                // Your Tasks: Accepted & In Processc  
                 $stmt = $this->db->prepare("
                     SELECT 
                         IFNULL(SUM(status = 'accepted'), 0) AS accepted,

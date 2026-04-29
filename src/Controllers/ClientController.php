@@ -87,14 +87,15 @@
                 'fee'         => (float)($post['fee'] ?? 0)
             ];
 
+            $allowed_types = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'docx'];
+            $max_size = 10 * 1024 * 1024; // 10MB
+            
+            $file_size = $files['attachment']['size']; // This is an integer
+            $file_name = $files['attachment']['name'];
+            $file_ext  = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+
             // 2. Single File Validation
             if (!empty($files['attachment']['name'])) {
-                $allowed_types = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'docx'];
-                $max_size = 10 * 1024 * 1024; // 10MB
-                
-                $file_size = $files['attachment']['size']; // This is an integer
-                $file_name = $files['attachment']['name'];
-                $file_ext  = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
 
                 // Check Size
                 if ($file_size > $max_size) {
