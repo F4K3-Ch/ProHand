@@ -375,4 +375,39 @@
                 $insert_stmt->execute();
             }
         }
+
+        public function resetToPending($errand_id, $tasker_id) {
+            // 1. Verify that this errand belongs to the tasker and can be cancelled
+            $check_stmt = $this->db->prepare("
+                SELECT title, client_id 
+                FROM errands 
+                WHERE id = ? AND tasker_id = ? AND status IN ('accepted', 'in_process') 
+                LIMIT 1
+            ");
+            $check_stmt->bind_param("ii", $errand_id, $tasker_id);
+            $check_stmt->execute();
+            $res = $check_stmt->get_result();
+
+            if ($res->num_rows !== 1) return false;
+            $errand = $res->fetch_assoc();
+
+            // 2. Reset the errand status and clear tasker-specific data
+            $update_stmt = $this->db->prepare("
+                UPDATE errands
+                SET status = 'pending',
+                    tasker_id = NULL,
+                    accepted_at = NULL, 
+                    in_process_at = NULL,
+                    updated_at = NOW()
+                WHERE id = ? AND tasker_id = ? AND status IN ('accepted', 'in_process')
+            ");
+            $update_stmt->bind_param("ii", $errand_id, $tasker_id);
+            $update_stmt->execute();
+
+            if ($update_stmt->affected_rows === 1) {
+                return $errand; // Return details for the Controller to use in notifications
+            }
+            
+            return false;
+        }
     }

@@ -1,30 +1,30 @@
 <?php
     session_start();
     
-    // 1. Load your OOP Classes using the correct paths
+    // Load your OOP Classes using the correct paths
     require_once "../../src/Classes/Database.php";
     require_once "../../src/Classes/User.php";
     require_once "../../src/Classes/Auth.php";
     require_once "../../src/Classes/Tasker.php";
     require_once "../../src/Controllers/TaskerController.php";
 
-    // 2. Setup Database
+    // Setup Database
     $database = new Database();
     $db = $database->getConnection(); 
 
-    // 3. Initialize Controller
+    // Initialize Controller
     $controller = new TaskerController($db);
 
-    // 4. NEW: Handle the "Accept" action if a POST request is made
-    // We check for 'accept_id' which will come from your table's form
+    // Handle "Accept" POST
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept_id'])) {
-        $controller->accept(); // This method will handle DB update, notifications, and redirection
+        $_POST['id'] = $_POST['accept_id'];
+        $controller->accept();
     }
 
-    // 5. Get Dashboard Data
+    // Get Dashboard Data
     $data = $controller->index();
 
-    // 6. Extract data for your HTML
+    // Extract data for your HTML
     $errands_pending = $data['errands_pending'];
     $metrics = $data['metrics'];
     $search = $data['search'];

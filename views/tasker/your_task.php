@@ -10,6 +10,12 @@
     $db = $database->getConnection();
     $controller = new TaskerController($db);
 
+    // Handle "Cancel" POST
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_id'])) {
+        $_POST['id'] = $_POST['cancel_id']; 
+        $controller->cancelErrand();
+    }
+
     // Get data from OOP Controller
     $data = $controller->activeTasks();
     extract($data); 
@@ -144,8 +150,8 @@
                                             </form>
 
                                             <!-- Cancel Button -->
-                                            <form method="POST" action="cancel_errand.php">
-                                                <input type="hidden" name="id" value="<?= $row['id']; ?>">
+                                            <form method="POST">
+                                                <input type="hidden" name="cancel_id" value="<?= $row['id']; ?>">
                                                 <button type="submit" class="btn-cancel" onclick="return confirm('Are you sure you want to cancel this errand?');">
                                                     Cancel
                                                 </button>

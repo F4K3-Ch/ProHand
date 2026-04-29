@@ -112,14 +112,14 @@
                     'in_process' => 'In Process'
                 ]
             ];
-        }
+        }   
         
         public function accept() {
             $this->auth->restrictTo('tasker');
             $tasker_id = $_SESSION['user_id'];
 
-            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept_id'])) {
-                $errand_id = (int)$_POST['accept_id'];
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
+                $errand_id = (int)$_POST['id'];
                 
                 // 1. Perform database update (Sets status to 'accepted' and accepted_at to NOW)
                 $errand = $this->tasker->acceptErrand($errand_id, $tasker_id);
@@ -233,6 +233,47 @@
                 } else {
                     $_SESSION['error'] = "Failed to finalize errand. Please try again.";
                     header("Location: your_task.php");
+                    exit;
+                }
+            }
+        }
+
+        public function cancelErrand() {
+            $this->auth->restrictTo('tasker');
+            $tasker_id = $_SESSION['user_id'];
+            
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
+                $errand_id = (int)$_POST['id'];
+                
+                // 1. Update database (Resets to pending, clears tasker_id and timestamps)
+                $data = $this->tasker->resetToPending($errand_id, $tasker_id);
+
+                if ($data) {
+                    $errand_title = $data['title'];
+                    $client_id = (int)$data['client_id'];
+
+                    // 2. Fetch names for consistency
+                    $tasker_full_name = $this->user->getFullName($tasker_id);
+                    $client_full_name = $this->user->getFullName($client_id);
+
+                    $notif_type = "errand";
+
+                    // 3. Notify Client
+                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was \"Cancelled\" by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+                    $client_link = "../client/view_errand_info.php?errand_id=$errand_id";
+                    $this->user->addNotification($client_id, $notif_type, $client_msg, $client_link);
+
+                    // 4. Notify Admins
+                    $admin_msg = "Errand Cancelled | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Cancelled by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+                    $admin_link = "../admin/view_errand_info.php?errand_id=$errand_id";
+                    $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
+
+                    $_SESSION['success'] = "You cancelled Errand: \"{$errand_title}\". It is now back to Pending.";
+                    header("Location: tasker_dashboard.php");
+                    exit;
+                } else {
+                    $_SESSION['error'] = "You are not authorized to cancel this errand or it is in an invalid status.";
+                    header("Location: tasker_dashboard.php");
                     exit;
                 }
             }

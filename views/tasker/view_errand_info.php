@@ -15,6 +15,7 @@
 
     // Handle "Accept" POST
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept_id'])) {
+        $_POST['id'] = $_POST['accept_id'];
         $controller->accept();
     }
 
@@ -29,6 +30,12 @@
         $_POST['id'] = $_POST['final_status_id'];
         // $_POST['new_status'] is passed from the button value
         $controller->updateStatusFinal();
+    }
+
+    // Handle "Cancel" POST
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_id'])) {
+        $_POST['id'] = $_POST['cancel_id']; 
+        $controller->cancelErrand();
     }
 
     if (!$data) {
@@ -245,8 +252,8 @@
                             <button type="submit" class="btn-update">Update</button>
                         </form>
                         <!-- Cancel Button -->
-                        <form method="POST" action="cancel_errand.php">
-                            <input type="hidden" name="id" value="<?= $errand['id']; ?>">
+                        <form method="POST">
+                            <input type="hidden" name="cancel_id" value="<?= $errand['id']; ?>">
                             <button type="submit" class="btn-cancel" onclick="return confirm('Are you sure you want to cancel this errand?');">
                                 Cancel
                             </button>
