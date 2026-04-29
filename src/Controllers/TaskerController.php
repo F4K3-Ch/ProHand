@@ -14,19 +14,21 @@
         public function index() {
             $this->auth->restrictTo('tasker');
             
-            // Get the ID from the session
             $tasker_id = $_SESSION['user_id'];
             $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-            // Pass $tasker_id to the methods
-            $errands_pending = $this->tasker->getErrandsPending($search);
-            $metrics = $this->tasker->getErrandMetrics($tasker_id);
+            // Fetch data from Model
+            $metrics = $this->tasker->getErrandMetrics();
+            $errands = $this->tasker->getErrandsPending($search);
 
             return [
-                'errands_pending' => $errands_pending,
-                'metrics' => $metrics,
-                'search' => $search,
-                'status_labels' => [
+                'errands_pending' => $errands, // This matches the variable in your loop
+                'search'          => $search,
+                'status_counts'   => [
+                    'pending' => $metrics['pending'] ?? 0 // Ensures 'pending' key exists
+                ],
+                'total_errands'   => $metrics['total'] ?? 0,
+                'status_labels'   => [
                     'pending' => 'Pending'
                 ]
             ];

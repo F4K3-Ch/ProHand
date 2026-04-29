@@ -58,12 +58,16 @@
         }
 
         public function getErrandMetrics() {
-            $result = $this->db->query("
+            // This is the global "Available" count for the dashboard
+            $stmt = $this->db->prepare("
                 SELECT 
-                    IFNULL(SUM(status = 'pending'), 0) AS pending_count
+                    IFNULL(SUM(status = 'pending'), 0) AS pending,
+                    COUNT(*) AS total
                 FROM errands
+                WHERE status = 'pending'
             ");
-            return $result->fetch_assoc();
+            $stmt->execute();
+            return $stmt->get_result()->fetch_assoc();
         }
 
         public function getErrandStatus($errand_id) {

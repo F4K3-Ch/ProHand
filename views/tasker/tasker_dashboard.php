@@ -23,12 +23,7 @@
 
     // Get Dashboard Data
     $data = $controller->index();
-
-    // Extract data for your HTML
-    $errands_pending = $data['errands_pending'];
-    $metrics = $data['metrics'];
-    $search = $data['search'];
-    $status_labels = $data['status_labels'];
+    extract($data); 
 ?>
 
 <!DOCTYPE html>
@@ -100,7 +95,7 @@
                                 <span class="status-circle circle-pending"></span>
                                 <h3>Pending</h3>
                             </div>
-                            <p><?= number_format($metrics['pending_count']); ?></p>
+                            <p><?= number_format($status_counts['pending']); ?></p>
                         </div>
                     </div>  
                 </section>
