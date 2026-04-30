@@ -12,11 +12,10 @@
 
     // Initialize the Controller
     $controller = new AuthController($db);
-    $data = $controller->login();
 
     // Extract data to use in the HTML below
-    $error = $data['error'];
-    $email = $data['email'];
+    $data = $controller->login();
+    extract($data); 
 ?>
 
 <!DOCTYPE html>
@@ -46,11 +45,17 @@
                 </div>
 
                 <div class="login-error-success-message">
-                    <?php if (isset($_SESSION['success'])): ?>
-                        <p class="success"><?= htmlspecialchars($_SESSION['success']); ?></p>
-                        <?php unset($_SESSION['success']); ?>
-                    <?php elseif (!empty($error)): ?>
-                        <p class="error"><?= htmlspecialchars($error); ?></p>
+                    <!-- Success/Error Message -->
+                    <?php if (isset($_SESSION['success']) || isset($_SESSION['error'])): ?>
+                        <div class="error-success-message">
+                            <?php if (isset($_SESSION['success'])): ?>
+                                <p class="success"><?= htmlspecialchars($_SESSION['success']); ?></p>
+                                <?php unset($_SESSION['success']); ?>
+                            <?php elseif (isset($_SESSION['error'])): ?>
+                                <p class="error"><?= htmlspecialchars($_SESSION['error']); ?></p>
+                                <?php unset($_SESSION['error']); ?>
+                            <?php endif; ?>
+                        </div>
                     <?php endif; ?>
                 </div>
 

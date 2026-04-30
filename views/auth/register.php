@@ -12,11 +12,10 @@
 
     // Initialize the Controller
     $controller = new AuthController($db);
-    $result = $controller->register();
 
     // Extract data to use in the HTML below
-    $error = $result['error'];
-    $fields = $result['fields']; 
+    $data = $controller->register();
+    extract($data); 
 ?>
 
 <!DOCTYPE html>
@@ -40,8 +39,17 @@
         <h1>Register Here</h1>
 
         <div class="register-error-success-message">
-            <?php if (!empty($error)): ?>
-                <p class="error"><?= htmlspecialchars($error); ?></p>
+            <!-- Success/Error Message -->
+            <?php if (isset($_SESSION['success']) || isset($_SESSION['error'])): ?>
+                <div class="error-success-message">
+                    <?php if (isset($_SESSION['success'])): ?>
+                        <p class="success"><?= htmlspecialchars($_SESSION['success']); ?></p>
+                        <?php unset($_SESSION['success']); ?>
+                    <?php elseif (isset($_SESSION['error'])): ?>
+                        <p class="error"><?= htmlspecialchars($_SESSION['error']); ?></p>
+                        <?php unset($_SESSION['error']); ?>
+                    <?php endif; ?>
+                </div>
             <?php endif; ?>
         </div>
 
