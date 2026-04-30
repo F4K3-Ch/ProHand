@@ -186,7 +186,7 @@
             return $stmt->get_result();
         }
 
-        // Create Errand
+        // create_errand.php
         public function createErrand($data) {
             $stmt = $this->db->prepare("INSERT INTO errands (client_id, title, description, deadline, contact, location, fee, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')");
             
@@ -206,10 +206,60 @@
             return false;
         }
 
-        // Create Errand
+        // create_errand.php & edit_errand.php
         public function saveErrandAttachment($errand_id, $file_path, $original_name) {
             $stmt = $this->db->prepare("INSERT INTO errand_attachments (errand_id, file_path, original_name) VALUES (?, ?, ?)");
             $stmt->bind_param("iss", $errand_id, $file_path, $original_name);
             return $stmt->execute();
+        }
+
+        // edit_errand.php
+        public function updateErrand($errand_id, $client_id, $data) {
+            $stmt = $this->db->prepare("
+                UPDATE errands 
+                SET title=?, description=?, deadline=?, contact=?, location=?, fee=?
+                WHERE id=? AND client_id=?
+            ");
+            $stmt->bind_param("sssssdii", 
+                $data['title'], 
+                $data['description'], 
+                $data['deadline'], 
+                $data['contact'], 
+                $data['location'], 
+                $data['fee'], 
+                $errand_id, 
+                $client_id
+            );
+            return $stmt->execute();
+        }
+
+        // edit_errand.php
+        // Delete existing attachments for an errand (used when replacing with a new file)
+        public function deleteErrandAttachments($errand_id) {
+            // 1. Get file paths to delete from server
+            $stmt = $this->db->prepare("SELECT file_path FROM errand_attachments WHERE errand_id = ?");
+            $stmt->bind_param("i", $errand_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            
+            while ($row = $result->fetch_assoc()) {
+                $full_path = "../../public/" . $row['file_path'];
+                if (file_exists($full_path)) {
+                    unlink($full_path);
+                }
+            }
+
+            // 2. Delete from database
+            $stmt = $this->db->prepare("DELETE FROM errand_attachments WHERE errand_id = ?");
+            $stmt->bind_param("i", $errand_id);
+            return $stmt->execute();
+        }
+
+        // edit_errand.php
+        public function getAssignedTasker($errand_id) {
+            $stmt = $this->db->prepare("SELECT u.id, u.first_name, u.last_name FROM errands e JOIN users u ON e.tasker_id = u.id WHERE e.id = ?");
+            $stmt->bind_param("i", $errand_id);
+            $stmt->execute();
+            return $stmt->get_result()->fetch_assoc();
         }
     }

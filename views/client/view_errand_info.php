@@ -157,32 +157,31 @@
                 <div class="info-box">
                     <label>Attachments</label>
 
-                    <?php if ($attachments_result->num_rows > 0): ?>
+                    <?php if ($attachments_result && $attachments_result->num_rows > 0): ?>
                         <div class="attachment-list">
-                            <?php while ($file = $attachments_result->fetch_assoc()): ?>
-                                <?php
-                                    // The database stores 'uploads/attachments/filename.ext'
-                                    // We need to go up two levels to reach the root, then into public/
-                                    $relative_path = '../../public/' . $file['file_path'];
-                                    
-                                    // Determine which download script to use
-                                    // Assuming your shared folder is at the root level relative to views/client/
-                                    $download_action = $is_active ? "../../shared/download_attachment.php" : "../../shared/download_attachment_history.php";
-                                ?>
+                            <?php 
+                                // Fetch only the first (and only) row
+                                $file = $attachments_result->fetch_assoc(); 
+                                
+                                // The database stores 'uploads/attachments/filename.ext'
+                                $relative_path = '../../public/' . $file['file_path'];
+                                
+                                // Determine which download script to use
+                                $download_action = $is_active ? "../../shared/download_attachment.php" : "../../shared/download_attachment_history.php";
+                            ?>
 
-                                <div class="attachment-item">
-                                    <a href="<?= htmlspecialchars($relative_path); ?>" target="_blank" class="attachment-name">
-                                        <i class="fa-solid fa-file-lines"></i> <?= htmlspecialchars($file['original_name']); ?>
-                                    </a>
+                            <div class="attachment-item">
+                                <a href="<?= htmlspecialchars($relative_path); ?>" target="_blank" class="attachment-name">
+                                    <i class="fa-solid fa-file-lines"></i> <?= htmlspecialchars($file['original_name']); ?>
+                                </a>
 
-                                    <form method="GET" action="<?= $download_action; ?>">
-                                        <input type="hidden" name="id" value="<?= (int)$file['id']; ?>">
-                                        <button type="submit" class="btn-download">
-                                            <i class="fa-solid fa-download"></i> Download
-                                        </button>
-                                    </form>
-                                </div>
-                            <?php endwhile; ?>
+                                <form method="GET" action="<?= $download_action; ?>">
+                                    <input type="hidden" name="id" value="<?= (int)$file['id']; ?>">
+                                    <button type="submit" class="btn-download">
+                                        <i class="fa-solid fa-download"></i> Download
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     <?php else: ?>
                         <div class="attachment-list no-attachments">

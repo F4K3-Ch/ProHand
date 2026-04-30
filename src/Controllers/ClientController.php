@@ -136,7 +136,7 @@
             ];
         }
 
-        // Create Errand
+        // create_errand.php
         public function handleCreateErrand($post, $files) {
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') return null;
 
@@ -160,7 +160,7 @@
                 'fee'         => (float)($post['fee'] ?? 0)
             ];
 
-            $allowed_types = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'docx'];
+            $allowed_types = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'docx', 'ppt', 'pptx'];
             $max_size = 10 * 1024 * 1024; // 10MB
             
             $file_size = $files['attachment']['size']; // This is an integer
@@ -208,6 +208,100 @@
                 exit;
             }
             
+            return $post;
+        }
+
+        // edit_errand.php
+        public function handleEditErrand($errand_id, $post, $files) {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return null;
+
+            $this->auth->restrictTo('client');
+            $client_id = $_SESSION['user_id'];
+            
+            // 1. Validation (Same as create_errand style)
+            $deadline_ts = strtotime($post['deadline'] ?? '');
+            if (!$deadline_ts || $deadline_ts < time()) {
+                $_SESSION['error'] = "Invalid or past deadline.";
+                return $post;
+            }
+
+            $data = [
+                'title'       => trim($post['title'] ?? ''),
+                'description' => trim($post['description'] ?? ''),
+                'deadline'    => date('Y-m-d H:i:s', $deadline_ts),
+                'contact'     => trim($post['contact'] ?? ''),
+                'location'    => trim($post['location'] ?? ''),
+                'fee'         => (float)($post['fee'] ?? 0)
+            ];
+
+            // PowerPoint Fix: Added 'ppt' and 'pptx' to allowed types
+            $allowed_types = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'docx', 'ppt', 'pptx'];
+            $max_size = 10 * 1024 * 1024;
+
+            if (!empty($files['attachment']['name'])) {
+                $file_ext = strtolower(pathinfo($files['attachment']['name'], PATHINFO_EXTENSION));
+                
+                if ($files['attachment']['size'] > $max_size) {
+                    $_SESSION['error'] = "The file is too large. Maximum size is 10MB.";
+                    return $post;
+                }
+                if (!in_array($file_ext, $allowed_types)) {
+                    $_SESSION['error'] = "File type .$file_ext is not allowed.";
+                    return $post;
+                }
+            }
+
+            // 2. Update Errand
+            if ($this->client->updateErrand($errand_id, $client_id, $data)) {
+                
+                // 3. Handle File Deletion & Upload
+                // Check if user ticked "Remove file" OR is uploading a replacement
+                $remove_requested = isset($post['remove_current_file']);
+                $new_file_uploaded = !empty($files['attachment']['name']) && $files['attachment']['error'] === UPLOAD_ERR_OK;
+
+                if ($remove_requested || $new_file_uploaded) {
+                    // This clears the database record and unlinks the physical file from the server
+                    $this->client->deleteErrandAttachments($errand_id);
+                }
+
+                // Only save a new record if a file was actually provided
+                if ($new_file_uploaded) {
+                    $file_ext = strtolower(pathinfo($files['attachment']['name'], PATHINFO_EXTENSION));
+                    $upload_dir = "../../public/uploads/attachments/";
+                    $unique_name = "client_" . $client_id . "_" . time() . "_" . uniqid() . "." . $file_ext;
+                    
+                    if (move_uploaded_file($files['attachment']['tmp_name'], $upload_dir . $unique_name)) {
+                        $this->client->saveErrandAttachment($errand_id, "uploads/attachments/" . $unique_name, $files['attachment']['name']);
+                    }
+                }
+
+                // 4. Notification Logic (Using your existing functions)
+                $tasker = $this->client->getAssignedTasker($errand_id);
+                if ($tasker) {
+                    $tasker_id = (int)$tasker['id'];
+                    $tasker_full_name = $tasker['first_name'] . ' ' . $tasker['last_name'];
+                    $title = $data['title'];
+                    
+                    // Get client name for the message
+                    $client_full_name = $_SESSION['user_full_name'] ?? "A Client"; 
+
+                    // Notify Tasker
+                    $msg_tasker = "The Client: \"{$client_full_name}\" (ID: {$client_id}) has Edited the details of your assigned Errand: \"{$title}\" (ID: {$errand_id}).";
+                    $link_tasker = "../tasker/view_errand_info.php?errand_id={$errand_id}";
+                    $this->client->addNotification($tasker_id, "errand", $msg_tasker, $link_tasker);
+
+                    // Notify Admins (Using your existing notifyAllAdmins function)
+                    $msg_admin = "Errand Edited | Errand: \"{$title}\" (ID: {$errand_id}) | Assigned to Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Edited by Client: \"{$client_full_name}\" (ID: {$client_id}).";
+                    $link_admin = "../admin/view_errand_info.php?errand_id={$errand_id}";
+                    $this->client->notifyAllAdmins("errand", $msg_admin, $link_admin);
+                }
+
+                $_SESSION['success'] = "Errand updated successfully!";
+                header("Location: view_errand_info.php?errand_id=$errand_id");
+                exit;
+            }
+
+            $_SESSION['error'] = "Failed to update errand.";
             return $post;
         }
     }
