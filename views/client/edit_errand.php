@@ -59,10 +59,8 @@
                 <?php if (isset($_SESSION['success'])): ?>
                     <p class="success"><?= htmlspecialchars($_SESSION['success']); ?></p>
                     <?php unset($_SESSION['success']); ?>
-                <?php endif; ?>
-
-                <?php if (!empty($error)): ?>
-                    <p class="error"><?= htmlspecialchars($error); ?></p>
+                <?php elseif (isset($_SESSION['error'])): ?>
+                    <p class="error"><?= htmlspecialchars($_SESSION['error']); ?></p>
                     <?php unset($_SESSION['error']); ?>
                 <?php endif; ?>
             </div>
