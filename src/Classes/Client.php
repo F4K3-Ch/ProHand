@@ -331,14 +331,14 @@
                 $tasker_full_name = "N/A";
                 if ($tasker_id) {
                     $tasker_full_name = $this->getFullName($tasker_id);
-                    $notif_message = "The Errand: \"{$errand_title}\" (ID: {$errand_id}) you accepted earlier was \"Cancelled\" by the Client: \"{$client_full_name}\" (ID: {$client_id}).";
-                    $notif_link = "../tasker/view_errand_info.php?errand_id={$errand_id}";
-                    $this->addNotification($tasker_id, "errand", $notif_message, $notif_link);
+                    $tasker_msg = "The Errand: \"{$errand_title}\" (ID: {$errand_id}) you accepted earlier was \"Cancelled\" by the Client: \"{$client_full_name}\" (ID: {$client_id}).";
+                    $tasker_link = "../tasker/view_errand_info.php?errand_id={$errand_id}";
+                    $this->addNotification($tasker_id, "errand", $tasker_msg, $tasker_link);
                 }
 
-                $admin_message = "Errand Cancelled | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Previously Assigned to Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Cancelled by Client: \"{$client_full_name}\" (ID: {$client_id}).";
+                $admin_msg = "Errand Cancelled | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Previously Assigned to Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Cancelled by Client: \"{$client_full_name}\" (ID: {$client_id}).";
                 $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
-                $this->notifyAllAdmins("errand", $admin_message, $admin_link);
+                $this->notifyAllAdmins("errand", $admin_msg, $admin_link);
 
                 return $errand_title; // Return title on success
             }
