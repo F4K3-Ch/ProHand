@@ -179,13 +179,13 @@
                 </div>
 
                 <div class="info-box">
-                    <label>Attachments</label>
+                    <label>Attachment</label>
 
-                    <?php if ($attachments_result && $attachments_result->num_rows > 0): ?>
+                    <?php if ($attachment_result && $attachment_result->num_rows > 0): ?>
                         <div class="attachment-list">
                             <?php 
                                 // Fetch only the first (and only) row
-                                $file = $attachments_result->fetch_assoc(); 
+                                $file = $attachment_result->fetch_assoc(); 
                                 
                                 // The database stores 'uploads/attachments/filename.ext'
                                 $relative_path = '../../public/' . $file['file_path'];

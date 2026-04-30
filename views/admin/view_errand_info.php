@@ -157,9 +157,9 @@
                 <div class="info-box">
                     <label>Attachments</label>
 
-                    <?php if ($attachments_result->num_rows > 0): ?>
+                    <?php if ($attachment_result->num_rows > 0): ?>
                         <div class="attachment-list">
-                            <?php while ($file = $attachments_result->fetch_assoc()): ?>
+                            <?php while ($file = $attachment_result->fetch_assoc()): ?>
                                 <?php
                                     // The database stores 'uploads/attachments/filename.ext'
                                     // We need to go up two levels to reach the root, then into public/

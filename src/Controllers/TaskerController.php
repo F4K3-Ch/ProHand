@@ -110,13 +110,13 @@
                 $res = $this->tasker->getActiveErrandWithClient($errand_id, $tasker_id);
                 if ($res->num_rows !== 1) return null;
                 $errand = $res->fetch_assoc();
-                $attachments = $this->tasker->getAttachments($errand_id, false);
+                $attachment = $this->tasker->getAttachment($errand_id, false);
                 $profile_dir = '../../public/uploads/profile_pictures/';
             } elseif ($is_finished) {
                 $res = $this->tasker->getFinishedErrand($errand_id, $tasker_id);
                 if ($res->num_rows !== 1) return null;
                 $errand = $res->fetch_assoc();
-                $attachments = $this->tasker->getAttachments($errand['id'], true);
+                $attachment = $this->tasker->getAttachment($errand['id'], true);
                 $profile_dir = '../../public/uploads/history/profile_pictures/';
             } else {
                 return null;
@@ -131,7 +131,7 @@
 
             return [
                 'errand' => $errand,
-                'attachments_result' => $attachments,
+                'attachment_result' => $attachment,
                 'client_picture' => $client_picture,
                 'is_active' => $is_active,
                 'is_finished' => $is_finished,

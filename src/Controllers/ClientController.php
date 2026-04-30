@@ -94,7 +94,7 @@
                 if ($res->num_rows !== 1) return null;
 
                 $errand = $res->fetch_assoc();
-                $attachments = $this->client->getAttachments($errand_id, false);
+                $attachment = $this->client->getAttachment($errand_id, false);
                 $profile_dir = '../../public/uploads/profile_pictures/';
             } elseif ($is_finished) {
                 // Fetch from 'history' table
@@ -103,7 +103,7 @@
 
                 $errand = $res->fetch_assoc();
                 // Use history PK (id) for attachments if necessary, or errand_id based on your DB logic
-                $attachments = $this->client->getAttachments($errand['id'], true); 
+                $attachment = $this->client->getAttachment($errand['id'], true); 
                 $profile_dir = '../../public/uploads/history/profile_pictures/';
             } else {
                 return null;
@@ -121,7 +121,7 @@
 
             return [
                 'errand'             => $errand,
-                'attachments_result' => $attachments,
+                'attachment_result'  => $attachment,
                 'tasker_picture'     => $tasker_picture,
                 'is_active'          => $is_active,
                 'is_finished'        => $is_finished,

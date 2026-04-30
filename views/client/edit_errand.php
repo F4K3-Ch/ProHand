@@ -101,9 +101,9 @@
                 <div class="edit-errand-input-box">
                     <label>Existing Attachment</label>
                     <div class="edit-attachment-list">
-                        <?php if ($attachments_result && $attachments_result->num_rows > 0): ?>
+                        <?php if ($attachment_result && $attachment_result->num_rows > 0): ?>
                             <?php 
-                                $file = $attachments_result->fetch_assoc(); 
+                                $file = $attachment_result->fetch_assoc(); 
                                 $filename = basename($file['file_path']);
                                 $relative_path = '../../public/uploads/attachments/' . $filename;
                             ?>

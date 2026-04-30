@@ -222,7 +222,7 @@
         }
 
         // view_errand_info.php
-        public function getAttachments($id, $is_finished = false) {
+        public function getAttachment($id, $is_finished = false) {
             if ($is_finished) {
                 $stmt = $this->db->prepare("SELECT id, file_path, original_name FROM history_attachments WHERE history_errand_id = ?");
             } else {

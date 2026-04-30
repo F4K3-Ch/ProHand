@@ -58,13 +58,13 @@
                 $res = $this->admin->getActiveErrandFullDetails($errand_id);
                 if ($res->num_rows !== 1) return null;
                 $errand = $res->fetch_assoc();
-                $attachments = $this->admin->getAttachments($errand_id, false);
+                $attachment = $this->admin->getAttachment($errand_id, false);
                 $profile_dir = '../../public/uploads/profile_pictures/';
             } elseif ($is_finished) {
                 $res = $this->admin->getFinishedErrandFullDetails($errand_id);
                 if ($res->num_rows !== 1) return null;
                 $errand = $res->fetch_assoc();
-                $attachments = $this->admin->getAttachments($errand['id'], true);
+                $attachment = $this->admin->getAttachment($errand['id'], true);
                 $profile_dir = '../../public/uploads/history/profile_pictures/';
             } else {
                 return null;
@@ -86,7 +86,7 @@
 
             return [
                 'errand' => $errand,
-                'attachments_result' => $attachments,
+                'attachment_result' => $attachment,
                 'client_picture' => $client_picture,
                 'tasker_picture' => $tasker_picture,
                 'is_active' => $is_active,
