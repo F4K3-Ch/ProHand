@@ -13,6 +13,12 @@
     $errand_id = (int)($_GET['errand_id'] ?? 0);
     $data = $controller->viewErrandDetails($errand_id);
 
+    // Handle "Delete" POST trigger - following your Tasker style
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
+        $_POST['id'] = $_POST['delete_id']; // Map delete_id to id for the controller
+        $controller->delete(); 
+    }
+
     if (!$data) {
         $_SESSION['error'] = "Errand not found.";
         header("Location: client_dashboard.php");
@@ -198,9 +204,9 @@
                             <button type="submit" class="btn-edit-errand">Edit</button>
                         </form>
                         <!-- Delete -->
-                        <form method="POST" action="delete_errand.php"
+                        <form method="POST"
                             onsubmit="return confirm('Are you sure you want to delete this errand request?');">
-                            <input type="hidden" name="id" value="<?= $errand['id']; ?>">
+                            <input type="hidden" name="delete_id" value="<?= $errand['id']; ?>">
                             <button type="submit" class="btn-delete">Delete</button>
                         </form>
                     <?php elseif ($errand['status'] === 'accepted'): ?>

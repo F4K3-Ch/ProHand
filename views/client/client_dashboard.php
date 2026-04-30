@@ -15,6 +15,12 @@
     // Initialize Controller
     $controller = new ClientController($db);
 
+    // Handle "Delete" POST trigger - following your Tasker style
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
+        $_POST['id'] = $_POST['delete_id']; // Map delete_id to id for the controller
+        $controller->delete(); 
+    }
+    
     // Get Dashboard Data
     $data = $controller->index();
     extract($data); 
@@ -153,8 +159,8 @@
 
                                             <?php if ($row['status'] === 'pending'): ?>
                                                 <!-- Delete Button -->
-                                                <form method="POST" action="delete_errand.php" onsubmit="return confirm('Are you sure you want to delete this errand request? It will be deleted permanently.');">
-                                                    <input type="hidden" name="id" value="<?= $row['id']; ?>">
+                                                <form method="POST" onsubmit="return confirm('Are you sure you want to delete this errand request? It will be deleted permanently.');">
+                                                    <input type="hidden" name="delete_id" value="<?= $row['id']; ?>">
                                                     <button type="submit" class="btn-delete">Delete</button>
                                                 </form>
                                             <?php elseif ($row['status'] === 'accepted'): ?>

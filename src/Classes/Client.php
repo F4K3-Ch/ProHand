@@ -262,4 +262,31 @@
             $stmt->execute();
             return $stmt->get_result()->fetch_assoc();
         }
+
+        public function deleteErrandWithFiles($errand_id, $client_id) {
+            // 1. Verify ownership and get title
+            $stmt = $this->db->prepare("SELECT id, title FROM errands WHERE id = ? AND client_id = ? LIMIT 1");
+            $stmt->bind_param("ii", $errand_id, $client_id);
+            $stmt->execute();
+            $check_result = $stmt->get_result();
+
+            if ($check_result->num_rows !== 1) {
+                return false;
+            }
+
+            $row = $check_result->fetch_assoc();
+            $errand_title = $row['title'];
+
+            // 2. Reuse your established function 
+            // This handles the "../../public/" path and the database deletion for attachments
+            $this->deleteErrandAttachments($errand_id);
+
+            // 3. Delete the main errand record itself 
+            $stmt = $this->db->prepare("DELETE FROM errands WHERE id = ? AND client_id = ?");
+            $stmt->bind_param("ii", $errand_id, $client_id);
+            $delete_result = $stmt->execute();
+
+            // Return title so the Controller can format the success message
+            return $delete_result ? $errand_title : false;
+        }
     }
