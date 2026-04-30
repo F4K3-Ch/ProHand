@@ -13,10 +13,16 @@
     $errand_id = (int)($_GET['errand_id'] ?? 0);
     $data = $controller->viewErrandDetails($errand_id);
 
-    // Handle "Delete" POST trigger - following your Tasker style
+    // Handle "Delete Pending Errand" trigger
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
         $_POST['id'] = $_POST['delete_id']; // Map delete_id to id for the controller
-        $controller->delete(); 
+        $controller->handleDeleteErrand(); 
+    }
+
+    // Handle "Cancel Accepted Errand" trigger
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_accepted_id'])) {
+        $_POST['id'] = $_POST['cancel_accepted_id']; 
+        $controller->handleCancelAccepted(); 
     }
 
     if (!$data) {
@@ -216,9 +222,9 @@
                             <button type="submit" class="btn-edit-errand">Edit</button>
                         </form>
                         <!-- Cancel -->
-                        <form method="POST" action="cancel_errand.php"
+                        <form method="POST"
                             onsubmit="return confirm('Are you sure you want to cancel this errand? It will return to Pending.');">
-                            <input type="hidden" name="id" value="<?= $errand['id']; ?>">
+                            <input type="hidden" name="cancel_accepted_id" value="<?= $errand['id']; ?>">
                             <button type="submit" class="btn-cancel">Cancel</button>
                         </form>
                     <?php elseif ($errand['status'] === 'in_process'): ?>

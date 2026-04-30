@@ -304,29 +304,55 @@
             $_SESSION['error'] = "Failed to update errand.";
             return $post;
         }
+        // Delete pending errand button
+        public function handleDeleteErrand() {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
 
-        public function delete() {
-            // 1. Auth Guard
-            if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'client') {
-                header("Location: ../auth/login.php");
-                exit;
-            }
+            // 1. Auth Guard and User ID retrieval
+            $this->auth->restrictTo('client');
+            $client_id = $_SESSION['user_id'];
+            
+            // Access $_POST directly, just like your TaskerController does
+            $errand_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
 
-            if (isset($_POST['id'])) {
-                $errand_id = (int)$_POST['id'];
-                $client_id = (int)$_SESSION['user_id'];
-
-                // 2. Call the Class Method
+            if ($errand_id > 0) {
                 $errand_title = $this->client->deleteErrandWithFiles($errand_id, $client_id);
 
                 if ($errand_title) {
                     $_SESSION['success'] = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) request has been cancelled and deleted successfully.";
                 } else {
-                    $_SESSION['error'] = "Error in cancelling and deleting in your Errand: \"{$errand_title}\" (ID: {$errand_id}) request. Please try again.";
+                    $_SESSION['error'] = "Error in cancelling and deleting your Errand request. Please try again.";
                 }
             } else {
                 $_SESSION['error'] = "Invalid request.";
             }
+
+            header("Location: client_dashboard.php");
+            exit;
+        }
+
+        public function handleCancelAccepted() {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
+
+            // 1. Auth Guard and User ID retrieval
+            $this->auth->restrictTo('client');
+            $client_id = $_SESSION['user_id'];
+            
+            // Access $_POST directly
+            $errand_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+
+            if ($errand_id > 0) {
+                $result = $this->client->cancelAcceptedErrand($errand_id, $client_id);
+
+                if ($result['status'] === 'success') {
+                    $_SESSION['success'] = $result['message'];
+                } else {
+                    $_SESSION['error'] = $result['message'];
+                }
+            } else {
+                $_SESSION['error'] = "Invalid request.";
+            }
+
             header("Location: client_dashboard.php");
             exit;
         }
