@@ -263,7 +263,7 @@
             return $stmt->get_result()->fetch_assoc();
         }
 
-        public function deleteErrandWithFiles($errand_id, $client_id) {
+        public function deletePendingErrand($errand_id, $client_id) {
             // 1. Verify ownership and get title
             $stmt = $this->db->prepare("SELECT id, title FROM errands WHERE id = ? AND client_id = ? LIMIT 1");
             $stmt->bind_param("ii", $errand_id, $client_id);
@@ -303,7 +303,7 @@
             $check_result = $check_stmt->get_result();
 
             if ($check_result->num_rows !== 1) {
-                return ['status' => 'error', 'message' => "You are not authorized to cancel this errand or it's not in accepted status."];
+                return false; // Return false instead of an array
             }
 
             $row = $check_result->fetch_assoc();
@@ -325,29 +325,24 @@
             $update_stmt->execute();
 
             if ($update_stmt->affected_rows === 1) {
-                // 3. Use your existing User.php helper for names
+                // 3. Handle Notifications
                 $client_full_name = $this->getFullName($client_id);
                 
-                // 4. Notify assigned tasker if exists
                 $tasker_full_name = "N/A";
                 if ($tasker_id) {
                     $tasker_full_name = $this->getFullName($tasker_id);
-                    
                     $notif_message = "The Errand: \"{$errand_title}\" (ID: {$errand_id}) you accepted earlier was \"Cancelled\" by the Client: \"{$client_full_name}\" (ID: {$client_id}).";
                     $notif_link = "../tasker/view_errand_info.php?errand_id={$errand_id}";
-                    
                     $this->addNotification($tasker_id, "errand", $notif_message, $notif_link);
                 }
 
-                // 5. Notify all admins
                 $admin_message = "Errand Cancelled | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Previously Assigned to Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Cancelled by Client: \"{$client_full_name}\" (ID: {$client_id}).";
                 $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
-                
                 $this->notifyAllAdmins("errand", $admin_message, $admin_link);
 
-                return ['status' => 'success', 'message' => "You cancelled Errand: \"{$errand_title}\" (ID: {$errand_id})."];
+                return $errand_title; // Return title on success
             }
 
-            return ['status' => 'error', 'message' => "Failed to cancel Errand: \"{$errand_title}\" (ID: {$errand_id}). Please try again."];
+            return false; // Return false on failure
         }
     }

@@ -316,7 +316,7 @@
             $errand_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
 
             if ($errand_id > 0) {
-                $errand_title = $this->client->deleteErrandWithFiles($errand_id, $client_id);
+                $errand_title = $this->client->deletePendingErrand($errand_id, $client_id);
 
                 if ($errand_title) {
                     $_SESSION['success'] = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) request has been cancelled and deleted successfully.";
@@ -334,20 +334,18 @@
         public function handleCancelAccepted() {
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
 
-            // 1. Auth Guard and User ID retrieval
             $this->auth->restrictTo('client');
             $client_id = $_SESSION['user_id'];
-            
-            // Access $_POST directly
             $errand_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
 
             if ($errand_id > 0) {
-                $result = $this->client->cancelAcceptedErrand($errand_id, $client_id);
+                // Now returns title or false
+                $errand_title = $this->client->cancelAcceptedErrand($errand_id, $client_id);
 
-                if ($result['status'] === 'success') {
-                    $_SESSION['success'] = $result['message'];
+                if ($errand_title) {
+                    $_SESSION['success'] = "You successfully cancelled Errand: \"{$errand_title}\" (ID: {$errand_id}). The tasker has been notified.";
                 } else {
-                    $_SESSION['error'] = $result['message'];
+                    $_SESSION['error'] = "Failed to cancel Errand (ID: {$errand_id}). It may no longer be in 'accepted' status.";
                 }
             } else {
                 $_SESSION['error'] = "Invalid request.";
