@@ -16,15 +16,14 @@
     $controller = new ClientController($db);
 
     // Handle "Delete Pending Errand" trigger
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
-        $_POST['id'] = $_POST['delete_id']; // Map delete_id to id for the controller
-        $controller->handleDeleteErrand(); 
-    }
-
-    // Handle "Cancel Accepted Errand" trigger
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_accepted_id'])) {
-        $_POST['id'] = $_POST['cancel_accepted_id']; 
-        $controller->handleCancelAccepted(); 
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (isset($_POST['delete_id'])) {
+            $_POST['id'] = $_POST['delete_id']; 
+            $controller->handleDeleteErrand(); 
+        } elseif (isset($_POST['cancel_accepted_id'])) {
+            $_POST['id'] = $_POST['cancel_accepted_id']; 
+            $controller->handleCancelAccepted(); 
+        }
     }
     
     // Get Dashboard Data

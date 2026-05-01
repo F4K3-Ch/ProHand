@@ -5,7 +5,6 @@
     require_once "../../src/Classes/Auth.php";
     require_once "../../src/Classes/Tasker.php"; 
     require_once "../../src/Controllers/TaskerController.php";
-    // 1. Load the SharedController file
     require_once "../../src/Controllers/SharedController.php";
 
     $database = new Database();
@@ -15,7 +14,7 @@
     // 2. Initialize the SharedController
     $sharedController = new SharedController($db);
 
-    // --- NEW: Download Logic ---
+    // Download Logic
     if (isset($_GET['action']) && $_GET['action'] === 'download' && isset($_GET['download_id'])) {
         $is_history_download = (isset($_GET['type']) && $_GET['type'] === 'history');
         
@@ -26,7 +25,7 @@
         $_SESSION['error'] = "File not found on server.";
     }
 
-    // 1. Handle POST Actions (Remains the same)
+    // 1. Handle POST Actions
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['accept_id'])) {
             $_POST['id'] = $_POST['accept_id'];
