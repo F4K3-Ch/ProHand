@@ -119,12 +119,18 @@
         }
 
         public function getNotifications($user_id, $search = '') {
+            $search_normalized = str_replace(',', '', $search);
+            $search_query = '%' . $search_normalized . '%';
+
             if (!empty($search)) {
-                $search_query = '%' . str_replace(',', '', $search) . '%';
                 $stmt = $this->db->prepare("
                     SELECT * FROM notifications 
                     WHERE user_id = ? 
-                    AND (type LIKE ? OR message LIKE ? OR DATE_FORMAT(created_at, '%M %e %Y') LIKE ?)
+                    AND (
+                        type LIKE ? 
+                        OR message LIKE ? 
+                        OR DATE_FORMAT(created_at, '%M %e %Y') LIKE ?
+                    )
                     ORDER BY created_at DESC
                 ");
                 $stmt->bind_param("isss", $user_id, $search_query, $search_query, $search_query);

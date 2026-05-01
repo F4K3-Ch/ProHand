@@ -16,6 +16,7 @@
 
     // Get current data for Sidebar/Layout
     $data = $controller->profile();
+    extract($data); 
 ?>
 
 <!DOCTYPE html>

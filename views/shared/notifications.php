@@ -19,10 +19,10 @@
     }
 
     // Existing data fetching
-    $notif_data = $controller->notifications();
-    $notif_result = $notif_data['notifications'];
-    $search = $notif_data['search'];
+    $data = $controller->notifications();
+    extract($data); 
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

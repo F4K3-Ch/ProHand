@@ -189,19 +189,19 @@
             $this->auth->checkLogin();
             $user_id = $_SESSION['user_id'];
 
-            // 1. Mark unread notifications as read automatically when viewing the page
+            // Mark all unread notifications as read
             $this->user->markNotificationsAsRead($user_id);
 
-            // 2. Handle search input
+            // Handle search input
             $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-            // 3. Fetch notifications from Model
+            // Fetch using the original normalized logic from the Model
             $notif_result = $this->user->getNotifications($user_id, $search);
 
-            // 4. Return data to the view
+            // Return the data to be extracted in the view
             return [
-                'notifications' => $notif_result,
-                'search'        => $search
+                'notif_result' => $notif_result,   // Becomes $notif_result
+                'search'        => $search         // Becomes $search
             ];
         }
 

@@ -16,8 +16,7 @@
 
     // Get current data for display
     $data = $controller->profile();
-    $user = $data['user'];
-    $profile_picture = $data['profile_picture'];
+    extract($data); 
 ?>
 
 <!DOCTYPE html>

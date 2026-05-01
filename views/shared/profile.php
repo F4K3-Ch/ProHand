@@ -7,13 +7,10 @@
 
     $database = new Database();
     $db = $database->getConnection();
-
     $controller = new SharedController($db);
-    $data = $controller->profile();
 
-    $user = $data['user'];
-    $profile_picture = $data['profile_picture'];
-    $back_url = $data['back_url'];
+    $data = $controller->profile();
+    extract($data); 
 ?>
 
 <!DOCTYPE html>
