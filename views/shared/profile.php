@@ -1,13 +1,20 @@
 <?php
     session_start();
-    require_once "../../src/Classes/Database.php";
+require_once "../../src/Classes/Database.php";
     require_once "../../src/Classes/User.php";
     require_once "../../src/Classes/Auth.php";
+    require_once "../../src/Classes/Client.php"; 
+    require_once "../../src/Classes/Tasker.php";
+    require_once "../../src/Classes/Admin.php";
     require_once "../../src/Controllers/SharedController.php";
 
     $database = new Database();
     $db = $database->getConnection();
     $controller = new SharedController($db);
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_account') {
+        $controller->handleDeleteAccount();
+    }
 
     $data = $controller->profile();
     extract($data); 
@@ -110,7 +117,9 @@
                         <a href="change_password.php" class="btn-change-password">Change Password</a>
 
                         <!-- Delete Account Button -->
-                        <form method="POST" action="delete_account.php" onsubmit="return confirm('Are you sure you want to delete your account?');">
+                        <form method="POST" onsubmit="return confirm('WARNING: This will permanently delete your account and all associated data. Are you sure?');">
+                            <!-- Hidden input to tell the controller which method to trigger -->
+                            <input type="hidden" name="action" value="delete_account">
                             <button type="submit" class="btn-delete-account">Delete Account</button>
                         </form>
                     </div>

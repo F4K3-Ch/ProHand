@@ -309,4 +309,50 @@
                 exit;
             }
         }
+
+        public function handleDeleteAccount() {
+            // 1. Security Check via your Auth class
+            $this->auth->checkLogin();
+
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $userId = $_SESSION['user_id'];
+                $role = $_SESSION['role'];
+
+                // 2. Role-specific Blocking Logic (Matching your vanilla code)
+                if ($role === 'client') {
+                    $clientObj = new Client($this->db);
+                    
+                    // Check for 'in_process' errands specifically to block deletion
+                    $metrics = $clientObj->getClientMetrics('active', $userId);
+                    if ($metrics['in_process'] > 0) {
+                        $_SESSION['error'] = "You can't delete your account because you have an Errand In process. Please wait for it to finish or contact your tasker to cancel it.";
+                        header("Location: profile.php");
+                        exit;
+                    }
+
+                    // 3. Physical Cleanup (Vanilla logic for attachments)
+                    $stmt = $this->db->prepare("SELECT id FROM errands WHERE client_id = ?");
+                    $stmt->bind_param("i", $userId);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    while ($errand = $result->fetch_assoc()) {
+                        // This calls the helper you have in Client.php to unlink files
+                        $clientObj->deleteErrandAttachments((int)$errand['id']);
+                    }
+                }
+
+                // 4. Execution Logic in User.php
+                // This handles: Name fetching, Notifications, Admin alerts, 
+                // Profile pic deletion, and final DB removal.
+                if ($this->user->performAccountDeletion($userId, $role)) {
+                    $this->user->logout();
+                    header("Location: ../auth/login.php?success=Your account has been permanently deleted.");
+                    exit;
+                } else {
+                    $_SESSION['error'] = "Error deleting your account. Please try again.";
+                    header("Location: profile.php");
+                    exit;
+                }
+            }
+        }
     }
