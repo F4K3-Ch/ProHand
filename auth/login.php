@@ -1,7 +1,6 @@
 <?php
     session_start();
-    require_once "../../config/database.php";
-    require_once "../../app/classes/auth.php";
+    require_once "../shared/db.php";
 
     // Initialize form variables
     $error = "";
@@ -10,38 +9,50 @@
     // Redirect logged-in users
     if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
         if ($_SESSION['role'] === 'admin') {
-            header("Location: ../../resources/views/admin/admin_dashboard.php");
+            header("Location: ../admin/admin_dashboard.php");
             exit;
         } elseif ($_SESSION['role'] === 'tasker') {
-            header("Location: ../../resources/views/tasker/tasker_dashboard.php");
+            header("Location: ../tasker/tasker_dashboard.php");
             exit;
         } elseif ($_SESSION['role'] === 'client') {
-            header("Location: ../../resources/views/client/client_dashboard.php");
+            header("Location: ../client/client_dashboard.php");
             exit;
         }
     }
 
     if ($_SERVER["REQUEST_METHOD"] === "POST") {
-        $auth = new Auth($conn);
-        $result = $auth->login($_POST['email'], $_POST['password']);
-        $email = trim($_POST['email']);
+        $email = trim($_POST['email']); 
+        $password = trim($_POST['password']);
 
-        if ($result['success']) {
-            $user = $result['user'];
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['role'] = $user['role'];
+        // Check if email exists
+        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
 
-            // Redirect based on role
-            if ($user['role'] === 'admin') {
-                header("Location: ../admin/admin_dashboard.php");
-            } elseif ($user['role'] === 'tasker') {
-                header("Location: ../tasker/tasker_dashboard.php");
-            } elseif ($user['role'] === 'client') {
-                header("Location: ../client/client_dashboard.php");
+        if ($result && $result->num_rows === 1) {
+            $user = $result->fetch_assoc();
+            
+            // Verify password
+            if (password_verify($password, $user['password'])) {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['role'] = $user['role'];
+
+                // Redirect based on role
+                if ($user['role'] === 'admin') {
+                    header("Location: ../admin/admin_dashboard.php");
+                } elseif ($user['role'] === 'tasker') {
+                    header("Location: ../tasker/tasker_dashboard.php");
+                } elseif ($user['role'] === 'client') {
+                    header("Location: ../client/client_dashboard.php");
+                }
+                exit;
+            } else {
+                $error = "Incorrect password.";
             }
-            exit;
         } else {
-            $error = $result['error'];
+            $error = "Email not found.";
         }
     }
 ?>
@@ -51,16 +62,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <?php include '../../resources/views/includes/web_logo.php'; ?>
+    <?php include '../includes/web_logo.php'; ?>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../../public/assets/style/style.css">
+    <link rel="stylesheet" href="../assets/style/style.css">
     <title>Log into ProHand</title>
 </head>
-
 <body class="login-page">
 
     <!-- Back button -->
-    <a href="../../public/index.html" class="btn-back-auth">
+    <a href="../index.html" class="btn-back-auth">
         <i class="fa-solid fa-arrow-left"></i>
         Back
     </a>
@@ -72,7 +82,7 @@
 
                 <!-- Logo -->
                 <div class="login-logo">
-                    <img src="../../public/assets/img/ProHand(Adapt).png" alt="ProHand Logo" class="logo-img">
+                    <img src="../assets/img/ProHand(Adapt).png" alt="ProHand Logo" class="logo-img">
                     <h1>Login to Pro<span>Hand</span></h1>
                 </div>
 
