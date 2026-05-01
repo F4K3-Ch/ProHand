@@ -15,6 +15,7 @@
         /**
          * Logic for viewing the profile and gathering sidebar data
          */
+        // profile.php & sidebar.php
         public function profile() {
             // 1. Security Check
             $this->auth->checkLogin();
@@ -64,6 +65,7 @@
             ];
         }
 
+        // edit_profile_info.php
         public function handleProfileUpdate($post, $files) {
             $this->auth->checkLogin();
             $user_id = $_SESSION['user_id'];
@@ -142,6 +144,7 @@
             }
         }
 
+        // change_password.php
         public function handleChangePassword($post) {
             $this->auth->checkLogin();
             $user_id = $_SESSION['user_id'];
@@ -185,6 +188,7 @@
             }
         }
 
+        // notifications.php
         public function notifications() {
             $this->auth->checkLogin();
             $user_id = $_SESSION['user_id'];
@@ -205,6 +209,7 @@
             ];
         }
 
+        // Delete Notification Button
         public function handleDeleteNotification($post) {
             $this->auth->checkLogin();
             $user_id = $_SESSION['user_id'];
