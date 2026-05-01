@@ -238,4 +238,13 @@
             $stmt->execute();
             return $stmt->get_result();
         }
+
+        // Use this for the Download Script (Single File)
+        public function getAttachmentDetails($attachment_id, $is_history = false) {
+            $table = $is_history ? "history_attachments" : "errand_attachments";
+            $stmt = $this->db->prepare("SELECT file_path, original_name FROM $table WHERE id = ? LIMIT 1");
+            $stmt->bind_param("i", $attachment_id);
+            $stmt->execute();
+            return $stmt->get_result()->fetch_assoc();
+        }
     }
