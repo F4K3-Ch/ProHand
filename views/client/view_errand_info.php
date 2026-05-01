@@ -11,7 +11,6 @@
     $db = $database->getConnection();
 
     $controller = new ClientController($db);
-
     $sharedController = new SharedController($db);
 
     // Download Logic
@@ -33,6 +32,9 @@
         } elseif (isset($_POST['cancel_accepted_id'])) {
             $_POST['id'] = $_POST['cancel_accepted_id']; 
             $controller->handleCancelAccepted(); 
+        } elseif (isset($_POST['delete_history_id'])) {
+            $_POST['id'] = $_POST['delete_history_id']; 
+            $sharedController->handleDeleteHistory();
         }
     }
 
@@ -262,8 +264,8 @@
                         <button disabled class="btn-cancel-disabled">Cancel</button>
                     <?php elseif (in_array($errand['status'], ['completed', 'failed'])): ?>
                         <!-- Delete Button -->
-                        <form method="POST" action="../shared/delete_finished_errand.php" onsubmit="return confirm('Are you sure you want to delete this archived errand?');">
-                            <input type="hidden" name="id" value="<?= $errand['id']; ?>">
+                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete this archived errand?');">
+                            <input type="hidden" name="delete_history_id" value="<?= $errand['id']; ?>">
                             <button type="submit" class="btn-delete">Delete</button>
                         </form>
                     <?php endif; ?>

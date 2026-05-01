@@ -11,14 +11,13 @@
     $db = $database->getConnection();
     
     $controller = new TaskerController($db);
-    // 2. Initialize the SharedController
     $sharedController = new SharedController($db);
 
     // Download Logic
     if (isset($_GET['action']) && $_GET['action'] === 'download' && isset($_GET['download_id'])) {
         $is_history_download = (isset($_GET['type']) && $_GET['type'] === 'history');
         
-        // 3. CALL it from $sharedController
+        // CALL it from $sharedController
         $sharedController->handleDownload((int)$_GET['download_id'], $is_history_download ? 'history' : 'regular');
         
         // If handleDownload fails to exit (e.g., file not found), set the error
@@ -39,10 +38,13 @@
         } elseif (isset($_POST['cancel_id'])) {
             $_POST['id'] = $_POST['cancel_id']; 
             $controller->cancelErrand();
+        } elseif (isset($_POST['delete_history_id'])) {
+            $_POST['id'] = $_POST['delete_history_id']; 
+            $sharedController->handleDeleteHistory();
         }
     }
 
-    // 2. Fetch Errand Data
+    // Fetch Errand Data
     $errand_id = (int)($_GET['errand_id'] ?? 0);
     $data = $controller->viewErrandDetails($errand_id);
 
@@ -280,8 +282,8 @@
                         </form>
                     <?php elseif (in_array($errand['status'], ['completed', 'failed'])): ?>
                         <!-- Delete Button -->
-                        <form method="POST" action="../shared/delete_finished_errand.php" onsubmit="return confirm('Are you sure you want to delete this archived errand?');">
-                            <input type="hidden" name="id" value="<?= $errand['id']; ?>">
+                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete this archived errand?');">
+                            <input type="hidden" name="delete_history_id" value="<?= $errand['id']; ?>">
                             <button type="submit" class="btn-delete">Delete</button>
                         </form>
                     <?php endif; ?>

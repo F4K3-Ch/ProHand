@@ -285,4 +285,28 @@
             readfile($file_path);
             exit;
         }
+
+        public function handleDeleteHistory() {
+            $this->auth->checkLogin();
+            
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
+                $history_id = (int)$_POST['id'];
+                $user_id = $_SESSION['user_id'];
+                $role = $_SESSION['role'];
+
+                // Get the result array from the model
+                $result = $this->user->deleteHistoryRecord($history_id, $user_id, $role);
+                $errand_title = $result['title'];
+                $errand_id = $result['errand_id'];
+
+                if ($result) {
+                    $_SESSION['success'] = "Errand: \"{$errand_title}\" (ID: {$errand_id}) was deleted successfully.";
+                } else {
+                    $_SESSION['error'] = "Error deleting Errand: \"{$errand_title}\" (ID: {$errand_id}). Please try again.";
+                }
+                
+                header("Location: ../$role/{$role}_finished_errands.php");
+                exit;
+            }
+        }
     }

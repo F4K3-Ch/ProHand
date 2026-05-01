@@ -6,11 +6,18 @@
     require_once "../../src/Classes/Auth.php";
     require_once "../../src/Classes/Client.php"; 
     require_once "../../src/Controllers/ClientController.php";
+    require_once "../../src/Controllers/SharedController.php";
 
     // 2. Initialize OOP components
     $database = new Database();
     $db = $database->getConnection();
     $controller = new ClientController($db);
+    $sharedController = new SharedController($db);
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_history_id'])) {
+        $_POST['id'] = $_POST['delete_history_id'];
+        $sharedController->handleDeleteHistory();
+    }
 
     // 3. Fetch data through the controller instead of manual SQL
     $data = $controller->finishedTasks();
@@ -158,8 +165,8 @@
                                             </form>
 
                                             <!-- Delete Button -->
-                                            <form method="POST" action="../shared/delete_finished_errand.php" onsubmit="return confirm('Are you sure you want to delete this archive errand?');">
-                                                <input type="hidden" name="id" value="<?= $row['id']; ?>">
+                                            <form method="POST" onsubmit="return confirm('Are you sure you want to delete this archive errand?');">
+                                                <input type="hidden" name="delete_history_id" value="<?= $row['id']; ?>">
                                                 <button type="submit" class="btn-delete">Delete</button>
                                             </form>
                                         </div>

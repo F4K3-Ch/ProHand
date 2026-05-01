@@ -247,4 +247,30 @@
             $stmt->execute();
             return $stmt->get_result()->fetch_assoc();
         }
+
+        public function deleteHistoryRecord($history_id, $user_id, $role) {
+            $column = ($role === 'client') ? 'client_id' : 'tasker_id';
+            
+            // We fetch the errand_id and title specifically for your message indicators
+            $stmt = $this->db->prepare("SELECT errand_id, title FROM history WHERE id = ? AND $column = ? LIMIT 1");
+            $stmt->bind_param("ii", $history_id, $user_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            
+            if ($result->num_rows !== 1) return false;
+            $row = $result->fetch_assoc();
+
+            $delete_flag = ($role === 'client') ? 'client_deleted' : 'tasker_deleted';
+            $update_stmt = $this->db->prepare("UPDATE history SET $delete_flag = 1 WHERE id = ?");
+            $update_stmt->bind_param("i", $history_id);
+            
+            if ($update_stmt->execute()) {
+                // Return both pieces of info to the controller
+                return [
+                    'title' => $row['title'],
+                    'errand_id' => $row['errand_id']
+                ];
+            }
+            return false;
+        }
     }
