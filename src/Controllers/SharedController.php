@@ -15,54 +15,21 @@
         /**
          * Logic for viewing the profile and gathering sidebar data
          */
-        // profile.php & sidebar.php
+        // profile.php, admin/view_user_info.php & sidebar.php
         public function profile() {
-            // 1. Security Check
             $this->auth->checkLogin();
+            $userData = $this->user->getUserInfo($_SESSION['user_id']);
+            if (!$userData) return null;
+
+            $viewData = $this->user->formatUserDisplayData($userData, $_GET['from'] ?? 'dashboard');
             
-            $user_id = $_SESSION['user_id'];
-            $role = $_SESSION['role'];
+            // Assign the count to 'notif_count' to match your sidebar HTML
+            $viewData['notif_count'] = $this->user->getUnreadNotificationCount($_SESSION['user_id']);
             
-            // 2. Fetch raw database data
-            $userData = $this->user->getUserInfo($user_id);
+            $viewData['success'] = $_SESSION['success'] ?? null;
+            $viewData['error'] = $_SESSION['error'] ?? null;
 
-            if (!$userData) {
-                return null; // Handle case where user session exists but DB record is gone
-            }
-
-            // 3. Setup Profile Picture logic
-            $profile_dir = '../../public/uploads/profile_pictures/';
-            $db_pic = $userData['profile_picture'] ?? '';
-            $profile_pic = !empty($db_pic) ? basename($db_pic) : 'default.jpg';
-            $profile_picture_path = $profile_dir . $profile_pic;
-
-            // 4. Handle the Back URL (Origin logic)
-            $from = $_GET['from'] ?? '';
-            if ($from === 'notification') {
-                $back_url = "../shared/notifications.php";
-            } else {
-                $back_url = "../$role/" . $role . "_dashboard.php";
-            }
-
-            // 5. Pre-format names for the view
-            $first = $userData['first_name'] ?? '';
-            $middle = $userData['middle_name'] ?? '';
-            $last = $userData['last_name'] ?? '';
-            $full_name = trim("$first $middle $last");
-
-            $unread_count = $this->user->getUnreadNotificationCount($user_id);
-
-            // Return everything needed for Sidebar, Profile, and Notifications
-            return [
-                'user'            => $userData,           // The raw array for profile inputs
-                'full_name'       => $full_name,          // Clean name for sidebar/headings
-                'role'            => ucfirst($userData['role'] ?? $role),
-                'profile_picture' => $profile_picture_path,
-                'back_url'        => $back_url,
-                'unread_notifications' => $unread_count,
-                'success'         => $_SESSION['success'] ?? null,
-                'error'           => $_SESSION['error'] ?? null
-            ];
+            return $viewData;
         }
 
         // edit_profile_info.php

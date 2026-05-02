@@ -28,7 +28,7 @@
     <?php include '../../includes/web_logo.php'; ?>
     <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css' rel='stylesheet'> 
     <link rel="stylesheet" href="../../public/assets/style/style.css">
-    <title>ProHand Admin</title>
+    <title>ProHand</title>
 </head>
 <body>
     <!-- Sidebar -->

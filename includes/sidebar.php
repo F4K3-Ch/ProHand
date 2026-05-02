@@ -1,34 +1,25 @@
 <?php
-    // No need to require Database.php or Auth.php here as they are handled inside SharedController
+    // SharedController handles the logic for the LOGGED-IN user
     require_once "../../src/Classes/User.php";
     require_once "../../src/Controllers/SharedController.php";
 
-    // Initialize the controller using the existing connection if possible, 
-    // or let the controller handle its own initialization.
     $database = new Database();
     $db = $database->getConnection();
-
-    $controller = new SharedController($db);
-    $data = $controller->profile();
-
-    // All these variables are now provided by your OOP Controller
-    $user_full_name  = $data['full_name'] ?? 'User';
-    $profile_picture = $data['profile_picture'] ?? '../../public/uploads/profile_pictures/default.jpg';
-    $role            = $data['role'] ?? 'User';
-    $user_email      = $data['user']['email'] ?? ''; 
+    $sharedController = new SharedController($db);
     
-    // CHANGE THIS: Fetch the real count from the controller data
-    $notif_count     = $data['unread_notifications'] ?? 0; 
-?>  
+    // Get the data, but DO NOT extract it
+    $sidebarData = $sharedController->profile();
+?>
 
 <div class="sidebar">
     <div class="sidebar-top">
         <div class="profile-info">
-            <img src="<?= htmlspecialchars($profile_picture); ?>" alt="Profile Picture" class="profile-img">
+            <!-- Access the array keys directly -->
+            <img src="<?= htmlspecialchars($sidebarData['profile_picture']); ?>" class="profile-img">
             <div class="profile-text">
-                <p class="role"><?= ucfirst(htmlspecialchars($role)); ?></p>
-                <p class="name"><?= htmlspecialchars($user_full_name); ?></p>
-                <p class="email"><?= htmlspecialchars($user_email); ?></p>
+                <p class="role"><?= htmlspecialchars(ucfirst($sidebarData['role'])); ?></p>
+                <p class="name"><?= htmlspecialchars($sidebarData['full_name']); ?></p>
+                <p class="email"><?= htmlspecialchars($sidebarData['user']['email']); ?></p>
             </div>
         </div>
 
@@ -97,9 +88,10 @@
             <li>
                 <a href="../shared/notifications.php" class="notif-link">
                     <i class="fa-solid fa-bell"></i> Notifications
-                    <?php if ($notif_count > 0): ?>
+                    <?php $notifCount = $sidebarData['notif_count'] ?? 0; ?>
+                    <?php if ($notifCount > 0): ?>
                         <span class="notif-badge">
-                            <?= $notif_count > 99 ? '99+' : $notif_count ?>
+                            <?= $notifCount > 99 ? '99+' : $notifCount ?>
                         </span>
                     <?php endif; ?>
                 </a>

@@ -1,11 +1,10 @@
 <?php
     // src/Classes/Admin.php
 
-    class Admin {
-        private $db;
+    class Admin extends User {
 
         public function __construct($db_connection) {
-            $this->db = $db_connection;
+            parent::__construct($db_connection);
         }
 
         // admin_dashboard.php
@@ -316,5 +315,30 @@
             $stmt->bind_param("i", $id);
             $stmt->execute();
             return $stmt->get_result();
+        }
+
+        // view_user_info.php
+        public function getUserDetails($user_id) {
+            $stmt = $this->db->prepare("SELECT * FROM users WHERE id = ? LIMIT 1");
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $user = $stmt->get_result()->fetch_assoc();
+
+            if (!$user) return null;
+
+            $data = ['user' => $user];
+
+            if ($user['role'] === 'tasker') {
+                $stmt = $this->db->prepare("SELECT IFNULL(SUM(status = 'accepted'), 0) AS accepted, IFNULL(SUM(status = 'in_process'), 0) AS in_process, COUNT(*) AS total_active FROM errands WHERE tasker_id = ? AND status IN ('accepted', 'in_process')");
+                $stmt->bind_param("i", $user_id);
+                $stmt->execute();
+                $data['active'] = $stmt->get_result()->fetch_assoc();
+
+                $stmt = $this->db->prepare("SELECT IFNULL(SUM(status = 'completed'), 0) AS completed, IFNULL(SUM(status = 'failed'), 0) AS failed, COUNT(*) AS total_finished, IFNULL(SUM(CASE WHEN status = 'completed' THEN fee ELSE 0 END), 0) AS earnings, IFNULL(SUM(CASE WHEN status = 'failed' THEN fee ELSE 0 END), 0) AS failed_earnings FROM history WHERE tasker_id = ? AND status IN ('completed', 'failed')");
+                $stmt->bind_param("i", $user_id);
+                $stmt->execute();
+                $data['history'] = $stmt->get_result()->fetch_assoc();
+            }
+            return $data;
         }
     }

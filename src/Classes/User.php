@@ -75,6 +75,7 @@
             }
         }
 
+        // profile.php, admin/view_user_info.php & sidebar.php
         public function getUserInfo($user_id) {
             $stmt = $this->db->prepare("SELECT * FROM users WHERE id = ? LIMIT 1");
             $stmt->bind_param("i", $user_id);
@@ -82,6 +83,38 @@
             $result = $stmt->get_result();
             
             return $result->fetch_assoc();
+        }
+
+        // profile.php, admin/view_user_info.php & sidebar.php
+        public function formatUserDisplayData($userData, $back_origin = 'dashboard') {
+            // 1. Name Formatting
+            $full_name = trim(($userData['first_name'] ?? '') . ' ' . ($userData['middle_name'] ?? '') . ' ' . ($userData['last_name'] ?? ''));
+
+            // 2. Picture Path Logic
+            $db_pic = $userData['profile_picture'] ?? '';
+            $file = !empty($db_pic) ? basename($db_pic) : 'default.jpg';
+            $path = "../../public/uploads/profile_pictures/" . $file;
+
+            // 3. Back URL Logic
+            $role_raw = $userData['role'] ?? 'user';
+            if ($back_origin === 'notification') {
+                $back_url = "../shared/notifications.php";
+            } elseif ($back_origin === 'admin_manage') {
+                $back_url = "manage_users.php";
+            } else {
+                $back_url = "../$role_raw/" . $role_raw . "_dashboard.php";
+            }
+
+        return [
+                'user'                 => $userData,
+                'full_name'            => $full_name,
+                'role'                 => $role_raw,
+                'role_label'           => ucfirst($role_raw),
+                'profile_picture'      => $path,
+                'user_profile_picture' => $path, // Duplicate for legacy view compatibility
+                'back_url'             => $back_url,
+                'notif_count'          => 0
+            ];
         }
 
         public function isEmailTakenByOthers($email, $user_id) {

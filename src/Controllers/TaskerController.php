@@ -6,7 +6,7 @@
         private $user;
 
         public function __construct($db) {
-            $this->tasker = new Tasker($db); // Fixed capitalization
+            $this->tasker = new Tasker($db);
             $this->auth = new Auth($db);
             $this->user = new User($db);
         }

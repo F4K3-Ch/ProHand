@@ -4,10 +4,12 @@
     class AdminController {
         private $admin;
         private $auth;
+        private $user;
 
         public function __construct($db) {
             $this->admin = new Admin($db);
             $this->auth = new Auth($db);
+            $this->user = new User($db);
         }
 
         // admin_dashboard.php
@@ -64,24 +66,27 @@
 
         // manage_users.php
         public function manageUsers() {
+            // 1. Security Check
             $this->auth->restrictTo('admin');
 
+            // 2. Setup Variables
             $admin_id = $_SESSION['user_id'];
             $search = isset($_GET['search']) ? trim($_GET['search']) : '';
             
-            // Call the combined metrics method
+            // 3. Fetch Data from the Admin Class
             $metrics = $this->admin->getAdminMetrics('users');
             $users = $this->admin->searchUsers($search, $admin_id);
 
+            // 4. Return clean data to the View
             return [
                 'all_users_result' => $users,
                 'search'           => $search,
                 'role_counts'      => [
-                    'admin'  => $metrics['admin'],
-                    'tasker' => $metrics['tasker'],
-                    'client' => $metrics['client']
+                    'admin'  => $metrics['admin']  ?? 0,
+                    'tasker' => $metrics['tasker'] ?? 0,
+                    'client' => $metrics['client'] ?? 0
                 ],
-                'total_users'      => $metrics['total']
+                'total_users'      => $metrics['total'] ?? 0
             ];
         }
 
@@ -148,5 +153,39 @@
                     'in_process' => 'In Process', 'completed' => 'Completed', 'failed' => 'Failed'
                 ]
             ];
+        }
+
+        // view_user_info.php
+        public function viewUserInfo() {
+            $this->auth->restrictTo('admin');
+            $target_user_id = (int)($_GET['id'] ?? 0);
+            
+            if ($target_user_id <= 0) {
+                header("Location: manage_users.php");
+                exit;
+            }
+
+            $data = $this->admin->getUserDetails($target_user_id);
+            if (!$data) {
+                header("Location: manage_users.php");
+                exit;
+            }
+
+            $formatted = $this->user->formatUserDisplayData($data['user'], 'admin_manage');
+
+            if ($data['user']['role'] === 'tasker') {
+                // These keys must match your HTML variables exactly
+                $formatted['active_status'] = $data['active'];
+                $formatted['finished_status'] = $data['history'];
+                
+                // FIX: Define the specific variables causing the errors
+                $formatted['total_active_errands'] = (int)$data['active']['total_active'];
+                $formatted['total_finished_errands'] = (int)$data['history']['total_finished'];
+                $formatted['earnings'] = (float)$data['history']['earnings'];
+                $formatted['failed_earnings'] = (float)$data['history']['failed_earnings'];
+                $formatted['total_errands'] = $formatted['total_active_errands'] + $formatted['total_finished_errands'];
+            }
+
+            return $formatted;
         }
     }
