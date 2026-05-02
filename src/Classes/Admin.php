@@ -78,20 +78,64 @@
             return $stmt->get_result();
         }
 
-        /**
-         * Gets summary counts for the dashboard cards
-         */
-        public function getErrandMetrics() {
-            $result = $this->db->query("
-                SELECT 
-                    IFNULL(SUM(status = 'pending'), 0) AS pending_count,
-                    IFNULL(SUM(status = 'accepted'), 0) AS accepted_count,
-                    IFNULL(SUM(status = 'in_process'), 0) AS in_process_count,
-                    COUNT(*) AS total_errands
-                FROM errands
-                WHERE status IN ('pending', 'accepted', 'in_process')
-            ");
-            return $result->fetch_assoc();
+        public function getFinishedErrands($search = '') {
+            $search_int = is_numeric($search) ? (int)$search : 0;
+            $search_normalized = str_replace(',', '', $search);
+            $search_query = '%' . $search_normalized . '%';
+            $search_status_query = '%' . str_replace(' ', '_', strtolower($search)) . '%';
+
+            $sql = "SELECT * FROM history 
+                    WHERE status IN ('completed', 'failed')
+                    AND (
+                        errand_id = ? 
+                        OR title LIKE ? 
+                        OR REPLACE(CONCAT_WS(' ', IFNULL(client_first_name,''), IFNULL(client_middle_name,''), IFNULL(client_last_name,'')), '  ', ' ') LIKE ?
+                        OR REPLACE(CONCAT_WS(' ', IFNULL(tasker_first_name,''), IFNULL(tasker_middle_name,''), IFNULL(tasker_last_name,'')), '  ', ' ') LIKE ?
+                        OR DATE_FORMAT(created_at, '%M %e %Y') LIKE ?
+                        OR DATE_FORMAT(completed_at, '%M %e %Y') LIKE ?
+                        OR DATE_FORMAT(failed_at, '%M %e %Y') LIKE ?
+                        OR fee LIKE ? 
+                        OR status LIKE ?
+                    )
+                    ORDER BY updated_at DESC";
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->bind_param("issssssss", 
+                $search_int, $search_query, $search_query, $search_query, 
+                $search_query, $search_query, $search_query, $search_query, $search_status_query
+            );
+            $stmt->execute();
+            return $stmt->get_result();
+        }
+
+        public function getAdminMetrics($type) {
+            if ($type === 'active') {
+                // For Dashboard: Tracking errands currently in the system
+                $sql = "SELECT 
+                            IFNULL(SUM(status = 'pending'), 0) AS pending,
+                            IFNULL(SUM(status = 'accepted'), 0) AS accepted,
+                            IFNULL(SUM(status = 'in_process'), 0) AS in_process,
+                            COUNT(*) AS total
+                        FROM errands
+                        WHERE status IN ('pending', 'accepted', 'in_process')";
+                $stmt = $this->db->prepare($sql);
+            } elseif ($type === 'history') {
+                // For Finished Errands: Tracking completed/failed and financial data
+                $sql = "SELECT 
+                            IFNULL(SUM(status = 'completed'), 0) AS completed,
+                            IFNULL(SUM(status = 'failed'), 0) AS failed,
+                            COUNT(*) AS total,
+                            IFNULL(SUM(CASE WHEN status = 'completed' THEN fee ELSE 0 END), 0) AS earnings,
+                            IFNULL(SUM(CASE WHEN status = 'failed' THEN fee ELSE 0 END), 0) AS failed_earnings
+                        FROM history
+                        WHERE status IN ('completed', 'failed')";
+                $stmt = $this->db->prepare($sql);
+            } else {
+                return null;
+            }
+
+            $stmt->execute();
+            return $stmt->get_result()->fetch_assoc();
         }
 
         public function getErrandStatus($errand_id) {

@@ -14,13 +14,10 @@
 
     // 3. Get Data from the Controller
     $controller = new AdminController($db);
-    $data = $controller->index();
 
     // 4. Extract data for your HTML
-    $active_errands = $data['active_errands'];
-    $metrics = $data['metrics'];
-    $search = $data['search'];
-    $status_labels = $data['status_labels'];
+    $data = $controller->index();
+    extract($data); 
 ?>
 
 <!DOCTYPE html>
@@ -31,7 +28,7 @@
     <?php include '../../includes/web_logo.php'; ?>
     <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css' rel='stylesheet'> 
     <link rel="stylesheet" href="../../public/assets/style/style.css">
-    <title>ProHand Admin | Active Errands</title>
+    <title>ProHand Admin</title>
 </head>
 <body>
     <!-- Sidebar -->
@@ -90,28 +87,28 @@
                                 <span class="status-circle circle-pending"></span>
                                 <h3>Pending</h3>
                             </div>
-                            <p><?= number_format($metrics['pending_count']); ?></p>
+                            <p><?= number_format($status_counts['pending']); ?></p>
                         </div>
                         <div class="total-card bg-accepted">
                             <div class="card-header">
                                 <span class="status-circle circle-accepted"></span>
                                 <h3>Accepted</h3>
                             </div>
-                            <p><?= number_format($metrics['accepted_count']); ?></p>
+                            <p><?= number_format($status_counts['accepted']); ?></p>
                         </div>
                         <div class="total-card bg-process">
                             <div class="card-header">
                                 <span class="status-circle circle-process"></span>
                                 <h3>In Process</h3>
                             </div>
-                            <p><?= number_format($metrics['in_process_count']); ?></p>
+                            <p><?= number_format($status_counts['in_process']); ?></p>
                         </div>
                         <div class="total-card bg-total">
                             <div class="card-header">
                                 <span class="status-circle circle-total"></span>
                                 <h3>Total Active</h3>
                             </div>
-                            <p><?= number_format($metrics['total_errands']); ?></p>
+                            <p><?= number_format($total_errands); ?></p>
                         </div>
                     </div>
                 </section>

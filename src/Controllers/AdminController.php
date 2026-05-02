@@ -10,26 +10,53 @@
             $this->auth = new Auth($db);
         }
 
+        // admin_dashboard.php
         public function index() {
-            // 1. Security check
             $this->auth->restrictTo('admin');
+            $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+            
+            // Use the new combined method
+            $metrics = $this->admin->getAdminMetrics('active');
+            $errands = $this->admin->getActiveErrands($search);
 
-            // 2. Handle Search Logic
+            return [
+                'active_errands' => $errands,
+                'search'         => $search,
+                'status_counts'  => [
+                    'pending'    => $metrics['pending'],
+                    'accepted'   => $metrics['accepted'],
+                    'in_process' => $metrics['in_process']
+                ],
+                'total_errands'  => $metrics['total'],
+                'status_labels'  => [
+                    'pending' => 'Pending', 
+                    'accepted' => 'Accepted', 
+                    'in_process' => 'In Process'
+                ]
+            ];
+        }
+
+        public function finishedErrands() {
+            $this->auth->restrictTo('admin');
             $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-            // 3. Get Data from the Class
-            $active_errands = $this->admin->getActiveErrands($search);
-            $metrics = $this->admin->getErrandMetrics();
+            // Use the new combined method
+            $metrics = $this->admin->getAdminMetrics('history');
+            $errands = $this->admin->getFinishedErrands($search);
 
-            // 4. Return everything the View needs
             return [
-                'active_errands' => $active_errands,
-                'metrics' => $metrics,
-                'search' => $search,
-                'status_labels' => [
-                    'pending' => 'Pending',
-                    'accepted' => 'Accepted',
-                    'in_process' => 'In Process'
+                'result_finished' => $errands,
+                'search'          => $search,
+                'status_counts'   => [
+                    'completed'   => $metrics['completed'],
+                    'failed'      => $metrics['failed']
+                ],
+                'total_errands'   => $metrics['total'],
+                'earnings'        => $metrics['earnings'],
+                'failed_earnings' => $metrics['failed_earnings'],
+                'status_labels'   => [
+                    'completed' => 'Completed', 
+                    'failed' => 'Failed'
                 ]
             ];
         }
