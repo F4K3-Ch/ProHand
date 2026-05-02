@@ -44,7 +44,7 @@
                         <img src="../../public/assets/img/ProHand(Adapt).png" alt="ProHand Logo" class="logo-img">
                         <div class="title">
                             <h1>Pro<span>Hand</span></h1>
-                            <h2>Dashboard</h2>
+                            <h2>Finished Errands</h2>
                         </div>
                     </div>
                 </div>

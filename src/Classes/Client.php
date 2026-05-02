@@ -6,6 +6,7 @@
             parent::__construct($db_connection);
         }
 
+        // client_dashboard.php
         public function getErrandsCreated($client_id, $search = '') {
             // Handle search input
             $search_int = is_numeric($search) ? (int)$search : 0;

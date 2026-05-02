@@ -8,9 +8,7 @@
             $this->db = $db_connection;
         }
 
-        /**
-         * Fetches active errands with optional search filters
-         */
+        // admin_dashboard.php
         public function getActiveErrands($search = '') {
             $search_int = is_numeric($search) ? (int)$search : 0;
             
@@ -78,6 +76,7 @@
             return $stmt->get_result();
         }
 
+        // finished_errands.php
         public function getFinishedErrands($search = '') {
             $search_int = is_numeric($search) ? (int)$search : 0;
             $search_normalized = str_replace(',', '', $search);
@@ -108,6 +107,120 @@
             return $stmt->get_result();
         }
 
+        // manage_users.php
+        public function searchUsers($search, $admin_id) {
+            // Handle search input
+            $search_int = is_numeric($search) ? (int)$search : 0;
+
+            // Normalize search for general fields (remove commas)
+            $search_normalized = str_replace(',', '', $search);
+            $search_query = '%' . $search_normalized . '%';
+
+            $stmt = $this->db->prepare("
+                (
+                    SELECT 
+                        id,
+                        profile_picture,
+                        email,
+                        last_name,
+                        first_name,
+                        middle_name,
+                        contact_number,
+                        role,
+                        created_at
+                    FROM users
+                    WHERE role = 'admin'
+                    AND id != ?
+                    AND (
+                        id = ?
+                        OR email LIKE ?
+                        OR REPLACE(CONCAT_WS(' ', IFNULL(first_name,''), IFNULL(middle_name,''), IFNULL(last_name,'')), '  ', ' ') LIKE ?
+                        OR contact_number LIKE ?
+                        OR role LIKE ?
+                        OR DATE_FORMAT(created_at, '%M %e %Y') LIKE ?
+                    )
+                )
+                UNION ALL
+                (
+                    SELECT 
+                        id,
+                        profile_picture,
+                        email,
+                        last_name,
+                        first_name,
+                        middle_name,
+                        contact_number,
+                        role,
+                        created_at
+                    FROM users
+                    WHERE role = 'tasker'
+                    AND (
+                        id = ?
+                        OR email LIKE ?
+                        OR REPLACE(CONCAT_WS(' ', IFNULL(first_name,''), IFNULL(middle_name,''), IFNULL(last_name,'')), '  ', ' ') LIKE ?
+                        OR contact_number LIKE ?
+                        OR role LIKE ?
+                        OR DATE_FORMAT(created_at, '%M %e %Y') LIKE ?
+                    )
+                )
+                UNION ALL
+                (
+                    SELECT 
+                        id,
+                        profile_picture,
+                        email,
+                        last_name,
+                        first_name,
+                        middle_name,
+                        contact_number,
+                        role,
+                        created_at
+                    FROM users
+                    WHERE role = 'client'
+                    AND (
+                        id = ?
+                        OR email LIKE ?
+                        OR REPLACE(CONCAT_WS(' ', IFNULL(first_name,''), IFNULL(middle_name,''), IFNULL(last_name,'')), '  ', ' ') LIKE ?
+                        OR contact_number LIKE ?
+                        OR role LIKE ?
+                        OR DATE_FORMAT(created_at, '%M %e %Y') LIKE ?
+                    )
+                )
+                ORDER BY created_at DESC
+            ");
+
+            $stmt->bind_param(
+                "iisssss"    // admin id + admin search set
+                . "isssss"   // tasker search set
+                . "isssss",  // client search set
+                $admin_id,
+
+                $search_int,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query,
+
+                $search_int,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query,
+
+                $search_int,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query,
+                $search_query
+            );
+
+            $stmt->execute();
+            return $stmt->get_result();
+        }
+
         public function getAdminMetrics($type) {
             if ($type === 'active') {
                 // For Dashboard: Tracking errands currently in the system
@@ -118,7 +231,6 @@
                             COUNT(*) AS total
                         FROM errands
                         WHERE status IN ('pending', 'accepted', 'in_process')";
-                $stmt = $this->db->prepare($sql);
             } elseif ($type === 'history') {
                 // For Finished Errands: Tracking completed/failed and financial data
                 $sql = "SELECT 
@@ -129,11 +241,20 @@
                             IFNULL(SUM(CASE WHEN status = 'failed' THEN fee ELSE 0 END), 0) AS failed_earnings
                         FROM history
                         WHERE status IN ('completed', 'failed')";
-                $stmt = $this->db->prepare($sql);
+            } elseif ($type === 'users') {
+                // For Manage Users: Role counts and overall total
+                $sql = "SELECT 
+                            IFNULL(SUM(role = 'admin'), 0) AS admin,
+                            IFNULL(SUM(role = 'tasker'), 0) AS tasker,
+                            IFNULL(SUM(role = 'client'), 0) AS client,
+                            COUNT(*) AS total
+                        FROM users 
+                        WHERE role IN ('admin', 'tasker', 'client')";
             } else {
                 return null;
             }
 
+            $stmt = $this->db->prepare($sql);
             $stmt->execute();
             return $stmt->get_result()->fetch_assoc();
         }

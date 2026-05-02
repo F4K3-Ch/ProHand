@@ -36,6 +36,7 @@
             ];
         }
 
+        // finished_errands.php
         public function finishedErrands() {
             $this->auth->restrictTo('admin');
             $search = isset($_GET['search']) ? trim($_GET['search']) : '';
@@ -58,6 +59,29 @@
                     'completed' => 'Completed', 
                     'failed' => 'Failed'
                 ]
+            ];
+        }
+
+        // manage_users.php
+        public function manageUsers() {
+            $this->auth->restrictTo('admin');
+
+            $admin_id = $_SESSION['user_id'];
+            $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+            
+            // Call the combined metrics method
+            $metrics = $this->admin->getAdminMetrics('users');
+            $users = $this->admin->searchUsers($search, $admin_id);
+
+            return [
+                'all_users_result' => $users,
+                'search'           => $search,
+                'role_counts'      => [
+                    'admin'  => $metrics['admin'],
+                    'tasker' => $metrics['tasker'],
+                    'client' => $metrics['client']
+                ],
+                'total_users'      => $metrics['total']
             ];
         }
 
