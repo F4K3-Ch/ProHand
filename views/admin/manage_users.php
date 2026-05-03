@@ -177,7 +177,8 @@
                                             <div class="button-row">
                                                 <form method="GET" action="view_user_info.php">
                                                     <input type="hidden" name="id" value="<?= (int)$row['id']; ?>">
-                                                    <input type="hidden" name="from" value="dashboard">
+                                                    <!-- CHANGE THIS FROM "dashboard" TO "admin_manage" -->
+                                                    <input type="hidden" name="from" value="admin_manage">
                                                     <button type="submit" class="btn-view">View Info</button>
                                                 </form>
                                             </div>

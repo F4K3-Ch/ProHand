@@ -95,23 +95,25 @@
             $file = !empty($db_pic) ? basename($db_pic) : 'default.jpg';
             $path = "../../public/uploads/profile_pictures/" . $file;
 
-            // 3. Back URL Logic
+            // 3. Back URL Logic - Define $role_raw early to avoid Undefined Variable errors
             $role_raw = $userData['role'] ?? 'user';
+            
             if ($back_origin === 'notification') {
                 $back_url = "../shared/notifications.php";
             } elseif ($back_origin === 'admin_manage') {
                 $back_url = "manage_users.php";
             } else {
+                // Fallback to dashboard
                 $back_url = "../$role_raw/" . $role_raw . "_dashboard.php";
             }
 
-        return [
+            return [
                 'user'                 => $userData,
                 'full_name'            => $full_name,
                 'role'                 => $role_raw,
                 'role_label'           => ucfirst($role_raw),
                 'profile_picture'      => $path,
-                'user_profile_picture' => $path, // Duplicate for legacy view compatibility
+                'user_profile_picture' => $path, 
                 'back_url'             => $back_url,
                 'notif_count'          => 0
             ];
@@ -238,6 +240,19 @@
         public function notifyAllAdmins($type, $message, $link) {
             // This replicates the "SELECT id FROM users WHERE role = 'admin'" logic
             $stmt = $this->db->prepare("SELECT id FROM users WHERE role = 'admin'");
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($admin = $result->fetch_assoc()) {
+                $this->addNotification((int)$admin['id'], $type, $message, $link);
+            }
+            $stmt->close();
+        }
+
+        public function notifyOtherAdmins($current_admin_id, $type, $message, $link) {
+            // Identical logic, but with the "AND id != ?" condition added
+            $stmt = $this->db->prepare("SELECT id FROM users WHERE role = 'admin' AND id != ?");
+            $stmt->bind_param("i", $current_admin_id);
             $stmt->execute();
             $result = $stmt->get_result();
 

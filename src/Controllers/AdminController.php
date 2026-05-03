@@ -171,14 +171,16 @@
                 exit;
             }
 
-            $formatted = $this->user->formatUserDisplayData($data['user'], 'admin_manage');
+            // FIX: Capture the 'from' parameter from the URL (defaulting to admin_manage)
+            $from = $_GET['from'] ?? 'admin_manage';
+
+            // Pass the actual $from variable to the formatter instead of hard-coding 'admin_manage'
+            $formatted = $this->user->formatUserDisplayData($data['user'], $from);
 
             if ($data['user']['role'] === 'tasker') {
-                // These keys must match your HTML variables exactly
                 $formatted['active_status'] = $data['active'];
                 $formatted['finished_status'] = $data['history'];
                 
-                // FIX: Define the specific variables causing the errors
                 $formatted['total_active_errands'] = (int)$data['active']['total_active'];
                 $formatted['total_finished_errands'] = (int)$data['history']['total_finished'];
                 $formatted['earnings'] = (float)$data['history']['earnings'];
