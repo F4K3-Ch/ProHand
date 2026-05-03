@@ -12,191 +12,105 @@
             $this->auth = new Auth($db);
         }
 
-        // profile.php, admin/view_user_info.php & sidebar.php
+        /**
+         * Logic for viewing the profile and gathering sidebar data
+         */
+        // profile.php
         public function profile() {
             $this->auth->checkLogin();
             
             $user_id = $_SESSION['user_id'];
-            $role = $_SESSION['role'];
-            
-            // Fetch target user data
             $userData = $this->user->getUserInfo($user_id);
-            if (!$userData) return null; 
 
-            // 1. Define Dashboard Paths based on Role
-            $dashboards = [
-                'admin'  => '../admin/admin_dashboard.php',
-                'client' => '../client/client_dashboard.php',
-                'tasker' => '../tasker/tasker_dashboard.php'
-            ];
-            $default_dash = $dashboards[$role] ?? 'dashboard.php';
+            if (!$userData) return null;
 
-            // 2. Determine the 'back' navigation origin
-            // If no 'from' is set in the URL, default to the user's dashboard.
             $from = $_GET['from'] ?? 'dashboard';
 
-            $back_urls = [
-                'dashboard'    => $default_dash,
-                'notification' => '../shared/notifications.php',
-                'profile'      => '../shared/profile.php',
-                'admin_manage' => 'manage_users.php' 
-            ];
-            
-            $back_url = $back_urls[$from] ?? $default_dash;
+            // This now includes 'notif_count' automatically
+            $formatted = $this->user->formatUserDisplayData($userData, $from);
 
-            /**
-             * 3. Sync and Return
-             * formatUserDisplayData now handles the name via getFullName() internally.
-             */
-            $viewData = $this->user->formatUserDisplayData($userData, $from);
-            
-            // Explicitly override the back_url to use our mapped logic from Section 1 & 2
-            $viewData['back_url'] = $back_url;
-            
-            // Add additional session and notification state
-            $viewData['notif_count'] = $this->user->getUnreadNotificationCount($user_id);
-            $viewData['success']     = $_SESSION['success'] ?? null;
-            $viewData['error']       = $_SESSION['error'] ?? null;
+            // Keep session flashes in the controller layer
+            $formatted['success'] = $_SESSION['success'] ?? null;
+            $formatted['error'] = $_SESSION['error'] ?? null;
 
-            // Clear session messages after loading them into the view data
-            unset($_SESSION['success'], $_SESSION['error']);
-
-            return $viewData; 
+            return $formatted;
         }
 
-        // edit_profile_info.php & edit_user_info.php
-        public function handleProfileUpdate($post, $files, $target_user_id = null) {
+        // edit_profile_info.php
+        public function handleProfileUpdate($post, $files) {
             $this->auth->checkLogin();
+            $user_id = $_SESSION['user_id'];
+            $userData = $this->user->getUserInfo($user_id);
             
-            $current_admin_id = $_SESSION['user_id'];
-            $admin_role = $_SESSION['role'];
-            $edit_id = $target_user_id ?? $current_admin_id;
-            $is_admin_action = ($target_user_id !== null && $admin_role === 'admin');
-
-            // Fetch target user data
-            $userData = $this->user->getUserInfo($edit_id);
-            if (!$userData) {
-                $_SESSION['error'] = "User not found.";
-                header("Location: " . ($is_admin_action ? "manage_users.php" : "profile.php"));
-                exit;
-            }
-
-            // Prepare names and roles for notifications
-            $admin_name = $this->user->getFullName($current_admin_id);
-            $user_name  = $this->user->getFullName($edit_id);
-            $user_role  = ucfirst($userData['role']);
-
+            // Path configuration 
             $profile_dir = '../../public/uploads/profile_pictures/';
-            $from = $_GET['from'] ?? 'dashboard';
-            $redirect_page = $is_admin_action ? "edit_user_info.php?id=$edit_id&from=$from" : "edit_profile_info.php?from=$from";
 
-            // --- SECTION 1: REMOVE PROFILE PICTURE ---
+            // --- 1. REMOVE PICTURE LOGIC ---
             if (isset($post['remove_picture'])) {
                 if (!empty($userData['profile_picture']) && basename($userData['profile_picture']) !== 'default.jpg') {
                     $old_file = $profile_dir . basename($userData['profile_picture']);
                     if (file_exists($old_file)) unlink($old_file);
                 }
                 
-                if ($this->user->updateProfilePicture($edit_id, 'uploads/profile_pictures/default.jpg')) {
-                    // Send Notifications if Admin is doing the action
-                    if ($is_admin_action) {
-                        $adm_msg = "Profile Picture Removed | User: \"$user_name\" (ID: $edit_id) | Role: \"$user_role\" | Removed by Admin: \"$admin_name\" (ID: $current_admin_id).";
-                        $this->user->notifyOtherAdmins($current_admin_id, "system", $adm_msg, "../admin/view_user_info.php?id=$edit_id");
-
-                        $usr_msg = "Your Profile Picture was removed by Admin: \"$admin_name\" (ID: $current_admin_id).";
-                        $this->user->addNotification($edit_id, "system", $usr_msg, "../shared/profile.php");
-                    }
-
-                    $_SESSION['success'] = "Profile picture removed successfully.";
-                } else {
-                    $_SESSION['error'] = "Failed to remove profile picture.";
-                }
-                header("Location: $redirect_page");
+                $this->user->updateProfilePicture($user_id, 'uploads/profile_pictures/default.jpg');
+                $_SESSION['success'] = "Profile picture removed.";
+                header("Location: edit_profile_info.php");
                 exit;
             }
 
-            // --- SECTION 2: UPLOAD/CHANGE PROFILE PICTURE ---
+            // --- 2. UPLOAD PICTURE LOGIC ---
             if (isset($files['profile_picture']) && $files['profile_picture']['error'] === UPLOAD_ERR_OK) {
                 $file_tmp = $files['profile_picture']['tmp_name'];
                 $image_info = getimagesize($file_tmp);
-                
-                if (!$image_info || !in_array($image_info['mime'], ['image/jpeg', 'image/png', 'image/jpg'])) {
-                    $_SESSION['error'] = "Invalid image format. Use PNG or JPG.";
-                    header("Location: $redirect_page");
-                    exit;
-                } 
-                
-                if ($files['profile_picture']['size'] > 2 * 1024 * 1024) {
+                $allowed_types = ['image/jpeg', 'image/png', 'image/jpg'];
+
+                if (!$image_info || !in_array($image_info['mime'], $allowed_types)) {
+                    $_SESSION['error'] = "Invalid image format. Use JPG or PNG.";
+                } elseif ($files['profile_picture']['size'] > 2 * 1024 * 1024) {
                     $_SESSION['error'] = "Image too large (Max 2MB).";
-                    header("Location: $redirect_page");
-                    exit;
-                }
+                } else {
+                    $extension = pathinfo($files['profile_picture']['name'], PATHINFO_EXTENSION);
+                    $new_name = 'user_' . $user_id . '_' . time() . '.' . $extension;
+                    $destination = $profile_dir . $new_name;
 
-                $extension = pathinfo($files['profile_picture']['name'], PATHINFO_EXTENSION);
-                $new_name = 'user_' . $edit_id . '_' . time() . '.' . $extension;
-                
-                if (move_uploaded_file($file_tmp, $profile_dir . $new_name)) {
-                    if (!empty($userData['profile_picture']) && basename($userData['profile_picture']) !== 'default.jpg') {
-                        $old_path = $profile_dir . basename($userData['profile_picture']);
-                        if (file_exists($old_path)) unlink($old_path);
+                    if (move_uploaded_file($file_tmp, $destination)) {
+                        // Delete the old photo if it isn't the default
+                        if (!empty($userData['profile_picture']) && basename($userData['profile_picture']) !== 'default.jpg') {
+                            $old_file = $profile_dir . basename($userData['profile_picture']);
+                            if (file_exists($old_file)) unlink($old_file);
+                        }
+                        
+                        $this->user->updateProfilePicture($user_id, 'uploads/profile_pictures/' . $new_name);
+                        $_SESSION['success'] = "Profile picture updated!";
+                        header("Location: edit_profile_info.php");
+                        exit;
                     }
-                    
-                    $this->user->updateProfilePicture($edit_id, 'uploads/profile_pictures/' . $new_name);
-
-                    // Send Notifications if Admin is doing the action
-                    if ($is_admin_action) {
-                        $adm_msg = "Profile Picture Changed | User: \"$user_name\" (ID: $edit_id) | Role: \"$user_role\" | Changed by Admin: \"$admin_name\" (ID: $current_admin_id).";
-                        $this->user->notifyOtherAdmins($current_admin_id, "system", $adm_msg, "../admin/view_user_info.php?id=$edit_id");
-
-                        $usr_msg = "Your Profile Picture was changed by Admin: \"$admin_name\" (ID: $current_admin_id).";
-                        $this->user->addNotification($edit_id, "system", $usr_msg, "../shared/profile.php");
-                    }
-
-                    $_SESSION['success'] = "Profile picture updated successfully.";
-                    header("Location: $redirect_page");
-                    exit;
                 }
             }
 
-            // --- SECTION 3: UPDATE TEXT INFORMATION ---
+            // --- 3. TEXT INFO UPDATE LOGIC ---
             if (isset($post['update_info'])) {
                 $email = trim($post['email']);
                 
                 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                     $_SESSION['error'] = "Invalid email format.";
-                    header("Location: $redirect_page");
-                    exit;
-                } 
-                
-                if ($this->user->isEmailTakenByOthers($email, $edit_id)) {
+                } elseif ($this->user->isEmailTakenByOthers($email, $user_id)) {
                     $_SESSION['error'] = "Email is already taken.";
-                    header("Location: $redirect_page");
-                    exit;
-                }
+                } else {
+                    $data = [
+                        'email'          => $email,
+                        'first_name'     => trim($post['first_name']),
+                        'middle_name'    => trim($post['middle_name']),
+                        'last_name'      => trim($post['last_name']),
+                        'contact_number' => trim($post['contact_number']),
+                        'user_id'        => $user_id
+                    ];
 
-                $data = [
-                    'email' => $email,
-                    'first_name' => trim($post['first_name']),
-                    'middle_name' => trim($post['middle_name']),
-                    'last_name' => trim($post['last_name']),
-                    'contact_number' => trim($post['contact_number']),
-                    'user_id' => $edit_id
-                ];
-
-                if ($this->user->updateProfileInfo($data)) {
-                    // Send Notifications if Admin is doing the action
-                    if ($is_admin_action) {
-                        $adm_msg = "Profile Info Changed | User: \"$user_name\" (ID: $edit_id) | Role: \"$user_role\" | Changed by Admin: \"$admin_name\" (ID: $current_admin_id).";
-                        $this->user->notifyOtherAdmins($current_admin_id, "system", $adm_msg, "../admin/view_user_info.php?id=$edit_id");
-
-                        $usr_msg = "Your Profile Info was changed by Admin: \"$admin_name\" (ID: $current_admin_id).";
-                        $this->user->addNotification($edit_id, "system", $usr_msg, "../shared/profile.php");
+                    if ($this->user->updateProfileInfo($data)) {
+                        $_SESSION['success'] = "Profile information updated!";
+                        header("Location: profile.php");
+                        exit;
                     }
-
-                    $_SESSION['success'] = "Profile information updated successfully.";
-                    $final_redirect = $is_admin_action ? "view_user_info.php?id=$edit_id&from=$from" : "profile.php?from=$from";
-                    header("Location: $final_redirect");
-                    exit;
                 }
             }
         }

@@ -107,15 +107,17 @@
 
         // profile.php, admin/view_user_info.php & sidebar.php
         public function formatUserDisplayData($userData, $back_origin = 'dashboard') {
-            // 1. Name Formatting
-            $full_name = $this->getFullName($userData['id'] ?? 0);
+            $user_id = $userData['id'] ?? 0;
+
+            // 1. Name Formatting (Standardized)
+            $full_name = $this->getFullName($user_id);
             
-            // 2. Picture Path Logic
+            // 2. Picture Path Logic (Standardized)
             $db_pic = $userData['profile_picture'] ?? '';
             $file = !empty($db_pic) ? basename($db_pic) : 'default.jpg';
             $path = "../../public/uploads/profile_pictures/" . $file;
 
-            // 3. Back URL Logic - Define $role_raw early to avoid Undefined Variable errors
+            // 3. Back URL Logic
             $role_raw = $userData['role'] ?? 'user';
             
             if ($back_origin === 'notification') {
@@ -123,9 +125,11 @@
             } elseif ($back_origin === 'admin_manage') {
                 $back_url = "manage_users.php";
             } else {
-                // Fallback to dashboard
                 $back_url = "../$role_raw/" . $role_raw . "_dashboard.php";
             }
+
+            // 4. Notification Count (Added here)
+            $unread_count = ($user_id > 0) ? $this->getUnreadNotificationCount($user_id) : 0;
 
             return [
                 'user'                 => $userData,
@@ -135,7 +139,7 @@
                 'profile_picture'      => $path,
                 'user_profile_picture' => $path, 
                 'back_url'             => $back_url,
-                'notif_count'          => 0
+                'notif_count'          => $unread_count
             ];
         }
 

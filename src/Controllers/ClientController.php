@@ -304,6 +304,7 @@
             $_SESSION['error'] = "Failed to update errand.";
             return $post;
         }
+        
         // Delete pending errand button
         public function handleDeleteErrand() {
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;

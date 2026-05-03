@@ -112,12 +112,6 @@
                         <?php if ($user['role'] === 'admin'): ?>
                             <p>Admin accounts cannot be edited or deleted.</p>
                         <?php else: ?>
-                            <!-- Edit Profile Button -->
-                            <form method="GET" action="edit_user_info.php">
-                                <input type="hidden" name="id" value="<?= (int)$user['id']; ?>">
-                                <button type="submit" class="btn-edit-profile">Edit this user</button>
-                            </form>
-
                             <!-- Reset Password Button -->
                             <form method="POST" action="reset_password.php" onsubmit="return confirm('Are you sure you want to reset this user\'s password?');">
                                 <input type="hidden" name="id" value="<?= htmlspecialchars($user['id']) ?>">
