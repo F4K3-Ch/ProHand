@@ -85,11 +85,31 @@
             return $result->fetch_assoc();
         }
 
+        // Returns the full name of a user by ID
+        public function getFullName($user_id) {
+            $stmt = $this->db->prepare("SELECT first_name, middle_name, last_name FROM users WHERE id = ? LIMIT 1");
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $res = $stmt->get_result()->fetch_assoc();
+            
+            if (!$res) return "Unknown User";
+            
+            return trim($res['first_name'] . ' ' . ($res['middle_name'] ?? '') . ' ' . $res['last_name']);
+        }
+
+        // Fetches all users with a specific role
+        public function getUsersByRole($role) {
+            $stmt = $this->db->prepare("SELECT id FROM users WHERE role = ?");
+            $stmt->bind_param("s", $role);
+            $stmt->execute();
+            return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        }
+
         // profile.php, admin/view_user_info.php & sidebar.php
         public function formatUserDisplayData($userData, $back_origin = 'dashboard') {
             // 1. Name Formatting
-            $full_name = trim(($userData['first_name'] ?? '') . ' ' . ($userData['middle_name'] ?? '') . ' ' . ($userData['last_name'] ?? ''));
-
+            $full_name = $this->getFullName($userData['id'] ?? 0);
+            
             // 2. Picture Path Logic
             $db_pic = $userData['profile_picture'] ?? '';
             $file = !empty($db_pic) ? basename($db_pic) : 'default.jpg';
@@ -208,26 +228,6 @@
             $stmt = $this->db->prepare("DELETE FROM notifications WHERE user_id = ?");
             $stmt->bind_param("i", $user_id);
             return $stmt->execute();
-        }
-
-        // Returns the full name of a user by ID
-        public function getFullName($user_id) {
-            $stmt = $this->db->prepare("SELECT first_name, middle_name, last_name FROM users WHERE id = ? LIMIT 1");
-            $stmt->bind_param("i", $user_id);
-            $stmt->execute();
-            $res = $stmt->get_result()->fetch_assoc();
-            
-            if (!$res) return "Unknown User";
-            
-            return trim($res['first_name'] . ' ' . ($res['middle_name'] ?? '') . ' ' . $res['last_name']);
-        }
-
-        // Fetches all users with a specific role
-        public function getUsersByRole($role) {
-            $stmt = $this->db->prepare("SELECT id FROM users WHERE role = ?");
-            $stmt->bind_param("s", $role);
-            $stmt->execute();
-            return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         }
 
         // Standardized method to add notifications

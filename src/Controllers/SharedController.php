@@ -19,10 +19,11 @@
             $user_id = $_SESSION['user_id'];
             $role = $_SESSION['role'];
             
+            // Fetch target user data
             $userData = $this->user->getUserInfo($user_id);
             if (!$userData) return null; 
 
-            // 1. Define Dashboard Paths
+            // 1. Define Dashboard Paths based on Role
             $dashboards = [
                 'admin'  => '../admin/admin_dashboard.php',
                 'client' => '../client/client_dashboard.php',
@@ -30,8 +31,8 @@
             ];
             $default_dash = $dashboards[$role] ?? 'dashboard.php';
 
-            // 2. Logic Correction:
-            // If no 'from' is set, it's a direct click (like from the Sidebar), so go to Dashboard.
+            // 2. Determine the 'back' navigation origin
+            // If no 'from' is set in the URL, default to the user's dashboard.
             $from = $_GET['from'] ?? 'dashboard';
 
             $back_urls = [
@@ -43,15 +44,22 @@
             
             $back_url = $back_urls[$from] ?? $default_dash;
 
-            // 3. Sync and Return
+            /**
+             * 3. Sync and Return
+             * formatUserDisplayData now handles the name via getFullName() internally.
+             */
             $viewData = $this->user->formatUserDisplayData($userData, $from);
             
-            // Explicitly set the back_url to ensure the view uses our calculated path
+            // Explicitly override the back_url to use our mapped logic from Section 1 & 2
             $viewData['back_url'] = $back_url;
             
+            // Add additional session and notification state
             $viewData['notif_count'] = $this->user->getUnreadNotificationCount($user_id);
             $viewData['success']     = $_SESSION['success'] ?? null;
             $viewData['error']       = $_SESSION['error'] ?? null;
+
+            // Clear session messages after loading them into the view data
+            unset($_SESSION['success'], $_SESSION['error']);
 
             return $viewData; 
         }
