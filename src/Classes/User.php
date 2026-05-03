@@ -105,44 +105,6 @@
             return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         }
 
-        // profile.php, admin/view_user_info.php & sidebar.php
-        public function formatUserDisplayData($userData, $back_origin = 'dashboard') {
-            $user_id = $userData['id'] ?? 0;
-
-            // 1. Name Formatting (Standardized)
-            $full_name = $this->getFullName($user_id);
-            
-            // 2. Picture Path Logic (Standardized)
-            $db_pic = $userData['profile_picture'] ?? '';
-            $file = !empty($db_pic) ? basename($db_pic) : 'default.jpg';
-            $path = "../../public/uploads/profile_pictures/" . $file;
-
-            // 3. Back URL Logic
-            $role_raw = $userData['role'] ?? 'user';
-            
-            if ($back_origin === 'notification') {
-                $back_url = "../shared/notifications.php";
-            } elseif ($back_origin === 'admin_manage') {
-                $back_url = "manage_users.php";
-            } else {
-                $back_url = "../$role_raw/" . $role_raw . "_dashboard.php";
-            }
-
-            // 4. Notification Count (Added here)
-            $unread_count = ($user_id > 0) ? $this->getUnreadNotificationCount($user_id) : 0;
-
-            return [
-                'user'                 => $userData,
-                'full_name'            => $full_name,
-                'role'                 => $role_raw,
-                'role_label'           => ucfirst($role_raw),
-                'profile_picture'      => $path,
-                'user_profile_picture' => $path, 
-                'back_url'             => $back_url,
-                'notif_count'          => $unread_count
-            ];
-        }
-
         public function isEmailTakenByOthers($email, $user_id) {
             $stmt = $this->db->prepare("SELECT id FROM users WHERE email = ? AND id != ? LIMIT 1");
             $stmt->bind_param("si", $email, $user_id);
@@ -448,5 +410,42 @@
             $finalStmt = $this->db->prepare("DELETE FROM users WHERE id = ?");
             $finalStmt->bind_param("i", $user_id);
             return $finalStmt->execute();
+        }
+
+        // profile.php, admin/view_user_info.php & sidebar.php
+        public function formatUserDisplayData($userData, $back_origin = 'dashboard') {
+            $user_id = $userData['id'] ?? 0;
+
+            // 1. Name Formatting (Standardized)
+            $full_name = $this->getFullName($user_id);
+            
+            // 2. Picture Path Logic (Standardized)
+            $db_pic = $userData['profile_picture'] ?? '';
+            $file = !empty($db_pic) ? basename($db_pic) : 'default.jpg';
+            $path = "../../public/uploads/profile_pictures/" . $file;
+
+            // 3. Back URL Logic
+            $role_raw = $userData['role'] ?? 'user';
+            
+            if ($back_origin === 'notification') {
+                $back_url = "../shared/notifications.php";
+            } elseif ($back_origin === 'admin_manage') {
+                $back_url = "manage_users.php";
+            } else {
+                $back_url = "../$role_raw/" . $role_raw . "_dashboard.php";
+            }
+
+            // 4. Notification Count (Added here)
+            $unread_count = ($user_id > 0) ? $this->getUnreadNotificationCount($user_id) : 0;
+
+            return [
+                'user'                 => $userData,
+                'full_name'            => $full_name,
+                'role'                 => ucfirst($role_raw),
+                'profile_picture'      => $path,
+                'user_profile_picture' => $path, 
+                'back_url'             => $back_url,
+                'notif_count'          => $unread_count
+            ];
         }
     }
