@@ -12,26 +12,54 @@
             $this->auth = new Auth($db);
         }
 
-        /**
-         * Logic for viewing the profile and gathering sidebar data
-         */
-        // profile.php
-        public function profile() {
+        // profile.php, admin/view_user_info.php & sidebar.php
+        public function profile($specific_user_id = null) {
             $this->auth->checkLogin();
             
-            $user_id = $_SESSION['user_id'];
+            // Use provided ID (for Admin viewing others) or Session ID (for self)
+            $user_id = $specific_user_id ?? $_SESSION['user_id'];
             $userData = $this->user->getUserInfo($user_id);
 
             if (!$userData) return null;
 
+            // --- MERGED LOGIC START ---
             $from = $_GET['from'] ?? 'dashboard';
 
-            // This now includes 'notif_count' automatically
-            $formatted = $this->user->formatUserDisplayData($userData, $from);
+            // 1. Name Formatting
+            $full_name = $this->user->getFullName($user_id);
+            
+            // 2. Picture Path Logic
+            $db_pic = $userData['profile_picture'] ?? '';
+            $file = !empty($db_pic) ? basename($db_pic) : 'default.jpg';
+            $path = "../../public/uploads/profile_pictures/" . $file;
 
-            // Keep session flashes in the controller layer
-            $formatted['success'] = $_SESSION['success'] ?? null;
-            $formatted['error'] = $_SESSION['error'] ?? null;
+            // 3. Back URL Logic
+            $role_raw = $userData['role'] ?? 'user';
+            if ($from === 'notification') {
+                $back_url = "../shared/notifications.php";
+            } elseif ($from === 'admin_manage') {
+                $back_url = "manage_users.php";
+            } else {
+                $back_url = "../$role_raw/" . $role_raw . "_dashboard.php";
+            }
+
+            // 4. Notification Count
+            $unread_count = ($user_id > 0) ? $this->user->getUnreadNotificationCount($user_id) : 0;
+
+            // Assemble final array
+            $formatted = [
+                'user'                 => $userData,
+                'full_name'            => $full_name,
+                'role'                 => $role_raw,
+                'role_label'           => ucfirst($role_raw),
+                'profile_picture'      => $path,
+                'user_profile_picture' => $path, 
+                'back_url'             => $back_url,
+                'notif_count'          => $unread_count,
+                'success'              => $_SESSION['success'] ?? null,
+                'error'                => $_SESSION['error'] ?? null
+            ];
+            // --- MERGED LOGIC END ---
 
             return $formatted;
         }

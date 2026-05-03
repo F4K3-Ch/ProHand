@@ -156,36 +156,77 @@
         }
 
         // view_user_info.php
+        private function formatUserData($userData, $from) {
+            // 1. Picture Path Logic
+            $db_pic = $userData['profile_picture'] ?? '';
+            $file = !empty($db_pic) ? basename($db_pic) : 'default.jpg';
+            $path = "../../public/uploads/profile_pictures/" . $file;
+
+            // 2. Back URL Logic (Matches your HTML <a> tag)
+            if ($from === 'notification') {
+                $back_url = "../shared/notifications.php";
+            } else {
+                // Default back to the management list
+                $back_url = "manage_users.php";
+            }
+
+            return [
+                'user'                 => $userData,
+                'full_name'            => ($userData['first_name'] ?? '') . ' ' . ($userData['last_name'] ?? ''),
+                'user_profile_picture' => $path, // Matches your HTML variable
+                'back_url'             => $back_url,
+                'role_label'           => ucfirst($userData['role'] ?? 'user')
+            ];
+        }
+
+        // view_user_info.php
         public function viewUserInfo() {
+            // 1. Security Check
             $this->auth->restrictTo('admin');
-            $target_user_id = (int)($_GET['id'] ?? 0);
             
+            $target_user_id = (int)($_GET['id'] ?? 0);
             if ($target_user_id <= 0) {
                 header("Location: manage_users.php");
                 exit;
             }
 
+            // 2. Fetch Raw Data (User + Stats)
             $data = $this->admin->getUserDetails($target_user_id);
-            if (!$data) {
+            if (!$data || !isset($data['user'])) {
                 header("Location: manage_users.php");
                 exit;
             }
 
-            // FIX: Capture the 'from' parameter from the URL (defaulting to admin_manage)
+            // 3. Initial Formatting
             $from = $_GET['from'] ?? 'admin_manage';
+            $formatted = $this->formatUserData($data['user'], $from);
 
-            // Pass the actual $from variable to the formatter instead of hard-coding 'admin_manage'
-            $formatted = $this->user->formatUserDisplayData($data['user'], $from);
-
+            // 4. Populate Tasker Metrics (Matches your HTML conditional blocks)
             if ($data['user']['role'] === 'tasker') {
-                $formatted['active_status'] = $data['active'];
-                $formatted['finished_status'] = $data['history'];
+                $formatted['active_status'] = [
+                    'accepted'   => (int)($data['active']['accepted'] ?? 0),
+                    'in_process' => (int)($data['active']['in_process'] ?? 0)
+                ];
                 
-                $formatted['total_active_errands'] = (int)$data['active']['total_active'];
-                $formatted['total_finished_errands'] = (int)$data['history']['total_finished'];
-                $formatted['earnings'] = (float)$data['history']['earnings'];
-                $formatted['failed_earnings'] = (float)$data['history']['failed_earnings'];
-                $formatted['total_errands'] = $formatted['total_active_errands'] + $formatted['total_finished_errands'];
+                $formatted['finished_status'] = [
+                    'completed' => (int)($data['history']['completed'] ?? 0),
+                    'failed'    => (int)($data['history']['failed'] ?? 0)
+                ];
+
+                $formatted['total_active_errands']   = (int)($data['active']['total_active'] ?? 0);
+                $formatted['total_finished_errands'] = (int)($data['history']['total_finished'] ?? 0);
+                $formatted['earnings']               = (float)($data['history']['earnings'] ?? 0);
+                $formatted['failed_earnings']        = (float)($data['history']['failed_earnings'] ?? 0);
+                $formatted['total_errands']          = $formatted['total_active_errands'] + $formatted['total_finished_errands'];
+            } else {
+                // Provide empty defaults for non-taskers to prevent "Undefined Variable" if the HTML check fails
+                $formatted['active_status'] = ['accepted' => 0, 'in_process' => 0];
+                $formatted['finished_status'] = ['completed' => 0, 'failed' => 0];
+                $formatted['total_active_errands'] = 0;
+                $formatted['total_finished_errands'] = 0;
+                $formatted['earnings'] = 0.0;
+                $formatted['failed_earnings'] = 0.0;
+                $formatted['total_errands'] = 0;
             }
 
             return $formatted;
