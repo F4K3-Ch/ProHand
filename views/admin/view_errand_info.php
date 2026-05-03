@@ -3,12 +3,26 @@
     require_once "../../src/Classes/Database.php";
     require_once "../../src/Classes/User.php";
     require_once "../../src/Classes/Auth.php";
-    require_once "../../src/Classes/Admin.php"; // Ensure you create this class
+    require_once "../../src/Classes/Admin.php";
     require_once "../../src/Controllers/AdminController.php";
+    require_once "../../src/Controllers/SharedController.php";
 
     $database = new Database();
     $db = $database->getConnection();
+
     $controller = new AdminController($db);
+    $sharedController = new SharedController($db);
+
+    // Download Logic
+    if (isset($_GET['action']) && $_GET['action'] === 'download' && isset($_GET['download_id'])) {
+        $is_history_download = (isset($_GET['type']) && $_GET['type'] === 'history');
+        
+        // 3. CALL it from $sharedController
+        $sharedController->handleDownload((int)$_GET['download_id'], $is_history_download ? 'history' : 'regular');
+        
+        // If handleDownload fails to exit (e.g., file not found), set the error
+        $_SESSION['error'] = "File not found on server.";
+    }
 
     $errand_id = (int)($_GET['errand_id'] ?? 0);
     $data = $controller->viewErrandDetails($errand_id);
@@ -155,34 +169,46 @@
                 </div>
 
                 <div class="info-box">
-                    <label>Attachments</label>
+                    <label>Attachment</label>
 
-                    <?php if ($attachment_result->num_rows > 0): ?>
+                    <?php if ($attachment_result && $attachment_result->num_rows > 0): ?>
                         <div class="attachment-list">
-                            <?php while ($file = $attachment_result->fetch_assoc()): ?>
-                                <?php
-                                    // The database stores 'uploads/attachments/filename.ext'
-                                    // We need to go up two levels to reach the root, then into public/
-                                    $relative_path = '../../public/' . $file['file_path'];
+                            <?php 
+                                // Reset pointer or loop if needed; here we fetch the row
+                                $file = $attachment_result->fetch_assoc(); 
+                                
+                                // Path for browser preview
+                                $relative_path = '../../public/' . $file['file_path'];
+                                
+                                // Point back to the current file
+                                $download_action = "view_errand_info.php";
+                            ?>
+
+                            <div class="attachment-item">
+                                <a href="<?= htmlspecialchars($relative_path); ?>" target="_blank" class="attachment-name">
+                                    <i class="fa-solid fa-file-lines"></i> <?= htmlspecialchars($file['original_name']); ?>
+                                </a>
+
+                                <form method="GET" action="view_errand_info.php">
+                                    <!-- Keep the user on the current errand page -->
+                                    <input type="hidden" name="errand_id" value="<?= $errand_id; ?>">
                                     
-                                    // Determine which download script to use
-                                    // Assuming your shared folder is at the root level relative to views/client/
-                                    $download_action = $is_active ? "../../shared/download_attachment.php" : "../../shared/download_attachment_history.php";
-                                ?>
+                                    <!-- Trigger word for the IF statement -->
+                                    <input type="hidden" name="action" value="download">
+                                    
+                                    <!-- Your specific change here -->
+                                    <input type="hidden" name="download_id" value="<?= (int)$file['id']; ?>">
+                                    
+                                    <!-- Check if history is needed -->
+                                    <?php if (isset($is_finished) && $is_finished): ?>
+                                        <input type="hidden" name="type" value="history">
+                                    <?php endif; ?>
 
-                                <div class="attachment-item">
-                                    <a href="<?= htmlspecialchars($relative_path); ?>" target="_blank" class="attachment-name">
-                                        <i class="fa-solid fa-file-lines"></i> <?= htmlspecialchars($file['original_name']); ?>
-                                    </a>
-
-                                    <form method="GET" action="<?= $download_action; ?>">
-                                        <input type="hidden" name="id" value="<?= (int)$file['id']; ?>">
-                                        <button type="submit" class="btn-download">
-                                            <i class="fa-solid fa-download"></i> Download
-                                        </button>
-                                    </form>
-                                </div>
-                            <?php endwhile; ?>
+                                    <button type="submit" class="btn-download">
+                                        <i class="fa-solid fa-download"></i> Download
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     <?php else: ?>
                         <div class="attachment-list no-attachments">

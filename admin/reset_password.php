@@ -20,7 +20,7 @@
     if ($admin_result->num_rows === 1) {
         $admin = $admin_result->fetch_assoc();
         $admin_full_name = trim($admin['first_name'] . ' ' . $admin['middle_name'] . ' ' . $admin['last_name']);
-    } else {
+    } else { 
         session_unset();
         session_destroy();
         header("Location: ../auth/login.php");
