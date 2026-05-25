@@ -14,7 +14,8 @@
     $adminController = new AdminController($db);
 
     // 3. Process password reset request if form was sent here
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'reset_password') {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_password_id'])) {
+        $_POST['id'] = $_POST['reset_password_id'];
         $adminController->handlePasswordReset();
     }
 
@@ -118,8 +119,7 @@
                         <?php else: ?>
                             <!-- Reset Password Button -->
                             <form method="POST" onsubmit="return confirm('Are you sure you want to reset this user\'s password?');">
-                                <input type="hidden" name="id" value="<?= htmlspecialchars($user['id']) ?>">
-                                <input type="hidden" name="action" value="reset_password">
+                                <input type="hidden" name="reset_password_id" value="<?= htmlspecialchars($user['id']) ?>">
                                 <button type="submit" class="btn-reset-password">Reset Password</button>
                             </form>
                             

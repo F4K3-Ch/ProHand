@@ -286,6 +286,7 @@
             exit;
         }
 
+        // Delete Active Errand
         public function handleActiveErrandDeletion() {
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
@@ -369,6 +370,7 @@
             exit;
         }
 
+        // Delete Finished Errand
         public function handleFinishedErrandDeletion() {
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
