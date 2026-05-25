@@ -14,7 +14,8 @@
     $adminController = new AdminController($db);
 
     // 3. Process finished_active_errand if form was sent here
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_finished_errand') {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_finished_errand_id'])) {
+        $_POST['id'] = $_POST['delete_finished_errand_id'];
         $adminController->handleFinishedErrandDeletion();
     }
 
@@ -179,8 +180,7 @@
 
                                             <!-- Delete Button -->
                                             <form method="POST" onsubmit="return confirm('Are you sure you want to delete this finished errand?');">
-                                                <input type="hidden" name="id" value="<?= $row['id']; ?>">
-                                                <input type="hidden" name="action" value="delete_finished_errand">
+                                                <input type="hidden" name="delete_finished_errand_id" value="<?= $row['id']; ?>">
                                                 <button type="submit" class="btn-delete">Delete</button>
                                             </form>
                                         </div>

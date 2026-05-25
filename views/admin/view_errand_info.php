@@ -26,9 +26,11 @@
 
     // Handle POST Request
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if (isset($_POST['action']) && $_POST['action'] === 'delete_active_errand') {
+        if (isset($_POST['delete_active_errand_id'])) {
+            $_POST['id'] = $_POST['delete_active_errand_id']; 
             $adminController->handleActiveErrandDeletion();
-        } elseif (isset($_POST['action']) && $_POST['action'] === 'delete_finished_errand') {
+        } elseif (isset($_POST['delete_finished_errand_id'])) {
+            $_POST['id'] = $_POST['delete_finished_errand_id']; 
             $adminController->handleFinishedErrandDeletion();
         }
     }
@@ -230,15 +232,13 @@
                     <?php if ($is_active): ?>
                         <!-- Delete Active Errand Button -->
                         <form method="POST" onsubmit="return confirm('Are you sure you want to delete this errand?');">
-                            <input type="hidden" name="id" value="<?= $errand['id']; ?>">
-                            <input type="hidden" name="action" value="delete_active_errand">
+                            <input type="hidden" name="delete_active_errand_id" value="<?= $errand['id']; ?>">
                             <button type="submit" class="btn-delete">Delete</button>
                         </form>
                     <?php elseif ($is_finished): ?>
                         <!-- Delete Finished Errand Button -->
                         <form method="POST" onsubmit="return confirm('Are you sure you want to delete this errand?');">
-                            <input type="hidden" name="id" value="<?= $errand['id']; ?>">
-                            <input type="hidden" name="action" value="delete_finished_errand">
+                            <input type="hidden" name="delete_finished_errand_id" value="<?= $errand['id']; ?>">
                             <button type="submit" class="btn-delete">Delete</button>
                         </form>
                     <?php endif; ?>
