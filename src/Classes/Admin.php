@@ -317,6 +317,16 @@
             return $stmt->get_result();
         }
 
+        public function getErrandDetails($errand_id) {
+            $stmt = $this->db->prepare("SELECT * FROM errands WHERE id = ? LIMIT 1");
+            $stmt->bind_param("i", $errand_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $data = $result->fetch_assoc();
+            $stmt->close();
+            return $data;
+        }
+
         // view_user_info.php
         public function getUserDetails($user_id) {
             $stmt = $this->db->prepare("SELECT * FROM users WHERE id = ? LIMIT 1");
@@ -342,6 +352,7 @@
             return $data;
         }
 
+        // Reset password
         public function resetUserPassword($user_id, $hashed_password) {
             $stmt = $this->db->prepare("UPDATE users SET password = ? WHERE id = ?");
             $stmt->bind_param("si", $hashed_password, $user_id);
@@ -350,23 +361,70 @@
             return $success;
         }
 
-        public function getErrandDetails($errand_id) {
-            $stmt = $this->db->prepare("SELECT * FROM errands WHERE id = ? LIMIT 1");
-            $stmt->bind_param("i", $errand_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $data = $result->fetch_assoc();
-            $stmt->close();
-            return $data;
-        }
-
-        public function deleteErrandRecord($errand_id) {
+        public function deleteActiveErrandRecord($errand_id) {
             if (method_exists($this, 'deleteErrandAttachments')) {
                 $this->deleteErrandAttachments($errand_id);
             }
 
             $stmt = $this->db->prepare("DELETE FROM errands WHERE id = ?");
             $stmt->bind_param("i", $errand_id);
+            $success = $stmt->execute();
+            $stmt->close();
+
+            return $success;
+        }
+
+        public function getHistoryRowById($history_id) {
+            $stmt = $this->db->prepare("SELECT * FROM history WHERE id = ? LIMIT 1");
+            $stmt->bind_param("i", $history_id);
+            $stmt->execute();
+            $data = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            return $data;
+        }
+
+        public function deleteFinishedErrandRecord($history_id) {
+            // 1. Fetch the history data row internally
+            $history_data = $this->getHistoryRowById($history_id);
+            if (!$history_data) {
+                return false; 
+            }
+
+            // 2. Loop through all attachments linked to this history record and delete physical files
+            $attachment_dir = "../uploads/history/attachments/";
+            $attachment_res = $this->getAttachment($history_id, true);
+            
+            if ($attachment_res && $attachment_res->num_rows > 0) {
+                while ($attachment = $attachment_res->fetch_assoc()) {
+                    $file_path = $attachment_dir . basename($attachment['file_path']);
+                    if (file_exists($file_path)) {
+                        unlink($file_path);
+                    }
+                }
+            }
+
+            // 3. Clear out Profile Pictures from the history folder if they aren't default images
+            $profile_dir = "../uploads/history/profile_pictures/";
+            
+            if (!empty($history_data['client_profile_picture']) && basename($history_data['client_profile_picture']) !== "default.jpg") {
+                $client_pic = $profile_dir . basename($history_data['client_profile_picture']);
+                if (file_exists($client_pic)) unlink($client_pic);
+            }
+            
+            if (!empty($history_data['tasker_profile_picture']) && basename($history_data['tasker_profile_picture']) !== "default.jpg") {
+                $tasker_pic = $profile_dir . basename($history_data['tasker_profile_picture']);
+                if (file_exists($tasker_pic)) unlink($tasker_pic);
+            }
+
+            // 4. Delete attachment records from database
+            $stmt = $this->db->prepare("DELETE FROM history_attachments WHERE history_errand_id = ?");
+            $stmt->bind_param("i", $history_id);
+            $stmt->execute();
+            $stmt->close();
+
+            // 5. Delete final history row record
+            $stmt = $this->db->prepare("DELETE FROM history WHERE id = ?");
+            $stmt->bind_param("i", $history_id);
             $success = $stmt->execute();
             $stmt->close();
 

@@ -287,7 +287,7 @@
         }
 
         // Delete active errand button
-        public function handleErrandDeletion() {
+        public function handleActiveErrandDeletion() {
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
 
             // 1. Enforce Admin Access
@@ -329,7 +329,7 @@
             $tasker_full_name = ($tasker_id > 0) ? $this->user->getFullName($tasker_id) : '';
 
             // 5. Execute DB Deletion (which processes your single file logic in the model cascade)
-            if ($this->admin->deleteErrandRecord($errand_id)) {
+            if ($this->admin->deleteActiveErrandRecord($errand_id)) {
                 $notif_type = "errand";
                 $notif_link = "";
 
@@ -358,6 +358,76 @@
             }
 
             header("Location: admin_dashboard.php");
+            exit;
+        }
+
+        public function handleFinishedErrandDeletion() {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
+
+            $this->auth->restrictTo('admin');
+            $admin_id = (int)$_SESSION['user_id'];
+
+            $history_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+            if ($history_id <= 0) {
+                $_SESSION['error'] = "Invalid request.";
+                header("Location: finished_errands.php");
+                exit;
+            }
+
+            // Fetch the target history row details via primary key
+            $history = $this->admin->getHistoryRowById($history_id);
+            if (!$history) {
+                $_SESSION['error'] = "Errand not found.";
+                header("Location: finished_errands.php");
+                exit;
+            }
+
+            $errand_title       = $history['title'];
+            $original_errand_id = (int)$history['errand_id'];
+            $status             = $history['status'];
+            $client_id          = (int)$history['client_id'];
+            $tasker_id          = (int)$history['tasker_id'];
+            $client_deleted     = (int)$history['client_deleted'];
+            $tasker_deleted     = (int)$history['tasker_deleted'];
+
+            // Pull names straight from the history row exactly like your raw script
+            $admin_full_name  = $this->user->getFullName($admin_id);
+            $client_full_name = trim($history['client_first_name'] . ' ' . $history['client_middle_name'] . ' ' . $history['client_last_name']);
+            $tasker_full_name = trim($history['tasker_first_name'] . ' ' . $history['tasker_middle_name'] . ' ' . $history['tasker_last_name']);
+            
+            $display_status = ucwords(str_replace('_', ' ', $status));
+
+            // Strictly pass only $history_id to the model
+            if ($this->admin->deleteFinishedErrandRecord($history_id)) {
+                $notif_type = "errand";
+                $notif_link = "";
+
+                // Notify Client if still visible and they exist
+                if ($client_id > 0 && $client_deleted === 0) {
+                    if ($this->user->getFullName($client_id) !== "Unknown User") {
+                        $client_msg = "Your Finished Errand: \"{$errand_title}\" (ID: {$original_errand_id}) with Status: \"" . ucfirst($status) . "\", finished by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}), has been permanently deleted from the system by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                        $this->user->addNotification($client_id, $notif_type, $client_msg, $notif_link);
+                    }
+                }
+
+                // Notify Tasker if still visible and they exist
+                if ($tasker_id > 0 && $tasker_deleted === 0) {
+                    if ($this->user->getFullName($tasker_id) !== "Unknown User") {
+                        $tasker_msg = "The Finished Errand: \"{$errand_title}\" (ID: {$original_errand_id}) with Status: \"" . ucfirst($status) . "\", which you finished and was created by Client: \"{$client_full_name}\" (ID: {$client_id}), has been permanently deleted from the system by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                        $this->user->addNotification($tasker_id, $notif_type, $tasker_msg, $notif_link);
+                    }
+                }
+
+                // Broadcast notification to all other admins
+                $admin_msg = "Errand Deleted | Errand: \"{$errand_title}\" (ID: {$original_errand_id}) | Status: \"" . ucfirst($status) . "\" | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Finished by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                $this->user->notifyOtherAdmins($admin_id, $notif_type, $admin_msg, $notif_link);
+
+                $_SESSION['success'] = "Errand: \"{$errand_title}\" (ID: {$original_errand_id}) was permanently deleted.";
+            } else {
+                $_SESSION['error'] = "Error deleting Errand: \"{$errand_title}\" (ID: {$original_errand_id}). Please try again.";
+            }
+
+            header("Location: finished_errands.php");
             exit;
         }
     }

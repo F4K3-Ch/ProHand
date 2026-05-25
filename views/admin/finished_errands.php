@@ -13,6 +13,11 @@
     $db = $database->getConnection(); // This replaces the old $conn from db.php
     $adminController = new AdminController($db);
 
+    // 3. Process finished_active_errand if form was sent here
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_finished_errand') {
+        $adminController->handleFinishedErrandDeletion();
+    }
+
     // 4. Extract data for your HTML
     $data = $adminController->finishedErrands();
     extract($data); 
@@ -173,8 +178,9 @@
                                             </form>
 
                                             <!-- Delete Button -->
-                                            <form method="POST" action="delete_finished_errand.php" onsubmit="return confirm('Are you sure you want to delete this finished errand?');">
+                                            <form method="POST" onsubmit="return confirm('Are you sure you want to delete this finished errand?');">
                                                 <input type="hidden" name="id" value="<?= $row['id']; ?>">
+                                                <input type="hidden" name="action" value="delete_finished_errand">
                                                 <button type="submit" class="btn-delete">Delete</button>
                                             </form>
                                         </div>

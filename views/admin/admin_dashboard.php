@@ -15,7 +15,7 @@
 
     // 3. Process delete_active_errand if form was sent here
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_active_errand') {
-        $adminController->handleErrandDeletion();
+        $adminController->handleActiveErrandDeletion();
     }
 
     // 4. Extract data for your HTML
