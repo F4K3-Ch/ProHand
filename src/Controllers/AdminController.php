@@ -232,7 +232,7 @@
             return $formatted;
         }
 
-        // Reset Password Button
+        // Reset Password button
         public function handlePasswordReset() {
             // 1. Authorization Check
             $this->auth->restrictTo('admin');
@@ -246,34 +246,35 @@
                 exit;
             }
 
-            // 3. Gather Admin and Target Details
-            $admin_data = $this->user->getUserInfo($admin_id);
+            // 3. Gather Target Details (needed for the user's role)
             $target_data = $this->admin->getUserDetails($target_user_id);
 
-            if (!$admin_data || !$target_data || !isset($target_data['user'])) {
+            if (!$target_data || !isset($target_data['user'])) {
                 $_SESSION['error'] = "User validation failed.";
                 header("Location: manage_users.php");
                 exit;
             }
 
             $user = $target_data['user'];
-            $admin_full_name = trim(($admin_data['first_name'] ?? '') . ' ' . ($admin_data['middle_name'] ?? '') . ' ' . ($admin_data['last_name'] ?? ''));
-            $user_full_name  = trim(($user['first_name'] ?? '') . ' ' . ($user['middle_name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
 
-            // 4. Generate Random Temporary Password
+            // 4. REUSED HELPERS: Get clean full names effortlessly
+            $admin_full_name = $this->user->getFullName($admin_id);
+            $user_full_name  = $this->user->getFullName($target_user_id);
+
+            // 5. Generate Random Temporary Password
             $charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             $temporary_password = substr(str_shuffle($charset), 0, 10);
             $hashed_password = password_hash($temporary_password, PASSWORD_DEFAULT);
 
-            // 5. Commit to Database
+            // 6. Commit to Database
             if ($this->admin->resetUserPassword($target_user_id, $hashed_password)) {
                 
-                // 6. Setup Notification Payload
+                // 7. Setup Notification Payload
                 $notif_type = "system";
                 $notif_message = "Password Reset | User: \"{$user_full_name}\" (ID: {$target_user_id}) | Role: \"" . ucfirst($user['role'] ?? 'user') . "\" | Reset by Admin: \"{$admin_full_name}\" (ID: {$admin_id}) | Temporary Password: \"{$temporary_password}\".";
                 $notif_link = "../admin/view_user_info.php?id={$target_user_id}";
 
-                // ONE SINGLE LINE: Broadcasts to all other admins automatically!
+                // Broadcasts to all other admins automatically
                 $this->user->notifyOtherAdmins($admin_id, $notif_type, $notif_message, $notif_link);
 
                 $_SESSION['success'] = "Password reset successfully! Temporary password: \"$temporary_password\"";
@@ -282,6 +283,81 @@
             }
 
             header("Location: view_user_info.php?id=" . $target_user_id);
+            exit;
+        }
+
+        // Delete active errand button
+        public function handleErrandDeletion() {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
+
+            // 1. Enforce Admin Access
+            $this->auth->restrictTo('admin');
+            $admin_id = (int)$_SESSION['user_id'];
+
+            // 2. Retrieve POST ID directly
+            $errand_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+
+            if ($errand_id <= 0) {
+                $_SESSION['error'] = "Invalid request.";
+                header("Location: admin_dashboard.php");
+                exit;
+            }
+
+            // 3. Fetch Errand Records for information extraction
+            $errand = $this->admin->getErrandDetails($errand_id);
+            if (!$errand) {
+                $_SESSION['error'] = "Errand not found.";
+                header("Location: admin_dashboard.php");
+                exit;
+            }
+
+            $errand_title = $errand['title'];
+            $status       = $errand['status'];
+            $client_id    = (int)$errand['client_id'];
+            $tasker_id    = (int)$errand['tasker_id'];
+
+            $status_labels = [
+                'pending'    => 'Pending',
+                'accepted'   => 'Accepted',
+                'in_process' => 'In Process'
+            ];
+            $display_status = $status_labels[$status] ?? ucfirst($status);
+
+            // 4. CLEANED UP: Get Full Names effortlessly with your pre-existing method!
+            $admin_full_name  = $this->user->getFullName($admin_id);
+            $client_full_name = $this->user->getFullName($client_id);
+            $tasker_full_name = ($tasker_id > 0) ? $this->user->getFullName($tasker_id) : '';
+
+            // 5. Execute DB Deletion (which processes your single file logic in the model cascade)
+            if ($this->admin->deleteErrandRecord($errand_id)) {
+                $notif_type = "errand";
+                $notif_link = "";
+
+                // 6. Format Notifications matching original logic contexts
+                if (in_array($status, ['accepted', 'in_process'])) {
+                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}), which was assigned to Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) and was in Status: \"{$display_status}\", has been deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                    $tasker_msg = "The Errand: \"{$errand_title}\" (ID: {$errand_id}), assigned to you and created by Client: \"{$client_full_name}\" (ID: {$client_id}) and in Status: \"{$display_status}\", has been deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                    $admin_msg  = "Errand Deleted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Status: \"{$display_status}\" | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Assigned to Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+
+                    if ($client_id > 0) $this->user->addNotification($client_id, $notif_type, $client_msg, $notif_link);
+                    if ($tasker_id > 0) $this->user->addNotification($tasker_id, $notif_type, $tasker_msg, $notif_link);
+
+                } else { // 'pending' status
+                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}), which was in \"Pending\" status, has been deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                    $admin_msg  = "Errand Deleted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Status: \"{$display_status}\" | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+
+                    if ($client_id > 0) $this->user->addNotification($client_id, $notif_type, $client_msg, $notif_link);
+                }
+
+                // 7. Broadcast system notification to all other admins automatically
+                $this->user->notifyOtherAdmins($admin_id, $notif_type, $admin_msg, $notif_link);
+
+                $_SESSION['success'] = "Errand: \"{$errand_title}\" (ID: {$errand_id}) was permanently deleted.";
+            } else {
+                $_SESSION['error'] = "Error deleting Errand: \"{$errand_title}\" (ID: {$errand_id}). Please try again.";
+            }
+
+            header("Location: admin_dashboard.php");
             exit;
         }
     }

@@ -349,4 +349,27 @@
             $stmt->close();
             return $success;
         }
+
+        public function getErrandDetails($errand_id) {
+            $stmt = $this->db->prepare("SELECT * FROM errands WHERE id = ? LIMIT 1");
+            $stmt->bind_param("i", $errand_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $data = $result->fetch_assoc();
+            $stmt->close();
+            return $data;
+        }
+
+        public function deleteErrandRecord($errand_id) {
+            if (method_exists($this, 'deleteErrandAttachments')) {
+                $this->deleteErrandAttachments($errand_id);
+            }
+
+            $stmt = $this->db->prepare("DELETE FROM errands WHERE id = ?");
+            $stmt->bind_param("i", $errand_id);
+            $success = $stmt->execute();
+            $stmt->close();
+
+            return $success;
+        }
     }

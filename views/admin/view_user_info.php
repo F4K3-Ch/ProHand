@@ -18,7 +18,7 @@
         $adminController->handlePasswordReset();
     }
 
-    // 3. Fetch specific user data based on $_GET['id']
+    // 4. Fetch specific user data based on $_GET['id']
     $viewData = $adminController->viewUserInfo();
     extract($viewData);
 ?>
