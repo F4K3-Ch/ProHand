@@ -172,8 +172,8 @@
                 return;
             }
 
-            // if (strlen($new_password) < 6) {
-            //     $_SESSION['error'] = "New password must be at least 6 characters.";
+            // if (strlen($new_password) < 8) {
+            //     $_SESSION['error'] = "New password must be at least 8 characters.";
             //     return;
             // }
 

@@ -341,4 +341,12 @@
             }
             return $data;
         }
+
+        public function resetUserPassword($user_id, $hashed_password) {
+            $stmt = $this->db->prepare("UPDATE users SET password = ? WHERE id = ?");
+            $stmt->bind_param("si", $hashed_password, $user_id);
+            $success = $stmt->execute();
+            $stmt->close();
+            return $success;
+        }
     }

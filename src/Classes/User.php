@@ -411,5 +411,4 @@
             $finalStmt->bind_param("i", $user_id);
             return $finalStmt->execute();
         }
-
     }

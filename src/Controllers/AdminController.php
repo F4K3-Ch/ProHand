@@ -231,4 +231,57 @@
 
             return $formatted;
         }
+
+        // Reset Password Button
+        public function handlePasswordReset() {
+            // 1. Authorization Check
+            $this->auth->restrictTo('admin');
+            $admin_id = (int)$_SESSION['user_id'];
+
+            // 2. Validate Target User ID
+            $target_user_id = (int)($_POST['id'] ?? 0);
+            if ($target_user_id <= 0) {
+                $_SESSION['error'] = "Invalid user identification.";
+                header("Location: manage_users.php");
+                exit;
+            }
+
+            // 3. Gather Admin and Target Details
+            $admin_data = $this->user->getUserInfo($admin_id);
+            $target_data = $this->admin->getUserDetails($target_user_id);
+
+            if (!$admin_data || !$target_data || !isset($target_data['user'])) {
+                $_SESSION['error'] = "User validation failed.";
+                header("Location: manage_users.php");
+                exit;
+            }
+
+            $user = $target_data['user'];
+            $admin_full_name = trim(($admin_data['first_name'] ?? '') . ' ' . ($admin_data['middle_name'] ?? '') . ' ' . ($admin_data['last_name'] ?? ''));
+            $user_full_name  = trim(($user['first_name'] ?? '') . ' ' . ($user['middle_name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
+
+            // 4. Generate Random Temporary Password
+            $charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            $temporary_password = substr(str_shuffle($charset), 0, 10);
+            $hashed_password = password_hash($temporary_password, PASSWORD_DEFAULT);
+
+            // 5. Commit to Database
+            if ($this->admin->resetUserPassword($target_user_id, $hashed_password)) {
+                
+                // 6. Setup Notification Payload
+                $notif_type = "system";
+                $notif_message = "Password Reset | User: \"{$user_full_name}\" (ID: {$target_user_id}) | Role: \"" . ucfirst($user['role'] ?? 'user') . "\" | Reset by Admin: \"{$admin_full_name}\" (ID: {$admin_id}) | Temporary Password: \"{$temporary_password}\".";
+                $notif_link = "../admin/view_user_info.php?id={$target_user_id}";
+
+                // ONE SINGLE LINE: Broadcasts to all other admins automatically!
+                $this->user->notifyOtherAdmins($admin_id, $notif_type, $notif_message, $notif_link);
+
+                $_SESSION['success'] = "Password reset successfully! Temporary password: \"$temporary_password\"";
+            } else {
+                $_SESSION['error'] = "Failed to reset password. Please try again.";
+            }
+
+            header("Location: view_user_info.php?id=" . $target_user_id);
+            exit;
+        }
     }
