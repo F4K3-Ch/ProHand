@@ -1,7 +1,11 @@
 <?php
     session_start();
-    require_once "../shared/db.php";
+    // Back out of the script folder first, then look for src/
+    require_once __DIR__ . "/../src/Classes/Database.php";
 
+    // 1. Initialize your new OOP Database class and get the raw connection
+    $database = new Database();
+    $conn = $database->getConnection();
     // Default users to create
     $default_users = [
         [

@@ -10,7 +10,7 @@
     $database = new Database();
     $db = $database->getConnection();
 
-    $controller = new AdminController($db);
+    $adminController = new AdminController($db);
     $sharedController = new SharedController($db);
 
     // Download Logic
@@ -24,8 +24,17 @@
         $_SESSION['error'] = "File not found on server.";
     }
 
+    // Handle POST Request
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (isset($_POST['action']) && $_POST['action'] === 'delete_active_errand') {
+            $adminController->handleActiveErrandDeletion();
+        } elseif (isset($_POST['action']) && $_POST['action'] === 'delete_finished_errand') {
+            $adminController->handleFinishedErrandDeletion();
+        }
+    }
+
     $errand_id = (int)($_GET['errand_id'] ?? 0);
-    $data = $controller->viewErrandDetails($errand_id);
+    $data = $adminController->viewErrandDetails($errand_id);
 
     if (!$data) {
         $_SESSION['error'] = "Errand not found.";
@@ -220,14 +229,16 @@
                 <div class="info-bot-btn">
                     <?php if ($is_active): ?>
                         <!-- Delete Active Errand Button -->
-                        <form method="POST" action="delete_active_errand.php" onsubmit="return confirm('Are you sure you want to delete this errand?');">
+                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete this errand?');">
                             <input type="hidden" name="id" value="<?= $errand['id']; ?>">
+                            <input type="hidden" name="action" value="delete_active_errand">
                             <button type="submit" class="btn-delete">Delete</button>
                         </form>
                     <?php elseif ($is_finished): ?>
                         <!-- Delete Finished Errand Button -->
-                        <form method="POST" action="delete_finished_errand.php" onsubmit="return confirm('Are you sure you want to delete this errand?');">
+                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete this errand?');">
                             <input type="hidden" name="id" value="<?= $errand['id']; ?>">
+                            <input type="hidden" name="action" value="delete_finished_errand">
                             <button type="submit" class="btn-delete">Delete</button>
                         </form>
                     <?php endif; ?>

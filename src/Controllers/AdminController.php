@@ -117,7 +117,7 @@
                 $attachment = $this->admin->getAttachment($errand_id, false);
                 $profile_dir = '../../public/uploads/profile_pictures/';
             } elseif ($is_finished) {
-                $res = $this->admin->getFinishedErrandFullDetails($errand_id);
+                $res = $this->admin->getFinishedErrandDetails($errand_id);
                 if ($res->num_rows !== 1) return null;
                 $errand = $res->fetch_assoc();
                 $attachment = $this->admin->getAttachment($errand['id'], true);
@@ -286,25 +286,19 @@
             exit;
         }
 
-        // Delete active errand button
         public function handleActiveErrandDeletion() {
-            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
-
-            // 1. Enforce Admin Access
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
 
-            // 2. Retrieve POST ID directly
             $errand_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-
             if ($errand_id <= 0) {
                 $_SESSION['error'] = "Invalid request.";
                 header("Location: admin_dashboard.php");
                 exit;
             }
 
-            // 3. Fetch Errand Records for information extraction
-            $errand = $this->admin->getErrandDetails($errand_id);
+            // 1. Fetch active errand details via the model before deleting it
+            $errand = $this->admin->getActiveErrandDetails($errand_id);
             if (!$errand) {
                 $_SESSION['error'] = "Errand not found.";
                 header("Location: admin_dashboard.php");
@@ -314,47 +308,61 @@
             $errand_title = $errand['title'];
             $status       = $errand['status'];
             $client_id    = (int)$errand['client_id'];
-            $tasker_id    = (int)$errand['tasker_id'];
+            $tasker_id    = isset($errand['tasker_id']) ? (int)$errand['tasker_id'] : 0;
 
+            $admin_full_name  = $this->user->getFullName($admin_id);
+            $client_full_name = $this->user->getFullName($client_id);
+            $tasker_full_name = ($tasker_id > 0) ? $this->user->getFullName($tasker_id) : "None";
+
+            // Map status codes to your readable labels
             $status_labels = [
                 'pending'    => 'Pending',
                 'accepted'   => 'Accepted',
-                'in_process' => 'In Process'
+                'in_process' => 'In-Process'
             ];
-            $display_status = $status_labels[$status] ?? ucfirst($status);
 
-            // 4. CLEANED UP: Get Full Names effortlessly with your pre-existing method!
-            $admin_full_name  = $this->user->getFullName($admin_id);
-            $client_full_name = $this->user->getFullName($client_id);
-            $tasker_full_name = ($tasker_id > 0) ? $this->user->getFullName($tasker_id) : '';
+            // 2. FILE SYSTEM CLEANUP (Handled in Controller to keep Admin.php pure query)
+            $attachment_dir = "../../public/uploads/attachments/";
+            $attachment_res = $this->admin->getAttachment($errand_id);
+            
+            if ($attachment_res && $attachment_res->num_rows > 0) {
+                while ($attachment = $attachment_res->fetch_assoc()) {
+                    $file_path = $attachment_dir . basename($attachment['file_path']);
+                    if (file_exists($file_path)) {
+                        unlink($file_path);
+                    }
+                }
+            }
 
-            // 5. Execute DB Deletion (which processes your single file logic in the model cascade)
+            // 3. Command the pure-query model to execute database removals
             if ($this->admin->deleteActiveErrandRecord($errand_id)) {
                 $notif_type = "errand";
                 $notif_link = "";
 
-                // 6. Format Notifications matching original logic contexts
-                if (in_array($status, ['accepted', 'in_process'])) {
-                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}), which was assigned to Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) and was in Status: \"{$display_status}\", has been deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
-                    $tasker_msg = "The Errand: \"{$errand_title}\" (ID: {$errand_id}), assigned to you and created by Client: \"{$client_full_name}\" (ID: {$client_id}) and in Status: \"{$display_status}\", has been deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
-                    $admin_msg  = "Errand Deleted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Status: \"{$display_status}\" | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Assigned to Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
-
-                    if ($client_id > 0) $this->user->addNotification($client_id, $notif_type, $client_msg, $notif_link);
-                    if ($tasker_id > 0) $this->user->addNotification($tasker_id, $notif_type, $tasker_msg, $notif_link);
-
-                } else { // 'pending' status
-                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}), which was in \"Pending\" status, has been deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
-                    $admin_msg  = "Errand Deleted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Status: \"{$display_status}\" | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
-
-                    if ($client_id > 0) $this->user->addNotification($client_id, $notif_type, $client_msg, $notif_link);
+                // Notify Client
+                if ($client_id > 0) {
+                    $client_msg = "Your Active Errand: \"{$errand_title}\" (ID: {$errand_id}) has been permanently deleted from the system by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                    $this->user->addNotification($client_id, $notif_type, $client_msg, $notif_link);
                 }
 
-                // 7. Broadcast system notification to all other admins automatically
-                $this->user->notifyOtherAdmins($admin_id, $notif_type, $admin_msg, $notif_link);
+                // Notify Tasker (if one was assigned to the active errand)
+                if ($tasker_id > 0) {
+                    $tasker_msg = "The Active Errand: \"{$errand_title}\" (ID: {$errand_id}) that you were assigned to has been permanently deleted from the system by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                    $this->user->addNotification($tasker_id, $notif_type, $tasker_msg, $notif_link);
+                }
 
-                $_SESSION['success'] = "Errand: \"{$errand_title}\" (ID: {$errand_id}) was permanently deleted.";
+                // Broadcast notification to all other admins using your User object method
+                if (in_array($status, ['accepted', 'in_process'])) {
+                    $admin_msg = "Errand Deleted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Status: \"{$status_labels[$status]}\" | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Assigned to Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                    $this->user->notifyOtherAdmins($admin_id, $notif_type, $admin_msg, $notif_link);
+                } elseif ($status === 'pending') {
+                    $admin_msg = "Errand Deleted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Status: \"{$status_labels[$status]}\" | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                    $this->user->notifyOtherAdmins($admin_id, $notif_type, $admin_msg, $notif_link);
+                }
+
+                $_SESSION['success'] = "Active Errand: \"{$errand_title}\" (ID: {$errand_id}) was permanently deleted.";
             } else {
-                $_SESSION['error'] = "Error deleting Errand: \"{$errand_title}\" (ID: {$errand_id}). Please try again.";
+                $_SESSION['error'] = "Error deleting Active Errand: \"{$errand_title}\" (ID: {$errand_id}). Please try again.";
             }
 
             header("Location: admin_dashboard.php");
@@ -362,8 +370,6 @@
         }
 
         public function handleFinishedErrandDeletion() {
-            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
-
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
 
@@ -374,7 +380,7 @@
                 exit;
             }
 
-            // Fetch the target history row details via primary key
+            // 1. Fetch history details from the pure-query model
             $history = $this->admin->getHistoryRowById($history_id);
             if (!$history) {
                 $_SESSION['error'] = "Errand not found.";
@@ -390,14 +396,37 @@
             $client_deleted     = (int)$history['client_deleted'];
             $tasker_deleted     = (int)$history['tasker_deleted'];
 
-            // Pull names straight from the history row exactly like your raw script
             $admin_full_name  = $this->user->getFullName($admin_id);
             $client_full_name = trim($history['client_first_name'] . ' ' . $history['client_middle_name'] . ' ' . $history['client_last_name']);
             $tasker_full_name = trim($history['tasker_first_name'] . ' ' . $history['tasker_middle_name'] . ' ' . $history['tasker_last_name']);
             
             $display_status = ucwords(str_replace('_', ' ', $status));
 
-            // Strictly pass only $history_id to the model
+            // 2. FILE SYSTEM CLEANUP (Handled here in Controller to keep Admin.php pure query)
+            // Clean up attachments
+            $attachment_dir = "../../public/uploads/history/attachments/";
+            $attachment_res = $this->admin->getAttachment($history_id, true);
+            if ($attachment_res && $attachment_res->num_rows > 0) {
+                while ($attachment = $attachment_res->fetch_assoc()) {
+                    $file_path = $attachment_dir . basename($attachment['file_path']);
+                    if (file_exists($file_path)) {
+                        unlink($file_path);
+                    }
+                }
+            }
+
+            // Clean up profile pictures
+            $profile_dir = "../../public/uploads/history/profile_pictures/";
+            if (!empty($history['client_profile_picture']) && basename($history['client_profile_picture']) !== "default.jpg") {
+                $client_pic = $profile_dir . basename($history['client_profile_picture']);
+                if (file_exists($client_pic)) unlink($client_pic);
+            }
+            if (!empty($history['tasker_profile_picture']) && basename($history['tasker_profile_picture']) !== "default.jpg") {
+                $tasker_pic = $profile_dir . basename($history['tasker_profile_picture']);
+                if (file_exists($tasker_pic)) unlink($tasker_pic);
+            }
+
+            // 3. Command the pure-query model to execute database removals
             if ($this->admin->deleteFinishedErrandRecord($history_id)) {
                 $notif_type = "errand";
                 $notif_link = "";
