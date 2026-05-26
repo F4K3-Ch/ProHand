@@ -8,13 +8,13 @@
 
     $database = new Database();
     $db = $database->getConnection();
-    $controller = new ClientController($db);
+    $clientController = new ClientController($db);
 
     $errand_id = (int)$_GET['errand_id'];
-    $data = $controller->viewErrandDetails($errand_id); 
+    $data = $clientController->viewErrandDetails($errand_id); 
 
     // Process form if submitted
-    $formData = $controller->handleEditErrand($errand_id, $_POST, $_FILES);
+    $formData = $clientController->handleEditErrand($errand_id, $_POST, $_FILES);
 
     if (!$data) {
         $_SESSION['error'] = "Errand not found.";

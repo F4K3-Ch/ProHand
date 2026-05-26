@@ -11,7 +11,7 @@
     // 2. Initialize OOP components
     $database = new Database();
     $db = $database->getConnection();
-    $controller = new TaskerController($db);
+    $taskerController = new TaskerController($db);
     $sharedController = new SharedController($db);
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_history_id'])) {
@@ -20,7 +20,7 @@
     }
 
     // 3. Fetch data through the controller instead of manual SQL
-    $data = $controller->finishedTasks();
+    $data = $taskerController->finishedTasks();
     
     // This extracts $result_archived, $status_counts, $total_errands, $earnings, $failed_earnings, $search, and $status_labels
     extract($data); 

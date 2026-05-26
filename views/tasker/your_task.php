@@ -8,16 +8,16 @@
 
     $database = new Database();
     $db = $database->getConnection();
-    $controller = new TaskerController($db);
+    $taskerController = new TaskerController($db);
 
     // Handle "Cancel" POST
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_id'])) {
         $_POST['id'] = $_POST['cancel_id']; 
-        $controller->cancelErrand();
+        $taskerController->cancelErrand();
     }
 
     // Get data from OOP Controller 
-    $data = $controller->acceptedTasks();
+    $data = $taskerController->acceptedTasks();
     extract($data); 
 ?>
 

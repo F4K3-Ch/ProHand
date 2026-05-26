@@ -13,10 +13,10 @@
     $db = $database->getConnection(); // This replaces the old $conn from db.php
 
     // 3. Get Data from the Controller
-    $controller = new AdminController($db);
+    $adminController = new AdminController($db);
 
     // 4. Extract data for your HTML
-    $data = $controller->manageUsers();
+    $data = $adminController->manageUsers();
     extract($data); 
 ?>
 

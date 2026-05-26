@@ -11,13 +11,13 @@
 
     $database = new Database();
     $db = $database->getConnection();
-    $controller = new SharedController($db);
+    $sharedController = new SharedController($db);
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_account') {
-        $controller->handleDeleteAccount();
+        $sharedController->handleDeleteAccount();
     }
 
-    $data = $controller->profile();
+    $data = $sharedController->profile();
     extract($data); 
 ?>
 

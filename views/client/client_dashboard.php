@@ -13,21 +13,21 @@
     $db = $database->getConnection(); 
 
     // Initialize Controller
-    $controller = new ClientController($db);
+    $clientController = new ClientController($db);
 
     // Handle "Delete Pending Errand" trigger
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['delete_id'])) {
             $_POST['id'] = $_POST['delete_id']; 
-            $controller->handleDeleteErrand(); 
+            $clientController->handleDeleteErrand(); 
         } elseif (isset($_POST['cancel_accepted_id'])) {
             $_POST['id'] = $_POST['cancel_accepted_id']; 
-            $controller->handleCancelAccepted(); 
+            $clientController->handleCancelAccepted(); 
         }
     }
     
     // Get Dashboard Data
-    $data = $controller->index();
+    $data = $clientController->index();
     extract($data); 
 ?>
 

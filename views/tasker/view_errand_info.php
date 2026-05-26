@@ -10,7 +10,7 @@
     $database = new Database();
     $db = $database->getConnection();
     
-    $controller = new TaskerController($db);
+    $taskerController = new TaskerController($db);
     $sharedController = new SharedController($db);
 
     // Download Logic
@@ -28,16 +28,16 @@
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['accept_id'])) {
             $_POST['id'] = $_POST['accept_id'];
-            $controller->accept();
+            $taskerController->accept();
         } elseif (isset($_POST['start_task_id'])) {
             $_POST['id'] = $_POST['start_task_id']; 
-            $controller->updateStatusInProcess();
+            $taskerController->updateStatusInProcess();
         } elseif (isset($_POST['final_status_id'])) {
             $_POST['id'] = $_POST['final_status_id'];
-            $controller->updateStatusFinal();
+            $taskerController->updateStatusFinal();
         } elseif (isset($_POST['cancel_id'])) {
             $_POST['id'] = $_POST['cancel_id']; 
-            $controller->cancelErrand();
+            $taskerController->cancelErrand();
         } elseif (isset($_POST['delete_history_id'])) {
             $_POST['id'] = $_POST['delete_history_id']; 
             $sharedController->handleDeleteHistory();
@@ -46,7 +46,7 @@
 
     // Fetch Errand Data
     $errand_id = (int)($_GET['errand_id'] ?? 0);
-    $data = $controller->viewErrandDetails($errand_id);
+    $data = $taskerController->viewErrandDetails($errand_id);
 
     if (!$data) {
         $_SESSION['error'] = "Errand not found.";

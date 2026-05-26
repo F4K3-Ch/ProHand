@@ -10,7 +10,7 @@
     $database = new Database();
     $db = $database->getConnection();
 
-    $controller = new ClientController($db);
+    $clientController = new ClientController($db);
     $sharedController = new SharedController($db);
 
     // Download Logic
@@ -28,10 +28,10 @@
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['delete_id'])) {
             $_POST['id'] = $_POST['delete_id']; 
-            $controller->handleDeleteErrand(); 
+            $clientController->handleDeleteErrand(); 
         } elseif (isset($_POST['cancel_accepted_id'])) {
             $_POST['id'] = $_POST['cancel_accepted_id']; 
-            $controller->handleCancelAccepted(); 
+            $clientController->handleCancelAccepted(); 
         } elseif (isset($_POST['delete_history_id'])) {
             $_POST['id'] = $_POST['delete_history_id']; 
             $sharedController->handleDeleteHistory();
@@ -40,7 +40,7 @@
 
     // 2. Fetch Errand Data
     $errand_id = (int)($_GET['errand_id'] ?? 0);
-    $data = $controller->viewErrandDetails($errand_id);
+    $data = $clientController->viewErrandDetails($errand_id);
 
     if (!$data) {
         $_SESSION['error'] = "Errand not found.";

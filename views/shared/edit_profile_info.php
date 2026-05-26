@@ -7,15 +7,15 @@
 
     $database = new Database();
     $db = $database->getConnection();
-    $controller = new SharedController($db);
+    $sharedController = new SharedController($db);
 
     // Handle any POST actions
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $controller->handleProfileUpdate($_POST, $_FILES);
+        $sharedController->handleProfileUpdate($_POST, $_FILES);
     }
 
     // Get current data for display
-    $data = $controller->profile();
+    $data = $sharedController->profile();
     extract($data); 
 ?>
 

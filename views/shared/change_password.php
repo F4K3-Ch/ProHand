@@ -7,15 +7,15 @@
 
     $database = new Database();
     $db = $database->getConnection();
-    $controller = new SharedController($db);
+    $sharedController = new SharedController($db);
 
     // Handle POST action
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password_btn'])) {
-        $controller->handleChangePassword($_POST);
+        $sharedController->handleChangePassword($_POST);
     }
 
     // Get current data for Sidebar/Layout
-    $data = $controller->profile();
+    $data = $sharedController->profile();
     extract($data); 
 ?>
 

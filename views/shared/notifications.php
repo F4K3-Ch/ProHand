@@ -7,19 +7,19 @@
 
     $database = new Database();
     $db = $database->getConnection();
-    $controller = new SharedController($db);
+    $sharedController = new SharedController($db);
 
     // --- NEW: Handle Deletion Logic Here ---
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['notification_id']) || isset($_POST['delete_all'])) {
-            $controller->handleDeleteNotification($_POST);
+            $sharedController->handleDeleteNotification($_POST);
             // The controller already has a header("Location: notifications.php") 
             // and exit; inside it, so it will refresh the page automatically.
         }
     }
 
     // Existing data fetching
-    $data = $controller->notifications();
+    $data = $sharedController->notifications();
     extract($data); 
 ?>
 

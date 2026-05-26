@@ -13,16 +13,16 @@
     $db = $database->getConnection(); 
 
     // Initialize Controller
-    $controller = new TaskerController($db);
+    $taskerController = new TaskerController($db);
 
     // Handle "Accept" POST
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept_id'])) {
         $_POST['id'] = $_POST['accept_id'];
-        $controller->accept();
+        $taskerController->accept();
     }
 
     // Get Dashboard Data
-    $data = $controller->index();
+    $data = $taskerController->index();
     extract($data); 
 ?>
 
