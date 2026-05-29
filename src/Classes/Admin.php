@@ -426,4 +426,136 @@
 
             return $success ? $new_id : false;
         }
+
+        public function deleteUserByAdmin($admin_id, $user_id, $role, $full_name) {
+            // 1. Get acting admin's name and locate upload directories
+            $admin_full_name = $this->getFullName($admin_id);
+            $profile_dir = "../../public/uploads/profile_pictures/";
+            $attachment_dir = "../../public/uploads/attachments/";
+
+            if ($full_name === "Unknown User") {
+                return false; // Target user doesn't exist
+            }
+
+            // 2. Fetch the target profile picture file path early for later disk cleanup
+            $stmt = $this->db->prepare("SELECT profile_picture FROM users WHERE id = ? LIMIT 1");
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $user_data = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            // 3. Notify Affected Users & Peer Admins based on the Target's Role
+            if ($role === 'tasker') {
+                $stmt = $this->db->prepare("SELECT id, title, client_id FROM errands WHERE tasker_id = ?");
+                $stmt->bind_param("i", $user_id);
+                $stmt->execute();
+                $errands_result = $stmt->get_result();
+                $stmt->close();
+
+                if ($errands_result->num_rows > 0) {
+                    while ($row = $errands_result->fetch_assoc()) {
+                        $errand_id = (int)$row['id'];
+                        $errand_title = $row['title'];
+                        $target_client_id = (int)$row['client_id'];
+
+                        // Notify client that their tasker was deleted by an admin
+                        $msg = "Tasker: \"{$full_name}\" (ID: {$user_id}), who accepted your Errand: \"{$errand_title}\" (ID: {$errand_id}), had their account deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). The errand status has been returned to \"Pending\".";
+                        $link = "../client/view_errand_info.php?errand_id={$errand_id}";
+                        $this->addNotification($target_client_id, "errand", $msg, $link);
+
+                        // Notify fellow peer admins about this broken connection using inherited helper
+                        $admin_msg = "Account Deleted | Tasker: \"{$full_name}\" (ID: {$user_id}) | Affected Errand: \"{$errand_title}\" (ID: {$errand_id}) | Status Returned To: \"Pending\" | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                        $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
+                        $this->notifyOtherAdmins($admin_id, "errand", $admin_msg, $admin_link);
+                    }
+                } else {
+                    // No errands affected, send a single summary notification to peer admins
+                    $admin_msg = "Account Deleted | Tasker: \"{$full_name}\" (ID: {$user_id}) | No errands were affected | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                    $this->notifyOtherAdmins($admin_id, "system", $admin_msg, "");
+                }
+
+            } elseif ($role === 'client') {
+                $stmt = $this->db->prepare("SELECT id, title, tasker_id FROM errands WHERE client_id = ?");
+                $stmt->bind_param("i", $user_id);
+                $stmt->execute();
+                $errands_result = $stmt->get_result();
+                $stmt->close();
+
+                if ($errands_result->num_rows > 0) {
+                    while ($row = $errands_result->fetch_assoc()) {
+                        $errand_id = (int)$row['id'];
+                        $errand_title = $row['title'];
+                        $target_tasker_id = $row['tasker_id'] !== null ? (int)$row['tasker_id'] : null;
+
+                        // Notify tasker assigned to this deleted client's errand
+                        if ($target_tasker_id !== null) {
+                            $msg = "Client: \"{$full_name}\" (ID: {$user_id}), whose Errand: \"{$errand_title}\" (ID: {$errand_id}) you accepted, had their account deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). The errand has been removed.";
+                            $this->addNotification($target_tasker_id, "errand", $msg, "");
+                        }
+
+                        // Notify fellow peer admins about dropped client post using inherited helper
+                        $admin_msg = "Account Deleted | Client: \"{$full_name}\" (ID: {$user_id}) | Errand: \"{$errand_title}\" (ID: {$errand_id}) has been removed | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                        $this->notifyOtherAdmins($admin_id, "errand", $admin_msg, "");
+
+                        // Process file cleanup loop for physical attachments associated with this client's errand
+                        $stmt_a = $this->db->prepare("SELECT file_path FROM errand_attachments WHERE errand_id = ?");
+                        $stmt_a->bind_param("i", $errand_id);
+                        $stmt_a->execute();
+                        $attachments_res = $stmt_a->get_result();
+                        $stmt_a->close();
+
+                        while ($file = $attachments_res->fetch_assoc()) {
+                            $file_path = $attachment_dir . basename($file['file_path']);
+                            if (file_exists($file_path)) {
+                                unlink($file_path);
+                            }
+                        }
+
+                        // Delete attachment table details
+                        $stmt_d = $this->db->prepare("DELETE FROM errand_attachments WHERE errand_id = ?");
+                        $stmt_d->bind_param("i", $errand_id);
+                        $stmt_d->execute();
+                        $stmt_d->close();
+                    }
+                } else {
+                    // No client posts to clear out, send summary alert
+                    $admin_msg = "Account Deleted | Client: \"{$full_name}\" (ID: {$user_id}) | No errands were affected | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                    $this->notifyOtherAdmins($admin_id, "system", $admin_msg, "");
+                }
+            } elseif ($role === 'admin') {
+                // If an admin account is deleted by another admin, log it cleanly
+                $admin_msg = "Account Deleted | Admin: \"{$full_name}\" (ID: {$user_id}) | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                $this->notifyOtherAdmins($admin_id, "system", $admin_msg, "");
+            }
+
+            // 4. Cleanup Target's Physical Profile Picture File
+            if (!empty($user_data['profile_picture']) && basename($user_data['profile_picture']) !== "default.jpg") {
+                $file_to_delete = $profile_dir . basename($user_data['profile_picture']);
+                if (file_exists($file_to_delete)) {
+                    unlink($file_to_delete);
+                }
+            }
+
+            // 5. Cascade Structural Records Inside the Database Engine
+            if ($role === 'tasker') {
+                $stmt = $this->db->prepare("UPDATE errands SET status='pending', tasker_id=NULL, accepted_at=NULL, in_process_at=NULL, updated_at=NOW() WHERE tasker_id = ?");
+                $stmt->bind_param("i", $user_id);
+                $stmt->execute();
+                $stmt->close();
+            } elseif ($role === 'client') {
+                $stmt = $this->db->prepare("DELETE FROM errands WHERE client_id = ?");
+                $stmt->bind_param("i", $user_id);
+                $stmt->execute();
+                $stmt->close();
+            }
+
+            // 6. Final Deletion execution context points (using direct inherited calls)
+            $this->deleteAllNotifications($user_id);
+            $finalStmt = $this->db->prepare("DELETE FROM users WHERE id = ?");
+            $finalStmt->bind_param("i", $user_id);
+            $result = $finalStmt->execute();
+            $finalStmt->close();
+
+            return $result;
+        }
     }

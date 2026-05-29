@@ -13,10 +13,14 @@
     $db = $database->getConnection();
     $adminController = new AdminController($db);
 
-    // 3. Process password reset request if form was sent here
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_password_id'])) {
-        $_POST['id'] = $_POST['reset_password_id'];
-        $adminController->handlePasswordReset();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (isset($_POST['reset_password_id'])) {
+            $_POST['id'] = $_POST['reset_password_id']; 
+            $adminController->handlePasswordReset();
+        } elseif (isset($_POST['delete_user_id'])) {
+            $_POST['id'] = $_POST['delete_user_id']; 
+            $adminController->handleDeleteUser();
+        }
     }
 
     // 4. Fetch specific user data based on $_GET['id']
@@ -124,8 +128,8 @@
                             </form>
                             
                             <!-- Delete Account Button -->
-                            <form method="POST" action="delete_user.php" onsubmit="return confirm('Are you sure you want to delete this user?');">
-                                <input type="hidden" name="id" value="<?= (int)$user['id']; ?>">
+                            <form method="POST" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                <input type="hidden" name="delete_user_id" value="<?= (int)$user['id']; ?>">
                                 <button type="submit" class="btn-delete-account">Delete this user</button>
                             </form>
                         <?php endif; ?>

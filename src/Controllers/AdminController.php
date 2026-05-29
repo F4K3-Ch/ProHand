@@ -543,4 +543,39 @@
 
             return ['fields' => $fields];
         }
+
+        public function handleDeleteUser() {
+            $this->auth->restrictTo('admin');
+            $admin_id = (int)$_SESSION['user_id'];
+
+            $user_id = (int)($_POST['id'] ?? 0);
+            if ($user_id <= 0) {
+                $_SESSION['error'] = "Invalid user identification.";
+                header("Location: manage_users.php");
+                exit;
+            }
+
+            $target_data = $this->admin->getUserDetails($user_id);
+
+            if (!$target_data || !isset($target_data['user'])) {
+                $_SESSION['error'] = "User not found!";
+                header("Location: manage_users.php");
+                exit;
+            }
+
+            $user_role = $target_data['user']['role'];
+            $user_full_name = $this->user->getFullName($user_id);
+
+            // Execute administrative account deletion process
+            $deleted = $this->admin->deleteUserByAdmin($admin_id, $user_id, $user_role, $user_full_name);
+
+            if ($deleted) {
+                $_SESSION['success'] = "User: \"{$user_full_name}\" (ID: {$user_id}) has been deleted successfully.";
+            } else {
+                $_SESSION['error'] = "Error deleting this account. Please try again.";
+            }
+
+            header("Location: manage_users.php");
+            exit;
+        }
     }

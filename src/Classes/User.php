@@ -295,6 +295,7 @@
             return false;
         }
         
+        // Delete Account
         public function performAccountDeletion($user_id, $role) {
             // 1. Use your helper function for the name
             $full_name = $this->getFullName($user_id);
