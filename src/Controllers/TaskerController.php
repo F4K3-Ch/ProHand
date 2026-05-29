@@ -174,7 +174,7 @@
                     $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
                     $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
                     
-                    $_SESSION['success'] = "You have successfully accepted the errand.";
+                    $_SESSION['success'] = "You have successfully accepted this errand.";
                     header("Location: view_errand_info.php?errand_id=$errand_id");
                     exit;
                 } else {
