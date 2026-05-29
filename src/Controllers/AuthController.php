@@ -12,27 +12,39 @@
 
         // LOGIN LOGIC
         public function login() {
-            $this->auth->redirectIfLoggedIn();
+            if (method_exists($this->auth, 'redirectIfLoggedIn')) {
+                $this->auth->redirectIfLoggedIn();
+            }
 
-            // Check if there is a saved email in the session from a previous failed attempt
             $email = $_SESSION['temp_email'] ?? "";
-            unset($_SESSION['temp_email']); // Clear it so it doesn't stay there forever
+            unset($_SESSION['temp_email']); 
 
             if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $email = trim($_POST['email']);
                 $password = $_POST['password'];
 
+                // 1. Controller validation rule: Check if email even exists
+                if (!$this->user->isEmailRegistered($email)) {
+                    $_SESSION['error'] = "Email not found.";
+                    $_SESSION['temp_email'] = $email;
+                    header("Location: login.php");
+                    exit;
+                }
+
+                // 2. Commit credential verification check via model
                 $result = $this->user->login($email, $password);
 
-                if (in_array($result, ['admin', 'client', 'tasker'])) {
-                    header("Location: ../$result/{$result}_dashboard.php");
+                if (is_array($result)) {
+                    $_SESSION['user_id'] = $result['id'];
+                    $_SESSION['role'] = $result['role'];
+                    
+                    $role = $result['role'];
+                    header("Location: ../$role/{$role}_dashboard.php");
                     exit;
                 } else {
-                    // 1. Store the error message
-                    $_SESSION['error'] = $result;
-                    // 2. Store the email so the user doesn't have to re-type it
-                    $_SESSION['temp_email'] = $email; 
-                    
+                    // If it isn't an array, the password verification failed
+                    $_SESSION['error'] = "Incorrect password.";
+                    $_SESSION['temp_email'] = $email;
                     header("Location: login.php");
                     exit;
                 }
@@ -43,9 +55,10 @@
 
         // REGISTER LOGIC
         public function register() {
-            $this->auth->redirectIfLoggedIn();
+            if (method_exists($this->auth, 'redirectIfLoggedIn')) {
+                $this->auth->redirectIfLoggedIn();
+            }
 
-            // 1. Initialize default empty fields
             $fields = [
                 'email' => '', 
                 'first_name' => '', 
@@ -54,10 +67,9 @@
                 'contact_number' => ''
             ];
 
-            // 2. Check if there is saved form data from a previous failed attempt
             if (isset($_SESSION['temp_fields'])) {
                 $fields = $_SESSION['temp_fields'];
-                unset($_SESSION['temp_fields']); // Clear it immediately after retrieving
+                unset($_SESSION['temp_fields']); 
             }
 
             if ($_SERVER['REQUEST_METHOD'] === "POST") {
@@ -70,23 +82,32 @@
                     'password'       => $_POST['password']
                 ];
                 
+                // 1. Controller validation rule
                 if ($data['password'] !== $_POST['confirm_password']) {
                     $_SESSION['error'] = "Passwords do not match!";
-                    $_SESSION['temp_fields'] = $data; // Save inputs to session
+                    $_SESSION['temp_fields'] = $data; 
                     header("Location: register.php");
                     exit;
+                } 
+                
+                // 2. Controller duplicate email validation rule via model helper
+                if ($this->user->isEmailRegistered($data['email'])) {
+                    $_SESSION['error'] = "Email is already registered!";
+                    $_SESSION['temp_fields'] = $data;
+                    header("Location: register.php");
+                    exit;
+                }
+
+                // 3. Commit clean payload to database
+                if ($this->user->register($data)) {
+                    $_SESSION['success'] = "Registration successful! Please login.";
+                    header("Location: login.php");
+                    exit;
                 } else {
-                    $result = $this->user->register($data);
-                    if ($result === true) {
-                        $_SESSION['success'] = "Registration successful! Please login.";
-                        header("Location: login.php");
-                        exit;
-                    } else {
-                        $_SESSION['error'] = $result;
-                        $_SESSION['temp_fields'] = $data; // Save inputs to session
-                        header("Location: register.php");
-                        exit;
-                    }
+                    $_SESSION['error'] = "Registration failed due to a system error. Please try again.";
+                    $_SESSION['temp_fields'] = $data; 
+                    header("Location: register.php");
+                    exit;
                 }
             }
 

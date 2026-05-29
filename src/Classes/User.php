@@ -13,35 +13,39 @@
             $stmt->execute();
             $result = $stmt->get_result();
 
+            // Guard check just in case, otherwise fetch details safely
             if ($result->num_rows === 0) {
-                return "Email not found."; // Unique string for email error
+                $stmt->close();
+                return false; 
             }
 
             $user = $result->fetch_assoc();
+            $stmt->close();
 
+            // Verify password and return structural credentials payload
             if (password_verify($password, $user['password'])) {
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['role'] = $user['role'];
-                return $user['role']; 
-            } else {
-                return "Incorrect password."; // Unique string for password error
+                return [
+                    'id'   => $user['id'],
+                    'role' => $user['role']
+                ];
             }
+
+            return false;
         }
         
-        // REGISTER METHOD
-        public function register($data) {
-            // Check for duplicate email
-            $check_stmt = $this->db->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
-            $check_stmt->bind_param("s", $data['email']);
-            $check_stmt->execute();
-            $check_stmt->store_result();
-            
-            if ($check_stmt->num_rows > 0) {
-                return "Email is already registered!";
-            }
-            $check_stmt->close();
+        // EMAIL DUPLICATE CHECK HELPER
+        public function isEmailRegistered($email) {
+            $stmt = $this->db->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $stmt->store_result();
+            $exists = $stmt->num_rows > 0;
+            $stmt->close();
+            return $exists;
+        }
 
-            // Insert new user
+        // REGISTER METHOD: Returns true on query success, false on failure
+        public function register($data) {
             $hashed_password = password_hash($data['password'], PASSWORD_DEFAULT);
             $role = "client"; 
             $default_pic = 'uploads/profile_pictures/default.jpg';
@@ -58,7 +62,10 @@
                 $data['contact_number'], $role
             );
 
-            return $insert_stmt->execute() ? true : "Registration failed.";
+            $success = $insert_stmt->execute();
+            $insert_stmt->close();
+
+            return $success;
         }
 
         // LOGOUT METHOD
