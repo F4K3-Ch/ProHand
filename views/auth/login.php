@@ -11,10 +11,10 @@
     $db = $database->getConnection();
 
     // Initialize the Controller
-    $controller = new AuthController($db);
+    $authController = new AuthController($db);
 
     // Extract data to use in the HTML below
-    $data = $controller->login();
+    $data = $authController->login();
     extract($data); 
 ?>
 

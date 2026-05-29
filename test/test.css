@@ -1,0 +1,62 @@
+.sidebar-links {
+    list-style: none;
+    padding: 0 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+/* 1. Add this so the form container itself doesn't shrink */
+.sidebar-links li form {
+    display: block;
+    width: 100%;
+}
+
+/* Individual Link and Button Reset */
+/* 2. Changed 'li form' to 'li form button' and added button reset styles below */
+.sidebar-links li a,
+.sidebar-links li form button {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 8px 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--color-text);
+    font-weight: 500;
+    font-size: 0.88rem;
+    line-height: 1.5;      /* reduces vertical misalignment */
+    gap: 10px;   
+    transition: all 0.1s ease;
+
+    /* --- ADDED RESETS FOR THE LOGOUT BUTTON --- */
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    font-family: inherit;
+    text-align: left;
+}
+
+/* Hover */
+/* 3. Added ', .sidebar-links li form button:hover' here */
+.sidebar-links li a:hover,
+.sidebar-links li form button:hover {
+    background-color: var(--sidebar-link-hover-bg);
+    backdrop-filter: var(--sidebar-link-hover-blur);
+}
+
+/* Icon */
+/* 4. Added ', .sidebar-links li form button i' here */
+.sidebar-links li a i,
+.sidebar-links li form button i {
+    color: var(--color-icon-fill);
+    font-size: 17px;    
+    flex-shrink: 0;
+    width: 18px; 
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

@@ -2,10 +2,17 @@
     // SharedController handles the logic for the LOGGED-IN user
     require_once "../../src/Classes/User.php";
     require_once "../../src/Controllers/SharedController.php";
+    require_once "../../src/Classes/Auth.php";
+    require_once "../../src/Controllers/AuthController.php";
 
     $database = new Database();
     $db = $database->getConnection();
     $sharedController = new SharedController($db);
+    $authController = new AuthController($db);
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $authController->logout();
+    }
     
     // Get the data, but DO NOT extract it
     $sidebarData = $sharedController->profile();
@@ -98,10 +105,11 @@
             </li>
 
             <li>
-                <a href="../auth/logout.php">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    Logout
-                </a>
+                <form method="POST">
+                    <button type="submit" name="logout_action">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                </form>
             </li>
         </ul>
     </div>
