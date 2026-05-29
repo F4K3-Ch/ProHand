@@ -461,4 +461,86 @@
             header("Location: finished_errands.php");
             exit;
         }
+
+        public function handleAddUser() {
+            $this->auth->restrictTo('admin');
+            $admin_id = (int)$_SESSION['user_id'];
+
+            $fields = [
+                'email'          => '', 
+                'first_name'     => '', 
+                'middle_name'    => '', 
+                'last_name'      => '', 
+                'contact_number' => '',
+                'role'           => ''
+            ];
+
+            if (isset($_SESSION['temp_fields'])) {
+                $fields = $_SESSION['temp_fields'];
+                unset($_SESSION['temp_fields']); 
+            }
+
+            if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['email'])) {
+                $data = [
+                    'email'          => trim($_POST['email']),
+                    'first_name'     => trim($_POST['first_name']),
+                    'middle_name'    => trim($_POST['middle_name'] ?? ''),
+                    'last_name'      => trim($_POST['last_name']),
+                    'contact_number' => trim($_POST['contact_number']),
+                    'role'           => trim($_POST['role']),
+                    'password'       => $_POST['password']
+                ];
+
+                // 1. Check Email Format
+                if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+                    $_SESSION['error'] = "Invalid email format.";
+                    $_SESSION['temp_fields'] = $data;
+                    header("Location: add_user.php");
+                    exit;
+                }
+
+                // 2. Check Password Match
+                if ($data['password'] !== $_POST['confirm_password']) {
+                    $_SESSION['error'] = "Passwords do not match!";
+                    $_SESSION['temp_fields'] = $data; 
+                    header("Location: add_user.php");
+                    exit;
+                } 
+                
+                // 3. Duplicate Check using your existing helper inside classes/
+                if ($this->user->isEmailRegistered($data['email'])) {
+                    $_SESSION['error'] = "Email is already registered!";
+                    $_SESSION['temp_fields'] = $data;
+                    header("Location: add_user.php");
+                    exit;
+                }
+
+                // 4. Run database operation through your class instances
+                $new_user_id = $this->admin->addUserByAdmin($data);
+
+                if ($new_user_id) {
+                    $admin_full_name = $this->user->getFullName($admin_id);
+                    $user_full_name  = $this->user->getFullName($new_user_id);
+
+                    // Setup Notification Details
+                    $notif_type = "system";
+                    $notif_message = "New User Added | User: \"{$user_full_name}\" (ID: {$new_user_id}) | Role: \"" . ucfirst($data['role']) . "\" | Added by Admin: \"{$admin_full_name}\" (ID: {$admin_id})";
+                    $notif_link = "../admin/view_user_info.php?id={$new_user_id}";
+
+                    // REVISED: Calling the correct function with the logged-in admin's ID
+                    $this->user->notifyOtherAdmins($admin_id, $notif_type, $notif_message, $notif_link);
+
+                    $_SESSION['success'] = "Successfully Added User!";
+                    header("Location: view_user_info.php?id={$new_user_id}");
+                    exit;
+                } else {
+                    $_SESSION['error'] = "Error: Could not complete registration due to a system fault.";
+                    $_SESSION['temp_fields'] = $data; 
+                    header("Location: add_user.php");
+                    exit;
+                }
+            }
+
+            return ['fields' => $fields];
+        }
     }

@@ -12,9 +12,7 @@
 
         // LOGIN LOGIC
         public function login() {
-            if (method_exists($this->auth, 'redirectIfLoggedIn')) {
-                $this->auth->redirectIfLoggedIn();
-            }
+            $this->auth->redirectIfLoggedIn();
 
             $email = $_SESSION['temp_email'] ?? "";
             unset($_SESSION['temp_email']); 
@@ -55,9 +53,7 @@
 
         // REGISTER LOGIC
         public function register() {
-            if (method_exists($this->auth, 'redirectIfLoggedIn')) {
-                $this->auth->redirectIfLoggedIn();
-            }
+            $this->auth->redirectIfLoggedIn();
 
             $fields = [
                 'email' => '', 

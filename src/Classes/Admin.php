@@ -403,4 +403,27 @@
 
             return $success;
         }
+
+        public function addUserByAdmin($data) {
+            $hashed_password = password_hash($data['password'], PASSWORD_DEFAULT);
+            $default_pic = 'uploads/profile_pictures/default.jpg';
+
+            $insert_stmt = $this->db->prepare("
+                INSERT INTO users (email, first_name, middle_name, last_name, password, profile_picture, contact_number, role) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+
+            $insert_stmt->bind_param(
+                "ssssssss",
+                $data['email'], $data['first_name'], $data['middle_name'], 
+                $data['last_name'], $hashed_password, $default_pic, 
+                $data['contact_number'], $data['role']
+            );
+
+            $success = $insert_stmt->execute();
+            $new_id = $insert_stmt->insert_id;
+            $insert_stmt->close();
+
+            return $success ? $new_id : false;
+        }
     }
