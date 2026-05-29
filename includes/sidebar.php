@@ -10,7 +10,7 @@
     $sharedController = new SharedController($db);
     $authController = new AuthController($db);
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout_action'])) {
         $authController->logout();
     }
     
