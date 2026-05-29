@@ -404,6 +404,7 @@
             return $success;
         }
 
+        // Add user
         public function addUserByAdmin($data) {
             $hashed_password = password_hash($data['password'], PASSWORD_DEFAULT);
             $default_pic = 'uploads/profile_pictures/default.jpg';
@@ -427,6 +428,7 @@
             return $success ? $new_id : false;
         }
 
+        // Delete User
         public function deleteUserByAdmin($admin_id, $user_id, $role, $full_name) {
             // 1. Get acting admin's name and locate upload directories
             $admin_full_name = $this->getFullName($admin_id);
