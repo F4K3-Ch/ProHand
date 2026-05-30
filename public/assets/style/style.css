@@ -475,7 +475,7 @@ span {
 }
 
 .register-error-success-message {
-    min-height: 35px;
+    min-height: 50px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -612,7 +612,7 @@ span {
 }
 
 .login-error-success-message {
-    min-height: 35px;
+    min-height: 50px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -2981,4 +2981,94 @@ body {
 .no-found-notif {
     font-size: 1.3rem;
     text-align: center;
+}
+
+
+/* ==========================================================================
+    RESPONSIVE MEDIA QUERIES
+   ========================================================================== */
+
+/* 1. Tablets and Small Laptops (Max-width: 1024px) */
+@media screen and (max-width: 1024px) {
+    .hero {
+        margin: 100px auto 60px;
+    }
+
+    .hero h1 {
+        font-size: 2.4rem; /* Scale down heading size gracefully */
+    }
+
+    .services, .why-prohand, .trust-safety, .final-cta {
+        padding: 70px 20px; /* Reduce vertical padding gaps uniformly */
+    }
+}
+
+/* 2. Mobile Breakthrough (Max-width: 768px) */
+@media screen and (max-width: 768px) {
+    .navbar {
+        padding: 0 20px; /* Compress horizontal alignment padding space */
+        height: 65px;
+    }
+
+    .logo-img {
+        width: 45px; /* Scale down logo slightly */
+        height: 45px;
+    }
+
+    .logo p {
+        font-size: 1.3rem;
+    }
+
+    .index-info-container {
+        padding-top: 65px; /* Offset match for scaled navbar height */
+    }
+
+    /* --- Hero Layout Re-alignment --- */
+    .hero {
+        margin: 70px auto 50px;
+    }
+
+    .hero h1 {
+        font-size: 1.9rem; /* Prevent layout text breakages on small phones */
+        line-height: 1.3;
+    }
+
+    .hero p {
+        font-size: 1.05rem;
+        margin-bottom: 28px;
+    }
+
+    /* --- Universal Grid Tuning --- */
+    .section-title {
+        font-size: 1.8rem;
+        margin-bottom: 24px;
+    }
+
+    .services-container, .why-container {
+        gap: 16px; /* Bring cards closer on tight layouts */
+    }
+
+    .service-card, .why-card {
+        flex: 1 1 100%; /* Forces cards to take full row width cleanly on mobile */
+        max-width: 100%; /* Remove desktop width cap overrides */
+        padding: 24px 20px; /* Tighter padding inside elements */
+    }
+
+    .trust-safety p, .final-cta p {
+        font-size: 1rem;
+        margin-bottom: 35px;
+    }
+
+    .register-page {
+        padding: 80px 20px 40px; /* Leave space at the top so the back button never overlaps cards */
+    }
+
+    .register-container {
+        min-height: auto; /* Remove hardcoded height to let card grow naturally with contents */
+        padding: 25px 20px;
+    }
+
+    .login-logo h1 {
+        font-size: 1.4rem;
+    }
 }
