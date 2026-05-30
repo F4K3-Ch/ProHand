@@ -699,6 +699,13 @@ span {
 /* ===========================
     Sidebar Container
 =========================== */
+.sidebar-checkbox {
+    display: none !important;
+}
+.sidebar-toggle-btn, .sidebar-overlay {
+    display: none;
+}
+
 .sidebar {
     background-color: var(--color-card-bg);
     border-right: 1px solid var(--color-border);
@@ -3070,5 +3077,135 @@ body {
 
     .login-logo h1 {
         font-size: 1.4rem;
+    }
+
+    /* Make the logo container spread items out nicely on mobile */
+    .header-left .logo {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        width: 100%; /* Pushes everything across the full header area */
+        gap: 12px;   /* Ensures even gaps between image, text, and hamburger button */
+    }
+
+    .sidebar-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-text);
+        font-size: 1.4rem;
+        cursor: pointer;
+        padding: 5px;
+        
+        /* Pushes it neatly to the far right side of your logo container */
+        margin-left: auto; 
+        margin-right: 0;
+        
+        /* Smoothly animates changes */
+        transition: transform 0.2s ease, color 0.2s ease;
+    }
+
+    /* Light up and subtle bounce on quick touch/hover */
+    .sidebar-toggle-btn:hover,
+    .sidebar-toggle-btn:active {
+        color: var(--color-span);
+        transform: scale(1.08);
+    }
+
+    /* NEW ACTIVE GLOW STATE RULE: Keeps it glowing while open */
+    .sidebar-checkbox:checked ~ .main .sidebar-toggle-btn {
+        color: var(--color-span);
+        transform: scale(1.05);
+    }
+    
+    /* NEW ICON TRANSFORMATION (Optional): Turns the bars into an X while open */
+    .sidebar-checkbox:checked ~ .main .sidebar-toggle-btn i::before {
+        content: "\f00d"; 
+    }
+
+    /* Transform desktop sidebar into a mobile panel hidden out-of-view */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 240px;
+        height: 100vh;
+        z-index: 2000;
+        box-shadow: 5px 0 25px rgba(0, 0, 0, 0.2);
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ENGINE SELECTOR: Slide the sidebar into view when checkbox state turns checked */
+    .sidebar-checkbox:checked ~ .sidebar {
+        transform: translateX(0);
+    }
+
+    /* Setup dark tint backdrop overlay layer */
+    .sidebar-overlay {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        z-index: 1999;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    /* ENGINE SELECTOR: Reveal background blur layer when checked */
+    .sidebar-checkbox:checked ~ .main .sidebar-overlay {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* Override main desktop margins to give content full mobile widescreen width */
+    .main {
+        margin-left: 0 !important;
+        padding: 10px;
+        width: 100%;
+    }
+    
+    /* Pull fixed header to left screen boundary on mobile */
+    .fixed-wrapper {
+        left: 0 !important;
+        right: 0 !important;
+        width: 100%;
+        padding: 10px 10px 0;
+    }
+
+    /* Adapt your header flex spacing onto tiny viewports */
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .header-left .logo {
+        justify-content: flex-start;
+    }
+    
+    .header-right, .search-form, .search-wrapper {
+        width: 100%;
+    }
+    
+    /* Lower the page content down safely so it does not hide behind the wrapped header stack */
+    .dashboard {
+        margin-top: 131px;
+    }
+
+    /* Re-tile metrics grid dynamically to prevent layout breaking */
+    .total-cards-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    .total-card {
+        min-width: unset;
     }
 }
