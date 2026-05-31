@@ -1292,7 +1292,7 @@ body {
 .client-errands-table .table-scroll,
 .finished-errands-table .table-scroll {
     border: 1px solid var(--color-border);
-    max-height: 455px;   /* Adjust here to show how many rows to show */
+    max-height: 443px;   /* Adjust here to show how many rows to show */
     overflow-y: auto;    /* vertical scroll */
 }
 
@@ -3000,6 +3000,7 @@ body {
 
 /* 1. Tablets and Small Laptops (Max-width: 1024px) */
 @media screen and (max-width: 1024px) {
+    /* Index */
     .hero {
         margin: 100px auto 60px;
     }
@@ -3012,7 +3013,7 @@ body {
         padding: 70px 20px; /* Reduce vertical padding gaps uniformly */
     }
 
-/* Reveal and format the hamburger button link */
+    /* Sidebar */
     .sidebar-toggle-btn {
         display: inline-flex;
         align-items: center;
@@ -3026,25 +3027,21 @@ body {
         transition: transform 0.2s ease, color 0.2s ease;
     }
 
-    /* Light up and subtle bounce on quick touch/hover */
     .sidebar-toggle-btn:hover,
     .sidebar-toggle-btn:active {
         color: var(--color-span);
         transform: scale(1.08);
     }
 
-    /* ACTIVE GLOW STATE: Keeps the icon glowing while the sidebar menu is open */
     .sidebar-checkbox:checked ~ .main .sidebar-toggle-btn {
         color: var(--color-span);
         transform: scale(1.05);
     }
     
-    /* ICON TRANSFORMATION: Automatically morphs the bars into an 'X' close button when open */
     .sidebar-checkbox:checked ~ .main .sidebar-toggle-btn i::before {
-        content: "\f00d"; 
+        content: "\f00d";   /*Turns the bars into an X while open */
     }
 
-    /* Transform desktop sidebar into an offline slider layout container hidden left */
     .sidebar {
         position: fixed;
         top: 0;
@@ -3052,17 +3049,14 @@ body {
         width: 240px;
         height: 100vh;
         z-index: 2000;
-        box-shadow: 5px 0 25px rgba(0, 0, 0, 0.2);
         transform: translateX(-100%);
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* DIRECT SIBLING ENGINE: Slide the sidebar into view when checkbox state turns checked */
     .sidebar-checkbox:checked ~ .sidebar {
         transform: translateX(0) !important;
     }
 
-    /* Setup dark tint backdrop overlay layer */
     .sidebar-overlay {
         display: block;
         position: fixed;
@@ -3070,9 +3064,6 @@ body {
         left: 0;
         width: 100vw;
         height: 100vh;
-        background-color: rgba(0, 0, 0, 0.4);
-        backdrop-filter: blur(3px);
-        -webkit-backdrop-filter: blur(3px);
         z-index: 1999;
         opacity: 0;
         visibility: hidden;
@@ -3080,21 +3071,19 @@ body {
         pointer-events: none;
     }
 
-    /* CONNECTS OVERLAY TO THE CHECKBOX ENGINE: Targets directly through main block */
     .sidebar-checkbox:checked ~ .main .sidebar-overlay {
         opacity: 1 !important;
         visibility: visible !important;
         pointer-events: auto !important;
     }
 
-    /* Override main desktop layout margins to grant content full workspace fluid width */
+    /* Main */
     .main {
         margin-left: 0 !important;
         padding: 15px;
         width: 100%;
     }
     
-    /* Pull fixed header wrapper to left screen boundaries */
     .fixed-wrapper {
         left: 0 !important;
         right: 0 !important;
@@ -3102,7 +3091,6 @@ body {
         padding: 10px 15px 0;
     }
 
-    /* Make the logo container spread items out nicely on tablet/mobile */
     .header-left .logo {
         display: flex;
         align-items: center;
@@ -3111,7 +3099,6 @@ body {
         gap: 12px;
     }
 
-    /* Adapt header layout flex behaviors onto compact viewports */
     .header {
         flex-direction: column;
         align-items: stretch;
@@ -3122,12 +3109,10 @@ body {
         width: 100%;
     }
     
-    /* Lower the dashboard wrapper section safely down underneath the taller stacked header */
     .dashboard {
         margin-top: 125px;
     }
 
-    /* Re-tile dashboard metrics card blocks into an even grid breakdown */
     .total-cards-container {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -3137,10 +3122,52 @@ body {
     .total-card {
         min-width: unset;
     }
+
+    /* Tables */
+    .admin-errands-table table,
+    .tasker-errands-table table,
+    .client-errands-table table,
+    .finished-errands-table table,
+    .users-table table {
+        min-width: 1500px !important;   /* Provides ample base canvas width for text to expand */
+        table-layout: fixed !important;  /* Enforces fixed widths so rows scroll perfectly */
+    }
+
+    .admin-errands-table td,
+    .tasker-errands-table td,
+    .client-errands-table td,
+    .finished-errands-table td,
+    .users-table td {
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        padding: 10px 14px !important;
+    }
+
+    .admin-errands-table th,
+    .tasker-errands-table th,
+    .client-errands-table th,
+    .finished-errands-table th,
+    .users-table th {
+        overflow: visible !important;      /* Reveals all hidden parts */
+        text-overflow: clip !important;     /* Disables the '...' truncation dots completely */
+        white-space: nowrap !important;     /* Prevents headers from wrapping onto ugly second lines */
+        padding: 10px 14px !important;
+    }
+
+    /* Notifications */
+    .notifications {
+        margin-top: 125px; /* Safely lowers the notifications container below the stacked mobile header wrapper */
+    }
+
+    .notification-card {
+        gap: 20px; /* Reduce the huge 50px desktop gap to fit tablet dimensions seamlessly */
+    }
 }
 
 /* 2. Mobile Breakthrough (Max-width: 768px) */
 @media screen and (max-width: 768px) {
+    /* Index */
     .navbar {
         padding: 0 20px; /* Compress horizontal alignment padding space */
         height: 65px;
@@ -3159,7 +3186,6 @@ body {
         padding-top: 65px; /* Offset match for scaled navbar height */
     }
 
-    /* --- Hero Layout Re-alignment --- */
     .hero {
         margin: 70px auto 50px;
     }
@@ -3174,7 +3200,6 @@ body {
         margin-bottom: 28px;
     }
 
-    /* --- Universal Grid Tuning --- */
     .section-title {
         font-size: 1.8rem;
         margin-bottom: 24px;
@@ -3195,6 +3220,7 @@ body {
         margin-bottom: 35px;
     }
 
+    /* Register */
     .register-page {
         padding: 80px 20px 40px; /* Leave space at the top so the back button never overlaps cards */
     }
@@ -3204,19 +3230,12 @@ body {
         padding: 25px 20px;
     }
 
+    /* Login */
     .login-logo h1 {
         font-size: 1.4rem;
     }
 
-    /* Make the logo container spread items out nicely on mobile */
-    .header-left .logo {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        width: 100%; /* Pushes everything across the full header area */
-        gap: 12px;   /* Ensures even gaps between image, text, and hamburger button */
-    }
-
+    /* Sidebar */
     .sidebar-toggle-btn {
         display: inline-flex;
         align-items: center;
@@ -3234,22 +3253,19 @@ body {
         transition: transform 0.2s ease, color 0.2s ease;
     }
 
-    /* Light up and subtle bounce on quick touch/hover */
     .sidebar-toggle-btn:hover,
     .sidebar-toggle-btn:active {
         color: var(--color-span);
         transform: scale(1.08);
     }
 
-    /* NEW ACTIVE GLOW STATE RULE: Keeps it glowing while open */
     .sidebar-checkbox:checked ~ .main .sidebar-toggle-btn {
         color: var(--color-span);
         transform: scale(1.05);
     }
-    
-    /* NEW ICON TRANSFORMATION (Optional): Turns the bars into an X while open */
+
     .sidebar-checkbox:checked ~ .main .sidebar-toggle-btn i::before {
-        content: "\f00d"; 
+        content: "\f00d";  /*Turns the bars into an X while open */
     }
 
     /* Transform desktop sidebar into a mobile panel hidden out-of-view */
@@ -3260,7 +3276,6 @@ body {
         width: 240px;
         height: 100vh;
         z-index: 2000;
-        box-shadow: 5px 0 25px rgba(0, 0, 0, 0.2);
         transform: translateX(-100%);
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -3270,7 +3285,6 @@ body {
         transform: translateX(0);
     }
 
-    /* Setup dark tint backdrop overlay layer */
     .sidebar-overlay {
         display: block;
         position: fixed;
@@ -3278,29 +3292,24 @@ body {
         left: 0;
         width: 100vw;
         height: 100vh;
-        background-color: rgba(0, 0, 0, 0.4);
-        backdrop-filter: blur(3px);
-        -webkit-backdrop-filter: blur(3px);
         z-index: 1999;
         opacity: 0;
         visibility: hidden;
         transition: opacity 0.3s ease, visibility 0.3s ease;
     }
 
-    /* ENGINE SELECTOR: Reveal background blur layer when checked */
     .sidebar-checkbox:checked ~ .main .sidebar-overlay {
         opacity: 1;
         visibility: visible;
     }
 
-    /* Override main desktop margins to give content full mobile widescreen width */
+    /* Main */
     .main {
         margin-left: 0 !important;
         padding: 10px;
         width: 100%;
     }
-    
-    /* Pull fixed header to left screen boundary on mobile */
+
     .fixed-wrapper {
         left: 0 !important;
         right: 0 !important;
@@ -3308,7 +3317,6 @@ body {
         padding: 10px 10px 0;
     }
 
-    /* Adapt your header flex spacing onto tiny viewports */
     .header {
         flex-direction: column;
         align-items: stretch;
@@ -3322,13 +3330,11 @@ body {
     .header-right, .search-form, .search-wrapper {
         width: 100%;
     }
-    
-    /* Lower the page content down safely so it does not hide behind the wrapped header stack */
+
     .dashboard {
         margin-top: 131px;
     }
 
-    /* Re-tile metrics grid dynamically to prevent layout breaking */
     .total-cards-container {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -3336,5 +3342,49 @@ body {
     }
     .total-card {
         min-width: unset;
+    }
+
+    /* Notifications */
+    .notifications {
+        margin-top: 131px; /* Ensures full viewport clearance on tight smartphone screens */
+    }
+
+    /* Convert the notification container header layout to a clean stacked vertical column format */
+    .notif-contents-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .btn-delete-all {
+        width: 100%; /* Spreads the delete-all button across the screen layout width for easier touch control */
+        padding: 8px 12px;
+    }
+
+    /* CRITICAL FIX: Convert layout row behavior into stacked columns so card blocks do not overflow horizontal screen fields */
+    .notification-card {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+        padding: 15px;
+    }
+
+    .notif-message {
+        text-align: left;
+    }
+
+    /* Convert the button alignment controls onto full width blocks for comfortable screen interactions */
+    .notification-buttons {
+        width: 100%;
+        justify-content: flex-end; /* Aligns card management controls neatly onto the card floor edge layout */
+        padding-top: 12px;
+    }
+
+    .notification-buttons button,
+    .notification-buttons a {
+        flex: 1; /* Makes View and Delete buttons take equal balance properties across available card lanes */
+        text-align: center;
+        padding: 8px 12px;
     }
 }

@@ -8,7 +8,7 @@
     $conn = $database->getConnection();
     
     // Set this to the client ID you want to assign the errands to
-    $client_id = 3; // your example user
+    $client_id = 8; // your example user
 
     // Set How many Errands you want to create
     $num_errands = 3;

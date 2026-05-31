@@ -43,6 +43,7 @@
 </head>
 <body>
     <!-- Sidebar -->
+    <input type="checkbox" id="sidebar-toggle-check" class="sidebar-checkbox">
     <?php include '../../includes/sidebar.php'; ?>
 
     <!-- Main -->
@@ -57,8 +58,13 @@
                             <h1>Pro<span>Hand</span></h1>
                             <h2>Dashboard</h2>
                         </div>
+
+                        <label for="sidebar-toggle-check" class="sidebar-toggle-btn" aria-label="Toggle Navigation Menu">
+                            <i class="fa-solid fa-bars"></i>
+                        </label>
                     </div>
                 </div>
+
                 <div class="header-right">
                     <form class="search-form" method="GET">
                         <div class="search-wrapper">
