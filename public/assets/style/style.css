@@ -1725,8 +1725,8 @@ body {
 
 .profile-photo-section .profile-preview-photo {
     border: 3px solid var(--color-border);
-    width: 170px;                /* Fixed width for photo box */
-    height: 170px;               /* Fixed height for photo box */
+    width: 150px;                /* Fixed width for photo box */
+    height: 150px;               /* Fixed height for photo box */
     border-radius: 6px;
     transition: transform 0.2s ease;
     object-fit: cover;           /* Crop and maintain aspect ratio */
@@ -3206,6 +3206,68 @@ body {
     .notification-card {
         gap: 20px; /* Reduce the huge 50px desktop gap to fit tablet dimensions seamlessly */
     }
+
+    /* View Main */
+    .view-main {
+        margin-left: 0 !important; /* Zeroes out the desktop sidebar space allocation */
+        padding: 75px 20px 20px 20px; /* Leaves room at the top for the back button to sit cleanly */
+        width: 100%;
+        box-sizing: border-box;
+        justify-content: flex-start; /* Flows naturally from top to bottom */
+        align-items: center; /* Centers the profile card on the screen */
+    }
+
+    .btn-back {
+        position: fixed;
+        top: 15px;
+        left: 20px; /* Glues back button to the screen edge instead of 214px out */
+    }
+
+    .profile-info-container {
+        max-width: 100%;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .profile-container {
+        max-width: 550px; /* Perfectly frames your form on medium screen layers */
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .group-profile-box {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap; 
+        gap: 12px;
+    }
+
+    .group-profile-box .profile-box {
+        flex: 1 1 calc(33.333% - 12px); 
+        min-width: 140px; 
+    }
+
+    .profile-bot-btn {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap; 
+        gap: 10px;
+        width: 100%;
+    }
+
+    .profile-bot-btn a,
+    .profile-bot-btn form {
+        flex: 1 1 calc(33.333% - 10px);
+        min-width: 150px; 
+    }
+
+    .profile-bot-btn a button,
+    .profile-bot-btn button,
+    .profile-bot-btn form button {
+        padding: 10px 6px; 
+        font-size: 0.85rem; 
+    }
 }
 
 /* 2. Mobile Breakthrough (Max-width: 768px) */
@@ -3311,7 +3373,6 @@ body {
         content: "\f00d";  /*Turns the bars into an X while open */
     }
 
-    /* Transform desktop sidebar into a mobile panel hidden out-of-view */
     .sidebar {
         position: fixed;
         top: 0;
@@ -3323,7 +3384,6 @@ body {
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* ENGINE SELECTOR: Slide the sidebar into view when checkbox state turns checked */
     .sidebar-checkbox:checked ~ .sidebar {
         transform: translateX(0);
     }
@@ -3392,7 +3452,6 @@ body {
         margin-top: 131px; /* Ensures full viewport clearance on tight smartphone screens */
     }
 
-    /* Convert the notification container header layout to a clean stacked vertical column format */
     .notif-contents-header {
         flex-direction: column;
         align-items: stretch;
@@ -3405,7 +3464,6 @@ body {
         padding: 8px 12px;
     }
 
-    /* CRITICAL FIX: Convert layout row behavior into stacked columns so card blocks do not overflow horizontal screen fields */
     .notification-card {
         flex-direction: column;
         align-items: stretch;
@@ -3417,7 +3475,6 @@ body {
         text-align: left;
     }
 
-    /* Convert the button alignment controls onto full width blocks for comfortable screen interactions */
     .notification-buttons {
         width: 100%;
         justify-content: flex-end; /* Aligns card management controls neatly onto the card floor edge layout */
@@ -3429,5 +3486,63 @@ body {
         flex: 1; /* Makes View and Delete buttons take equal balance properties across available card lanes */
         text-align: center;
         padding: 8px 12px;
+    }
+
+    /* View Main */
+    .view-main {
+        margin-left: 0 !important; /* Strips sidebar gutter gap tracking completely */
+        padding: 70px 14px 20px 14px; /* Taller top padding leaves room for the fixed back button */
+        min-height: calc(100vh - 90px);
+        justify-content: flex-start; /* Flows naturally on short mobile phone viewports */
+    }
+
+    .btn-back {
+        position: fixed;
+        top: 12px;
+        left: 14px; /* Glues the back action to the phone screen frame margin */
+    }
+
+    .profile-info-container {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .profile-container,
+    .tasker-errand-metrics {
+        max-width: 100%; /* Spreads profile card completely across mobile layouts */
+        width: 100%;
+        padding: 16px; /* Tightens padding to maximize space for inputs */
+        box-sizing: border-box;
+    }
+
+    .group-profile-box {
+        flex-direction: column; /* Stacks layout elements cleanly into simple single column grids */
+        gap: 0; /* Prevents double margin gaps when fields group into vertical lanes */
+    }
+
+    .group-profile-box .profile-box {
+        width: 100%;
+        min-width: 100%;
+    }
+
+    .profile-bot-btn {
+        flex-direction: column; /* Safely stacks critical action choices vertically on mobile screens */
+        gap: 10px;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .profile-bot-btn a,
+    .profile-bot-btn form,
+    .profile-bot-btn button {
+        width: 100% !important;
+        flex: none !important; /* Breaks rigid horizontal layout weight thresholds */
+        min-width: 0;
+    }
+    
+    .profile-photo-section .profile-preview-photo {
+        width: 130px; /* Scales down profile image layout footprint gracefully for phone panels */
+        height: 130px;
     }
 }
