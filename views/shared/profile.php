@@ -33,7 +33,6 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <input type="checkbox" id="sidebar-toggle-check" class="sidebar-checkbox">
     <?php include '../../includes/sidebar.php'; ?>
 
     <!-- Back button -->
