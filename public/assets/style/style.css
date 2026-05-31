@@ -2105,7 +2105,7 @@ body {
 }
 
 .add-user-error-success-message {
-    min-height: 35px;
+    min-height: 50px;
     display: flex;
     justify-content: center;
     align-items: center;
