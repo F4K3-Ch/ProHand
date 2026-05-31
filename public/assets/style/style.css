@@ -2157,6 +2157,21 @@ body {
     outline: none;
 }
 
+select[name="role"] option[value="admin"] {
+    background-color: rgba(239, 68, 68, 0.15);  
+    color: #ef4444; 
+}
+
+select[name="role"] option[value="tasker"] {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;   
+}
+
+select[name="role"] option[value="client"] {
+    background-color: rgba(22, 163, 74, 0.15);  
+    color: #16a34a;   
+}
+
 .add-user-container .btn {
     background-color: var(--color-btn-bg);
     color: var(--color-btn-text);
@@ -2637,6 +2652,16 @@ body {
 .btn-update:hover {
     background-color: #D97706;
     /* background-color: #eab308 */
+}
+
+.info-bot-btn select option[value="completed"] {
+    background-color: rgba(22, 163, 74, 0.15); 
+    color: #16a34a;     
+}
+
+.info-bot-btn select option[value="failed"] {
+    background-color: rgba(220, 38, 38, 0.15); 
+    color: #dc2626;          
 }
 
 /* Title */
@@ -3544,5 +3569,15 @@ body {
     .profile-photo-section .profile-preview-photo {
         width: 130px; /* Scales down profile image layout footprint gracefully for phone panels */
         height: 130px;
+    }
+
+/* Bottom buttons */
+    .info-bot-btn {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        flex-wrap: wrap;           /* allow wrapping on small screens */
+        gap: 12px;
+        width: 100%;
     }
 }
