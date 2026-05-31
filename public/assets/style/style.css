@@ -3184,10 +3184,11 @@ select[name="role"] option[value="client"] {
     .total-cards-container {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
+        gap: 8px;
     }
     
     .total-card {
+        padding: 3px;
         min-width: unset;
     }
 
@@ -3464,12 +3465,16 @@ select[name="role"] option[value="client"] {
     }
 
     .total-cards-container {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+        display: flex;             /* Switches layout style from side-by-side grids */
+        flex-direction: column;    /* Forces the metric total boxes to stack vertically */
+        gap: 8px;                 /* Maintains breathing room clearance space between elements */
+        width: 100%;
     }
+    
     .total-card {
+        padding: 3px;
         min-width: unset;
+        width: 100%;               /* Ensures individual status boxes expand to full block width */
     }
 
     /* Notifications */
@@ -3571,7 +3576,6 @@ select[name="role"] option[value="client"] {
         height: 130px;
     }
 
-/* Bottom buttons */
     .info-bot-btn {
         display: flex;
         justify-content: center;
