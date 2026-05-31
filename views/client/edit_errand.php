@@ -98,27 +98,26 @@
 
                 <div class="edit-errand-input-box">
                     <label>Existing Attachment</label>
-                    <div class="edit-attachment-list">
-                        <?php if ($attachment_result && $attachment_result->num_rows > 0): ?>
-                            <?php 
-                                $file = $attachment_result->fetch_assoc(); 
-                                $filename = basename($file['file_path']);
-                                $relative_path = '../../public/uploads/attachments/' . $filename;
-                            ?>
-                            <div class="edit-attachment-item">
-                                <a href="<?= htmlspecialchars($relative_path); ?>" target="_blank" class="edit-attachment-name">
-                                    <i class="fa-solid fa-file"></i> <?= htmlspecialchars($file['original_name']); ?>
-                                </a>
-                                
-                                <label class="delete-checkbox" style="margin-left: 15px; color: red; cursor: pointer;">
-                                    <input type="checkbox" name="remove_current_file" value="1"> 
-                                    <span>Remove file</span>
-                                </label>
-                            </div>
-                        <?php else: ?>
-                            <p class="no-attachment">None</p>
-                        <?php endif; ?>
-                    </div>
+
+                    <?php if ($attachment_result && $attachment_result->num_rows > 0): ?>
+                        <?php 
+                            $file = $attachment_result->fetch_assoc(); 
+                            $filename = basename($file['file_path']);
+                            $relative_path = '../../public/uploads/attachments/' . $filename;
+                        ?>
+                        <div class="edit-attachment-item">
+                            <a href="<?= htmlspecialchars($relative_path); ?>" target="_blank" class="edit-attachment-name" title="Preview File">
+                                <i class="fa-solid fa-file"></i> <?= htmlspecialchars($file['original_name']); ?>
+                            </a>
+                            
+                            <label class="delete-checkbox">
+                                <input type="checkbox" name="remove_current_file" value="1"> 
+                                <span>Remove file</span>
+                            </label>
+                        </div>
+                    <?php else: ?>
+                        <input type="text" readonly value="None" class="edit-attachment-empty-input" style="color: var(--color-sec-text); font-style: italic;">
+                    <?php endif; ?>
                 </div>
 
                 <div class="edit-errand-input-box">

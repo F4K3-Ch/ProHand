@@ -2386,8 +2386,8 @@ body {
 
 .user-profile-photo img {
     border: 3px solid var(--color-border);
-    width: 140px;                /* Fixed width for photo box */
-    height: 140px;               /* Fixed height for photo box */
+    width: 120px;                /* Fixed width for photo box */
+    height: 120px;               /* Fixed height for photo box */
     border-radius: 6px;
     transition: transform 0.2s ease;
     object-fit: cover;           /* Crop and maintain aspect ratio */
@@ -2459,66 +2459,94 @@ body {
     overflow-y: auto;         /* Enables scrollbar when long text */
 }
 
-/* Attachment List Container  */
-.attachment-list {
-    background-color: var(--color-card-bg);
-    border: 1px solid var(--color-input-border);
-    width: 100%;
-    height: 60px;
-    padding: 6px 8px;
-    border-radius: 6px;
-    overflow-y: auto;          /* Scroll only when overflowing */
-    display: flex;
-    flex-direction: column;
-    gap: 8px;                  /* Space between attachments */
-}
-
-.no-attachments {
-    display: flex;
-    justify-content: center;  /* horizontal centering */
-    align-items: center;      /* vertical centering */
-    text-align: center;
-    height: 60px;             /* same height as attachment-list */
-}
-
-.no-attachment {
-    color: var(--color-sec-text);
-    font-size: 0.9rem; 
-    font-weight: 500;
-}
-
-/* Row for each file */
 .attachment-item {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    
+    /* Matches your standard .info-box input style exactly */
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-input-border);
+    border-radius: 6px;
+    padding: 6px 8px; /* Uses exact same padding footprint as your text fields */
+    width: 100%;
+    box-sizing: border-box;
+    gap: 10px;
 }
 
-/* File name link */
+/* 2. File Name Link Text Inside Box */
 .attachment-name {
     color: var(--color-link);
-    font-size: 0.9rem;
+    font-size: 0.9rem; /* Matches your input font-size */
+    font-weight: 400; /* Blends naturally with standard input weight */
     text-decoration: none;
+    
+    /* Inherits your bulletproof ellipsis logic for extra long filenames */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0; 
+}
+
+.attachment-name i {
+    margin-right: 4px;
+    color: #3b82f6; /* Modern interactive blue accent for document visibility */
 }
 
 .attachment-name:hover {
-    text-decoration: underline;
+    text-decoration: underline; 
 }
 
-/* Download button */
+/* Normalizes the form element within flex row */
+.attachment-item form {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+}
+
+/* 3. Streamlined Inline Download Button */
 .btn-download {
     background-color: #28a745;
-    padding: 1px 8px;
-    font-size: 0.9rem;
-    border-radius: 2px;
-    color: var(--color-btn-text);
+    color: #ffffff; /* White text contrast layer */
+    padding: 3px 10px; /* Snug styling that frames neatly inside the 6px 8px border bounds */
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: 4px;
     border: none;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0; /* Guarantees button doesn't shrink on thin screens */
 }
 
 .btn-download:hover {
     background-color: #218838;
+}
+
+/* 4. Muted Container for Empty "None" State View */
+.no-attachments {
+    display: flex;
+    align-items: center;
+    
+    /* Borrows input structures but introduces slight empty indicators */
+    background-color: var(--color-card-bg);
+    border: 1px dashed var(--color-input-border); /* Dashed boundaries represent vacancy */
+    border-radius: 6px;
+    padding: 6px 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.no-attachment {
+    color: var(--color-sec-text); /* Matches standard secondary input text color variable */
+    font-size: 0.9rem; 
+    font-weight: 400;
+    margin: 0;
+    font-style: italic; /* Visually communicates empty state */
 }
 
 /* Bottom buttons */
@@ -2634,8 +2662,8 @@ body {
 .tasker-profile-photo img,
 .client-profile-photo img {
     border: 3px solid var(--color-border);
-    width: 200px;                /* Fixed width for photo box */
-    height: 200px;               /* Fixed height for photo box */
+    width: 180px;                /* Fixed width for photo box */
+    height: 180px;               /* Fixed height for photo box */
     border-radius: 6px;
     transition: transform 0.2s ease;
     object-fit: cover;           /* Crop and maintain aspect ratio */
@@ -2811,76 +2839,88 @@ body {
     background-color: #218838;
 }
 
-/* Attachment List Container  */
-.edit-attachment-list {
-    background-color: var(--color-card-bg);
-    border: 1px solid var(--color-input-border);
-    width: 100%;
-    height: 50px;
-    padding: 3px 8px;
-    border-radius: 6px;
-    overflow-y: auto;          /* Scroll only when overflowing */
-    display: flex;
-    flex-direction: column;
-    gap: 8px;                  /* Space between attachments */
-}
-
-.edit-no-attachments {
-    display: flex;
-    justify-content: center;  /* horizontal centering */
-    align-items: center;      /* vertical centering */
-    text-align: center;
-    height: 50px;             /* same height as attachment-list */
-}
-
-.edit-no-attachment {
-    color: var(--color-text);
-    font-size: 0.9rem; 
-    font-weight: 500;
-}
-
-/* Row for each file */
 .edit-attachment-item {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-input-border);
+    border-radius: 6px;
+    padding: 6px 8px; /* Perfectly matches your global .info-box input padding */
+    width: 100%;
+    box-sizing: border-box;
+    gap: 10px;
 }
 
-/* File name link */
+/* 2. File Name Link Text Controls */
 .edit-attachment-name {
     color: var(--color-link);
-    font-size: 0.9rem;
+    font-size: 0.9rem; /* Matches your input font-size */
+    font-weight: 400; /* Blends naturally with standard input weights */
     text-decoration: none;
+    
+    /* BULLETPROOF TEXT OVERFLOW CAP: Appends '...' if filename is extra long */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
+}
+
+.edit-attachment-name i {
+    margin-right: 4px;
+    color: #3b82f6; /* Modern interactive blue accent for icons */
 }
 
 .edit-attachment-name:hover {
     text-decoration: underline;
 }
 
-/* Style the label text */
+/* 3. Redesigned Remove Checkbox Label Component */
 .delete-checkbox {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     cursor: pointer;
+    user-select: none;
+    flex-shrink: 0; /* Ensures check panel never squishes on tight screen sizes */
+    margin: 0 !important; /* Forces reset of custom inline styles */
 }
 
 .delete-checkbox span {
-    color: #ff4d4d;
-    font-size: 0.9rem;
+    color: #ff4d4d; /* Warning red accent text color */
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: color 0.2s ease;
 }
 
-/* Optional: style the actual checkbox itself */
+/* Custom Checkbox Input Elements styling */
 .delete-checkbox input[type="checkbox"] {
-    accent-color: #ff4d4d; 
-    width: 13px;  
-    height: 13px;  
+    accent-color: #ff4d4d; /* Forces modern browser check toggles to render in red */
+    width: 14px;  
+    height: 14px;  
+    cursor: pointer;
+    margin: 0;
 }
 
-/* Hover effect for the label text */
-.delete-checkbox:hover {
-    color: #ff1a1a;
+/* Clear visual hover state feedback rules */
+.delete-checkbox:hover span {
+    color: #dc3545; /* Darker clean red state on cursor touch */
+}
+
+/* 4. Empty State Custom Field Fallback styling */
+.edit-attachment-empty-input {
+    background-color: var(--color-card-bg);
+    color: var(--color-sec-text);
+    border: 1px dashed var(--color-input-border); /* Dashed boundaries communicate lack of items */
+    border-radius: 6px;
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 0.9rem;
+    font-weight: 400;  
+    outline: none;
+    box-sizing: border-box;
 }
 
 /* Notification */
@@ -2952,6 +2992,9 @@ body {
 
 .notif-message {
     color: var(--color-text);
+    flex: 1;                /* Forces text block to fill space but remain bounded */
+    word-break: break-word; /* Automatically wraps long strings or single long words to the next line */
+    overflow-wrap: break-word;
 }
 
 .notif-message h3 {

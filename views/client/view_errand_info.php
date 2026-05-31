@@ -187,46 +187,44 @@
                     <label>Attachment</label>
 
                     <?php if ($attachment_result && $attachment_result->num_rows > 0): ?>
-                        <div class="attachment-list">
-                            <?php 
-                                // Reset pointer or loop if needed; here we fetch the row
-                                $file = $attachment_result->fetch_assoc(); 
+                        <?php 
+                            // Reset pointer or loop if needed; here we fetch the row
+                            $file = $attachment_result->fetch_assoc(); 
+                            
+                            // Path for browser preview
+                            $relative_path = '../../public/' . $file['file_path'];
+                            
+                            // Point back to the current file
+                            $download_action = "view_errand_info.php";
+                        ?>
+
+                        <div class="attachment-item">
+                            <a href="<?= htmlspecialchars($relative_path); ?>" target="_blank" class="attachment-name">
+                                <i class="fa-solid fa-file-lines"></i> <?= htmlspecialchars($file['original_name']); ?>
+                            </a>
+
+                            <form method="GET">
+                                <!-- Keep the user on the current errand page -->
+                                <input type="hidden" name="errand_id" value="<?= $errand_id; ?>">
                                 
-                                // Path for browser preview
-                                $relative_path = '../../public/' . $file['file_path'];
+                                <!-- Trigger word for the IF statement -->
+                                <input type="hidden" name="action" value="download">
                                 
-                                // Point back to the current file
-                                $download_action = "view_errand_info.php";
-                            ?>
+                                <!-- Your specific change here -->
+                                <input type="hidden" name="download_id" value="<?= (int)$file['id']; ?>">
+                                
+                                <!-- Check if history is needed -->
+                                <?php if (isset($is_finished) && $is_finished): ?>
+                                    <input type="hidden" name="type" value="history">
+                                <?php endif; ?>
 
-                            <div class="attachment-item">
-                                <a href="<?= htmlspecialchars($relative_path); ?>" target="_blank" class="attachment-name">
-                                    <i class="fa-solid fa-file-lines"></i> <?= htmlspecialchars($file['original_name']); ?>
-                                </a>
-
-                                <form method="GET" action="view_errand_info.php">
-                                    <!-- Keep the user on the current errand page -->
-                                    <input type="hidden" name="errand_id" value="<?= $errand_id; ?>">
-                                    
-                                    <!-- Trigger word for the IF statement -->
-                                    <input type="hidden" name="action" value="download">
-                                    
-                                    <!-- Your specific change here -->
-                                    <input type="hidden" name="download_id" value="<?= (int)$file['id']; ?>">
-                                    
-                                    <!-- Check if history is needed -->
-                                    <?php if (isset($is_finished) && $is_finished): ?>
-                                        <input type="hidden" name="type" value="history">
-                                    <?php endif; ?>
-
-                                    <button type="submit" class="btn-download">
-                                        <i class="fa-solid fa-download"></i> Download
-                                    </button>
-                                </form>
-                            </div>
+                                <button type="submit" class="btn-download">
+                                    <i class="fa-solid fa-download"></i> Download
+                                </button>
+                            </form>
                         </div>
                     <?php else: ?>
-                        <div class="attachment-list no-attachments">
+                        <div class="no-attachments">
                             <p class="no-attachment">None</p>
                         </div>
                     <?php endif; ?>
