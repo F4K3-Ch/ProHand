@@ -3190,6 +3190,7 @@ select[name="role"] option[value="client"] {
     .total-card {
         padding: 3px;
         min-width: unset;
+        width: 100%;  
     }
 
     /* Tables */
