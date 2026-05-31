@@ -700,7 +700,7 @@ span {
     Sidebar Container
 =========================== */
 .sidebar-checkbox {
-    display: none !important;
+    display: none;
 }
 .sidebar-toggle-btn, .sidebar-overlay {
     display: none;
@@ -717,6 +717,9 @@ span {
     width: 200px;
     padding: 20px 0;
     z-index: 1000;
+
+    bottom: 0;
+    height: 100%;    
 }
 
 /* ===========================
@@ -3007,6 +3010,132 @@ body {
 
     .services, .why-prohand, .trust-safety, .final-cta {
         padding: 70px 20px; /* Reduce vertical padding gaps uniformly */
+    }
+
+/* Reveal and format the hamburger button link */
+    .sidebar-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-text);
+        font-size: 1.4rem;
+        cursor: pointer;
+        padding: 5px;
+        margin-left: auto; 
+        margin-right: 0;
+        transition: transform 0.2s ease, color 0.2s ease;
+    }
+
+    /* Light up and subtle bounce on quick touch/hover */
+    .sidebar-toggle-btn:hover,
+    .sidebar-toggle-btn:active {
+        color: var(--color-span);
+        transform: scale(1.08);
+    }
+
+    /* ACTIVE GLOW STATE: Keeps the icon glowing while the sidebar menu is open */
+    .sidebar-checkbox:checked ~ .main .sidebar-toggle-btn {
+        color: var(--color-span);
+        transform: scale(1.05);
+    }
+    
+    /* ICON TRANSFORMATION: Automatically morphs the bars into an 'X' close button when open */
+    .sidebar-checkbox:checked ~ .main .sidebar-toggle-btn i::before {
+        content: "\f00d"; 
+    }
+
+    /* Transform desktop sidebar into an offline slider layout container hidden left */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 240px;
+        height: 100vh;
+        z-index: 2000;
+        box-shadow: 5px 0 25px rgba(0, 0, 0, 0.2);
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* DIRECT SIBLING ENGINE: Slide the sidebar into view when checkbox state turns checked */
+    .sidebar-checkbox:checked ~ .sidebar {
+        transform: translateX(0) !important;
+    }
+
+    /* Setup dark tint backdrop overlay layer */
+    .sidebar-overlay {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        z-index: 1999;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+        pointer-events: none;
+    }
+
+    /* CONNECTS OVERLAY TO THE CHECKBOX ENGINE: Targets directly through main block */
+    .sidebar-checkbox:checked ~ .main .sidebar-overlay {
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+    }
+
+    /* Override main desktop layout margins to grant content full workspace fluid width */
+    .main {
+        margin-left: 0 !important;
+        padding: 15px;
+        width: 100%;
+    }
+    
+    /* Pull fixed header wrapper to left screen boundaries */
+    .fixed-wrapper {
+        left: 0 !important;
+        right: 0 !important;
+        width: 100%;
+        padding: 10px 15px 0;
+    }
+
+    /* Make the logo container spread items out nicely on tablet/mobile */
+    .header-left .logo {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        width: 100%;
+        gap: 12px;
+    }
+
+    /* Adapt header layout flex behaviors onto compact viewports */
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    
+    .header-right, .search-form, .search-wrapper {
+        width: 100%;
+    }
+    
+    /* Lower the dashboard wrapper section safely down underneath the taller stacked header */
+    .dashboard {
+        margin-top: 125px;
+    }
+
+    /* Re-tile dashboard metrics card blocks into an even grid breakdown */
+    .total-cards-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .total-card {
+        min-width: unset;
     }
 }
 
