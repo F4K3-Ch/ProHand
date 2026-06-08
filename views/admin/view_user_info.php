@@ -76,7 +76,7 @@
                 <div class="profile-bot-container">
 
                     <div class="profile-box">
-                        <label>ID</label>
+                        <label>User ID</label>
                         <input type="text" readonly value="<?= htmlspecialchars($user['id']); ?>">
                     </div>
 

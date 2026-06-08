@@ -139,7 +139,7 @@
                     <div class="table-scroll">
                         <table>
                             <tr>
-                                <th>ID</th>
+                                <th>User ID</th>
                                 <th>Picture</th>
                                 <th>Email</th>
                                 <th>Last Name</th>
