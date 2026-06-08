@@ -274,34 +274,121 @@
             </div>
 
             <?php if (in_array($errand['status'], ['accepted', 'in_process', 'completed', 'failed'])): ?>
-                <!-- Tasker Details Container -->
-                <div class="tasker-details-container">
-                    <h1>Accepted By</h1>
+                <!-- Users Details -->
+                <div class="users-container">
+                    <!-- Tasker Details Container -->
+                    <div class="user-details-container">
+                        <h1>Accepted By</h1>
 
-                    <div class="tasker-profile-photo">
-                        <a href="<?= htmlspecialchars($tasker_picture); ?>" target="_blank">
-                            <img src="<?= htmlspecialchars($tasker_picture); ?>" alt="Profile Picture">
-                        </a>
+                        <div class="user-profile-photo">
+                            <a href="<?= htmlspecialchars($tasker_picture); ?>" target="_blank">
+                                <img src="<?= htmlspecialchars($tasker_picture); ?>" alt="Profile Picture">
+                            </a>
+                        </div>
+
+                        <div class="group-info-box">
+                            <div class="info-box">
+                                <label>User ID</label>
+                                <input type="text" readonly value="<?= htmlspecialchars($errand['tasker_id']); ?>">
+                            </div>
+
+                            <div class="info-box">
+                                <label>Email</label>
+                                <input type="text" readonly value="<?= htmlspecialchars($errand['tasker_email']); ?>">
+                            </div>
+                        </div>    
+
+                        <div class="group-info-box">
+                            <div class="info-box">
+                                <label>Name</label>
+                                <input type="text" readonly value="<?= htmlspecialchars(trim($errand['tasker_first_name'].' '.$errand['tasker_middle_name'].' '.$errand['tasker_last_name'])); ?>">
+                            </div>
+
+                            <div class="info-box">
+                                <label>Contact Number</label>
+                                <input type="text" readonly value="<?= htmlspecialchars($errand['tasker_contact_number']); ?>">
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="tasker-info-box">
-                        <label>User ID</label>
-                        <input type="text" readonly value="<?= htmlspecialchars($errand['tasker_id']); ?>">
-                    </div>
+                    <div class="user-details-container">
+                        <h1>Secure Payment</h1>
 
-                    <div class="tasker-info-box">
-                        <label>Email</label>
-                        <input type="text" readonly value="<?= htmlspecialchars($errand['tasker_email']); ?>">
-                    </div>   
+                        <?php if ($errand['status'] === 'accepted' && empty($errand['payment_receipt_path'])): ?>
+                            
+                            <div class="info-box alert-box alert-blue payment-instruction-wrapper">
+                                <div class="payment-qr-frame">
+                                    <img src="../../public/assets/images/gcash-qr.png" alt="GCash Merchant QR Code" class="payment-qr-img">
+                                </div>
+                                
+                                <div class="payment-text-details">
+                                    <p class="alert-text">
+                                        <strong>GCash Payment Instructions:</strong><br>
+                                        Scan the QR code or send the exact amount of <strong>₱<?= number_format($errand['fee'], 2); ?></strong> to our business wallet to securely lock in your tasker:
+                                    </p>
+                                    <p class="merchant-number">
+                                        <i class="fa-solid fa-mobile-screen"></i> 0912-345-6789
+                                    </p>
+                                    <span class="qr-hint-text"><i class="fa-solid fa-qrcode"></i> Tip: Save QR to gallery to scan via GCash App</span>
+                                </div>
+                            </div>
 
-                    <div class="tasker-info-box">
-                        <label>Name</label>
-                        <input type="text" readonly value="<?= htmlspecialchars(trim($errand['tasker_first_name'].' '.$errand['tasker_middle_name'].' '.$errand['tasker_last_name'])); ?>">
-                    </div>
+                            <form method="POST" enctype="multipart/form-data" class="payment-upload-form">
+                                <input type="hidden" name="errand_id" value="<?= $errand['id']; ?>">
+                                
+                                <div class="info-box create-errand-input-box">
+                                    <label>Upload Receipt Image</label>
+                                    <input type="file" name="gcash_receipt" accept=".jpg,.jpeg,.png" required>
+                                    <small>Only PNG, JPG, or JPEG allowed. Maximum size: 10 MB</small>
+                                </div>
 
-                    <div class="tasker-info-box">
-                        <label>Contact Number</label>
-                        <input type="text" readonly value="<?= htmlspecialchars($errand['tasker_contact_number']); ?>">
+                                <button type="submit" name="submit_payment_proof" class="btn btn-submit-proof">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> Submit Proof of Payment
+                                </button>
+                            </form>
+
+                        <?php elseif ($errand['status'] === 'accepted' && !empty($errand['payment_receipt_path'])): ?>
+                            
+                            <div class="info-box transaction-status-box">
+                                <i class="fa-solid fa-circle-notch fa-spin status-icon-orange"></i>
+                                <label class="status-label-orange">Awaiting Verification</label>
+                                <p class="status-description-text">
+                                    Your payment receipt details are currently being cross-referenced by an administrator.
+                                </p>
+                                
+                                <div class="info-box tracking-attachment-box">
+                                    <label>Your Submitted File</label>
+                                    <a href="../../public/uploads/receipts/<?= basename($errand['payment_receipt_path']); ?>" target="_blank" class="receipt-preview-link">
+                                        <i class="fa-solid fa-image"></i> View Receipt Screenshot
+                                    </a>
+                                </div>
+                            </div>
+
+                        <?php else: ?>
+                            <div class="info-box transaction-status-box">
+                                <?php if ($errand['status'] === 'in_process'): ?>
+                                    <i class="fa-solid fa-circle-check status-icon-green"></i>
+                                    <label class="status-label-green">Payment Verified</label>
+                                    <p class="status-description-text">
+                                        Funds are held securely by the platform escrow. The tasker is authorized to perform your errand.
+                                    </p>
+                                <?php else: ?>
+                                    <i class="fa-solid fa-box-archive status-icon-muted"></i>
+                                    <label class="status-label-muted">Transaction Closed</label>
+                                    <p class="status-description-text">
+                                        This transaction record has been completed and permanently finalized.
+                                    </p>
+                                <?php endif; ?>
+
+                                <div class="info-box tracking-attachment-box">
+                                    <label>Archived Payment Proof</label>
+                                    <a href="../../public/uploads/receipts/<?= basename($errand['payment_receipt_path']); ?>" target="_blank" class="receipt-archive-link">
+                                        <i class="fa-solid fa-file-invoice-dollar"></i> View Archive Receipt
+                                    </a>
+                                </div>
+                            </div>
+
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php endif; ?>

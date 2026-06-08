@@ -1,62 +1,67 @@
-.sidebar-links {
-    list-style: none;
-    padding: 0 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
+/* Grouping your orange/amber action buttons together */
+.btn-start-errand,
+.btn-update,
+.info-bot-btn .btn-cancel {
+    background-color: #F59E0B;
+    transition: all 0.2s ease;
 }
 
-/* 1. Add this so the form container itself doesn't shrink */
-.sidebar-links li form {
-    display: block;
-    width: 100%;
+.btn-start-errand:hover,
+.btn-update:hover,
+.info-bot-btn .btn-cancel:hover {
+    background-color: #D97706;
 }
 
-/* Individual Link and Button Reset */
-/* 2. Changed 'li form' to 'li form button' and added button reset styles below */
-.sidebar-links li a,
-.sidebar-links li form button {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 8px 10px;
-    border-radius: 6px;
-    text-decoration: none;
-    color: var(--color-text);
-    font-weight: 500;
-    font-size: 0.88rem;
-    line-height: 1.5;      /* reduces vertical misalignment */
-    gap: 10px;   
-    transition: all 0.1s ease;
-
-    /* --- ADDED RESETS FOR THE LOGOUT BUTTON --- */
-    background: none;
+/* Base structural properties for your new specific admin buttons and status badge */
+.info-bot-btn .btn-approve,
+.info-bot-btn .btn-reject,
+.info-bot-btn .admin-status-badge {
+    padding: 10px 20px;
     border: none;
+    border-radius: 4px;
+    font-weight: bold;
     cursor: pointer;
-    width: 100%;
-    font-family: inherit;
-    text-align: left;
-}
-
-/* Hover */
-/* 3. Added ', .sidebar-links li form button:hover' here */
-.sidebar-links li a:hover,
-.sidebar-links li form button:hover {
-    background-color: var(--sidebar-link-hover-bg);
-    backdrop-filter: var(--sidebar-link-hover-blur);
-}
-
-/* Icon */
-/* 4. Added ', .sidebar-links li form button i' here */
-.sidebar-links li a i,
-.sidebar-links li form button i {
-    color: var(--color-icon-fill);
-    font-size: 17px;    
-    flex-shrink: 0;
-    width: 18px; 
-    height: 18px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+/* Base structural adjustments for informational badges (removes pointer hand) */
+.info-bot-btn .admin-status-badge {
+    background-color: #3498db;
+    color: white;
+    font-size: 14px;
+    cursor: default;
+    padding: 10px 15px;
+}
+
+/* Colors for specific response triggers */
+.info-bot-btn .btn-approve {
+    background-color: #2ecc71;
+    color: white;
+}
+
+.info-bot-btn .btn-approve:hover {
+    background-color: #27ae60;
+}
+
+.info-bot-btn .btn-reject {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.info-bot-btn .btn-reject:hover {
+    background-color: #c0392b;
+}
+
+/* Keep your existing dynamic dropdown option coloring unchanged below */
+.info-bot-btn select option[value="completed"] {
+    background-color: rgba(22, 163, 74, 0.15); 
+    color: #16a34a;     
+}
+
+.info-bot-btn select option[value="failed"] {
+    background-color: rgba(220, 38, 38, 0.15); 
+    color: #dc2626;          
 }

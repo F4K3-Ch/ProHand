@@ -1872,21 +1872,25 @@ body {
     background-color: #2563EB;
 }
 
-.btn-delete-account {
+.btn-delete-account,
+.btn-reject {
     background-color: #EF4444;
     transition: all 0.2s ease;
 }
 
-.btn-delete-account:hover {
+.btn-delete-account:hover,
+.btn-reject:hover {
     background-color: #B91C1C;
 }
 
-.btn-update-profile {
+.btn-update-profile,
+.btn-approve {
     background-color: #28a745;
     transition: all 0.2s ease;
 }
 
-.btn-update-profile:hover {
+.btn-update-profile:hover,
+.btn-approve:hover {
     background-color: #218838;
 }
 
@@ -2253,7 +2257,7 @@ select[name="role"] option[value="client"] {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     text-align: left;
 }
 
@@ -2483,6 +2487,173 @@ select[name="role"] option[value="client"] {
     min-width: 200px;
 }
 
+.payment-instruction-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
+}
+
+.payment-qr-frame {
+    background-color: #ffffff;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid var(--color-input-border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.payment-qr-img {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    display: block;
+}
+
+.payment-text-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.qr-hint-text {
+    font-size: 0.75rem;
+    color: var(--color-sec-text);
+    font-style: italic;
+    margin-top: 2px;
+}
+
+.alert-box {
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.alert-blue {
+    background-color: rgba(52, 152, 219, 0.1);
+}
+
+.alert-text {
+    color: var(--color-text);
+    font-size: 0.85rem;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.merchant-number {
+    color: #2ecc71;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin: 5px 0 0 0;
+}
+
+.payment-upload-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.file-input-field {
+    cursor: pointer;
+    padding: 4px 8px;
+}
+
+.btn-submit-proof {
+    background-color: #28a745;
+    color: var(--color-btn-text);
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.1s ease;
+}
+
+.btn-submit-proof:hover {
+    background-color: #218838;
+}
+
+.transaction-status-box {
+    text-align: center;
+    padding: 20px 10px;
+    gap: 10px;
+}
+
+.status-description-text {
+    color: var(--color-sec-text);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.tracking-attachment-box {
+    margin-top: 10px;
+    width: 100%;
+}
+
+/* Color Rules: Processing / Pending Orange State */
+.status-icon-orange {
+    font-size: 2rem;
+    color: #e67e22;
+}
+
+.status-label-orange {
+    text-align: center;
+    color: #e67e22;
+    font-size: 1rem;
+}
+
+/* Color Rules: Verified Green State */
+.status-icon-green {
+    font-size: 2rem;
+    color: #2ecc71;
+}
+
+.status-label-green {
+    text-align: center;
+    color: #2ecc71;
+    font-size: 1rem;
+}
+
+/* Color Rules: Closed Muted Gray State */
+.status-icon-muted {
+    font-size: 2rem;
+    color: var(--color-sec-text);
+}
+
+.status-label-muted {
+    text-align: center;
+    color: var(--color-text);
+    font-size: 1rem;
+}
+
+.receipt-preview-link {
+    color: #3498db;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 6px;
+    border: 1px dashed var(--color-border);
+    border-radius: 4px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.receipt-archive-link {
+    color: var(--color-sec-text);
+    font-size: 0.85rem;
+    text-decoration: none;
+    padding: 6px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    text-align: center;
+}
+
+
 /* Text Area */
 .info-box textarea {
     background-color: var(--color-card-bg);
@@ -2660,6 +2831,13 @@ select[name="role"] option[value="client"] {
     cursor: pointer;
     border: none;
     width: 100%;
+}
+
+.info-bot-btn .admin-status-badge {
+    background-color: #F59E0B;
+    color: #ffffff;
+    padding: 10px;
+    border-radius: 6px;
 }
 
 /* Shared base styling */

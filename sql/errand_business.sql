@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS errands (
     contact TEXT NOT NULL,
     location VARCHAR(200),
     fee DECIMAL(10,2) DEFAULT 0.00,
-    status ENUM('pending','accepted','in_process') DEFAULT 'pending',
+    status ENUM('pending','pending_payment','in_process') DEFAULT 'pending',
+    payment_receipt_path VARCHAR(255) NULL DEFAULT NULL, 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     accepted_at TIMESTAMP NULL DEFAULT NULL,      -- when tasker accepts the errand
@@ -82,6 +83,7 @@ CREATE TABLE IF NOT EXISTS history (
     location VARCHAR(200),
     fee DECIMAL(10,2) DEFAULT 0.00,
     status ENUM('completed','failed') NOT NULL,
+    payment_receipt_path VARCHAR(255) NULL DEFAULT NULL, 
 
     client_id INT,
     client_last_name VARCHAR(50),
