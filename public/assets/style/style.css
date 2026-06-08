@@ -1683,7 +1683,7 @@ body {
     display: flex;
     flex-direction: column;
     flex-wrap: wrap; 
-    gap: 15px;
+    gap: 8px;
 }
 
 /* Title */
@@ -1787,6 +1787,30 @@ body {
 .group-profile-box .profile-box {
     flex: 1;
     min-width: 130px;
+}
+
+/* Custom Role Input Override */
+.profile-box input.role-input-field {
+    font-weight: 600; /* Makes the role value stand out slightly more than normal fields */
+}
+
+/* Force override browser native user-agent styles on readonly inputs using attribute selectors */
+.profile-box input.role-input-field.role-admin[readonly] {
+    background-color: rgba(239, 68, 68, 0.15);  
+    color: #ef4444; 
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.profile-box input.role-input-field.role-tasker[readonly] {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;   
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.profile-box input.role-input-field.role-client[readonly] {
+    background-color: rgba(22, 163, 74, 0.15);  
+    color: #16a34a;   
+    border-color: rgba(22, 163, 74, 0.3);
 }
 
 /* Bottom buttons */
@@ -2472,6 +2496,42 @@ select[name="role"] option[value="client"] {
     font-weight: 400;
     resize: none;         /* Disable to expand the text area */
     overflow-y: auto;         /* Enables scrollbar when long text */
+}
+
+/* Custom Status Input Override */
+.info-box input.status-input-field {
+    font-weight: 600; /* Makes the status text pop out with better weight than regular data text */
+}
+
+/* Force override browser native user-agent styles on readonly inputs using attribute selectors */
+.info-box input.status-input-field.status-pending[readonly] {
+    background-color: rgba(250, 204, 21, 0.15);  
+    color: #facc15;
+    border-color: rgba(250, 204, 21, 0.3);
+}
+
+.info-box input.status-input-field.status-accepted[readonly] {
+    background-color: rgba(59, 130, 246, 0.15);  
+    color: #3b82f6;     
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.info-box input.status-input-field.status-in_process[readonly] {
+    background-color: rgba(251, 146, 60, 0.15); 
+    color: #fb923c;
+    border-color: rgba(251, 146, 60, 0.3);
+}
+
+.info-box input.status-input-field.status-completed[readonly] {
+    background-color: rgba(22, 163, 74, 0.15); 
+    color: #16a34a;     
+    border-color: rgba(22, 163, 74, 0.3);
+}
+
+.info-box input.status-input-field.status-failed[readonly] {
+    background-color: rgba(220, 38, 38, 0.15); 
+    color: #dc2626;         
+    border-color: rgba(220, 38, 38, 0.3);
 }
 
 .attachment-item {

@@ -179,7 +179,10 @@
                     
                     <div class="info-box">
                         <label>Status</label>
-                        <input type="text" readonly value="<?= htmlspecialchars($status_labels[$errand['status']]); ?>">
+                        <input type="text" 
+                            readonly 
+                            class="status-input-field status-<?= $errand['status']; ?>" 
+                            value="<?= htmlspecialchars($status_labels[$errand['status']]); ?>">
                     </div>
                 </div>
 

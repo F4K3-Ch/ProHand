@@ -97,7 +97,10 @@
 
                     <div class="profile-box">
                         <label>Role</label>
-                        <input type="text" readonly value="<?= htmlspecialchars(ucfirst($user['role'])); ?>">
+                        <input type="text" 
+                            readonly 
+                            class="role-input-field role-<?= strtolower($user['role']); ?>" 
+                            value="<?= htmlspecialchars(ucfirst($user['role'])); ?>">
                     </div>
 
                     <div class="profile-box">
