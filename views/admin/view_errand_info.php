@@ -230,33 +230,19 @@
                         <?php endif; ?>
                     </div>
 
-                    <?php if (in_array($errand['status'], ['accepted', 'in_process']) || (isset($is_finished) && $is_finished)): ?>
-                        <div class="info-box admin-receipt-verification-box">
+                    <?php if ($errand['status'] !== 'pending'): ?>
+                        <div class="info-box">
                             <label>Proof of Payment</label>
                             
                             <?php if (!empty($errand['payment_receipt_path'])): ?>
-                                <div class="receipt-file-badge">
-                                    <a href="../../public/uploads/receipts/<?= basename($errand['payment_receipt_path']); ?>" target="_blank" class="receipt-link-btn">
-                                        <i class="fa-solid fa-receipt"></i> View Client's GCash Receipt Screenshot
+                                <div class="attachment-item">
+                                    <a href="../../public/uploads/receipts/<?= basename($errand['payment_receipt_path']); ?>" target="_blank" class="attachment-name">
+                                        <i class="fa-solid fa-file-invoice-dollar"></i> <?= htmlspecialchars(basename($errand['payment_receipt_path'])); ?>
                                     </a>
-                                    
-                                    <?php if ($errand['status'] === 'accepted'): ?>
-                                        <span class="badge-hint" style="color: #e67e22; font-weight: 500;">
-                                            <i class="fa-solid fa-circle-exclamation"></i> Action Required: Inspect receipt carefully before approving or rejecting.
-                                        </span>
-                                    <?php elseif ($errand['status'] === 'in_process'): ?>
-                                        <span class="badge-hint" style="color: #2ecc71; font-weight: 500;">
-                                            <i class="fa-solid fa-circle-check"></i> Escrow Active: This deposit was approved. Funds are securely locked.
-                                        </span>
-                                    <?php elseif ($errand['status'] === 'completed'): ?>
-                                        <span class="badge-hint" style="color: #7f8c8d;">
-                                            <i class="fa-solid fa-box-archive"></i> Errand Resolved: Payment released and cleared to tasker wallet.
-                                        </span>
-                                    <?php elseif ($errand['status'] === 'failed'): ?>
-                                        <span class="badge-hint" style="color: #e74c3c; font-weight: 500;">
-                                            <i class="fa-solid fa-circle-xmark"></i> Errand Dropped: Retained solely for financial dispute auditing logs.
-                                        </span>
-                                    <?php endif; ?>
+                                </div>
+                            <?php else: ?>
+                                <div class="no-attachments">
+                                    <p class="no-attachment">None</p>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -264,7 +250,7 @@
                 </div>
 
                 <div class="info-bot-btn">
-                    <?php if ($errand['status'] === 'accepted'): ?>
+                    <?php if ($errand['status'] === 'pending_payment'): ?>
                         <form method="POST" onsubmit="return confirm('Confirm you received the GCash deposit? This will change the status to In Process.');">
                             <input type="hidden" name="approve_payment_id" value="<?= $errand['id']; ?>">
                             <button type="submit" class="btn-approve">
@@ -278,7 +264,7 @@
                             </button>
                         </form>
                     <?php elseif ($errand['status'] === 'in_process'): ?>
-                        <span class="admin-status-badge">
+                        <span class="descriptive-status-badge">
                             <i class="fa-solid fa-spinner fa-spin"></i> Tasker is performing errand...
                         </span>
 
@@ -346,10 +332,37 @@
                     <?php if (!empty($errand['tasker_id'])): ?>
                         <h1>Accepted By</h1>
 
-                        <div class="user-profile-photo">
-                            <a href="<?= htmlspecialchars($tasker_picture); ?>" target="_blank">
-                                <img src="<?= htmlspecialchars($tasker_picture); ?>" alt="Profile Picture">
-                            </a>
+                        <div class="tasker-header-row">
+                            <div class="user-profile-photo">
+                                <a href="<?= htmlspecialchars($tasker_picture); ?>" target="_blank">
+                                    <img src="<?= htmlspecialchars($tasker_picture); ?>" alt="Profile Picture">
+                                </a>
+                            </div>
+
+                            <?php if ($errand['status'] === 'pending_payment' && isset($errand['cancel_requested_by_tasker']) && $errand['cancel_requested_by_tasker'] == 1): ?>
+                                <div class="tasker-cancellation-alert-box">
+                                    <p class="alert-title">
+                                        <i class="fa-solid fa-triangle-exclamation"></i> Requesting Cancellation
+                                    </p>
+                                    <div class="alert-action-buttons">
+                                        <form method="POST" onsubmit="return confirm('Approve tasker release? This removes the current tasker but keeps the client payment receipt intact so a new tasker can claim this errand.');">
+                                            <input type="hidden" name="admin_process_cancellation_id" value="<?= $errand['id']; ?>">
+                                            <input type="hidden" name="cancellation_action" value="approve">
+                                            <button type="submit" class="btn-approve-release">
+                                                <i class="fa-solid fa-user-minus"></i> Approve
+                                            </button>
+                                        </form>
+
+                                        <form method="POST" onsubmit="return confirm('Deny tasker release? This forces the tasker to stay locked into the commitment.');">
+                                            <input type="hidden" name="admin_process_cancellation_id" value="<?= $errand['id']; ?>">
+                                            <input type="hidden" name="cancellation_action" value="reject">
+                                            <button type="submit" class="btn-deny-release">
+                                                <i class="fa-solid fa-user-check"></i> Deny
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
                         </div>
 
                         <div class="group-info-box">
@@ -375,6 +388,7 @@
                                 <input type="text" readonly value="<?= htmlspecialchars($errand['tasker_contact_number']); ?>">
                             </div>
                         </div>
+
                     <?php else: ?>
                         <div class="not-accepted-yet">
                             <p>Not Accepted Yet</p>

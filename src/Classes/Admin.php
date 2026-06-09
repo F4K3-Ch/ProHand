@@ -41,7 +41,7 @@
                 FROM errands AS e
                 LEFT JOIN users AS c ON e.client_id = c.id
                 LEFT JOIN users AS t ON e.tasker_id = t.id
-                WHERE e.status IN ('pending', 'accepted', 'in_process')
+                WHERE e.status IN ('pending', 'pending_payment', 'in_process')
                 AND (
                     e.id = ? 
                     OR e.title LIKE ? 
@@ -225,11 +225,11 @@
                 // For Dashboard: Tracking errands currently in the system
                 $sql = "SELECT 
                             IFNULL(SUM(status = 'pending'), 0) AS pending,
-                            IFNULL(SUM(status = 'accepted'), 0) AS accepted,
+                            IFNULL(SUM(status = 'pending_payment'), 0) AS pending_payment,
                             IFNULL(SUM(status = 'in_process'), 0) AS in_process,
                             COUNT(*) AS total
                         FROM errands
-                        WHERE status IN ('pending', 'accepted', 'in_process')";
+                        WHERE status IN ('pending', 'pending_payment', 'in_process')";
             } elseif ($type === 'history') {
                 // For Finished Errands: Tracking completed/failed and financial data
                 $sql = "SELECT 
@@ -270,7 +270,7 @@
             $data = ['user' => $user];
 
             if ($user['role'] === 'tasker') {
-                $stmt = $this->db->prepare("SELECT IFNULL(SUM(status = 'accepted'), 0) AS accepted, IFNULL(SUM(status = 'in_process'), 0) AS in_process, COUNT(*) AS total_active FROM errands WHERE tasker_id = ? AND status IN ('accepted', 'in_process')");
+                $stmt = $this->db->prepare("SELECT IFNULL(SUM(status = 'pending_payment'), 0) AS pending_payment, IFNULL(SUM(status = 'in_process'), 0) AS in_process, COUNT(*) AS total_active FROM errands WHERE tasker_id = ? AND status IN ('pending_payment', 'in_process')");
                 $stmt->bind_param("i", $user_id);
                 $stmt->execute();
                 $data['active'] = $stmt->get_result()->fetch_assoc();

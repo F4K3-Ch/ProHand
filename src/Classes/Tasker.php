@@ -178,16 +178,16 @@
                     FROM errands
                     WHERE status = 'pending'
                 ");
-            } elseif ($type === 'accepted') {
+            } elseif ($type === 'pending_payment') {
                 // Your Tasks: Accepted & In Processc  
                 $stmt = $this->db->prepare("
                     SELECT 
-                        IFNULL(SUM(status = 'accepted'), 0) AS accepted,
+                        IFNULL(SUM(status = 'pending_payment'), 0) AS pending_payment,
                         IFNULL(SUM(status = 'in_process'), 0) AS in_process,
                         COUNT(*) AS total
                     FROM errands 
                     WHERE tasker_id = ? 
-                    AND status IN ('accepted', 'in_process')
+                    AND status IN ('pending_payment', 'in_process')
                 ");
                 $stmt->bind_param("i", $tasker_id);
             } elseif ($type === 'history') {
@@ -229,7 +229,7 @@
                 AND (
                         e.status = 'pending'
                         OR (
-                            e.status IN ('accepted', 'in_process')
+                            e.status IN ('pending_payment', 'in_process')
                             AND e.tasker_id = ?
                         )
                     )
@@ -265,8 +265,8 @@
             if ($res->num_rows !== 1) return false;
             $errand = $res->fetch_assoc();
 
-            // 2. Update status to accepted
-            $update_stmt = $this->db->prepare("UPDATE errands SET status = 'accepted', tasker_id = ?, accepted_at = NOW(), updated_at = NOW() WHERE id = ? AND status = 'pending'");
+            // 2. Update status to pending_payment
+            $update_stmt = $this->db->prepare("UPDATE errands SET status = 'pending_payment', tasker_id = ?, accepted_at = NOW(), updated_at = NOW() WHERE id = ? AND status = 'pending'");
             $update_stmt->bind_param("ii", $tasker_id, $errand_id);
             $update_stmt->execute();
 
@@ -467,12 +467,12 @@
         }
 
         // Cancel Button
-        public function resetToPending($errand_id, $tasker_id) {
-            // 1. Verify that this errand belongs to the tasker and can be cancelled
+        public function flagCancellationRequest($errand_id, $tasker_id) {
+            // 1. Verify that this errand belongs to the tasker and is pending payment
             $check_stmt = $this->db->prepare("
                 SELECT title, client_id 
                 FROM errands 
-                WHERE id = ? AND tasker_id = ? AND status IN ('accepted', 'in_process') 
+                WHERE id = ? AND tasker_id = ? AND status = 'pending_payment' 
                 LIMIT 1
             ");
             $check_stmt->bind_param("ii", $errand_id, $tasker_id);
@@ -482,21 +482,18 @@
             if ($res->num_rows !== 1) return false;
             $errand = $res->fetch_assoc();
 
-            // 2. Reset the errand status and clear tasker-specific data
+            // 2. Set only the cancel flag column to 1
             $update_stmt = $this->db->prepare("
                 UPDATE errands
-                SET status = 'pending',
-                    tasker_id = NULL,
-                    accepted_at = NULL, 
-                    in_process_at = NULL,
+                SET cancel_requested_by_tasker = 1,
                     updated_at = NOW()
-                WHERE id = ? AND tasker_id = ? AND status IN ('accepted', 'in_process')
+                WHERE id = ? AND tasker_id = ? AND status = 'pending_payment'
             ");
             $update_stmt->bind_param("ii", $errand_id, $tasker_id);
             $update_stmt->execute();
 
             if ($update_stmt->affected_rows === 1) {
-                return $errand; // Return details for the Controller to use in notifications
+                return $errand;
             }
             
             return false;

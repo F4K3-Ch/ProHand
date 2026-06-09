@@ -35,6 +35,8 @@
         } elseif (isset($_POST['delete_history_id'])) {
             $_POST['id'] = $_POST['delete_history_id']; 
             $sharedController->handleDeleteHistory();
+        } elseif (isset($_POST['submit_payment_proof'])) {
+            $clientController->handlePaymentUpload();
         }
     }
 
@@ -246,22 +248,19 @@
                             <input type="hidden" name="delete_id" value="<?= $errand['id']; ?>">
                             <button type="submit" class="btn-delete">Delete</button>
                         </form>
-                    <?php elseif ($errand['status'] === 'accepted'): ?>
-                        <!-- Edit -->
-                        <form method="GET" action="edit_errand.php">
-                            <input type="hidden" name="errand_id" value="<?= $errand['id']; ?>">
-                            <button type="submit" class="btn-edit-errand">Edit</button>
-                        </form>
-                        <!-- Cancel -->
+                    <?php elseif ($errand['status'] === 'pending_payment'): ?>
+                        <!-- Edit Button Disabled-->
+                        <button disabled class="btn-edit-errand-disabled">Edit</button>
+                        <!-- Cancel Button-->
                         <form method="POST"
                             onsubmit="return confirm('Are you sure you want to cancel this errand? It will return to Pending.');">
                             <input type="hidden" name="cancel_accepted_id" value="<?= $errand['id']; ?>">
                             <button type="submit" class="btn-cancel">Cancel</button>
                         </form>
                     <?php elseif ($errand['status'] === 'in_process'): ?>
-                        <!-- Delete Button Disabled-->
+                        <!-- Edit Button Disabled-->
                         <button disabled class="btn-edit-errand-disabled">Edit</button>
-                        <!-- Delete Button Disabled-->
+                        <!-- Cancel Button Disabled-->
                         <button disabled class="btn-cancel-disabled">Cancel</button>
                     <?php elseif (in_array($errand['status'], ['completed', 'failed'])): ?>
                         <!-- Delete Button -->
@@ -273,7 +272,7 @@
                 </div>
             </div>
 
-            <?php if (in_array($errand['status'], ['accepted', 'in_process', 'completed', 'failed'])): ?>
+            <?php if (in_array($errand['status'], ['pending_payment', 'in_process', 'completed', 'failed'])): ?>
                 <!-- Users Details -->
                 <div class="users-container">
                     <!-- Tasker Details Container -->
@@ -314,8 +313,7 @@
                     <div class="user-details-container">
                         <h1>Secure Payment</h1>
 
-                        <?php if ($errand['status'] === 'accepted' && empty($errand['payment_receipt_path'])): ?>
-                            
+                        <?php if ($errand['status'] === 'pending_payment' && empty($errand['payment_receipt_path'])): ?>
                             <div class="info-box alert-box alert-blue payment-instruction-wrapper">
                                 <div class="payment-qr-frame">
                                     <img src="../../public/assets/images/gcash-qr.png" alt="GCash Merchant QR Code" class="payment-qr-img">
@@ -327,7 +325,7 @@
                                         Scan the QR code or send the exact amount of <strong>₱<?= number_format($errand['fee'], 2); ?></strong> to our business wallet to securely lock in your tasker:
                                     </p>
                                     <p class="merchant-number">
-                                        <i class="fa-solid fa-mobile-screen"></i> 0912-345-6789
+                                        <i class="fa-solid fa-mobile-screen"></i> 0994-221-5875
                                     </p>
                                     <span class="qr-hint-text"><i class="fa-solid fa-qrcode"></i> Tip: Save QR to gallery to scan via GCash App</span>
                                 </div>
@@ -347,47 +345,36 @@
                                 </button>
                             </form>
 
-                        <?php elseif ($errand['status'] === 'accepted' && !empty($errand['payment_receipt_path'])): ?>
-                            
-                            <div class="info-box transaction-status-box">
-                                <i class="fa-solid fa-circle-notch fa-spin status-icon-orange"></i>
-                                <label class="status-label-orange">Awaiting Verification</label>
-                                <p class="status-description-text">
-                                    Your payment receipt details are currently being cross-referenced by an administrator.
+                        <?php elseif ($errand['status'] === 'pending_payment' && !empty($errand['payment_receipt_path'])): ?>
+                            <div class="payment-verification-panel">
+                                <div class="payment-status-header">
+                                    <i class="fa-solid fa-clock-rotate-left fa-spin fa-spin-reverse status-icon-orange"></i>
+                                    <h2 class="status-title-orange">Pending Admin Verification</h2>
+                                </div>
+
+                                <p class="payment-status-message">
+                                    <strong>Pending. Please wait until the admin checks your uploaded receipt.</strong> 
+                                    Once verified, your tasker will be notified immediately to start your errand.
                                 </p>
-                                
-                                <div class="info-box tracking-attachment-box">
-                                    <label>Your Submitted File</label>
-                                    <a href="../../public/uploads/receipts/<?= basename($errand['payment_receipt_path']); ?>" target="_blank" class="receipt-preview-link">
-                                        <i class="fa-solid fa-image"></i> View Receipt Screenshot
-                                    </a>
+
+                                <div class="payment-receipt-section">
+                                    <span class="receipt-section-label">Your Uploaded Receipt</span>
+                                    
+                                    <div class="attachment-item">
+                                        <a href="../../public/uploads/receipts/<?= basename($errand['payment_receipt_path']); ?>" target="_blank" class="attachment-name">
+                                            <i class="fa-solid fa-file-invoice-dollar"></i> View Submitted Screenshot
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
-
                         <?php else: ?>
                             <div class="info-box transaction-status-box">
-                                <?php if ($errand['status'] === 'in_process'): ?>
-                                    <i class="fa-solid fa-circle-check status-icon-green"></i>
-                                    <label class="status-label-green">Payment Verified</label>
-                                    <p class="status-description-text">
-                                        Funds are held securely by the platform escrow. The tasker is authorized to perform your errand.
-                                    </p>
-                                <?php else: ?>
-                                    <i class="fa-solid fa-box-archive status-icon-muted"></i>
-                                    <label class="status-label-muted">Transaction Closed</label>
-                                    <p class="status-description-text">
-                                        This transaction record has been completed and permanently finalized.
-                                    </p>
-                                <?php endif; ?>
-
-                                <div class="info-box tracking-attachment-box">
-                                    <label>Archived Payment Proof</label>
-                                    <a href="../../public/uploads/receipts/<?= basename($errand['payment_receipt_path']); ?>" target="_blank" class="receipt-archive-link">
-                                        <i class="fa-solid fa-file-invoice-dollar"></i> View Archive Receipt
-                                    </a>
-                                </div>
+                                <i class="fa-solid fa-info-circle status-icon-muted"></i>
+                                <label class="status-label-muted">Current Errand Status</label>
+                                <p class="status-description-text">
+                                    Current status: <strong><?= htmlspecialchars($errand['status']); ?></strong>
+                                </p>
                             </div>
-
                         <?php endif; ?>
                     </div>
                 </div>

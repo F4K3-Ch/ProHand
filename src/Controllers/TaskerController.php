@@ -46,12 +46,12 @@
                 'tasks'           => $errands,
                 'search'          => $search,
                 'status_counts'   => [
-                    'accepted'   => $metrics['accepted'] ?? 0,
+                    'pending_payment'   => $metrics['pending_payment'] ?? 0,
                     'in_process' => $metrics['in_process'] ?? 0
                 ],
                 'total_errands'   => $metrics['total'] ?? 0,
                 'status_labels'   => [
-                    'accepted'   => 'Accepted',
+                    'pending_payment'   => 'Pending Payment',
                     'in_process' => 'In Process'
                 ]
             ];
@@ -103,7 +103,7 @@
             if ($status_res->num_rows !== 1) return null;
             
             $status = $status_res->fetch_assoc()['status'];
-            $is_active = in_array($status, ['pending', 'accepted', 'in_process']);
+            $is_active = in_array($status, ['pending', 'pending_payment', 'in_process']);
             $is_finished = in_array($status, ['completed', 'failed']);
 
             if ($is_active) {
@@ -137,7 +137,7 @@
                 'is_finished' => $is_finished,
                 'back_url' => $back_url,
                 'status_labels' => [
-                    'pending' => 'Pending', 'accepted' => 'Accepted', 
+                    'pending' => 'Pending', 'pending_payment' => 'Pending Payment', 
                     'in_process' => 'In Process', 'completed' => 'Completed', 'failed' => 'Failed'
                 ]
             ];
@@ -164,13 +164,13 @@
 
                     $notif_type = "errand";
 
-                    // 3. Notify Client (Your original detailed format)
-                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was \"Accepted\" by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+                    // 3. Notify Client (Prompting them to pay now)
+                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was \"Accepted\" by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Please settle your payment upload to begin the task.";
                     $client_link = "../client/view_errand_info.php?errand_id={$errand_id}";
                     $this->user->addNotification($client_id, $notif_type, $client_msg, $client_link);
 
-                    // 4. Notify all Admins (Your original detailed format with all IDs)
-                    $admin_msg = "Errand Accepted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+                    // 4. Notify all Admins (Alerting them to expect a payment upload verification review)
+                    $admin_msg = "Errand Accepted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Awaiting payment verification step.";
                     $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
                     $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
                     
@@ -271,41 +271,33 @@
         }
 
         // Cancel Button
-        public function cancelErrand() {
+        public function requestCancellation() {
             $this->auth->restrictTo('tasker');
             $tasker_id = $_SESSION['user_id'];
             
             if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
                 $errand_id = (int)$_POST['id'];
                 
-                // 1. Update database (Resets to pending, clears tasker_id and timestamps)
-                $data = $this->tasker->resetToPending($errand_id, $tasker_id);
+                // 💡 Call model with just the two basic identification IDs
+                $data = $this->tasker->flagCancellationRequest($errand_id, $tasker_id);
 
                 if ($data) {
                     $errand_title = $data['title'];
                     $client_id = (int)$data['client_id'];
-
-                    // 2. Fetch names for consistency
                     $tasker_full_name = $this->user->getFullName($tasker_id);
-                    $client_full_name = $this->user->getFullName($client_id);
 
                     $notif_type = "errand";
 
-                    // 3. Notify Client
-                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was \"Cancelled\" by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
-                    $client_link = "../client/view_errand_info.php?errand_id=$errand_id";
-                    $this->user->addNotification($client_id, $notif_type, $client_msg, $client_link);
-
-                    // 4. Notify Admins
-                    $admin_msg = "Errand Cancelled | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Cancelled by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+                    // Notify Admins about the incoming flag request
+                    $admin_msg = "Cancellation Requested | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Assigned Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) has requested a drop.";
                     $admin_link = "../admin/view_errand_info.php?errand_id=$errand_id";
                     $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
 
-                    $_SESSION['success'] = "You cancelled Errand: \"{$errand_title}\" (ID: {$errand_id}).";
-                    header("Location: tasker_dashboard.php");
+                    $_SESSION['success'] = "Cancellation request submitted to Admin.";
+                    header("Location: view_errand_info.php?errand_id=$errand_id");
                     exit;
                 } else {
-                    $_SESSION['error'] = "You are not authorized to cancel this errand or it is in an invalid status.";
+                    $_SESSION['error'] = "Unable to process request.";
                     header("Location: tasker_dashboard.php");
                     exit;
                 }

@@ -27,13 +27,13 @@
                 'search'          => $search,
                 'status_counts'   => [
                     'pending'    => $metrics['pending'] ?? 0,
-                    'accepted'   => $metrics['accepted'] ?? 0,
+                    'pending_payment'   => $metrics['pending_payment'] ?? 0,
                     'in_process' => $metrics['in_process'] ?? 0
                 ],
                 'total_errands'   => $metrics['total'] ?? 0,
                 'status_labels'   => [
                     'pending'    => 'Pending',
-                    'accepted'   => 'Accepted',
+                    'pending_payment'   => 'Pending Payment',
                     'in_process' => 'In Process'
                 ]
             ];
@@ -85,7 +85,7 @@
             if ($status_res->num_rows !== 1) return null;
             
             $status = $status_res->fetch_assoc()['status'];
-            $is_active = in_array($status, ['pending', 'accepted', 'in_process']);
+            $is_active = in_array($status, ['pending', 'pending_payment', 'in_process']);
             $is_finished = in_array($status, ['completed', 'failed']);
 
             if ($is_active) {
@@ -128,7 +128,7 @@
                 'back_url'           => $back_url,
                 'status_labels'      => [
                     'pending'    => 'Pending', 
-                    'accepted'   => 'Accepted', 
+                    'pending_payment'   => 'Pending Payment', 
                     'in_process' => 'In Process', 
                     'completed'  => 'Completed', 
                     'failed'     => 'Failed'
@@ -275,27 +275,6 @@
                     }
                 }
 
-                // 4. Notification Logic (Using your existing functions)
-                $tasker = $this->client->getAssignedTasker($errand_id);
-                if ($tasker) {
-                    $tasker_id = (int)$tasker['id'];
-                    $tasker_full_name = $tasker['first_name'] . ' ' . $tasker['last_name'];
-                    $title = $data['title'];
-                    
-                    // Get client name for the message
-                    $client_full_name = $_SESSION['user_full_name'] ?? "A Client"; 
-
-                    // Notify Tasker
-                    $msg_tasker = "The Client: \"{$client_full_name}\" (ID: {$client_id}) has Edited the details of your assigned Errand: \"{$title}\" (ID: {$errand_id}).";
-                    $link_tasker = "../tasker/view_errand_info.php?errand_id={$errand_id}";
-                    $this->client->addNotification($tasker_id, "errand", $msg_tasker, $link_tasker);
-
-                    // Notify Admins (Using your existing notifyAllAdmins function)
-                    $msg_admin = "Errand Edited | Errand: \"{$title}\" (ID: {$errand_id}) | Assigned to Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Edited by Client: \"{$client_full_name}\" (ID: {$client_id}).";
-                    $link_admin = "../admin/view_errand_info.php?errand_id={$errand_id}";
-                    $this->client->notifyAllAdmins("errand", $msg_admin, $link_admin);
-                }
-
                 $_SESSION['success'] = "Errand updated successfully!";
                 header("Location: view_errand_info.php?errand_id=$errand_id");
                 exit;
@@ -344,9 +323,9 @@
                 $errand_title = $this->client->cancelAcceptedErrand($errand_id, $client_id);
 
                 if ($errand_title) {
-                    $_SESSION['success'] = "You successfully cancelled Errand: \"{$errand_title}\" (ID: {$errand_id}). The tasker has been notified.";
+                    $_SESSION['success'] = "You successfully cancelled Errand: \"{$errand_title}\" (ID: {$errand_id}). The admin and tasker has been notified.";
                 } else {
-                    $_SESSION['error'] = "Failed to cancel Errand (ID: {$errand_id}). It may no longer be in 'accepted' status.";
+                    $_SESSION['error'] = "Failed to cancel Errand (ID: {$errand_id}). It may no longer be in 'Pending Payment' status.";
                 }
             } else {
                 $_SESSION['error'] = "Invalid request.";
@@ -354,5 +333,80 @@
 
             header("Location: client_dashboard.php");
             exit;
+        }
+
+        public function handlePaymentUpload() {
+            // 1. Enforce authentication rules
+            $this->auth->restrictTo('client');
+            $client_id = $_SESSION['user_id'];
+
+            // 2. Intercept the specific POST form submit trigger
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_payment_proof'])) {
+                $errand_id = (int)$_POST['errand_id'];
+                
+                // 3. Structural validation of the upload array
+                if (!isset($_FILES['gcash_receipt']) || $_FILES['gcash_receipt']['error'] !== UPLOAD_ERR_OK) {
+                    $_SESSION['error'] = "File upload failed. Please try capturing or uploading the screenshot again.";
+                    header("Location: view_errand_info.php?errand_id=" . $errand_id);
+                    exit;
+                }
+
+                $file = $_FILES['gcash_receipt'];
+                
+                // 4. File Size Constraint Validation (10 MB Maximum limit)
+                $max_size = 10 * 1024 * 1024; // 10 Megabytes in Bytes
+                if ($file['size'] > $max_size) {
+                    $_SESSION['error'] = "The file is too large. Maximum allowed size is 10 MB.";
+                    header("Location: view_errand_info.php?errand_id=" . $errand_id);
+                    exit;
+                }
+
+                // 5. Explicit Extension Check
+                $filename = $file['name'];
+                $file_ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                $allowed_extensions = ['png', 'jpg', 'jpeg'];
+
+                if (!in_array($file_ext, $allowed_extensions)) {
+                    $_SESSION['error'] = "Invalid file type. Only PNG, JPG, and JPEG screenshots are permitted.";
+                    header("Location: view_errand_info.php?errand_id=" . $errand_id);
+                    exit;
+                }
+
+                // 6. Define Target Directory Structure
+                $upload_dir = '../../public/uploads/receipts/';
+                
+                // Safety lock: Automatically generate directory recursively if missing
+                if (!is_dir($upload_dir)) {
+                    mkdir($upload_dir, 0755, true);
+                }
+
+                // 7. Sanitize filename to prevent directory traversal exploits
+                // Formats filename securely: receipt_[ERRAND_ID]_[TIMESTAMP].[EXTENSION]
+                $new_filename = "receipt_" . $errand_id . "_" . time() . "." . $file_ext;
+                $target_filepath = $upload_dir . $new_filename;
+
+                // 8. Move file out of temporary system memory to permanent storage
+                if (move_uploaded_file($file['tmp_name'], $target_filepath)) {
+                    
+                    // 9. Send the sanitized filename path string directly to the model query
+                    $db_save_path = "uploads/receipts/" . $new_filename;
+                    $success = $this->client->submitPaymentReceipt($errand_id, $db_save_path);
+
+                    if ($success) {
+                        $_SESSION['success'] = "Payment proof submitted successfully! Awaiting admin verification.";
+                    } else {
+                        // Garbage Collection: Delete uploaded file if the database query fails
+                        if (file_exists($target_filepath)) {
+                            unlink($target_filepath);
+                        }
+                        $_SESSION['error'] = "Database sync failed. Please attempt upload procedures again.";
+                    }
+                } else {
+                    $_SESSION['error'] = "Failed to write file image to folder directory permissions.";
+                }
+
+                header("Location: view_errand_info.php?errand_id=" . $errand_id);
+                exit;
+            }
         }
     }

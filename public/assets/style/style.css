@@ -1137,7 +1137,7 @@ body {
     color: #facc15;                               
 }
 
-.status-accepted {
+.status-pending_payment {
     background-color: rgba(59, 130, 246, 0.15);  
     color: #3b82f6;     
 }
@@ -1458,16 +1458,16 @@ body {
 .admin-errands-table td:nth-child(4) { width: 11%; }
 
 .admin-errands-table th:nth-child(5),
-.admin-errands-table td:nth-child(5) { width: 17%; }
+.admin-errands-table td:nth-child(5) { width: 15%; }
 
 .admin-errands-table th:nth-child(6),
-.admin-errands-table td:nth-child(6) { width: 17%; }
+.admin-errands-table td:nth-child(6) { width: 15%; }
 
 .admin-errands-table th:nth-child(7),
 .admin-errands-table td:nth-child(7) { width: 7%; }
 
 .admin-errands-table th:nth-child(8),
-.admin-errands-table td:nth-child(8) { width: 8%; }
+.admin-errands-table td:nth-child(8) { width: 12%; }
 
 .admin-errands-table th:nth-child(9),
 .admin-errands-table td:nth-child(9) { 
@@ -1483,7 +1483,7 @@ body {
 .tasker-errands-table td:nth-child(2) { width: 10%; }
 
 .tasker-errands-table th:nth-child(3),
-.tasker-errands-table td:nth-child(3) { width: 22%; }
+.tasker-errands-table td:nth-child(3) { width: 15%; }
 
 .tasker-errands-table th:nth-child(4),
 .tasker-errands-table td:nth-child(4) { width: 17%; }
@@ -1492,10 +1492,10 @@ body {
 .tasker-errands-table td:nth-child(5) { width: 17%; }
 
 .tasker-errands-table th:nth-child(6),
-.tasker-errands-table td:nth-child(6) { width: 7%; }
+.tasker-errands-table td:nth-child(6) { width: 8%; }
 
 .tasker-errands-table th:nth-child(7),
-.tasker-errands-table td:nth-child(7) { width: 8%;}
+.tasker-errands-table td:nth-child(7) { width: 14%;}
 
 .tasker-errands-table th:nth-child(8),
 .tasker-errands-table td:nth-child(8) { 
@@ -1511,7 +1511,7 @@ body {
 .client-errands-table td:nth-child(2) { width: 10%; }
 
 .client-errands-table th:nth-child(3),
-.client-errands-table td:nth-child(3) { width: 22%; }
+.client-errands-table td:nth-child(3) { width: 15%; }
 
 .client-errands-table th:nth-child(4),
 .client-errands-table td:nth-child(4) { width: 17%; }
@@ -1520,10 +1520,10 @@ body {
 .client-errands-table td:nth-child(5) { width: 17%; }
 
 .client-errands-table th:nth-child(6),
-.client-errands-table td:nth-child(6) { width: 7%; }
+.client-errands-table td:nth-child(6) { width: 8%; }
 
 .client-errands-table th:nth-child(7),
-.client-errands-table td:nth-child(7) { width: 8%; }
+.client-errands-table td:nth-child(7) { width: 14%; }
 
 .client-errands-table th:nth-child(8),
 .client-errands-table td:nth-child(8) { 
@@ -2487,6 +2487,89 @@ select[name="role"] option[value="client"] {
     min-width: 200px;
 }
 
+/* Flex container for profile photo and buttons side-by-side */
+.tasker-header-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+    margin-bottom: 15px;
+    flex-wrap: wrap; /* Wraps cleanly on tiny mobile screens */
+}
+
+/* Ensure the alert box scales nicely inside the flex row context */
+.tasker-cancellation-alert-box {
+    flex: 1;
+    min-width: 180px;
+    border: 1px dashed #e74c3c;
+    padding: 12px;
+    border-radius: 6px;
+    background-color: rgba(231, 76, 60, 0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Maintain clean top/bottom margins on text */
+.tasker-cancellation-alert-box .alert-title {
+    color: #c0392b;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: center;
+}
+
+/* Grid/Flex for layout control */
+.alert-action-buttons {
+    display: flex;
+    flex-direction: column; /* Stack buttons vertically next to the picture */
+    gap: 6px;
+    width: 100%;
+}
+
+.alert-action-buttons form {
+    width: 100%;
+}
+
+/* Individual Utility Button Settings */
+.btn-approve-release, 
+.btn-deny-release {
+    width: 100%;
+    padding: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: background 0.2s ease;
+}
+
+.btn-approve-release {
+    background-color: #e67e22;
+    color: #ffffff;
+}
+
+.btn-approve-release:hover {
+    background-color: #d35400;
+}
+
+.btn-deny-release {
+    background-color: #e74c3c;
+    color: #ffffff;
+}
+
+.btn-deny-release:hover {
+    background-color: #c0392b;
+}
+
 .payment-instruction-wrapper {
     display: flex;
     flex-direction: row;
@@ -2595,65 +2678,6 @@ select[name="role"] option[value="client"] {
     width: 100%;
 }
 
-/* Color Rules: Processing / Pending Orange State */
-.status-icon-orange {
-    font-size: 2rem;
-    color: #e67e22;
-}
-
-.status-label-orange {
-    text-align: center;
-    color: #e67e22;
-    font-size: 1rem;
-}
-
-/* Color Rules: Verified Green State */
-.status-icon-green {
-    font-size: 2rem;
-    color: #2ecc71;
-}
-
-.status-label-green {
-    text-align: center;
-    color: #2ecc71;
-    font-size: 1rem;
-}
-
-/* Color Rules: Closed Muted Gray State */
-.status-icon-muted {
-    font-size: 2rem;
-    color: var(--color-sec-text);
-}
-
-.status-label-muted {
-    text-align: center;
-    color: var(--color-text);
-    font-size: 1rem;
-}
-
-.receipt-preview-link {
-    color: #3498db;
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-decoration: none;
-    padding: 6px;
-    border: 1px dashed var(--color-border);
-    border-radius: 4px;
-    text-align: center;
-    background: rgba(0, 0, 0, 0.02);
-}
-
-.receipt-archive-link {
-    color: var(--color-sec-text);
-    font-size: 0.85rem;
-    text-decoration: none;
-    padding: 6px;
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    text-align: center;
-}
-
-
 /* Text Area */
 .info-box textarea {
     background-color: var(--color-card-bg);
@@ -2681,7 +2705,7 @@ select[name="role"] option[value="client"] {
     border-color: rgba(250, 204, 21, 0.3);
 }
 
-.info-box input.status-input-field.status-accepted[readonly] {
+.info-box input.status-input-field.status-pending_payment[readonly] {
     background-color: rgba(59, 130, 246, 0.15);  
     color: #3b82f6;     
     border-color: rgba(59, 130, 246, 0.3);
@@ -2833,7 +2857,7 @@ select[name="role"] option[value="client"] {
     width: 100%;
 }
 
-.info-bot-btn .admin-status-badge {
+.info-bot-btn .descriptive-status-badge {
     background-color: #F59E0B;
     color: #ffffff;
     padding: 10px;
@@ -2900,6 +2924,64 @@ select[name="role"] option[value="client"] {
 .info-bot-btn select option[value="failed"] {
     background-color: rgba(220, 38, 38, 0.15); 
     color: #dc2626;          
+}
+
+/* Container Panel layout configuration */
+.payment-verification-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+/* Header row layout setup */
+.payment-status-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Spinning clock icon size rules */
+.status-icon-orange {
+    color: #f39c12;
+    font-size: 1.5rem;
+}
+
+/* Status Title size rules */
+.status-title-orange {
+    color: #f39c12;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin: 20px;
+}
+
+.payment-status-message {
+    color: var(--color-text);
+    font-size: 1rem;
+}
+
+/* Section lower boundary line layout rules */
+.payment-receipt-section {
+    border-top: 1px solid var(--color-border);
+    text-align: left;
+    width: 100%;
+    margin-top: 30px;
+}
+
+/* Section title font style rules */
+.receipt-section-label {
+    display: flex;
+    font-size: 0.9rem;
+    color: var(--color-text);
+    font-weight: 600;
+    margin-top: 20px;
+}
+
+/* Push down the attachment item container underneath the title span */
+.payment-receipt-section .attachment-item {
+    margin-top: 10px;
 }
 
 /* Title */

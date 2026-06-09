@@ -11,9 +11,9 @@
     $taskerController = new TaskerController($db);
 
     // Handle "Cancel" POST
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_id'])) {
-        $_POST['id'] = $_POST['cancel_id']; 
-        $taskerController->cancelErrand();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $_POST['id'] = $_POST['request_cancel_id'];
+        $taskerController->requestCancellation();
     }
 
     // Get data from OOP Controller 
@@ -94,9 +94,9 @@
                         <div class="total-card bg-accepted">
                             <div class="card-header">
                                 <span class="status-circle circle-accepted"></span>
-                                <h3>Accepted</h3>
+                                <h3>Pending Payment</h3>
                             </div>
-                            <p><?= number_format($status_counts['accepted']); ?></p>
+                            <p><?= number_format($status_counts['pending_payment']); ?></p>
                         </div>
 
                         <div class="total-card bg-process">
@@ -157,8 +157,8 @@
 
                                             <!-- Cancel Button -->
                                             <form method="POST">
-                                                <input type="hidden" name="cancel_id" value="<?= $row['id']; ?>">
-                                                <button type="submit" class="btn-cancel" onclick="return confirm('Are you sure you want to cancel this errand?');">
+                                                <input type="hidden" name="request_cancel_id" value="<?= $row['id']; ?>">
+                                                <button type="submit" name="submit_cancel_request" class="btn-cancel" onclick="return confirm('The client has already paid. This will send a request to the Admin to release you from this errand. Proceed?');">
                                                     Cancel
                                                 </button>
                                             </form>

@@ -26,13 +26,13 @@
                 'search'         => $search,
                 'status_counts'  => [
                     'pending'    => $metrics['pending'],
-                    'accepted'   => $metrics['accepted'],
+                    'pending_payment'   => $metrics['pending_payment'],
                     'in_process' => $metrics['in_process']
                 ],
                 'total_errands'  => $metrics['total'],
                 'status_labels'  => [
                     'pending' => 'Pending', 
-                    'accepted' => 'Accepted', 
+                    'pending_payment' => 'Pending Payment', 
                     'in_process' => 'In Process'
                 ]
             ];
@@ -107,7 +107,7 @@
             if ($status_res->num_rows !== 1) return null;
             
             $status = $status_res->fetch_assoc()['status'];
-            $is_active = in_array($status, ['pending', 'accepted', 'in_process']);
+            $is_active = in_array($status, ['pending', 'pending_payment', 'in_process']);
             $is_finished = in_array($status, ['completed', 'failed']);
 
             if ($is_active) {
@@ -149,7 +149,7 @@
                 'is_finished' => $is_finished,
                 'back_url' => $back_url,
                 'status_labels' => [
-                    'pending' => 'Pending', 'accepted' => 'Accepted', 
+                    'pending' => 'Pending', 'pending_payment' => 'Pending Payment', 
                     'in_process' => 'In Process', 'completed' => 'Completed', 'failed' => 'Failed'
                 ]
             ];

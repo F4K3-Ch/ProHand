@@ -84,6 +84,7 @@ CREATE TABLE IF NOT EXISTS history (
     fee DECIMAL(10,2) DEFAULT 0.00,
     status ENUM('completed','failed') NOT NULL,
     payment_receipt_path VARCHAR(255) NULL DEFAULT NULL, 
+    cancel_requested_by_tasker TINYINT(1) DEFAULT 0 COMMENT '0 = normal, 1 = tasker wants to cancel',
 
     client_id INT,
     client_last_name VARCHAR(50),

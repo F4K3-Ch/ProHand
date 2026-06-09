@@ -110,9 +110,9 @@
                         <div class="total-card bg-accepted">
                             <div class="card-header">
                                 <span class="status-circle circle-accepted"></span>
-                                <h3>Accepted</h3>
+                                <h3>Pending Payment</h3>
                             </div>
-                            <p><?= number_format($status_counts['accepted']); ?></p>
+                            <p><?= number_format($status_counts['pending_payment']); ?></p>
                         </div>
                         <div class="total-card bg-process">
                             <div class="card-header">
@@ -174,7 +174,7 @@
                                                     <input type="hidden" name="delete_id" value="<?= $row['id']; ?>">
                                                     <button type="submit" class="btn-delete">Delete</button>
                                                 </form>
-                                            <?php elseif ($row['status'] === 'accepted'): ?>
+                                            <?php elseif ($row['status'] === 'pending_payment'): ?>
                                                 <!-- Cancel Button -->
                                                 <form method="POST" onsubmit="return confirm('Are you sure you want to cancel this errand? It will be return to Pending.');">
                                                     <input type="hidden" name="cancel_accepted_id" value="<?= $row['id']; ?>">

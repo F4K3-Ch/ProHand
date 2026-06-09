@@ -121,12 +121,12 @@
                 $stmt = $this->db->prepare("
                     SELECT 
                         IFNULL(SUM(status = 'pending'), 0) AS pending,
-                        IFNULL(SUM(status = 'accepted'), 0) AS accepted,
+                        IFNULL(SUM(status = 'pending_payment'), 0) AS pending_payment,
                         IFNULL(SUM(status = 'in_process'), 0) AS in_process,
                         COUNT(*) AS total
                     FROM errands
                     WHERE client_id = ? 
-                    AND status IN ('pending', 'accepted', 'in_process')
+                    AND status IN ('pending', 'pending_payment', 'in_process')
                 ");
             } elseif ($type === 'history') {
                 // History: Metrics for finished errands
@@ -165,7 +165,7 @@
                 LEFT JOIN users AS t ON e.tasker_id = t.id
                 WHERE e.id = ? 
                 AND e.client_id = ?
-                AND e.status IN ('pending', 'accepted', 'in_process')
+                AND e.status IN ('pending', 'pending_payment', 'in_process')
                 LIMIT 1
             ");
             $stmt->bind_param("ii", $errand_id, $client_id);
@@ -256,14 +256,6 @@
             return $stmt->execute();
         }
 
-        // edit_errand.php
-        public function getAssignedTasker($errand_id) {
-            $stmt = $this->db->prepare("SELECT u.id, u.first_name, u.last_name FROM errands e JOIN users u ON e.tasker_id = u.id WHERE e.id = ?");
-            $stmt->bind_param("i", $errand_id);
-            $stmt->execute();
-            return $stmt->get_result()->fetch_assoc();
-        }
-
         public function deletePendingErrand($errand_id, $client_id) {
             // 1. Verify ownership and get title
             $stmt = $this->db->prepare("SELECT id, title FROM errands WHERE id = ? AND client_id = ? LIMIT 1");
@@ -292,11 +284,11 @@
         }
 
         public function cancelAcceptedErrand($errand_id, $client_id) {
-            // 1. Verify ownership and 'accepted' status
+            // 1. Verify ownership, 'pending_payment' status, and grab the receipt path
             $check_stmt = $this->db->prepare("
-                SELECT title, tasker_id 
+                SELECT title, tasker_id, payment_receipt_path 
                 FROM errands 
-                WHERE id = ? AND client_id = ? AND status = 'accepted' 
+                WHERE id = ? AND client_id = ? AND status = 'pending_payment' 
                 LIMIT 1
             ");
             $check_stmt->bind_param("ii", $errand_id, $client_id);
@@ -304,29 +296,40 @@
             $check_result = $check_stmt->get_result();
 
             if ($check_result->num_rows !== 1) {
-                return false; // Return false instead of an array
+                return false; 
             }
 
             $row = $check_result->fetch_assoc();
             $errand_title = $row['title'];
             $tasker_id = $row['tasker_id'];
+            $receipt_path = $row['payment_receipt_path'];
 
-            // 2. Reset the errand back to pending
+            // 2. Physical File Cleanup: Delete image from server if it exists
+            if (!empty($receipt_path)) {
+                $full_path = "../../public/" . $receipt_path;
+                if (file_exists($full_path)) {
+                    unlink($full_path); 
+                }
+            }
+
+            // 3. Reset the errand back to pending, clear paths, and clear tasker cancel flags
             $update_stmt = $this->db->prepare("
                 UPDATE errands 
                 SET status = 'pending', 
                     tasker_id = NULL, 
+                    payment_receipt_path = NULL,
+                    cancel_requested_by_tasker = 0, 
                     accepted_at = NULL, 
                     in_process_at = NULL, 
                     updated_at = NOW() 
-                WHERE id = ? AND client_id = ? AND status = 'accepted' 
+                WHERE id = ? AND client_id = ? AND status = 'pending_payment' 
                 LIMIT 1
             ");
             $update_stmt->bind_param("ii", $errand_id, $client_id);
             $update_stmt->execute();
 
             if ($update_stmt->affected_rows === 1) {
-                // 3. Handle Notifications
+                // 4. Handle Notifications
                 $client_full_name = $this->getFullName($client_id);
                 
                 $tasker_full_name = "N/A";
@@ -337,13 +340,29 @@
                     $this->addNotification($tasker_id, "errand", $tasker_msg, $tasker_link);
                 }
 
-                $admin_msg = "Errand Cancelled | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Previously Assigned to Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Cancelled by Client: \"{$client_full_name}\" (ID: {$client_id}).";
+                $admin_msg = "Errand Cancelled | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Previously Assigned to Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Cancelled by Client: \"{$client_full_name}\" (ID: {$client_id}). Receipt data cleared.";
                 $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
                 $this->notifyAllAdmins("errand", $admin_msg, $admin_link);
 
-                return $errand_title; // Return title on success
+                return $errand_title; 
             }
 
-            return false; // Return false on failure
+            return false; 
+        }
+
+        public function submitPaymentReceipt($errand_id, $receipt_path) {
+            $query = "UPDATE errands 
+                    SET payment_receipt_path = ?, updated_at = NOW() 
+                    WHERE id = ? AND status = 'pending_payment'";
+                    
+            $stmt = $this->db->prepare($query);
+            if (!$stmt) {
+                return false;
+            }
+            
+            $stmt->bind_param("si", $receipt_path, $errand_id);
+            $stmt->execute();
+            
+            return $stmt->affected_rows === 1;
         }
     }
