@@ -1388,6 +1388,7 @@ body {
 .btn-delete-all {
     background-color: #EF4444;
     transition: all 0.2s ease;
+    gap: 5px;
 }
 
 .btn-delete:hover,
@@ -1401,11 +1402,13 @@ body {
     color: #9CA3AF;
     cursor: not-allowed;
     opacity: 0.7;
+    gap: 5px;
 }
 
 .btn-cancel {
     background-color: #6B7280;
     transition: all 0.2s ease;
+    gap: 5px;
 }
 
 .btn-cancel:hover {
@@ -1415,6 +1418,7 @@ body {
 .btn-accept {
     background-color: #28a745;
     transition: all 0.2s ease;
+    gap: 5px;
 }
 
 .btn-accept:hover {
@@ -1853,7 +1857,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 10px;
+    padding: 10px 5px;
     border-radius: 6px;
     font-size: 0.9rem;
     font-weight: 500;
@@ -1866,6 +1870,7 @@ body {
 .btn-edit-profile {
     background-color: #3B82F6;
     transition: all 0.2s ease;
+    gap: 5px;
 }
 
 .btn-edit-profile:hover {
@@ -1876,6 +1881,7 @@ body {
 .btn-reject {
     background-color: #EF4444;
     transition: all 0.2s ease;
+    gap: 5px;
 }
 
 .btn-delete-account:hover,
@@ -1887,6 +1893,7 @@ body {
 .btn-approve {
     background-color: #28a745;
     transition: all 0.2s ease;
+    gap: 5px;
 }
 
 .btn-update-profile:hover,
@@ -1898,6 +1905,7 @@ body {
 .btn-reset-password {
     background-color: var(--color-btn-bg);
     transition: all 0.2s ease;
+    gap: 5px;
 }
 
 .btn-change-password:hover,
@@ -2554,7 +2562,8 @@ select[name="role"] option[value="client"] {
 
 .btn-approve-release {
     background-color: #e67e22;
-    color: #ffffff;
+    color: var(--color-btn-text);
+    gap: 5px;
 }
 
 .btn-approve-release:hover {
@@ -2563,7 +2572,8 @@ select[name="role"] option[value="client"] {
 
 .btn-deny-release {
     background-color: #e74c3c;
-    color: #ffffff;
+    color: var(--color-btn-text);
+    gap: 5px;
 }
 
 .btn-deny-release:hover {
@@ -2832,7 +2842,8 @@ select[name="role"] option[value="client"] {
 
 /* Treat both links and forms the same */
 .info-bot-btn a,
-.info-bot-btn form {
+.info-bot-btn form,
+.info-bot-btn .descriptive-status-badge {
     flex: 1; 
     min-width: 140px;  /* optional: prevents buttons from getting too tiny */
     display: flex;
@@ -2841,7 +2852,8 @@ select[name="role"] option[value="client"] {
 /* Buttons inside links or forms */
 .info-bot-btn a,
 .info-bot-btn button,
-.info-bot-btn form button {
+.info-bot-btn form button,
+.info-bot-btn .descriptive-status-badge {
     color: var(--color-btn-text);
     flex: 1;                   /* fill parent container */
     display: flex;
@@ -2859,9 +2871,9 @@ select[name="role"] option[value="client"] {
 
 .info-bot-btn .descriptive-status-badge {
     background-color: #F59E0B;
-    color: #ffffff;
     padding: 10px;
-    border-radius: 6px;
+    gap: 5px;
+    cursor: default;
 }
 
 /* Shared base styling */
@@ -2890,6 +2902,7 @@ select[name="role"] option[value="client"] {
 .info-bot-btn .btn-edit-errand {
     background-color: #3B82F6;
     transition: all 0.2s ease;
+    gap: 5px;
 }
 
 .info-bot-btn .btn-edit-errand:hover {
@@ -2901,6 +2914,7 @@ select[name="role"] option[value="client"] {
     color: #9CA3AF;
     cursor: not-allowed;
     opacity: 0.7;
+    gap: 5px;
 }
 
 .btn-start-errand,

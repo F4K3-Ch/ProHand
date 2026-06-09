@@ -164,8 +164,14 @@
 
                     $notif_type = "errand";
 
-                    // 3. Notify Client (Prompting them to pay now)
-                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was \"Accepted\" by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Please settle your payment upload to begin the task.";
+                    // 3. Notify Client (Condition added to verify existing proof of payment)
+                    if (!empty($errand['payment_receipt_path'])) {
+                        // Message when payment proof is already present in the system
+                        $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was \"Accepted\" by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Your uploaded proof of payment is under review.";
+                    } else {
+                        // Default fallback message when no payment proof exists yet
+                        $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was \"Accepted\" by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Please settle your payment upload to begin the task.";
+                    }
                     $client_link = "../client/view_errand_info.php?errand_id={$errand_id}";
                     $this->user->addNotification($client_id, $notif_type, $client_msg, $client_link);
 

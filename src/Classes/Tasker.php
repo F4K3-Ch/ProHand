@@ -80,7 +80,8 @@
                     deadline,
                     fee,
                     status,
-                    updated_at
+                    updated_at,
+                    cancel_requested_by_tasker
                 FROM errands
                 WHERE tasker_id = ?
                 AND (
@@ -256,8 +257,7 @@
 
         // Accept button
         public function acceptErrand($errand_id, $tasker_id) {
-            // 1. Check if errand is still pending
-            $check_stmt = $this->db->prepare("SELECT title, client_id FROM errands WHERE id = ? AND status = 'pending' LIMIT 1");
+            $check_stmt = $this->db->prepare("SELECT title, client_id, payment_receipt_path FROM errands WHERE id = ? AND status = 'pending' LIMIT 1");
             $check_stmt->bind_param("i", $errand_id);
             $check_stmt->execute();
             $res = $check_stmt->get_result();
@@ -265,7 +265,6 @@
             if ($res->num_rows !== 1) return false;
             $errand = $res->fetch_assoc();
 
-            // 2. Update status to pending_payment
             $update_stmt = $this->db->prepare("UPDATE errands SET status = 'pending_payment', tasker_id = ?, accepted_at = NOW(), updated_at = NOW() WHERE id = ? AND status = 'pending'");
             $update_stmt->bind_param("ii", $tasker_id, $errand_id);
             $update_stmt->execute();

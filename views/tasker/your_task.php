@@ -156,12 +156,16 @@
                                             </form>
 
                                             <!-- Cancel Button -->
-                                            <form method="POST">
-                                                <input type="hidden" name="request_cancel_id" value="<?= $row['id']; ?>">
-                                                <button type="submit" name="submit_cancel_request" class="btn-cancel" onclick="return confirm('The client has already paid. This will send a request to the Admin to release you from this errand. Proceed?');">
-                                                    Cancel
-                                                </button>
-                                            </form>
+                                            <?php if ((int)$row['cancel_requested_by_tasker'] === 0): ?>
+                                                <form method="POST">
+                                                    <input type="hidden" name="request_cancel_id" value="<?= $row['id']; ?>">
+                                                    <button type="submit" name="submit_cancel_request" class="btn-cancel" onclick="return confirm('The client has already paid. This will send a request to the Admin to release you from this errand. Proceed?');">
+                                                        Cancel
+                                                    </button>
+                                                </form>
+                                            <?php elseif ((int)$row['cancel_requested_by_tasker'] === 1): ?>
+                                                <button disabled class="btn-cancel-disabled">Cancel</button>
+                                            <?php endif; ?>
                                         </div>
                                     </td>
                                 </tr>

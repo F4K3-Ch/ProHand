@@ -181,7 +181,7 @@
                                                     <button type="submit" class="btn-cancel">Cancel</button>
                                                 </form>
                                             <?php elseif ($row['status'] === 'in_process'): ?>
-                                                <!-- Delete Button Disabled-->
+                                                <!-- Cancel Button Disabled-->
                                                 <button disabled class="btn-cancel-disabled">Cancel</button>
                                             <?php endif; ?>
                                         </div>

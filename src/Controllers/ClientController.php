@@ -393,6 +393,21 @@
                     $success = $this->client->submitPaymentReceipt($errand_id, $db_save_path);
 
                     if ($success) {
+                        $errand_res = $this->client->getActiveErrandWithTasker($errand_id, $client_id);
+                        $errand_data = ($errand_res && $errand_res->num_rows === 1) ? $errand_res->fetch_assoc() : null;
+                        
+                        $errand_title = $errand_data ? $errand_data['title'] : "Unknown Title";
+                        
+                        $client_full_name = $this->user->getFullName($client_id);
+                        $notif_type = "errand";
+                        
+                        // Explicit routing path so admins can click it anywhere outside the /admin/ module context
+                        $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
+                        $admin_msg = "Proof of Payment Uploaded | Client: \"{$client_full_name}\" (ID: {$client_id}) uploaded a receipt for Errand: \"{$errand_title}\" (ID: {$errand_id}). Awaiting verification.";
+                        
+                        // Fire broadcast dispatch logic to all active server administrators
+                        $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
+
                         $_SESSION['success'] = "Payment proof submitted successfully! Awaiting admin verification.";
                     } else {
                         // Garbage Collection: Delete uploaded file if the database query fails

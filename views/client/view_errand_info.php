@@ -240,33 +240,33 @@
                         <!-- Edit -->
                         <form method="GET" action="edit_errand.php">
                             <input type="hidden" name="errand_id" value="<?= $errand['id']; ?>">
-                            <button type="submit" class="btn-edit-errand">Edit</button>
+                            <button type="submit" class="btn-edit-errand"><i class="fa-regular fa-pen-to-square"></i>Edit</button>
                         </form>
                         <!-- Delete -->
                         <form method="POST"
                             onsubmit="return confirm('Are you sure you want to delete this errand request?');">
                             <input type="hidden" name="delete_id" value="<?= $errand['id']; ?>">
-                            <button type="submit" class="btn-delete">Delete</button>
+                            <button type="submit" class="btn-delete"><i class="fa-regular fa-trash-can"></i>Delete</button>
                         </form>
                     <?php elseif ($errand['status'] === 'pending_payment'): ?>
                         <!-- Edit Button Disabled-->
-                        <button disabled class="btn-edit-errand-disabled">Edit</button>
+                        <button disabled class="btn-edit-errand-disabled"><i class="fa-regular fa-pen-to-square"></i>Edit</button>
                         <!-- Cancel Button-->
                         <form method="POST"
                             onsubmit="return confirm('Are you sure you want to cancel this errand? It will return to Pending.');">
                             <input type="hidden" name="cancel_accepted_id" value="<?= $errand['id']; ?>">
-                            <button type="submit" class="btn-cancel">Cancel</button>
+                            <button type="submit" class="btn-cancel"><i class="fa-solid fa-ban"></i>Cancel</button>
                         </form>
                     <?php elseif ($errand['status'] === 'in_process'): ?>
                         <!-- Edit Button Disabled-->
-                        <button disabled class="btn-edit-errand-disabled">Edit</button>
+                        <button disabled class="btn-edit-errand-disabled"><i class="fa-regular fa-pen-to-square"></i>Edit</button>
                         <!-- Cancel Button Disabled-->
-                        <button disabled class="btn-cancel-disabled">Cancel</button>
+                        <button disabled class="btn-cancel-disabled"><i class="fa-solid fa-ban"></i>Cancel</button>
                     <?php elseif (in_array($errand['status'], ['completed', 'failed'])): ?>
                         <!-- Delete Button -->
                         <form method="POST" onsubmit="return confirm('Are you sure you want to delete this archived errand?');">
                             <input type="hidden" name="delete_history_id" value="<?= $errand['id']; ?>">
-                            <button type="submit" class="btn-delete">Delete</button>
+                            <button type="submit" class="btn-delete"><i class="fa-regular fa-trash-can"></i>Delete</button>
                         </form>
                     <?php endif; ?>
                 </div>
@@ -348,7 +348,7 @@
                         <?php elseif ($errand['status'] === 'pending_payment' && !empty($errand['payment_receipt_path'])): ?>
                             <div class="payment-verification-panel">
                                 <div class="payment-status-header">
-                                    <i class="fa-solid fa-clock-rotate-left fa-spin fa-spin-reverse status-icon-orange"></i>
+                                    <i class="fa-solid fa-spinner fa-spin status-icon-orange"></i>
                                     <h2 class="status-title-orange">Pending Admin Verification</h2>
                                 </div>
 

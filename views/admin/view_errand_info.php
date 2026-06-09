@@ -32,6 +32,12 @@
         } elseif (isset($_POST['delete_finished_errand_id'])) {
             $_POST['id'] = $_POST['delete_finished_errand_id']; 
             $adminController->handleFinishedErrandDeletion();
+        } elseif (isset($_POST['approve_cancellation_id'])) {
+            $_POST['id'] = $_POST['approve_cancellation_id']; 
+            $adminController->handleApproveCancellation();
+        } elseif (isset($_POST['deny_cancellation_id'])) {
+            $_POST['id'] = $_POST['deny_cancellation_id'];
+            $adminController->handleDenyCancellation();
         }
     }
 
@@ -229,22 +235,22 @@
                             </div>
                         <?php endif; ?>
                     </div>
-
-                    <?php if ($errand['status'] !== 'pending'): ?>
+                    
+                    <?php if (!empty($errand['payment_receipt_path'])): ?>
                         <div class="info-box">
                             <label>Proof of Payment</label>
-                            
-                            <?php if (!empty($errand['payment_receipt_path'])): ?>
-                                <div class="attachment-item">
-                                    <a href="../../public/uploads/receipts/<?= basename($errand['payment_receipt_path']); ?>" target="_blank" class="attachment-name">
-                                        <i class="fa-solid fa-file-invoice-dollar"></i> <?= htmlspecialchars(basename($errand['payment_receipt_path'])); ?>
-                                    </a>
-                                </div>
-                            <?php else: ?>
-                                <div class="no-attachments">
-                                    <p class="no-attachment">None</p>
-                                </div>
-                            <?php endif; ?>
+                            <div class="attachment-item">
+                                <a href="../../public/uploads/receipts/<?= basename($errand['payment_receipt_path']); ?>" target="_blank" class="attachment-name">
+                                    <i class="fa-solid fa-file-invoice-dollar"></i> <?= htmlspecialchars(basename($errand['payment_receipt_path'])); ?>
+                                </a>
+                            </div>
+                        </div>
+                    <?php elseif ($errand['status'] === 'pending_payment'): ?>
+                        <div class="info-box">
+                            <label>Proof of Payment</label>
+                            <div class="no-attachments">
+                                <p class="no-attachment">None</p>
+                            </div>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -274,17 +280,18 @@
                                 <i class="fa-solid fa-ban"></i> Force Cancel Errand
                             </button>
                         </form>
-                    <?php elseif ($is_active): ?>
+                    <?php endif; ?>
+                    <?php if ($is_active): ?>
                         <!-- Delete Active Errand Button -->
                         <form method="POST" onsubmit="return confirm('Are you sure you want to delete this errand?');">
                             <input type="hidden" name="delete_active_errand_id" value="<?= $errand['id']; ?>">
-                            <button type="submit" class="btn-delete">Delete</button>
+                            <button type="submit" class="btn-delete"><i class="fa-regular fa-trash-can"></i>Delete</button>
                         </form>
                     <?php elseif ($is_finished): ?>
                         <!-- Delete Finished Errand Button -->
                         <form method="POST" onsubmit="return confirm('Are you sure you want to delete this errand?');">
                             <input type="hidden" name="delete_finished_errand_id" value="<?= $errand['id']; ?>">
-                            <button type="submit" class="btn-delete">Delete</button>
+                            <button type="submit" class="btn-delete"><i class="fa-regular fa-trash-can"></i>Delete</button>
                         </form>
                     <?php endif; ?>
                 </div>
@@ -346,16 +353,14 @@
                                     </p>
                                     <div class="alert-action-buttons">
                                         <form method="POST" onsubmit="return confirm('Approve tasker release? This removes the current tasker but keeps the client payment receipt intact so a new tasker can claim this errand.');">
-                                            <input type="hidden" name="admin_process_cancellation_id" value="<?= $errand['id']; ?>">
-                                            <input type="hidden" name="cancellation_action" value="approve">
+                                            <input type="hidden" name="approve_cancellation_id" value="<?= $errand['id']; ?>">
                                             <button type="submit" class="btn-approve-release">
                                                 <i class="fa-solid fa-user-minus"></i> Approve
                                             </button>
                                         </form>
 
                                         <form method="POST" onsubmit="return confirm('Deny tasker release? This forces the tasker to stay locked into the commitment.');">
-                                            <input type="hidden" name="admin_process_cancellation_id" value="<?= $errand['id']; ?>">
-                                            <input type="hidden" name="cancellation_action" value="reject">
+                                            <input type="hidden" name="deny_cancellation_id" value="<?= $errand['id']; ?>">
                                             <button type="submit" class="btn-deny-release">
                                                 <i class="fa-solid fa-user-check"></i> Deny
                                             </button>

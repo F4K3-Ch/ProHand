@@ -115,16 +115,16 @@
 
                     <div class="profile-bot-btn">
                         <!-- Edit Profile Button -->
-                        <a href="edit_profile_info.php" class="btn-edit-profile">Edit Profile</a>
+                        <a href="edit_profile_info.php" class="btn-edit-profile"><i class="fa-regular fa-pen-to-square"></i>Edit Profile</a>
 
                         <!-- Change Password Button -->
-                        <a href="change_password.php" class="btn-change-password">Change Password</a>
+                        <a href="change_password.php" class="btn-change-password"><i class="fa-solid fa-key"></i>Change Password</a>
 
                         <!-- Delete Account Button -->
                         <form method="POST" onsubmit="return confirm('WARNING: This will permanently delete your account and all associated data. Are you sure?');">
                             <!-- Hidden input to tell the controller which method to trigger -->
                             <input type="hidden" name="action" value="delete_account">
-                            <button type="submit" class="btn-delete-account">Delete Account</button>
+                            <button type="submit" class="btn-delete-account"><i class="fa-regular fa-trash-can"></i>Delete Account</button>
                         </form>
                     </div>
                 </div>

@@ -578,4 +578,133 @@
             header("Location: manage_users.php");
             exit;
         }
+
+        public function handleApproveCancellation() {
+            $this->auth->restrictTo('admin');
+            $admin_id = (int)$_SESSION['user_id'];
+
+            // Grabbing ID via your standard global mapping
+            $errand_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+            if ($errand_id <= 0) {
+                $_SESSION['error'] = "Invalid errand identification.";
+                header("Location: view_errand_info.php?errand_id=" . $errand_id);
+                exit;
+            }
+
+            // Calling your actual existing model method here
+            $errand = $this->admin->getActiveErrandDetails($errand_id);
+            if (!$errand) {
+                $_SESSION['error'] = "Errand information context not found.";
+                header("Location: view_errand_info.php?errand_id=" . $errand_id);
+                exit;
+            }
+
+            // Execute the database processing update
+            $approved = $this->admin->approveTaskerCancellation($errand_id);
+
+            if ($approved) {
+                $admin_full_name  = $this->user->getFullName($admin_id);
+                $client_id        = (int)$errand['client_id'];
+                $tasker_id        = isset($errand['tasker_id']) ? (int)$errand['tasker_id'] : 0;
+                $errand_title     = $errand['title'];
+                
+                $client_full_name = $this->user->getFullName($client_id);
+                $tasker_full_name = ($tasker_id > 0) ? $this->user->getFullName($tasker_id) : "None";
+
+                $notif_type = "errand";
+                
+                // 💡 FIXED: Explicit module subfolders for all roles
+                $client_link = "../client/view_errand_info.php?errand_id={$errand_id}";
+                $tasker_link = "../tasker/view_errand_info.php?errand_id={$errand_id}";
+                $admin_link  = "../admin/view_errand_info.php?errand_id={$errand_id}";
+
+                // 1. Send Notification to Client
+                if ($client_id > 0) {
+                    if (!empty($errand['payment_receipt_path'])) {
+                        $client_msg = "The tasker assigned to your Active Errand: \"{$errand_title}\" (ID: {$errand_id}) requested a cancellation, which has been approved by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). Your uploaded proof of payment remains secure while your errand returns to the public pool.";
+                    } else {
+                        $client_msg = "The tasker assigned to your Active Errand: \"{$errand_title}\" (ID: {$errand_id}) requested a cancellation, which has been approved by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). Your errand has safely returned to the public pool for other taskers to accept.";
+                    }
+                    
+                    $this->user->addNotification($client_id, $notif_type, $client_msg, $client_link);
+                }
+
+                // 2. Send Notification to Tasker
+                if ($tasker_id > 0) {
+                    $tasker_msg = "Your request to be released from the Active Errand: \"{$errand_title}\" (ID: {$errand_id}) has been approved by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). You are no longer assigned to this task.";
+                    $this->user->addNotification($tasker_id, $notif_type, $tasker_msg, $tasker_link);
+                }
+
+                // 3. Broadcast notification to all other admins (uses notifyOtherAdmins context)
+                $admin_msg = "Tasker Requested Cancellation Approved | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Former Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Released by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                $this->user->notifyOtherAdmins($admin_id, $notif_type, $admin_msg, $admin_link);
+
+                $_SESSION['success'] = "Tasker successfully released. Errand returned to public pool.";
+            } else {
+                $_SESSION['error'] = "Error approving cancellation. Please try again.";
+            }
+
+            header("Location: view_errand_info.php?errand_id=" . $errand_id);
+            exit;
+        }
+
+        /**
+         * Route Handler: Process Tasker Cancellation Denial
+         */
+        public function handleDenyCancellation() {
+            $this->auth->restrictTo('admin');
+            $admin_id = (int)$_SESSION['user_id'];
+
+            // Grabbing ID via your standard global mapping
+            $errand_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+            if ($errand_id <= 0) {
+                $_SESSION['error'] = "Invalid errand identification.";
+                header("Location: view_errand_info.php?errand_id=" . $errand_id);
+                exit;
+            }
+
+            // Calling your actual existing model method here
+            $errand = $this->admin->getActiveErrandDetails($errand_id);
+            if (!$errand) {
+                $_SESSION['error'] = "Errand information context not found.";
+                header("Location: view_errand_info.php?errand_id=" . $errand_id);
+                exit;
+            }
+
+            // Execute the database processing update
+            $denied = $this->admin->denyTaskerCancellation($errand_id);
+
+            if ($denied) {
+                $admin_full_name  = $this->user->getFullName($admin_id);
+                $client_id        = (int)$errand['client_id'];
+                $tasker_id        = isset($errand['tasker_id']) ? (int)$errand['tasker_id'] : 0;
+                $errand_title     = $errand['title'];
+                
+                $client_full_name = $this->user->getFullName($client_id);
+                $tasker_full_name = ($tasker_id > 0) ? $this->user->getFullName($tasker_id) : "None";
+
+                $notif_type = "errand";
+                
+                // 💡 FIXED: Explicit module subfolders for all roles
+                $tasker_link = "../tasker/view_errand_info.php?errand_id={$errand_id}";
+                $admin_link  = "../admin/view_errand_info.php?errand_id={$errand_id}";
+
+                // 1. Send Notification to Tasker
+                if ($tasker_id > 0) {
+                    $tasker_msg = "Your request to cancel your assignment for Active Errand: \"{$errand_title}\" (ID: {$errand_id}) was denied by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). You are still expected to fulfill this task.";
+                    $this->user->addNotification($tasker_id, $notif_type, $tasker_msg, $tasker_link);
+                }
+
+                // 2. Broadcast notification to all other admins
+                $admin_msg = "Tasker Requested Cancellation Denied | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Assigned Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Processed by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                $this->user->notifyOtherAdmins($admin_id, $notif_type, $admin_msg, $admin_link);
+
+                $_SESSION['success'] = "Cancellation request denied. Tasker remains assigned.";
+            } else {
+                $_SESSION['error'] = "Error denying cancellation. Please try again.";
+            }
+
+            header("Location: view_errand_info.php?errand_id=" . $errand_id);
+            exit;
+        }
     }

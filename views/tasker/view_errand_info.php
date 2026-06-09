@@ -35,7 +35,7 @@
         } elseif (isset($_POST['final_status_id'])) {
             $_POST['id'] = $_POST['final_status_id'];
             $taskerController->updateStatusFinal();
-        } elseif (isset($_POST['submit_cancel_request'])) { 
+        } elseif (isset($_POST['request_cancel_id'])) { 
             $_POST['id'] = $_POST['request_cancel_id'];
             $taskerController->requestCancellation();
         } elseif (isset($_POST['delete_history_id'])) {
@@ -244,20 +244,26 @@
                         <form method="POST">
                             <input type="hidden" name="accept_id" value="<?= $errand['id']; ?>">
                             <button type="submit" class="btn-accept" onclick="return confirm('Do you want to accept this errand?');">
-                                Accept
+                                <i class="fa-solid fa-check"></i>Accept
                             </button>
                         </form>
                     <?php elseif ($errand['status'] === 'pending_payment'): ?>
                         <span class="descriptive-status-badge">
                             <i class="fa-solid fa-spinner fa-spin"></i> Waiting for admin verification...
                         </span>
+                    <?php if ((int)$errand['cancel_requested_by_tasker'] === 0): ?>
                         <!-- Cancel Button -->
                         <form method="POST">
                             <input type="hidden" name="request_cancel_id" value="<?= $errand['id']; ?>">
-                            <button type="submit" name="submit_cancel_request" class="btn-cancel" onclick="return confirm('The client has already paid. This will send a request to the Admin to release you from this errand. Proceed?');">
-                                <i class="fa-solid fa-hand-holding-hand"></i> Request Cancellation
+                            <button type="submit" class="btn-cancel" onclick="return confirm('Client has paid. Send a cancellation request to Admin?');">
+                                <i class="fa-solid fa-hand-holding-hand"></i> Cancel Errand
                             </button>
                         </form>
+                    <?php elseif ((int)$errand['cancel_requested_by_tasker'] === 1): ?>
+                        <span class="descriptive-status-badge">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Pending Admin Cancel...
+                        </span>
+                    <?php endif; ?>
                     <?php elseif ($errand['status'] === 'in_process'): ?>
                         <!-- Update Button -->
                         <form method="POST">
@@ -271,18 +277,24 @@
                                 </div>
                             <button type="submit" class="btn-update">Update</button>
                         </form>
+                    <?php if ((int)$errand['cancel_requested_by_tasker'] === 0): ?>
                         <!-- Cancel Button -->
                         <form method="POST">
                             <input type="hidden" name="request_cancel_id" value="<?= $errand['id']; ?>">
-                            <button type="submit" name="submit_cancel_request" class="btn-cancel" onclick="return confirm('The client has already paid. This will send a request to the Admin to release you from this errand. Proceed?');">
-                                <i class="fa-solid fa-hand-holding-hand"></i> Request Cancellation
+                            <button type="submit" class="btn-cancel" onclick="return confirm('Client has paid. Send a cancellation request to Admin?');">
+                                <i class="fa-solid fa-hand-holding-hand"></i> Cancel Errand
                             </button>
                         </form>
+                    <?php elseif ((int)$errand['cancel_requested_by_tasker'] === 1): ?>
+                        <span class="descriptive-status-badge">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Pending Admin Cancel...
+                        </span>
+                    <?php endif; ?>
                     <?php elseif (in_array($errand['status'], ['completed', 'failed'])): ?>
                         <!-- Delete Button -->
                         <form method="POST" onsubmit="return confirm('Are you sure you want to delete this archived errand?');">
                             <input type="hidden" name="delete_history_id" value="<?= $errand['id']; ?>">
-                            <button type="submit" class="btn-delete">Delete</button>
+                            <button type="submit" class="btn-delete"><i class="fa-regular fa-trash-can"></i>Delete</button>
                         </form>
                     <?php endif; ?>
                 </div>

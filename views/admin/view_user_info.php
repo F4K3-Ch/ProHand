@@ -127,13 +127,13 @@
                             <!-- Reset Password Button -->
                             <form method="POST" onsubmit="return confirm('Are you sure you want to reset this user\'s password?');">
                                 <input type="hidden" name="reset_password_id" value="<?= htmlspecialchars($user['id']) ?>">
-                                <button type="submit" class="btn-reset-password">Reset Password</button>
+                                <button type="submit" class="btn-reset-password"><i class="fa-solid fa-arrows-rotate"></i>Reset Password</button>
                             </form>
                             
                             <!-- Delete Account Button -->
                             <form method="POST" onsubmit="return confirm('Are you sure you want to delete this user?');">
                                 <input type="hidden" name="delete_user_id" value="<?= (int)$user['id']; ?>">
-                                <button type="submit" class="btn-delete-account">Delete this user</button>
+                                <button type="submit" class="btn-delete-account"><i class="fa-regular fa-trash-can"></i>Delete this user</button>
                             </form>
                         <?php endif; ?>
                     </div>

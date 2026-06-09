@@ -560,4 +560,27 @@
 
             return $result;
         }
+
+        public function approveTaskerCancellation($errand_id) {
+            $query = "UPDATE errands 
+                    SET status = 'pending',
+                        tasker_id = NULL,
+                        accepted_at = NULL,
+                        cancel_requested_by_tasker = 0
+                    WHERE id = ? AND status = 'pending_payment'";
+                    
+            $stmt = $this->db->prepare($query);
+            $stmt->bind_param("i", $errand_id);
+            return $stmt->execute();
+        }
+
+        public function denyTaskerCancellation($errand_id) {
+            $query = "UPDATE errands 
+                    SET cancel_requested_by_tasker = 0
+                    WHERE id = ? AND status = 'pending_payment'";
+                    
+            $stmt = $this->db->prepare($query);
+            $stmt->bind_param("i", $errand_id);
+            return $stmt->execute();
+        }
     }
