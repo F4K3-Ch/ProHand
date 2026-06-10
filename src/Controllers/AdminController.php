@@ -204,7 +204,7 @@
             // 4. Populate Tasker Metrics (Matches your HTML conditional blocks)
             if ($data['user']['role'] === 'tasker') {
                 $formatted['active_status'] = [
-                    'accepted'   => (int)($data['active']['accepted'] ?? 0),
+                    'pending_payment'   => (int)($data['active']['pending_payment'] ?? 0),
                     'in_process' => (int)($data['active']['in_process'] ?? 0)
                 ];
                 
@@ -220,7 +220,7 @@
                 $formatted['total_errands']          = $formatted['total_active_errands'] + $formatted['total_finished_errands'];
             } else {
                 // Provide empty defaults for non-taskers to prevent "Undefined Variable" if the HTML check fails
-                $formatted['active_status'] = ['accepted' => 0, 'in_process' => 0];
+                $formatted['active_status'] = ['pending_payment' => 0, 'in_process' => 0];
                 $formatted['finished_status'] = ['completed' => 0, 'failed' => 0];
                 $formatted['total_active_errands'] = 0;
                 $formatted['total_finished_errands'] = 0;

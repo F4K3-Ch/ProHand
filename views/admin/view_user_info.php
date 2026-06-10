@@ -147,9 +147,9 @@
                     <div class="total-card bg-accepted">
                         <div class="card-header">
                             <span class="status-circle circle-accepted"></span>
-                            <h3>Accepted</h3>
+                            <h3>Pending Payment</h3>
                         </div>
-                        <p><?= number_format($active_status['accepted']); ?></p>
+                        <p><?= number_format($active_status['pending_payment']); ?></p>
                     </div>
 
                     <div class="total-card bg-process">
