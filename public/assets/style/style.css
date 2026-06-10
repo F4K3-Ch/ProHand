@@ -2589,8 +2589,6 @@ select[name="role"] option[value="client"] {
 
 .payment-qr-frame {
     background-color: #ffffff;
-    padding: 8px;
-    border-radius: 6px;
     border: 1px solid var(--color-input-border);
     display: flex;
     justify-content: center;
@@ -2599,8 +2597,8 @@ select[name="role"] option[value="client"] {
 }
 
 .payment-qr-img {
-    width: 90px;
-    height: 90px;
+    width: 110px;
+    height: 110px;
     object-fit: contain;
     display: block;
 }

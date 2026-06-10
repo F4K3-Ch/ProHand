@@ -350,7 +350,7 @@
                         <?php if ($errand['status'] === 'pending_payment' && empty($errand['payment_receipt_path'])): ?>
                             <div class="info-box alert-box alert-blue payment-instruction-wrapper">
                                 <div class="payment-qr-frame">
-                                    <a href="../../public/assets/img/gcash-qr.jpg" target="_blank">
+                                    <a href="../../public/assets/img/gcash-full-qr.jpg" target="_blank">
                                         <img src="../../public/assets/img/gcash-qr.jpg" alt="GCash Merchant QR Code" class="payment-qr-img">
                                     </a>
                                 </div>
