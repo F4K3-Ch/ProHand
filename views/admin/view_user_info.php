@@ -68,7 +68,7 @@
                 <!-- Photo Section -->
                 <div class="profile-photo-section">
                     <a href="<?= htmlspecialchars($user_profile_picture); ?>" target="_blank">
-                        <img class="profile-preview-photo" src="<?= htmlspecialchars($user_profile_picture); ?>" alt="Profile Picture" style="cursor:pointer;">
+                        <img class="profile-preview-photo" src="<?= htmlspecialchars($user_profile_picture); ?>" alt="Profile Picture">
                     </a>
                 </div>
 
