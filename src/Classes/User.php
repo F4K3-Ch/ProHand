@@ -248,23 +248,46 @@
             return $stmt->get_result();
         }
 
-        // view_errand_info.php
+        // view_errand_info.php (Attachment Viewer Fetcher)
         public function getAttachment($id, $is_finished = false) {
             if ($is_finished) {
-                $stmt = $this->db->prepare("SELECT id, file_path, original_name FROM history_attachments WHERE history_errand_id = ?");
+                $stmt = $this->db->prepare("SELECT id, file_path, original_name FROM history_attachments WHERE history_errand_id = ? LIMIT 1");
             } else {
-                $stmt = $this->db->prepare("SELECT id, file_path, original_name FROM errand_attachments WHERE errand_id = ?");
+                $stmt = $this->db->prepare("SELECT id, file_path, original_name FROM errand_attachments WHERE errand_id = ? LIMIT 1");
             }
             $stmt->bind_param("i", $id);
             $stmt->execute();
             return $stmt->get_result();
         }
 
-        // Use this for the Download Script (Single File)
+        // Use this for the Download Script (Attachment Downloader Details)
         public function getAttachmentDetails($attachment_id, $is_history = false) {
             $table = $is_history ? "history_attachments" : "errand_attachments";
             $stmt = $this->db->prepare("SELECT file_path, original_name FROM $table WHERE id = ? LIMIT 1");
             $stmt->bind_param("i", $attachment_id);
+            $stmt->execute();
+            return $stmt->get_result()->fetch_assoc();
+        }
+
+        // view_errand_info.php (Receipt Viewer Fetcher)
+        public function getPaymentReceipt($id, $is_finished = false) {
+            if ($is_finished) {
+                $stmt = $this->db->prepare("SELECT errand_id AS id, payment_receipt_path FROM history WHERE errand_id = ? LIMIT 1");
+            } else {
+                $stmt = $this->db->prepare("SELECT id, payment_receipt_path FROM errands WHERE id = ? LIMIT 1");
+            }
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            return $stmt->get_result();
+        }
+
+        // Use this for the Download Script (Receipt Downloader Details)
+        public function getPaymentReceiptDetails($errand_id, $is_history = false) {
+            $table = $is_history ? "history" : "errands";
+            $column = $is_history ? "errand_id" : "id";
+            
+            $stmt = $this->db->prepare("SELECT payment_receipt_path FROM $table WHERE $column = ? LIMIT 1");
+            $stmt->bind_param("i", $errand_id);
             $stmt->execute();
             return $stmt->get_result()->fetch_assoc();
         }

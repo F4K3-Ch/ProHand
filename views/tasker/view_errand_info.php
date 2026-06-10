@@ -13,14 +13,12 @@
     $taskerController = new TaskerController($db);
     $sharedController = new SharedController($db);
 
-    // Download Logic
-    if (isset($_GET['action']) && $_GET['action'] === 'download' && isset($_GET['download_id'])) {
+    // Standard Attachment Download Logic
+    if (isset($_GET['action']) && $_GET['action'] === 'download' && isset($_GET['download_attachment_id'])) {
         $is_history_download = (isset($_GET['type']) && $_GET['type'] === 'history');
         
-        // CALL it from $sharedController
-        $sharedController->handleDownload((int)$_GET['download_id'], $is_history_download ? 'history' : 'regular');
+        $sharedController->handleDownload((int)$_GET['download_attachment_id'], $is_history_download ? 'history' : 'regular');
         
-        // If handleDownload fails to exit (e.g., file not found), set the error
         $_SESSION['error'] = "File not found on server.";
     }
 
@@ -194,16 +192,14 @@
                 <div class="info-box">
                     <label>Attachment</label>
 
+                    <?php 
+                        $download_action = "view_errand_info.php"; 
+                    ?>
+
                     <?php if ($attachment_result && $attachment_result->num_rows > 0): ?>
                         <?php 
-                            // Reset pointer or loop if needed; here we fetch the row
                             $file = $attachment_result->fetch_assoc(); 
-                            
-                            // Path for browser preview
                             $relative_path = '../../public/' . $file['file_path'];
-                            
-                            // Point back to the current file
-                            $download_action = "view_errand_info.php";
                         ?>
 
                         <div class="attachment-item">
@@ -211,17 +207,13 @@
                                 <i class="fa-solid fa-file-lines"></i> <?= htmlspecialchars($file['original_name']); ?>
                             </a>
 
-                            <form method="GET">
-                                <!-- Keep the user on the current errand page -->
+                            <form method="GET" action="<?= $download_action; ?>">
                                 <input type="hidden" name="errand_id" value="<?= $errand_id; ?>">
                                 
-                                <!-- Trigger word for the IF statement -->
                                 <input type="hidden" name="action" value="download">
                                 
-                                <!-- Your specific change here -->
-                                <input type="hidden" name="download_id" value="<?= (int)$file['id']; ?>">
+                                <input type="hidden" name="download_attachment_id" value="<?= (int)$file['id']; ?>">
                                 
-                                <!-- Check if history is needed -->
                                 <?php if (isset($is_finished) && $is_finished): ?>
                                     <input type="hidden" name="type" value="history">
                                 <?php endif; ?>

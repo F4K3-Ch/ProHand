@@ -284,7 +284,6 @@
             if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
                 $errand_id = (int)$_POST['id'];
                 
-                // 💡 Call model with just the two basic identification IDs
                 $data = $this->tasker->flagCancellationRequest($errand_id, $tasker_id);
 
                 if ($data) {

@@ -235,6 +235,7 @@
             exit;
         }
 
+        // Standard Attachment Download Controller
         public function handleDownload($id, $type = 'regular') {
             $this->auth->checkLogin();
             $role = $_SESSION['role'];
@@ -249,30 +250,59 @@
                 exit;
             }
 
-            // 2. Set Paths - Updated to match your handleCreateErrand structure
-            // We go up three levels from src/Controllers/ to reach the root, then into public/
-            $base_dir = $is_history 
-                ? "../../public/uploads/history/attachments/" 
-                : "../../public/uploads/attachments/";
-            
-            // We use the file_path directly from DB as it already contains 'uploads/attachments/...'
-            // So we just need to point to the public folder root.
+            // 2. Safely maps the single file path string
             $file_path = "../../public/" . $attachment['file_path'];
 
-            // 3. Verify Physical File
             if (!file_exists($file_path)) {
-                // Debugging tip: If it still fails, uncomment the line below to see what PHP is actually looking for:
-                // die("PHP is looking for: " . realpath($file_path)); 
-                
                 $_SESSION['error'] = "File does not exist on server.";
                 header("Location: ../$role/{$role}_dashboard.php");
                 exit;
             }
 
-            // 4. Force Download Headers
+            // 3. Streams the single file directly to the browser
             header('Content-Description: File Transfer');
             header('Content-Type: application/octet-stream');
             header('Content-Disposition: attachment; filename="' . basename($attachment['original_name']) . '"');
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate');
+            header('Pragma: public');
+            header('Content-Length: ' . filesize($file_path));
+
+            ob_clean();
+            flush();
+            
+            readfile($file_path);
+            exit;
+        }
+
+        // Receipt Download Controller
+        public function handleReceiptDownload($errand_id, $type = 'regular') {
+            $this->auth->checkLogin();
+            $role = $_SESSION['role'];
+            $is_history = ($type === 'history');
+            
+            // 1. Fetch Receipt Details from Model
+            $receipt = $this->user->getPaymentReceiptDetails((int)$errand_id, $is_history);
+
+            if (!$receipt || empty($receipt['payment_receipt_path'])) {
+                $_SESSION['error'] = "File not found.";
+                header("Location: ../$role/{$role}_dashboard.php");
+                exit;
+            }
+
+            // 2. Safely maps the single file path string
+            $file_path = "../../public/" . $receipt['payment_receipt_path'];
+
+            if (!file_exists($file_path)) {
+                $_SESSION['error'] = "File does not exist on server.";
+                header("Location: ../$role/{$role}_dashboard.php");
+                exit;
+            }
+
+            // 3. Streams the single file directly to the browser
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/octet-stream');
+            header('Content-Disposition: attachment; filename="' . basename($receipt['payment_receipt_path']) . '"');
             header('Expires: 0');
             header('Cache-Control: must-revalidate');
             header('Pragma: public');

@@ -13,15 +13,22 @@
     $clientController = new ClientController($db);
     $sharedController = new SharedController($db);
 
-    // Download Logic
-    if (isset($_GET['action']) && $_GET['action'] === 'download' && isset($_GET['download_id'])) {
+    // Standard Attachment Download Logic
+    if (isset($_GET['action']) && $_GET['action'] === 'download' && isset($_GET['download_attachment_id'])) {
         $is_history_download = (isset($_GET['type']) && $_GET['type'] === 'history');
         
-        // 3. CALL it from $sharedController
-        $sharedController->handleDownload((int)$_GET['download_id'], $is_history_download ? 'history' : 'regular');
+        $sharedController->handleDownload((int)$_GET['download_attachment_id'], $is_history_download ? 'history' : 'regular');
         
-        // If handleDownload fails to exit (e.g., file not found), set the error
         $_SESSION['error'] = "File not found on server.";
+    }
+
+    // Proof of Payment Receipt Download Logic
+    if (isset($_GET['action']) && $_GET['action'] === 'download_receipt' && isset($_GET['download_receipt_id'])) {
+        $is_history_download = (isset($_GET['type']) && $_GET['type'] === 'history');
+        
+        $sharedController->handleReceiptDownload((int)$_GET['download_receipt_id'], $is_history_download ? 'history' : 'regular');
+        
+        $_SESSION['error'] = "Receipt file not found on server.";
     }
 
     // 1. Handle POST Actions
@@ -187,53 +194,80 @@
                             value="<?= htmlspecialchars($status_labels[$errand['status']]); ?>">
                     </div>
                 </div>
+                
+                <div class="group-info-box">
+                    <div class="info-box">
+                        <label>Attachment</label>
 
-                <div class="info-box">
-                    <label>Attachment</label>
-
-                    <?php if ($attachment_result && $attachment_result->num_rows > 0): ?>
                         <?php 
-                            // Reset pointer or loop if needed; here we fetch the row
-                            $file = $attachment_result->fetch_assoc(); 
-                            
-                            // Path for browser preview
-                            $relative_path = '../../public/' . $file['file_path'];
-                            
-                            // Point back to the current file
-                            $download_action = "view_errand_info.php";
+                            $download_action = "view_errand_info.php"; 
                         ?>
 
-                        <div class="attachment-item">
-                            <a href="<?= htmlspecialchars($relative_path); ?>" target="_blank" class="attachment-name">
-                                <i class="fa-solid fa-file-lines"></i> <?= htmlspecialchars($file['original_name']); ?>
-                            </a>
+                        <?php if ($attachment_result && $attachment_result->num_rows > 0): ?>
+                            <?php 
+                                $file = $attachment_result->fetch_assoc(); 
+                                $relative_path = '../../public/' . $file['file_path'];
+                            ?>
 
-                            <form method="GET">
-                                <!-- Keep the user on the current errand page -->
-                                <input type="hidden" name="errand_id" value="<?= $errand_id; ?>">
-                                
-                                <!-- Trigger word for the IF statement -->
-                                <input type="hidden" name="action" value="download">
-                                
-                                <!-- Your specific change here -->
-                                <input type="hidden" name="download_id" value="<?= (int)$file['id']; ?>">
-                                
-                                <!-- Check if history is needed -->
-                                <?php if (isset($is_finished) && $is_finished): ?>
-                                    <input type="hidden" name="type" value="history">
-                                <?php endif; ?>
+                            <div class="attachment-item">
+                                <a href="<?= htmlspecialchars($relative_path); ?>" target="_blank" class="attachment-name">
+                                    <i class="fa-solid fa-file-lines"></i> <?= htmlspecialchars($file['original_name']); ?>
+                                </a>
 
-                                <button type="submit" class="btn-download">
-                                    <i class="fa-solid fa-download"></i> Download
-                                </button>
-                            </form>
-                        </div>
-                    <?php else: ?>
-                        <div class="no-attachments">
-                            <p class="no-attachment">None</p>
+                                <form method="GET" action="<?= $download_action; ?>">
+                                    <input type="hidden" name="errand_id" value="<?= $errand_id; ?>">
+                                    
+                                    <input type="hidden" name="action" value="download">
+                                    
+                                    <input type="hidden" name="download_attachment_id" value="<?= (int)$file['id']; ?>">
+                                    
+                                    <?php if (isset($is_finished) && $is_finished): ?>
+                                        <input type="hidden" name="type" value="history">
+                                    <?php endif; ?>
+
+                                    <button type="submit" class="btn-download">
+                                        <i class="fa-solid fa-download"></i> Download
+                                    </button>
+                                </form>
+                            </div>
+                        <?php else: ?>
+                            <div class="no-attachments">
+                                <p class="no-attachment">None</p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <?php if (!empty($errand['payment_receipt_path']) && $errand['status'] === 'pending'): ?>
+                        <?php 
+                            $receipt_preview_path = '../../public/' . $errand['payment_receipt_path'];
+                        ?>
+                        <div class="info-box">
+                            <label>Proof of Payment</label>
+                            <div class="attachment-item">
+                                <a href="<?= htmlspecialchars($receipt_preview_path); ?>" target="_blank" class="attachment-name">
+                                    <i class="fa-solid fa-file-invoice-dollar"></i> <?= htmlspecialchars(basename($errand['payment_receipt_path'])); ?>
+                                </a>
+
+                                <form method="GET" action="<?= $download_action; ?>">
+                                    <input type="hidden" name="errand_id" value="<?= $errand_id; ?>">
+                                    
+                                    <input type="hidden" name="action" value="download_receipt">
+                                    
+                                    <input type="hidden" name="download_receipt_id" value="<?= $errand_id; ?>">
+                                    
+                                    <?php if (isset($is_finished) && $is_finished): ?>
+                                        <input type="hidden" name="type" value="history">
+                                    <?php endif; ?>
+
+                                    <button type="submit" class="btn-download">
+                                        <i class="fa-solid fa-download"></i> Download
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     <?php endif; ?>
                 </div>
+
 
                 <div class="info-bot-btn">
                     <?php if ($errand['status'] === 'pending'): ?>
@@ -346,6 +380,10 @@
                             </form>
 
                         <?php elseif ($errand['status'] === 'pending_payment' && !empty($errand['payment_receipt_path'])): ?>
+                            <?php 
+                                $receipt_preview_path = '../../public/' . $errand['payment_receipt_path'];
+                                $download_action = "view_errand_info.php";
+                            ?>
                             <div class="payment-verification-panel">
                                 <div class="payment-status-header">
                                     <i class="fa-solid fa-spinner fa-spin status-icon-orange"></i>
@@ -361,9 +399,23 @@
                                     <span class="receipt-section-label">Your Uploaded Receipt</span>
                                     
                                     <div class="attachment-item">
-                                        <a href="../../public/uploads/receipts/<?= basename($errand['payment_receipt_path']); ?>" target="_blank" class="attachment-name">
-                                            <i class="fa-solid fa-file-invoice-dollar"></i> View Submitted Screenshot
+                                        <a href="<?= htmlspecialchars($receipt_preview_path); ?>" target="_blank" class="attachment-name">
+                                            <i class="fa-solid fa-file-invoice-dollar"></i> <?= htmlspecialchars(basename($errand['payment_receipt_path'])); ?>
                                         </a>
+
+                                        <form method="GET" action="<?= $download_action; ?>">
+                                            <input type="hidden" name="errand_id" value="<?= $errand_id; ?>">
+                                            <input type="hidden" name="action" value="download_receipt">
+                                            <input type="hidden" name="download_receipt_id" value="<?= $errand_id; ?>">
+                                            
+                                            <?php if (isset($is_finished) && $is_finished): ?>
+                                                <input type="hidden" name="type" value="history">
+                                            <?php endif; ?>
+
+                                            <button type="submit" class="btn-download">
+                                                <i class="fa-solid fa-download"></i> Download
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>

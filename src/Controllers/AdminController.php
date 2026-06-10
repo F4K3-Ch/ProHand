@@ -526,8 +526,6 @@
                     $notif_type = "system";
                     $notif_message = "New User Added | User: \"{$user_full_name}\" (ID: {$new_user_id}) | Role: \"" . ucfirst($data['role']) . "\" | Added by Admin: \"{$admin_full_name}\" (ID: {$admin_id})";
                     $notif_link = "../admin/view_user_info.php?id={$new_user_id}";
-
-                    // REVISED: Calling the correct function with the logged-in admin's ID
                     $this->user->notifyOtherAdmins($admin_id, $notif_type, $notif_message, $notif_link);
 
                     $_SESSION['success'] = "Successfully Added User!";
@@ -613,7 +611,6 @@
 
                 $notif_type = "errand";
                 
-                // 💡 FIXED: Explicit module subfolders for all roles
                 $client_link = "../client/view_errand_info.php?errand_id={$errand_id}";
                 $tasker_link = "../tasker/view_errand_info.php?errand_id={$errand_id}";
                 $admin_link  = "../admin/view_errand_info.php?errand_id={$errand_id}";
@@ -648,9 +645,6 @@
             exit;
         }
 
-        /**
-         * Route Handler: Process Tasker Cancellation Denial
-         */
         public function handleDenyCancellation() {
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
@@ -685,7 +679,6 @@
 
                 $notif_type = "errand";
                 
-                // 💡 FIXED: Explicit module subfolders for all roles
                 $tasker_link = "../tasker/view_errand_info.php?errand_id={$errand_id}";
                 $admin_link  = "../admin/view_errand_info.php?errand_id={$errand_id}";
 
