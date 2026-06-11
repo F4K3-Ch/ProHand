@@ -2496,19 +2496,19 @@ select[name="role"] option[value="client"] {
 }
 
 /* Flex container for profile photo and buttons side-by-side */
-.tasker-header-row {
+.user-header-row {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
     gap: 15px;
     width: 100%;
-    margin-bottom: 15px;
+    margin-bottom: 5px;
     flex-wrap: wrap; /* Wraps cleanly on tiny mobile screens */
 }
 
 /* Ensure the alert box scales nicely inside the flex row context */
-.tasker-cancellation-alert-box {
+.user-cancellation-alert-box {
     flex: 1;
     min-width: 180px;
     border: 1px dashed #e74c3c;
@@ -2521,7 +2521,7 @@ select[name="role"] option[value="client"] {
 }
 
 /* Maintain clean top/bottom margins on text */
-.tasker-cancellation-alert-box .alert-title {
+.user-cancellation-alert-box .alert-title {
     color: #c0392b;
     font-size: 0.8rem;
     font-weight: 600;
@@ -2964,6 +2964,18 @@ select[name="role"] option[value="client"] {
 /* Status Title size rules */
 .status-title-orange {
     color: #f39c12;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin: 20px;
+}
+
+.status-icon-green {
+    color: #16a34a; 
+    font-size: 1.5rem;
+}
+
+.status-title-green {
+    color: #16a34a; 
     font-weight: 700;
     font-size: 1.5rem;
     margin: 20px;

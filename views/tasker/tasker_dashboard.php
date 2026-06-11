@@ -145,9 +145,9 @@
                                             </form>
 
                                             <!-- Accept Button -->
-                                            <form method="POST">
+                                            <form method="POST" onclick="return confirm('Do you want to accept this errand?');">
                                                 <input type="hidden" name="accept_id" value="<?= $row['id']; ?>">
-                                                <button type="submit" class="btn-accept" onclick="return confirm('Do you want to accept this errand?');">
+                                                <button type="submit" class="btn-accept">
                                                     Accept
                                                 </button>
                                             </form>

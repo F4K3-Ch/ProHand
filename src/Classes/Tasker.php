@@ -81,6 +81,7 @@
                     fee,
                     status,
                     updated_at,
+                    cancel_requested_by_client,
                     cancel_requested_by_tasker
                 FROM errands
                 WHERE tasker_id = ?
@@ -465,20 +466,25 @@
             }
         }
 
-        // Cancel Button
-        public function flagCancellationRequest($errand_id, $tasker_id) {
-            // 1. Verify that this errand belongs to the tasker and is pending payment
+        // Cancel Request Button
+        public function flagTaskerCancellationRequest($errand_id, $tasker_id) {
+            // 1. Verify that this errand belongs to the tasker and is pending payment and in process
             $check_stmt = $this->db->prepare("
                 SELECT title, client_id 
                 FROM errands 
-                WHERE id = ? AND tasker_id = ? AND status = 'pending_payment' 
+                WHERE id = ? 
+                    AND tasker_id = ? 
+                    AND status IN ('pending_payment', 'in_process') 
                 LIMIT 1
             ");
             $check_stmt->bind_param("ii", $errand_id, $tasker_id);
             $check_stmt->execute();
             $res = $check_stmt->get_result();
 
-            if ($res->num_rows !== 1) return false;
+            if ($res->num_rows !== 1) {
+                return false;
+            }
+
             $errand = $res->fetch_assoc();
 
             // 2. Set only the cancel flag column to 1
@@ -486,7 +492,9 @@
                 UPDATE errands
                 SET cancel_requested_by_tasker = 1,
                     updated_at = NOW()
-                WHERE id = ? AND tasker_id = ? AND status = 'pending_payment'
+                WHERE id = ? 
+                    AND tasker_id = ? 
+                    AND status IN ('pending_payment', 'in_process')
             ");
             $update_stmt->bind_param("ii", $errand_id, $tasker_id);
             $update_stmt->execute();

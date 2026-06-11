@@ -162,11 +162,19 @@
                                                 <button type="submit" class="btn-view">View</button>
                                             </form>
 
-                                            <!-- Delete Button -->
-                                            <form method="POST" onsubmit="return confirm('Are you sure you want to delete this errand?');">
-                                                <input type="hidden" name="delete_active_errand_id" value="<?= $row['id']; ?>">
-                                                <button type="submit" class="btn-delete">Delete</button>
-                                            </form>
+                                            <?php if ($row['status'] === 'in_process'): ?>
+                                                <!-- Force Cancel Active Errand Button -->
+                                                <form method="POST" onsubmit="return confirm('CRITICAL: Force-cancel this active errand? The platform will hold the fund for manual payout adjustments.');">
+                                                    <input type="hidden" name="admin_cancel_errand_id" value="<?= $row['id']; ?>">
+                                                    <button type="submit" class="btn-cancel">Cancel</button>
+                                                </form>
+                                            <?php else: ?>
+                                                <!-- Delete Button -->
+                                                <form method="POST" onsubmit="return confirm('Are you sure you want to delete this errand?');">
+                                                    <input type="hidden" name="delete_active_errand_id" value="<?= $row['id']; ?>">
+                                                    <button type="submit" class="btn-delete">Delete</button>
+                                                </form>
+                                            <?php endif; ?>
                                         </div>
                                     </td>
                                 </tr>

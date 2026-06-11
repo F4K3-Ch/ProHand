@@ -28,7 +28,9 @@
                     deadline, 
                     fee, 
                     status, 
-                    updated_at
+                    updated_at,
+                    cancel_requested_by_client,
+                    cancel_requested_by_tasker
                 FROM errands
                 WHERE client_id = ? 
                 AND (
@@ -235,25 +237,27 @@
         }
 
         // edit_errand.php
-        // Delete existing attachments for an errand (used when replacing with a new file)
+        // Gathers the paths to return as an array, then purges the database table records.
         public function deleteErrandAttachments($errand_id) {
-            // 1. Get file paths to delete from server
+            // 1. Fetch file paths to return to the controller
             $stmt = $this->db->prepare("SELECT file_path FROM errand_attachments WHERE errand_id = ?");
             $stmt->bind_param("i", $errand_id);
             $stmt->execute();
             $result = $stmt->get_result();
             
+            $file_paths = [];
             while ($row = $result->fetch_assoc()) {
-                $full_path = "../../public/" . $row['file_path'];
-                if (file_exists($full_path)) {
-                    unlink($full_path);
+                if (!empty($row['file_path'])) {
+                    $file_paths[] = $row['file_path'];
                 }
             }
 
-            // 2. Delete from database
+            // 2. Clear row paths from database cleanly
             $stmt = $this->db->prepare("DELETE FROM errand_attachments WHERE errand_id = ?");
             $stmt->bind_param("i", $errand_id);
-            return $stmt->execute();
+            $stmt->execute();
+
+            return $file_paths;
         }
 
         public function deletePendingErrand($errand_id, $client_id) {
@@ -270,21 +274,21 @@
             $row = $check_result->fetch_assoc();
             $errand_title = $row['title'];
 
-            // 2. Reuse your established function 
-            // This handles the "../../public/" path and the database deletion for attachments
-            $this->deleteErrandAttachments($errand_id);
+            // 2. Returns paths array instead of deleting from disk inside model
+            $paths_to_delete = $this->deleteErrandAttachments($errand_id);
 
             // 3. Delete the main errand record itself 
             $stmt = $this->db->prepare("DELETE FROM errands WHERE id = ? AND client_id = ?");
             $stmt->bind_param("ii", $errand_id, $client_id);
             $delete_result = $stmt->execute();
 
-            // Return title so the Controller can format the success message
-            return $delete_result ? $errand_title : false;
+            // Return payload to controller so it can clean the disk and read the title
+            return $delete_result ? ['title' => $errand_title, 'files' => $paths_to_delete] : false;
         }
 
+        // Cancel Button
         public function cancelAcceptedErrand($errand_id, $client_id) {
-            // 1. Verify ownership, 'pending_payment' status, and grab the receipt path
+            // 1. Verify ownership and 'pending_payment' status
             $check_stmt = $this->db->prepare("
                 SELECT title, tasker_id, payment_receipt_path 
                 FROM errands 
@@ -302,23 +306,12 @@
             $row = $check_result->fetch_assoc();
             $errand_title = $row['title'];
             $tasker_id = $row['tasker_id'];
-            $receipt_path = $row['payment_receipt_path'];
 
-            // 2. Physical File Cleanup: Delete image from server if it exists
-            if (!empty($receipt_path)) {
-                $full_path = "../../public/" . $receipt_path;
-                if (file_exists($full_path)) {
-                    unlink($full_path); 
-                }
-            }
-
-            // 3. Reset the errand back to pending, clear paths, and clear tasker cancel flags
+            // 2. Reset the errand back to pending but KEEP the receipt path intact
             $update_stmt = $this->db->prepare("
                 UPDATE errands 
                 SET status = 'pending', 
                     tasker_id = NULL, 
-                    payment_receipt_path = NULL,
-                    cancel_requested_by_tasker = 0, 
                     accepted_at = NULL, 
                     in_process_at = NULL, 
                     updated_at = NOW() 
@@ -329,18 +322,15 @@
             $update_stmt->execute();
 
             if ($update_stmt->affected_rows === 1) {
-                // 4. Handle Notifications
+                // 3. Handle Notifications
                 $client_full_name = $this->getFullName($client_id);
                 
-                $tasker_full_name = "N/A";
-                if ($tasker_id) {
-                    $tasker_full_name = $this->getFullName($tasker_id);
-                    $tasker_msg = "The Errand: \"{$errand_title}\" (ID: {$errand_id}) you accepted earlier was \"Cancelled\" by the Client: \"{$client_full_name}\" (ID: {$client_id}).";
-                    $tasker_link = "../tasker/view_errand_info.php?errand_id={$errand_id}";
-                    $this->addNotification($tasker_id, "errand", $tasker_msg, $tasker_link);
-                }
+                $tasker_full_name = $this->getFullName($tasker_id);
+                $tasker_msg = "The Errand: \"{$errand_title}\" (ID: {$errand_id}) you accepted earlier was \"Cancelled\" by the Client: \"{$client_full_name}\" (ID: {$client_id}).";
+                $tasker_link = "../tasker/view_errand_info.php?errand_id={$errand_id}";
+                $this->addNotification($tasker_id, "errand", $tasker_msg, $tasker_link);
 
-                $admin_msg = "Errand Cancelled | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Previously Assigned to Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Cancelled by Client: \"{$client_full_name}\" (ID: {$client_id}). Receipt data cleared.";
+                $admin_msg = "Errand Cancelled | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Previously Assigned to Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Cancelled by Client: \"{$client_full_name}\" (ID: {$client_id}). Status returned to \"Pending\" status. Any submitted receipt remains preserved.";
                 $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
                 $this->notifyAllAdmins("errand", $admin_msg, $admin_link);
 
@@ -364,5 +354,45 @@
             $stmt->execute();
             
             return $stmt->affected_rows === 1;
+        }
+
+        // Cancel Request Button
+        public function flagClientCancellationRequest($errand_id, $client_id) {
+            // 1. Verify that this errand belongs to the client and is strictly in_process
+            $check_stmt = $this->db->prepare("
+                SELECT title 
+                FROM errands 
+                WHERE id = ? 
+                    AND client_id = ? 
+                    AND status = 'in_process' 
+                LIMIT 1
+            ");
+            $check_stmt->bind_param("ii", $errand_id, $client_id);
+            $check_stmt->execute();
+            $res = $check_stmt->get_result();
+
+            if ($res->num_rows !== 1) {
+                return false;
+            }
+            
+            $errand = $res->fetch_assoc();
+
+            // 2. Set only the client cancel flag column to 1
+            $update_stmt = $this->db->prepare("
+                UPDATE errands
+                SET cancel_requested_by_client = 1,
+                    updated_at = NOW()
+                WHERE id = ? 
+                    AND client_id = ? 
+                    AND status = 'in_process'
+            ");
+            $update_stmt->bind_param("ii", $errand_id, $client_id);
+            $update_stmt->execute();
+
+            if ($update_stmt->affected_rows === 1) {
+                return $errand;
+            }
+            
+            return false;
         }
     }

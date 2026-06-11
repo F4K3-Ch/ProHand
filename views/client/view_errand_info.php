@@ -42,8 +42,12 @@
         } elseif (isset($_POST['delete_history_id'])) {
             $_POST['id'] = $_POST['delete_history_id']; 
             $sharedController->handleDeleteHistory();
-        } elseif (isset($_POST['submit_payment_proof'])) {
+        } elseif (isset($_POST['submit_payment_proof_id'])) {
+            $_POST['id'] = $_POST['submit_payment_proof_id']; 
             $clientController->handlePaymentUpload();
+        } elseif (isset($_POST['client_request_cancel_id'])) { 
+            $_POST['id'] = $_POST['client_request_cancel_id'];
+            $clientController->clientRequestCancellation();
         }
     }
 
@@ -226,7 +230,7 @@
                                     <?php endif; ?>
 
                                     <button type="submit" class="btn-download">
-                                        <i class="fa-solid fa-download"></i> Download
+                                        <i class="fa-solid fa-download"></i>Download
                                     </button>
                                 </form>
                             </div>
@@ -260,7 +264,7 @@
                                     <?php endif; ?>
 
                                     <button type="submit" class="btn-download">
-                                        <i class="fa-solid fa-download"></i> Download
+                                        <i class="fa-solid fa-download"></i>Download
                                     </button>
                                 </form>
                             </div>
@@ -268,39 +272,56 @@
                     <?php endif; ?>
                 </div>
 
-
                 <div class="info-bot-btn">
                     <?php if ($errand['status'] === 'pending'): ?>
-                        <!-- Edit -->
                         <form method="GET" action="edit_errand.php">
                             <input type="hidden" name="errand_id" value="<?= $errand['id']; ?>">
-                            <button type="submit" class="btn-edit-errand"><i class="fa-regular fa-pen-to-square"></i>Edit</button>
+                            <button type="submit" class="btn-edit-errand">
+                                <i class="fa-regular fa-pen-to-square"></i>Edit
+                            </button>
                         </form>
-                        <!-- Delete -->
-                        <form method="POST"
-                            onsubmit="return confirm('Are you sure you want to delete this errand request?');">
+                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete this errand request?');">
                             <input type="hidden" name="delete_id" value="<?= $errand['id']; ?>">
-                            <button type="submit" class="btn-delete"><i class="fa-regular fa-trash-can"></i>Delete</button>
+                            <button type="submit" class="btn-delete">
+                                <i class="fa-regular fa-trash-can"></i>Delete
+                            </button>
                         </form>
+
                     <?php elseif ($errand['status'] === 'pending_payment'): ?>
-                        <!-- Edit Button Disabled-->
-                        <button disabled class="btn-edit-errand-disabled"><i class="fa-regular fa-pen-to-square"></i>Edit</button>
-                        <!-- Cancel Button-->
-                        <form method="POST"
-                            onsubmit="return confirm('Are you sure you want to cancel this errand? It will return to Pending.');">
+                        <button disabled class="btn-edit-errand-disabled">
+                            <i class="fa-regular fa-pen-to-square"></i>Edit
+                        </button>
+                        <form method="POST" onsubmit="return confirm('Are you sure you want to cancel this errand? It will return to Pending, and any submitted proof of payment will be preserved for review.');">
                             <input type="hidden" name="cancel_accepted_id" value="<?= $errand['id']; ?>">
-                            <button type="submit" class="btn-cancel"><i class="fa-solid fa-ban"></i>Cancel</button>
+                            <button type="submit" class="btn-cancel">
+                                <i class="fa-solid fa-ban"></i>Cancel Errand
+                            </button>
                         </form>
+
                     <?php elseif ($errand['status'] === 'in_process'): ?>
-                        <!-- Edit Button Disabled-->
-                        <button disabled class="btn-edit-errand-disabled"><i class="fa-regular fa-pen-to-square"></i>Edit</button>
-                        <!-- Cancel Button Disabled-->
-                        <button disabled class="btn-cancel-disabled"><i class="fa-solid fa-ban"></i>Cancel</button>
+                        <button disabled class="btn-edit-errand-disabled">
+                            <i class="fa-regular fa-pen-to-square"></i> Edit
+                        </button>
+                        
+                        <?php if ((int)$errand['cancel_requested_by_client'] === 0): ?>
+                            <form method="POST" onsubmit="return confirm('This errand is actively In Process. Requesting a cancellation requires Admin review. Proceed?');">
+                                <input type="hidden" name="client_request_cancel_id" value="<?= $errand['id']; ?>">
+                                <button type="submit" class="btn-cancel">
+                                    <i class="fa-solid fa-hand-holding-hand"></i>Request Cancel
+                                </button>
+                            </form>
+                        <?php else: ?>
+                            <span class="descriptive-status-badge">
+                                <i class="fa-solid fa-spinner fa-spin"></i>Pending Admin Cancel...
+                            </span>
+                        <?php endif; ?>
+
                     <?php elseif (in_array($errand['status'], ['completed', 'failed'])): ?>
-                        <!-- Delete Button -->
                         <form method="POST" onsubmit="return confirm('Are you sure you want to delete this archived errand?');">
                             <input type="hidden" name="delete_history_id" value="<?= $errand['id']; ?>">
-                            <button type="submit" class="btn-delete"><i class="fa-regular fa-trash-can"></i>Delete</button>
+                            <button type="submit" class="btn-delete">
+                                <i class="fa-regular fa-trash-can"></i>Delete
+                            </button>
                         </form>
                     <?php endif; ?>
                 </div>
@@ -376,8 +397,8 @@
                                     <small>Only PNG, JPG, or JPEG allowed. Maximum size: 10 MB</small>
                                 </div>
 
-                                <button type="submit" name="submit_payment_proof" class="btn btn-submit-proof">
-                                    <i class="fa-solid fa-cloud-arrow-up"></i> Submit Proof of Payment
+                                <button type="submit" name="submit_payment_proof_id" class="btn btn-submit-proof">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>Submit Proof of Payment
                                 </button>
                             </form>
 
@@ -415,21 +436,53 @@
                                             <?php endif; ?>
 
                                             <button type="submit" class="btn-download">
-                                                <i class="fa-solid fa-download"></i> Download
+                                                <i class="fa-solid fa-download"></i>Download
                                             </button>
                                         </form>
                                     </div>
                                 </div>
                             </div>
-                        <?php else: ?>
-                            <div class="info-box transaction-status-box">
-                                <i class="fa-solid fa-info-circle status-icon-muted"></i>
-                                <label class="status-label-muted">Current Errand Status</label>
-                                <p class="status-description-text">
-                                    Current status: <strong><?= htmlspecialchars($errand['status']); ?></strong>
+                        <?php elseif ($errand['status'] === 'in_process'): ?>
+                            <?php 
+                                $receipt_preview_path = '../../public/' . $errand['payment_receipt_path'];
+                                $download_action = "view_errand_info.php";
+                            ?>
+                            <div class="payment-verification-panel">
+                                <div class="payment-status-header">
+                                    <i class="fa-solid fa-circle-check status-icon-green"></i>
+                                    <h2 class="status-title-green">Receipt Approved</h2>
+                                </div>
+
+                                <p class="payment-status-message">
+                                    <strong>Your errand receipt has been approved!</strong>
+                                    Thank you for securing your payment.
                                 </p>
+
+                                <div class="payment-receipt-section">
+                                    <span class="receipt-section-label">Your Uploaded Receipt</span>
+                                    
+                                    <div class="attachment-item">
+                                        <a href="<?= htmlspecialchars($receipt_preview_path); ?>" target="_blank" class="attachment-name">
+                                            <i class="fa-solid fa-file-invoice-dollar"></i> <?= htmlspecialchars(basename($errand['payment_receipt_path'])); ?>
+                                        </a>
+
+                                        <form method="GET" action="<?= $download_action; ?>">
+                                            <input type="hidden" name="errand_id" value="<?= $errand_id; ?>">
+                                            <input type="hidden" name="action" value="download_receipt">
+                                            <input type="hidden" name="download_receipt_id" value="<?= $errand_id; ?>">
+                                            
+                                            <?php if (isset($is_finished) && $is_finished): ?>
+                                                <input type="hidden" name="type" value="history">
+                                            <?php endif; ?>
+
+                                            <button type="submit" class="btn-download">
+                                                <i class="fa-solid fa-download"></i>Download
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
-                        <?php endif; ?>
+                        <?php endif; ?> 
                     </div>
                 </div>
             <?php endif; ?>

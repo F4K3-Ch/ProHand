@@ -276,30 +276,29 @@
             }
         }
 
-        // Cancel Button
-        public function requestCancellation() {
+        // Cancel Request Button
+        public function taskerRequestCancellation() {
             $this->auth->restrictTo('tasker');
             $tasker_id = $_SESSION['user_id'];
             
             if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
                 $errand_id = (int)$_POST['id'];
                 
-                $data = $this->tasker->flagCancellationRequest($errand_id, $tasker_id);
+                $data = $this->tasker->flagTaskerCancellationRequest($errand_id, $tasker_id);
 
                 if ($data) {
                     $errand_title = $data['title'];
-                    $client_id = (int)$data['client_id'];
                     $tasker_full_name = $this->user->getFullName($tasker_id);
 
                     $notif_type = "errand";
 
                     // Notify Admins about the incoming flag request
-                    $admin_msg = "Cancellation Requested | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Assigned Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) has requested a drop.";
+                    $admin_msg = "Cancellation Requested | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Assigned Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) has a cancellation request.";
                     $admin_link = "../admin/view_errand_info.php?errand_id=$errand_id";
                     $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
 
                     $_SESSION['success'] = "Cancellation request submitted to Admin.";
-                    header("Location: view_errand_info.php?errand_id=$errand_id");
+                    header("Location: view_errand_info.php?errand_id=$errand_id&from=your_task");
                     exit;
                 } else {
                     $_SESSION['error'] = "Unable to process request.";

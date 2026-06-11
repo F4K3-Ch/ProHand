@@ -234,7 +234,6 @@
                 'fee'         => (float)($post['fee'] ?? 0)
             ];
 
-            // PowerPoint Fix: Added 'ppt' and 'pptx' to allowed types
             $allowed_types = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'docx', 'ppt', 'pptx'];
             $max_size = 10 * 1024 * 1024;
 
@@ -260,8 +259,16 @@
                 $new_file_uploaded = !empty($files['attachment']['name']) && $files['attachment']['error'] === UPLOAD_ERR_OK;
 
                 if ($remove_requested || $new_file_uploaded) {
-                    // This clears the database record and unlinks the physical file from the server
-                    $this->client->deleteErrandAttachments($errand_id);
+                    // Gets back the paths array from the model layer execution block
+                    $old_paths = $this->client->deleteErrandAttachments($errand_id);
+
+                    // YOUR LOOP: Safely unlinks files relative to the public target folder here inside the controller
+                    foreach ($old_paths as $file_path) {
+                        $full_path = "../../public/" . $file_path;
+                        if (file_exists($full_path)) {
+                            unlink($full_path);
+                        }
+                    }
                 }
 
                 // Only save a new record if a file was actually provided
@@ -282,6 +289,35 @@
 
             $_SESSION['error'] = "Failed to update errand.";
             return $post;
+        }
+
+        // Method coordinating total account erasure or standard dashboard deletions
+        public function handleDeleteErrandRequest() {
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_errand_id'])) {
+                $this->auth->restrictTo('client');
+                $client_id = (int)$_SESSION['user_id'];
+                $errand_id = (int)$_POST['delete_errand_id'];
+
+                $payload = $this->client->deletePendingErrand($errand_id, $client_id);
+
+                if ($payload) {
+                    // Wipes paths extracted from database response array inside Controller
+                    foreach ($payload['files'] as $file_path) {
+                        $full_path = "../../public/" . $file_path;
+                        if (file_exists($full_path)) {
+                            unlink($full_path);
+                        }
+                    }
+
+                    $_SESSION['success'] = "Errand \"{$payload['title']}\" was successfully deleted.";
+                    header("Location: client_dashboard.php");
+                    exit;
+                } else {
+                    $_SESSION['error'] = "Failed to remove the requested errand record.";
+                    header("Location: client_dashboard.php");
+                    exit;
+                }
+            }
         }
         
         // Delete pending errand button
@@ -341,7 +377,7 @@
             $client_id = $_SESSION['user_id'];
 
             // 2. Intercept the specific POST form submit trigger
-            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_payment_proof'])) {
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_payment_proof_id'])) {
                 $errand_id = (int)$_POST['errand_id'];
                 
                 // 3. Structural validation of the upload array
@@ -422,6 +458,38 @@
 
                 header("Location: view_errand_info.php?errand_id=" . $errand_id);
                 exit;
+            }
+        }
+
+        // Cancel Request Button
+        public function clientRequestCancellation() {
+            $this->auth->restrictTo('client');
+            $user_id = $_SESSION['user_id'];
+            
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
+                $errand_id = (int)$_POST['id'];
+                
+                $data = $this->client->flagClientCancellationRequest($errand_id, $user_id);
+
+                if ($data) {
+                    $errand_title = $data['title'];
+                    $user_full_name = $this->user->getFullName($user_id);
+
+                    $notif_type = "errand";
+
+                    // Notify Admins about the incoming flag request
+                    $admin_msg = "Cancellation Requested | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$user_full_name}\" (ID: {$user_id}) has a cancellation request.";
+                    $admin_link = "../admin/view_errand_info.php?errand_id=$errand_id";
+                    $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
+
+                    $_SESSION['success'] = "Cancellation request submitted to Admin.";
+                    header("Location: view_errand_info.php?errand_id=$errand_id");
+                    exit;
+                } else {
+                    $_SESSION['error'] = "Unable to process request.";
+                    header("Location: client_dashboard.php");
+                    exit;
+                }
             }
         }
     }

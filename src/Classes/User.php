@@ -318,16 +318,22 @@
             return false;
         }
         
-        // Delete Account
+        // Delete Account (User Self-Deletion)
         public function performAccountDeletion($user_id, $role) {
-            // 1. Fetch the user's name and locate upload directories
+            // 1. Fetch the user's name
             $full_name = $this->getFullName($user_id);
-            $profile_dir = "../../public/uploads/profile_pictures/"; 
-            $attachment_dir = "../../public/uploads/attachments/";
 
             if ($full_name === "Unknown User") {
-                return false; // User doesn't exist
+                return ['success' => false];
             }
+
+            // Standardized tracking payload to pass back up to the Controller
+            $payload = [
+                'success'          => false,
+                'profile_picture'  => '',
+                'attachment_paths' => [],
+                'receipt_paths'    => []
+            ];
 
             // 2. Fetch the target profile picture file path early for later disk cleanup
             $stmt = $this->db->prepare("SELECT profile_picture FROM users WHERE id = ? LIMIT 1");
@@ -335,6 +341,10 @@
             $stmt->execute();
             $user_data = $stmt->get_result()->fetch_assoc();
             $stmt->close();
+
+            if ($user_data) {
+                $payload['profile_picture'] = $user_data['profile_picture'];
+            }
 
             // 3. Notify Affected Users & Peer Admins based on the Target's Role
             if ($role === 'tasker') {
@@ -356,7 +366,7 @@
                         $this->addNotification($target_client_id, "errand", $msg, $link);
 
                         // Notify fellow admins about this broken connection using internal helper
-                        $admin_msg = "Account Deleted | Tasker: \"{$full_name}\" (ID: {$user_id}) | Affected Errand: \"{$errand_title}\" (ID: {$errand_id}) | Status Returned To: \"Pending \" | This account was deleted by the Tasker themselves.";
+                        $admin_msg = "Account Deleted | Tasker: \"{$full_name}\" (ID: {$user_id}) | Affected Errand: \"{$errand_title}\" (ID: {$errand_id}) | Status Returned To: \"Pending\" | This account was deleted by the Tasker themselves.";
                         $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
                         $this->notifyOtherAdmins($user_id, "errand", $admin_msg, $admin_link);
                     }
@@ -367,7 +377,8 @@
                 }
 
             } elseif ($role === 'client') {
-                $stmt = $this->db->prepare("SELECT id, title, tasker_id FROM errands WHERE client_id = ?");
+                // CHANGED: We now fetch payment_receipt_path as well
+                $stmt = $this->db->prepare("SELECT id, title, tasker_id, payment_receipt_path FROM errands WHERE client_id = ?");
                 $stmt->bind_param("i", $user_id);
                 $stmt->execute();
                 $errands_result = $stmt->get_result();
@@ -379,6 +390,11 @@
                         $errand_title = $row['title'];
                         $target_tasker_id = $row['tasker_id'] !== null ? (int)$row['tasker_id'] : null;
 
+                        // FIXED: Collect receipt paths into the payload array safely
+                        if (!empty($row['payment_receipt_path'])) {
+                            $payload['receipt_paths'][] = $row['payment_receipt_path'];
+                        }
+
                         // Notify tasker assigned to this deleted client's errand
                         if ($target_tasker_id !== null) {
                             $msg = "Client: \"{$full_name}\" (ID: {$user_id}), whose Errand: \"{$errand_title}\" (ID: {$errand_id}) you accepted has deleted their account. The errand has been removed.";
@@ -389,7 +405,7 @@
                         $admin_msg = "Account Deleted | Client: \"{$full_name}\" (ID: {$user_id}) | Errand: \"{$errand_title}\" (ID: {$errand_id}) has been removed | This account was deleted by the Client themselves.";
                         $this->notifyOtherAdmins($user_id, "errand", $admin_msg, "");
 
-                        // Process file cleanup loop for physical attachments associated with this client's errand
+                        // FIXED: Collect attachment paths into the payload array instead of unlinking them here
                         $stmt_a = $this->db->prepare("SELECT file_path FROM errand_attachments WHERE errand_id = ?");
                         $stmt_a->bind_param("i", $errand_id);
                         $stmt_a->execute();
@@ -397,13 +413,12 @@
                         $stmt_a->close();
 
                         while ($file = $attachments_res->fetch_assoc()) {
-                            $file_path = $attachment_dir . basename($file['file_path']);
-                            if (file_exists($file_path)) {
-                                unlink($file_path);
+                            if (!empty($file['file_path'])) {
+                                $payload['attachment_paths'][] = $file['file_path'];
                             }
                         }
 
-                        // Delete attachment table details
+                        // Pure database table row purge
                         $stmt_d = $this->db->prepare("DELETE FROM errand_attachments WHERE errand_id = ?");
                         $stmt_d->bind_param("i", $errand_id);
                         $stmt_d->execute();
@@ -421,15 +436,7 @@
                 $this->notifyOtherAdmins($user_id, "system", $admin_msg, "");
             }
 
-            // 4. Cleanup Target's Physical Profile Picture File
-            if (!empty($user_data['profile_picture']) && basename($user_data['profile_picture']) !== "default.jpg") {
-                $file_to_delete = $profile_dir . basename($user_data['profile_picture']);
-                if (file_exists($file_to_delete)) {
-                    unlink($file_to_delete);
-                }
-            }
-
-            // 5. Cascade Structural Records Inside the Database Engine
+            // 4. Cascade Structural Records Inside the Database Engine
             if ($role === 'tasker') {
                 $stmt = $this->db->prepare("UPDATE errands SET status='pending', tasker_id=NULL, accepted_at=NULL, in_process_at=NULL, updated_at=NOW() WHERE tasker_id = ?");
                 $stmt->bind_param("i", $user_id);
@@ -442,13 +449,14 @@
                 $stmt->close();
             }
 
-            // 6. Final Deletion execution context points
+            // 5. Final Deletion execution context points
             $this->deleteAllNotifications($user_id);
             $finalStmt = $this->db->prepare("DELETE FROM users WHERE id = ?");
             $finalStmt->bind_param("i", $user_id);
             $result = $finalStmt->execute();
             $finalStmt->close();
 
-            return $result;
+            $payload['success'] = $result;
+            return $payload;
         }
     }

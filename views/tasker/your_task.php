@@ -12,8 +12,8 @@
 
     // Handle "Cancel" POST
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $_POST['id'] = $_POST['request_cancel_id'];
-        $taskerController->requestCancellation();
+        $_POST['id'] = $_POST['tasker_request_cancel_id'];
+        $taskerController->taskerRequestCancellation();
     }
 
     // Get data from OOP Controller 
@@ -148,18 +148,16 @@
                                     </td>
                                     <td>
                                         <div class="button-row">
-                                            <!-- View Button -->
                                             <form  method="GET" action="view_errand_info.php">
                                                 <input type="hidden" name="errand_id" value="<?= $row['id']; ?>">
                                                 <input type="hidden" name="from" value="your_task">
                                                 <button type="submit" class="btn-view">View</button>
                                             </form>
 
-                                            <!-- Cancel Button -->
                                             <?php if ((int)$row['cancel_requested_by_tasker'] === 0): ?>
-                                                <form method="POST">
-                                                    <input type="hidden" name="request_cancel_id" value="<?= $row['id']; ?>">
-                                                    <button type="submit" name="submit_cancel_request" class="btn-cancel" onclick="return confirm('The client has already paid. This will send a request to the Admin to release you from this errand. Proceed?');">
+                                                <form method="POST" onsubmit="return confirm('Are you sure you want to send a cancellation request to the Admin? This action cannot be undone until processed.');">
+                                                    <input type="hidden" name="tasker_request_cancel_id" value="<?= $row['id']; ?>">
+                                                    <button type="submit" name="submit_cancel_request" class="btn-cancel">
                                                         Cancel
                                                     </button>
                                                 </form>

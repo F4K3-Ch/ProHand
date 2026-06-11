@@ -23,6 +23,9 @@
         } elseif (isset($_POST['cancel_accepted_id'])) {
             $_POST['id'] = $_POST['cancel_accepted_id']; 
             $clientController->handleCancelAccepted(); 
+        } elseif (isset($_POST['client_request_cancel_id'])) {
+            $_POST['id'] = $_POST['client_request_cancel_id'];
+            $clientController->clientRequestCancellation();
         }
     }
     
@@ -169,20 +172,26 @@
                                             </form>
 
                                             <?php if ($row['status'] === 'pending'): ?>
-                                                <!-- Delete Button -->
                                                 <form method="POST" onsubmit="return confirm('Are you sure you want to delete this errand request? It will be deleted permanently.');">
                                                     <input type="hidden" name="delete_id" value="<?= $row['id']; ?>">
                                                     <button type="submit" class="btn-delete">Delete</button>
                                                 </form>
+
                                             <?php elseif ($row['status'] === 'pending_payment'): ?>
-                                                <!-- Cancel Button -->
-                                                <form method="POST" onsubmit="return confirm('Are you sure you want to cancel this errand? It will be return to Pending.');">
+                                                <form method="POST" onsubmit="return confirm('Are you sure you want to cancel this errand? It will return to Pending, and any submitted proof of payment will be preserved for review.');">
                                                     <input type="hidden" name="cancel_accepted_id" value="<?= $row['id']; ?>">
                                                     <button type="submit" class="btn-cancel">Cancel</button>
                                                 </form>
+
                                             <?php elseif ($row['status'] === 'in_process'): ?>
-                                                <!-- Cancel Button Disabled-->
-                                                <button disabled class="btn-cancel-disabled">Cancel</button>
+                                                <?php if ((int)$row['cancel_requested_by_client'] === 0): ?>
+                                                    <form method="POST" onsubmit="return confirm('Are you sure you want to send a cancellation request to the Admin? This action cannot be undone until processed.');">
+                                                        <input type="hidden" name="client_request_cancel_id" value="<?= $row['id']; ?>">
+                                                        <button type="submit" class="btn-cancel">Cancel</button>
+                                                    </form>
+                                                <?php else: ?>
+                                                    <button type="button" disabled class="btn-cancel-disabled">Cancel</button>
+                                                <?php endif; ?>
                                             <?php endif; ?>
                                         </div>
                                     </td>

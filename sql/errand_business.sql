@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS errands (
     status ENUM('pending','pending_payment','in_process') DEFAULT 'pending',
     payment_receipt_path VARCHAR(255) NULL DEFAULT NULL, 
     cancel_requested_by_tasker TINYINT(1) DEFAULT 0 COMMENT '0 = normal, 1 = tasker wants to cancel',
+    cancel_requested_by_client TINYINT(1) DEFAULT 0 COMMENT '0 = normal, 1 = client wants to cancel',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     accepted_at TIMESTAMP NULL DEFAULT NULL,      -- when tasker accepts the errand

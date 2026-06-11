@@ -428,25 +428,34 @@
             return $success ? $new_id : false;
         }
 
-        // Delete User
+        // Delete User via Admin Context
         public function deleteUserByAdmin($admin_id, $user_id, $role, $full_name) {
-            // 1. Get acting admin's name and locate upload directories
-            $admin_full_name = $this->getFullName($admin_id);
-            $profile_dir = "../../public/uploads/profile_pictures/";
-            $attachment_dir = "../../public/uploads/attachments/";
-
             if ($full_name === "Unknown User") {
-                return false; // Target user doesn't exist
+                return ['success' => false];
             }
 
-            // 2. Fetch the target profile picture file path early for later disk cleanup
+            $admin_full_name = $this->getFullName($admin_id);
+            
+            // FIXED: Using arrays to safely catch files across MULTIPLE separate errands
+            $payload = [
+                'success'          => false,
+                'profile_picture'  => '',
+                'attachment_paths' => [], 
+                'receipt_paths'    => []  
+            ];
+
+            // 1. Fetch profile picture path
             $stmt = $this->db->prepare("SELECT profile_picture FROM users WHERE id = ? LIMIT 1");
             $stmt->bind_param("i", $user_id);
             $stmt->execute();
             $user_data = $stmt->get_result()->fetch_assoc();
             $stmt->close();
 
-            // 3. Notify Affected Users & Peer Admins based on the Target's Role
+            if ($user_data) {
+                $payload['profile_picture'] = $user_data['profile_picture'];
+            }
+
+            // 2. Handle Tasker-specific cascades
             if ($role === 'tasker') {
                 $stmt = $this->db->prepare("SELECT id, title, client_id FROM errands WHERE tasker_id = ?");
                 $stmt->bind_param("i", $user_id);
@@ -460,24 +469,22 @@
                         $errand_title = $row['title'];
                         $target_client_id = (int)$row['client_id'];
 
-                        // Notify client that their tasker was deleted by an admin
                         $msg = "Tasker: \"{$full_name}\" (ID: {$user_id}), who accepted your Errand: \"{$errand_title}\" (ID: {$errand_id}), had their account deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). The errand status has been returned to \"Pending\".";
                         $link = "../client/view_errand_info.php?errand_id={$errand_id}";
                         $this->addNotification($target_client_id, "errand", $msg, $link);
 
-                        // Notify fellow peer admins about this broken connection using inherited helper
                         $admin_msg = "Account Deleted | Tasker: \"{$full_name}\" (ID: {$user_id}) | Affected Errand: \"{$errand_title}\" (ID: {$errand_id}) | Status Returned To: \"Pending\" | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
                         $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
                         $this->notifyOtherAdmins($admin_id, "errand", $admin_msg, $admin_link);
                     }
                 } else {
-                    // No errands affected, send a single summary notification to peer admins
                     $admin_msg = "Account Deleted | Tasker: \"{$full_name}\" (ID: {$user_id}) | No errands were affected | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
                     $this->notifyOtherAdmins($admin_id, "system", $admin_msg, "");
                 }
 
+            // 3. Handle Client-specific cascades
             } elseif ($role === 'client') {
-                $stmt = $this->db->prepare("SELECT id, title, tasker_id FROM errands WHERE client_id = ?");
+                $stmt = $this->db->prepare("SELECT id, title, tasker_id, payment_receipt_path FROM errands WHERE client_id = ?");
                 $stmt->bind_param("i", $user_id);
                 $stmt->execute();
                 $errands_result = $stmt->get_result();
@@ -489,56 +496,47 @@
                         $errand_title = $row['title'];
                         $target_tasker_id = $row['tasker_id'] !== null ? (int)$row['tasker_id'] : null;
 
-                        // Notify tasker assigned to this deleted client's errand
+                        // FIXED: Append receipt path to list array so multiple errands don't overwrite each other
+                        if (!empty($row['payment_receipt_path'])) {
+                            $payload['receipt_paths'][] = $row['payment_receipt_path'];
+                        }
+
                         if ($target_tasker_id !== null) {
                             $msg = "Client: \"{$full_name}\" (ID: {$user_id}), whose Errand: \"{$errand_title}\" (ID: {$errand_id}) you accepted, had their account deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). The errand has been removed.";
                             $this->addNotification($target_tasker_id, "errand", $msg, "");
                         }
 
-                        // Notify fellow peer admins about dropped client post using inherited helper
                         $admin_msg = "Account Deleted | Client: \"{$full_name}\" (ID: {$user_id}) | Errand: \"{$errand_title}\" (ID: {$errand_id}) has been removed | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
                         $this->notifyOtherAdmins($admin_id, "errand", $admin_msg, "");
 
-                        // Process file cleanup loop for physical attachments associated with this client's errand
-                        $stmt_a = $this->db->prepare("SELECT file_path FROM errand_attachments WHERE errand_id = ?");
+                        // Captures single attachment file entry for this precise loop iteration
+                        $stmt_a = $this->db->prepare("SELECT file_path FROM errand_attachments WHERE errand_id = ? LIMIT 1");
                         $stmt_a->bind_param("i", $errand_id);
                         $stmt_a->execute();
-                        $attachments_res = $stmt_a->get_result();
+                        $file_data = $stmt_a->get_result()->fetch_assoc();
                         $stmt_a->close();
 
-                        while ($file = $attachments_res->fetch_assoc()) {
-                            $file_path = $attachment_dir . basename($file['file_path']);
-                            if (file_exists($file_path)) {
-                                unlink($file_path);
-                            }
+                        // FIXED: Append attachment path to list array
+                        if ($file_data) {
+                            $payload['attachment_paths'][] = $file_data['file_path'];
                         }
 
-                        // Delete attachment table details
+                        // Pure database table row purge
                         $stmt_d = $this->db->prepare("DELETE FROM errand_attachments WHERE errand_id = ?");
                         $stmt_d->bind_param("i", $errand_id);
                         $stmt_d->execute();
                         $stmt_d->close();
                     }
                 } else {
-                    // No client posts to clear out, send summary alert
                     $admin_msg = "Account Deleted | Client: \"{$full_name}\" (ID: {$user_id}) | No errands were affected | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
                     $this->notifyOtherAdmins($admin_id, "system", $admin_msg, "");
                 }
             } elseif ($role === 'admin') {
-                // If an admin account is deleted by another admin, log it cleanly
                 $admin_msg = "Account Deleted | Admin: \"{$full_name}\" (ID: {$user_id}) | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
                 $this->notifyOtherAdmins($admin_id, "system", $admin_msg, "");
             }
 
-            // 4. Cleanup Target's Physical Profile Picture File
-            if (!empty($user_data['profile_picture']) && basename($user_data['profile_picture']) !== "default.jpg") {
-                $file_to_delete = $profile_dir . basename($user_data['profile_picture']);
-                if (file_exists($file_to_delete)) {
-                    unlink($file_to_delete);
-                }
-            }
-
-            // 5. Cascade Structural Records Inside the Database Engine
+            // 4. Structural Cascades
             if ($role === 'tasker') {
                 $stmt = $this->db->prepare("UPDATE errands SET status='pending', tasker_id=NULL, accepted_at=NULL, in_process_at=NULL, updated_at=NOW() WHERE tasker_id = ?");
                 $stmt->bind_param("i", $user_id);
@@ -551,36 +549,134 @@
                 $stmt->close();
             }
 
-            // 6. Final Deletion execution context points (using direct inherited calls)
+            // 5. User cleanup execution context
             $this->deleteAllNotifications($user_id);
             $finalStmt = $this->db->prepare("DELETE FROM users WHERE id = ?");
             $finalStmt->bind_param("i", $user_id);
             $result = $finalStmt->execute();
             $finalStmt->close();
 
-            return $result;
+            $payload['success'] = $result;
+            return $payload;
         }
 
-        public function approveTaskerCancellation($errand_id) {
-            $query = "UPDATE errands 
-                    SET status = 'pending',
-                        tasker_id = NULL,
-                        accepted_at = NULL,
-                        cancel_requested_by_tasker = 0
-                    WHERE id = ? AND status = 'pending_payment'";
-                    
-            $stmt = $this->db->prepare($query);
+        public function approveCancellation($errand_id) {
+            // 1. Fetch the errand first to see who requested the cancellation
+            $check = $this->db->prepare("
+                SELECT cancel_requested_by_tasker, cancel_requested_by_client 
+                FROM errands 
+                WHERE id = ? AND status IN ('pending_payment', 'in_process')
+                LIMIT 1
+            ");
+            $check->bind_param("i", $errand_id);
+            $check->execute();
+            $errand = $check->get_result()->fetch_assoc();
+
+            if (!$errand) return false;
+            $stmt = $this->db->prepare("UPDATE errands 
+                SET status = 'pending',
+                    tasker_id = NULL,
+                    accepted_at = NULL,
+                    in_process_at = NULL,
+                    cancel_requested_by_tasker = 0,
+                    cancel_requested_by_client = 0,
+                    updated_at = NOW()
+                WHERE id = ? AND status IN ('pending_payment', 'in_process')
+                ");
+            $stmt->bind_param("i", $errand_id);
+            
+            if ($stmt->execute()) {
+                // Return the original flags so your controller knows who to notify!
+                return $errand; 
+            }
+            return false;
+        }
+
+        public function denyCancellation($errand_id) {
+            $stmt = $this->db->prepare("
+                UPDATE errands 
+                SET cancel_requested_by_tasker = 0,
+                    cancel_requested_by_client = 0,
+                    updated_at = NOW()
+                WHERE id = ? AND status IN ('pending_payment', 'in_process')
+            ");
             $stmt->bind_param("i", $errand_id);
             return $stmt->execute();
         }
-
-        public function denyTaskerCancellation($errand_id) {
-            $query = "UPDATE errands 
-                    SET cancel_requested_by_tasker = 0
-                    WHERE id = ? AND status = 'pending_payment'";
-                    
-            $stmt = $this->db->prepare($query);
+        
+        // Approve Receipt & Transition to In Process
+        public function approvePaymentReceipt($errand_id) {
+            // Fetch info to verify state and gather text context for notifications
+            $stmt = $this->db->prepare("
+                SELECT title, client_id, tasker_id 
+                FROM errands 
+                WHERE id = ? AND status = 'pending_payment' AND payment_receipt_path IS NOT NULL 
+                LIMIT 1
+            ");
             $stmt->bind_param("i", $errand_id);
-            return $stmt->execute();
+            $stmt->execute();
+            $errand = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            if (!$errand) return false;
+
+            // Update state to in_process and log timestamp
+            $update = $this->db->prepare("
+                UPDATE errands 
+                SET status = 'in_process', 
+                    in_process_at = NOW(), 
+                    updated_at = NOW() 
+                WHERE id = ?
+            ");
+            $update->bind_param("i", $errand_id);
+            $execution_result = $update->execute();
+            $update->close();
+            
+            if ($execution_result) {
+                return [
+                    'success'   => true,
+                    'title'     => $errand['title'],
+                    'client_id' => $errand['client_id'],
+                    'tasker_id' => $errand['tasker_id']
+                ];
+            }
+            return false;
+        }
+
+        // Reject Receipt & Reset Path Field / Maintain pending_payment status
+        public function rejectPaymentReceipt($errand_id) {
+            $stmt = $this->db->prepare("
+                SELECT title, client_id, payment_receipt_path 
+                FROM errands 
+                WHERE id = ? AND status = 'pending_payment' 
+                LIMIT 1
+            ");
+            $stmt->bind_param("i", $errand_id);
+            $stmt->execute();
+            $errand = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            if (!$errand) return false;
+
+            $update = $this->db->prepare("
+                UPDATE errands 
+                SET payment_receipt_path = NULL, 
+                    updated_at = NOW() 
+                WHERE id = ?
+            ");
+            $update->bind_param("i", $errand_id);
+            $execution_result = $update->execute();
+            $update->close();
+            
+            if ($execution_result) {
+                // Return tracking structure to controller; no physical file unlinking performed here
+                return [
+                    'success'              => true,
+                    'title'                => $errand['title'],
+                    'client_id'            => $errand['client_id'],
+                    'payment_receipt_path' => $errand['payment_receipt_path']
+                ];
+            }
+            return false;
         }
     }
