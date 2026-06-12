@@ -160,7 +160,7 @@
                         <p><?= number_format($active_status['in_process']); ?></p>
                     </div>
 
-                    <div class="total-card bg-total">
+                    <div class="total-card bg-total span-full">
                         <div class="card-header">
                             <span class="status-circle circle-total"></span>
                             <h3>Total Active Errands</h3>
@@ -184,7 +184,7 @@
                         <p><?= number_format($finished_status['failed']); ?></p>
                     </div>
 
-                    <div class="total-card bg-total">
+                    <div class="total-card bg-total span-full">
                         <div class="card-header">
                             <span class="status-circle circle-total"></span>
                             <h3>Total Finished Errands</h3>
@@ -192,23 +192,39 @@
                         <p><?= number_format($total_finished_errands); ?></p>
                     </div>
 
-                    <div class="total-card bg-earnings">
+                    <div class="total-card bg-earnings span-full">
                         <div class="card-header">
                             <span class="status-circle circle-earnings"></span>
-                            <h3>Earnings</h3>
+                            <h3>Tasker Earnings (80%)</h3>
                         </div>
                         <p>₱<?= number_format($earnings, 2); ?></p>
                     </div>
 
-                    <div class="total-card bg-failed-earnings">
+                    <div class="total-card bg-failed-earnings span-full">
                         <div class="card-header">
                             <span class="status-circle circle-failed-earnings"></span>
-                            <h3>Failed Earnings</h3>
+                            <h3>Tasker Failed Earnings (80%)</h3>
                         </div>
                         <p>&#8722; ₱<?= number_format($failed_earnings, 2); ?></p>
                     </div>
 
-                    <div class="total-card bg-total">
+                    <div class="total-card bg-admin-earnings span-full">
+                        <div class="card-header">
+                            <span class="status-circle circle-admin-earnings"></span>
+                            <h3>Admin Commission (20%)</h3>
+                        </div>
+                        <p>₱<?= number_format($admin_earnings, 2); ?></p>
+                    </div>
+
+                    <div class="total-card bg-admin-failed span-full">
+                        <div class="card-header">
+                            <span class="status-circle circle-admin-failed"></span>
+                            <h3>Admin Failed Cuts (20%)</h3>
+                        </div>
+                        <p>&#8722; ₱<?= number_format($admin_failed_earnings, 2); ?></p>
+                    </div>
+
+                    <div class="total-card bg-total span-full">
                         <div class="card-header">
                             <span class="status-circle circle-total"></span>
                             <h3>Total Errands</h3>

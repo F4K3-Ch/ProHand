@@ -107,7 +107,7 @@
                             <p><?= number_format($status_counts['in_process']); ?></p>
                         </div>
 
-                        <div class="total-card bg-total">
+                        <div class="total-card bg-total span-full">
                             <div class="card-header">
                                 <span class="status-circle circle-total"></span>
                                 <h3>Total Active Errands</h3>

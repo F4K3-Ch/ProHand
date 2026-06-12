@@ -236,8 +236,14 @@
                             IFNULL(SUM(status = 'completed'), 0) AS completed,
                             IFNULL(SUM(status = 'failed'), 0) AS failed,
                             COUNT(*) AS total,
+                            
+                            /* 100% Gross volumes (Combined platform financial scale) */
                             IFNULL(SUM(CASE WHEN status = 'completed' THEN fee ELSE 0 END), 0) AS earnings,
-                            IFNULL(SUM(CASE WHEN status = 'failed' THEN fee ELSE 0 END), 0) AS failed_earnings
+                            IFNULL(SUM(CASE WHEN status = 'failed' THEN fee ELSE 0 END), 0) AS failed_earnings,
+                            
+                            /* 20% Net Company platform revenue cuts */
+                            IFNULL(SUM(CASE WHEN status = 'completed' THEN fee ELSE 0 END), 0) * 0.20 AS admin_earnings,
+                            IFNULL(SUM(CASE WHEN status = 'failed' THEN fee ELSE 0 END), 0) * 0.20 AS admin_failed_earnings
                         FROM history
                         WHERE status IN ('completed', 'failed')";
             } elseif ($type === 'users') {
@@ -260,26 +266,63 @@
 
         // view_user_info.php
         public function getUserDetails($user_id) {
-            $stmt = $this->db->prepare("SELECT * FROM users WHERE id = ? LIMIT 1");
+            // 1. Fetch primary profile data for the targeted user
+            $stmt = $this->db->prepare("
+                SELECT * FROM users 
+                WHERE id = ? 
+                LIMIT 1
+            ");
             $stmt->bind_param("i", $user_id);
             $stmt->execute();
             $user = $stmt->get_result()->fetch_assoc();
 
+            // Guard clause: Return null immediately if the user doesn't exist
             if (!$user) return null;
 
+            // Initialize the data payload array with user info
             $data = ['user' => $user];
 
+            // 2. Fetch specialized operational metrics if the user is a Tasker
             if ($user['role'] === 'tasker') {
-                $stmt = $this->db->prepare("SELECT IFNULL(SUM(status = 'pending_payment'), 0) AS pending_payment, IFNULL(SUM(status = 'in_process'), 0) AS in_process, COUNT(*) AS total_active FROM errands WHERE tasker_id = ? AND status IN ('pending_payment', 'in_process')");
+                
+                // Get active errand progress numbers (Pending Payment and In Process states)
+                $stmt = $this->db->prepare("
+                    SELECT 
+                        IFNULL(SUM(status = 'pending_payment'), 0) AS pending_payment, 
+                        IFNULL(SUM(status = 'in_process'), 0) AS in_process, 
+                        COUNT(*) AS total_active 
+                    FROM errands 
+                    WHERE tasker_id = ? 
+                    AND status IN ('pending_payment', 'in_process')
+                ");
                 $stmt->bind_param("i", $user_id);
                 $stmt->execute();
                 $data['active'] = $stmt->get_result()->fetch_assoc();
 
-                $stmt = $this->db->prepare("SELECT IFNULL(SUM(status = 'completed'), 0) AS completed, IFNULL(SUM(status = 'failed'), 0) AS failed, COUNT(*) AS total_finished, IFNULL(SUM(CASE WHEN status = 'completed' THEN fee ELSE 0 END), 0) AS earnings, IFNULL(SUM(CASE WHEN status = 'failed' THEN fee ELSE 0 END), 0) AS failed_earnings FROM history WHERE tasker_id = ? AND status IN ('completed', 'failed')");
+                // Get historical performance metrics, calculate the 80% Tasker split, and calculate your 20% Admin commission
+                $stmt = $this->db->prepare("
+                    SELECT 
+                        IFNULL(SUM(status = 'completed'), 0) AS completed, 
+                        IFNULL(SUM(status = 'failed'), 0) AS failed, 
+                        COUNT(*) AS total_finished, 
+                        
+                        /* TASKER SPLIT (80%) */
+                        IFNULL(SUM(CASE WHEN status = 'completed' THEN fee ELSE 0 END), 0) * 0.80 AS earnings, 
+                        IFNULL(SUM(CASE WHEN status = 'failed' THEN fee ELSE 0 END), 0) * 0.80 AS failed_earnings,
+                        
+                        /* ADMIN COMMISSION (20%) */
+                        IFNULL(SUM(CASE WHEN status = 'completed' THEN fee ELSE 0 END), 0) * 0.20 AS admin_earnings, 
+                        IFNULL(SUM(CASE WHEN status = 'failed' THEN fee ELSE 0 END), 0) * 0.20 AS admin_failed_earnings
+                    FROM history 
+                    WHERE tasker_id = ? 
+                    AND status IN ('completed', 'failed')
+                ");
                 $stmt->bind_param("i", $user_id);
                 $stmt->execute();
                 $data['history'] = $stmt->get_result()->fetch_assoc();
             }
+            
+            // Return the aggregated multi-dimensional metrics payload array
             return $data;
         }
 

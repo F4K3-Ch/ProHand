@@ -180,7 +180,7 @@
                     FROM errands
                     WHERE status = 'pending'
                 ");
-            } elseif ($type === 'pending_payment') {
+            } elseif ($type === 'accepted') {
                 // Your Tasks: Accepted & In Processc  
                 $stmt = $this->db->prepare("
                     SELECT 
@@ -193,14 +193,18 @@
                 ");
                 $stmt->bind_param("i", $tasker_id);
             } elseif ($type === 'history') {
-                // Finished Errands: Completed & Failed with Earnings
+                // Finished Errands: Completed & Failed with 80% Earnings applied
                 $stmt = $this->db->prepare("
                     SELECT 
                         COUNT(*) as total_count,
                         IFNULL(SUM(status = 'completed'), 0) as completed_count,
                         IFNULL(SUM(status = 'failed'), 0) as failed_count,
-                        IFNULL(SUM(CASE WHEN status = 'completed' THEN fee ELSE 0 END), 0) as total_earnings,
-                        IFNULL(SUM(CASE WHEN status = 'failed' THEN fee ELSE 0 END), 0) as total_failed_earnings
+                        
+                        /* Calculate tasker's take-home revenue (80% cut of gross fee) */
+                        IFNULL(SUM(CASE WHEN status = 'completed' THEN fee ELSE 0 END), 0) * 0.80 as total_earnings,
+
+                        /* Calculate tasker's lost penalty revenue on failed tasks (80% split) */
+                        IFNULL(SUM(CASE WHEN status = 'failed' THEN fee ELSE 0 END), 0) * 0.80 as total_failed_earnings
                     FROM history 
                     WHERE tasker_id = ? AND tasker_deleted = 0
                 ");

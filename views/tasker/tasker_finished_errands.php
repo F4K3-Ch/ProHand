@@ -112,7 +112,7 @@
                             <p><?= number_format($status_counts['failed']); ?></p>
                         </div>
 
-                        <div class="total-card bg-total">
+                        <div class="total-card bg-total span-full">
                             <div class="card-header">
                                 <span class="status-circle circle-total"></span>
                                 <h3>Total Finished Errands</h3>
@@ -121,7 +121,7 @@
                         </div>
 
                         <!-- Earnings (completed errands) -->
-                        <div class="total-card bg-earnings">
+                        <div class="total-card bg-earnings span-full">
                             <div class="card-header">
                                 <span class="status-circle circle-earnings"></span>
                                 <h3>Earnings</h3>
@@ -130,7 +130,7 @@
                         </div>
 
                         <!-- Failed Earnings (failed errands) -->
-                        <div class="total-card bg-failed-earnings">
+                        <div class="total-card bg-failed-earnings span-full">
                             <div class="card-header">
                                 <span class="status-circle circle-failed-earnings"></span>
                                 <h3>Failed Earnings</h3>

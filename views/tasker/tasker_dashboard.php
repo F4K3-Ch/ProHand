@@ -96,7 +96,7 @@
                     <h3>Errand Status Metrics</h3>
 
                     <div class="total-cards-container">
-                        <div class="total-card bg-pending">
+                        <div class="total-card bg-pending span-full">
                             <div class="card-header">
                                 <span class="status-circle circle-pending"></span>
                                 <h3>Pending</h3>

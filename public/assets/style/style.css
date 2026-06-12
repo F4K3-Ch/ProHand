@@ -1120,6 +1120,7 @@ body {
     width: 15px;
     height: 15px;
     border-radius: 50%;
+    flex-shrink: 0;
 }
 
 /* Status/Role Badges */
@@ -1173,7 +1174,6 @@ body {
     color: #16a34a;   
 }
 
-
 /* Total Cards */
 /* Total cards with semi-transparent background matching the circle color */
 .total-card.bg-pending,
@@ -1209,6 +1209,14 @@ body {
     background-color: rgba(220, 38, 38, 0.15);
 }
 
+.total-card.bg-admin-earnings {
+    background-color: rgba(147, 51, 234, 0.15);
+}
+
+.total-card.bg-admin-failed {
+    background-color: rgba(225, 29, 72, 0.15);
+}
+
 /* Circle Colors */
 .circle-pending { background-color: #facc15; }
 .circle-accepted { background-color: #3b82f6; }
@@ -1218,6 +1226,8 @@ body {
 .circle-total    { background-color: #6b7280; }
 .circle-earnings { background-color: #10b981; }
 .circle-failed-earnings { background-color: #dc2626; }
+.circle-admin-earnings { background-color: #6366f1; }
+.circle-admin-failed { background-color: #f43f5e; }
 
 
 /* Role cards with semi-transparent background matching the circle color */
@@ -1674,7 +1684,7 @@ body {
     font-size: 1.5rem;
     font-weight: 600;
     text-align: center;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .tasker-errand-metrics .total-card h3 {
@@ -1684,10 +1694,13 @@ body {
 }
 
 .tasker-errand-metrics .total-cards-container {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap; 
-    gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.total-card.span-full {
+    grid-column: span 2;
 }
 
 /* Title */
@@ -3943,5 +3956,15 @@ select[name="role"] option[value="client"] {
 
     .status-title-orange {
         font-size: 1.3rem;
+    }
+
+    .total-cards-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .total-card.span-full {
+        grid-column: span 2;
     }
 }

@@ -112,7 +112,7 @@
                             <p><?= number_format($status_counts['failed']); ?></p>
                         </div>
 
-                        <div class="total-card bg-total">
+                        <div class="total-card bg-total span-full">
                             <div class="card-header">
                                 <span class="status-circle circle-total"></span>
                                 <h3>Total Finished Errands</h3>

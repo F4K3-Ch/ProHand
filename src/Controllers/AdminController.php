@@ -48,18 +48,25 @@
             $errands = $this->admin->getFinishedErrands($search);
 
             return [
-                'result_finished' => $errands,
-                'search'          => $search,
-                'status_counts'   => [
-                    'completed'   => $metrics['completed'],
-                    'failed'      => $metrics['failed']
+                'result_finished'       => $errands,
+                'search'                => $search,
+                'status_counts'         => [
+                    'completed'   => $metrics['completed'] ?? 0,
+                    'failed'      => $metrics['failed'] ?? 0
                 ],
-                'total_errands'   => $metrics['total'],
-                'earnings'        => $metrics['earnings'],
-                'failed_earnings' => $metrics['failed_earnings'],
-                'status_labels'   => [
+                'total_errands'         => $metrics['total'] ?? 0,
+                
+                // 100% Volume figures mapping
+                'earnings'              => $metrics['earnings'] ?? 0.0,
+                'failed_earnings'       => $metrics['failed_earnings'] ?? 0.0,
+                
+                // REVISED: Added to pass the company's 20% split directly into your view file
+                'admin_earnings'        => $metrics['admin_earnings'] ?? 0.0,
+                'admin_failed_earnings' => $metrics['admin_failed_earnings'] ?? 0.0,
+                
+                'status_labels'         => [
                     'completed' => 'Completed', 
-                    'failed' => 'Failed'
+                    'failed'    => 'Failed'
                 ]
             ];
         }
@@ -217,6 +224,8 @@
                 $formatted['total_finished_errands'] = (int)($data['history']['total_finished'] ?? 0);
                 $formatted['earnings']               = (float)($data['history']['earnings'] ?? 0);
                 $formatted['failed_earnings']        = (float)($data['history']['failed_earnings'] ?? 0);
+                $formatted['admin_earnings']        = (float)($data['history']['admin_earnings'] ?? 0);
+                $formatted['admin_failed_earnings'] = (float)($data['history']['admin_failed_earnings'] ?? 0);
                 $formatted['total_errands']          = $formatted['total_active_errands'] + $formatted['total_finished_errands'];
             } else {
                 // Provide empty defaults for non-taskers to prevent "Undefined Variable" if the HTML check fails
@@ -226,6 +235,8 @@
                 $formatted['total_finished_errands'] = 0;
                 $formatted['earnings'] = 0.0;
                 $formatted['failed_earnings'] = 0.0;
+                $formatted['admin_earnings'] = 0.0;
+                $formatted['admin_failed_earnings'] = 0.0;
                 $formatted['total_errands'] = 0;
             }
 
