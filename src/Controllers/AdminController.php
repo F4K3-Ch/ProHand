@@ -395,7 +395,8 @@
             
             $display_status = ucwords(str_replace('_', ' ', $status));
 
-            // 2. FILE SYSTEM CLEANUP (Handled here in Controller to keep Admin.php pure query)
+            // 2. FILE SYSTEM CLEANUP
+            
             // Clean up attachments
             $attachment_dir = "../../public/uploads/history/attachments/";
             $attachment_res = $this->admin->getAttachment($history_id, true);
@@ -405,6 +406,17 @@
                     if (file_exists($file_path)) {
                         unlink($file_path);
                     }
+                }
+            }
+
+            // Clean up payment receipt file securely using your exact folder structure
+            if (!empty($history['payment_receipt_path'])) {
+                $receipt_dir = "../../public/uploads/history/receipts/";
+                $receipt_filename = basename($history['payment_receipt_path']);
+                $receipt_path = $receipt_dir . $receipt_filename;
+
+                if (file_exists($receipt_path)) {
+                    unlink($receipt_path);
                 }
             }
 

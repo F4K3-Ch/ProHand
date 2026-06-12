@@ -278,160 +278,136 @@
 
         // Update to Completed or Failed Button
         public function completeOrFailErrand($errand_id, $tasker_id, $new_status) {
-            // FIX 1: Set the timezone to Philippine Time
-            date_default_timezone_set('Asia/Manila');
-            $now = date('Y-m-d H:i:s');
+                date_default_timezone_set('Asia/Manila');
+                $current_timestamp = date('Y-m-d H:i:s');
 
-            $this->db->begin_transaction();
+                $this->db->begin_transaction();
 
-            try {
-                // Fetch errand with JOINs
-                $stmt = $this->db->prepare("
-                    SELECT e.*, 
-                        c.first_name AS client_first_name, c.middle_name AS client_middle_name, c.last_name AS client_last_name,
-                        c.email AS client_email, c.contact_number AS client_contact, c.profile_picture AS client_picture,
-                        t.first_name AS tasker_first_name, t.middle_name AS tasker_middle_name, t.last_name AS tasker_last_name,
-                        t.email AS tasker_email, t.contact_number AS tasker_contact, t.profile_picture AS tasker_picture
-                    FROM errands AS e
-                    LEFT JOIN users AS c ON e.client_id = c.id
-                    LEFT JOIN users AS t ON e.tasker_id = t.id
-                    WHERE e.id = ? AND e.tasker_id = ?
-                    LIMIT 1
-                ");
-                $stmt->bind_param("ii", $errand_id, $tasker_id);
-                $stmt->execute();
-                $errand = $stmt->get_result()->fetch_assoc();
+                try {
+                    // 1. Fetch active errand data along with user profile information
+                    $errand_statement = $this->db->prepare("
+                        SELECT e.*, 
+                            c.first_name AS client_first_name, c.middle_name AS client_middle_name, c.last_name AS client_last_name,
+                            c.email AS client_email, c.contact_number AS client_contact, c.profile_picture AS client_picture,
+                            t.first_name AS tasker_first_name, t.middle_name AS tasker_middle_name, t.last_name AS tasker_last_name,
+                            t.email AS tasker_email, t.contact_number AS tasker_contact, t.profile_picture AS tasker_picture
+                        FROM errands AS e
+                        LEFT JOIN users AS c ON e.client_id = c.id
+                        LEFT JOIN users AS t ON e.tasker_id = t.id
+                        WHERE e.id = ? AND e.tasker_id = ? 
+                        LIMIT 1
+                    ");
+                    $errand_statement->bind_param("ii", $errand_id, $tasker_id);
+                    $errand_statement->execute();
+                    $errand_data = $errand_statement->get_result()->fetch_assoc();
+                    $errand_statement->close();
 
-                if (!$errand) throw new Exception("Errand not found.");
-
-                $client_profile_history = $this->snapshotProfilePic($errand['client_id'], $errand['client_picture']);
-                $tasker_profile_history = $this->snapshotProfilePic($errand['tasker_id'], $errand['tasker_picture']);
-
-                $comp_at = ($new_status === 'completed') ? $now : null;
-                $fail_at = ($new_status === 'failed') ? $now : null;
-
-                // Insert into history
-                $history_sql = "INSERT INTO history (
-                    errand_id, title, description, deadline, contact, location, fee, status,
-                    client_id, client_first_name, client_middle_name, client_last_name, client_email, client_contact_number, client_profile_picture,
-                    tasker_id, tasker_first_name, tasker_middle_name, tasker_last_name, tasker_email, tasker_contact_number, tasker_profile_picture,
-                    created_at, accepted_at, in_process_at, completed_at, failed_at, updated_at, tasker_deleted, client_deleted
-                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-
-                $ins = $this->db->prepare($history_sql);
-                $t_del = 0; $c_del = 0;
-                $ins->bind_param("isssssdsissssssissssssssssssii", 
-                    $errand['id'], $errand['title'], $errand['description'], $errand['deadline'], $errand['contact'], $errand['location'], $errand['fee'], $new_status,
-                    $errand['client_id'], $errand['client_first_name'], $errand['client_middle_name'], $errand['client_last_name'], $errand['client_email'], $errand['client_contact'], $client_profile_history,
-                    $errand['tasker_id'], $errand['tasker_first_name'], $errand['tasker_middle_name'], $errand['tasker_last_name'], $errand['tasker_email'], $errand['tasker_contact'], $tasker_profile_history,
-                    $errand['created_at'], $errand['accepted_at'], $errand['in_process_at'], $comp_at, $fail_at, $now, $t_del, $c_del
-                );
-                $ins->execute();
-                $history_id = $this->db->insert_id;
-
-                // FIX 2: This helper now handles the physical UNLINK (deletion)
-                $this->moveAttachmentsToHistory($errand_id, $history_id);
-
-                // Delete active records
-                $this->db->query("DELETE FROM errand_attachments WHERE errand_id = $errand_id");
-                $this->db->query("DELETE FROM errands WHERE id = $errand_id");
-
-                $this->db->commit();
-                return $errand;
-
-            } catch (Exception $e) {
-                $this->db->rollback();
-                error_log("History Error: " . $e->getMessage());
-                return false;
-            }
-        }
-
-        // Helper function for Profile Picture Copying
-        private function snapshotProfilePic($uid, $pic_path) {
-            // 1. Default path if no picture exists
-            $default_db_path = 'uploads/history/profile_pictures/default.jpg';
-            
-            if (!empty($pic_path) && basename($pic_path) !== 'default.jpg') {
-                $ext = pathinfo($pic_path, PATHINFO_EXTENSION);
-                $unique_name = $uid . '_' . time() . '_' . rand(1000,9999) . '.' . $ext;
-                
-                // 2. This is the string that will be saved in the 'history' table
-                // We exclude the '../../public/' part so the DB stays clean
-                $history_db_path = 'uploads/history/profile_pictures/' . $unique_name;
-                
-                // 3. Absolute Filesystem Paths for the copy() operation
-                // From src/Classes/Tasker.php, we go:
-                // ../../             -> Project Root
-                // public/            -> Public Folder
-                // ltrim($pic_path)   -> The original path (e.g., uploads/profiles/me.jpg)
-                $src_fs  = __DIR__ . '/../../public/' . ltrim($pic_path, '/');
-                $dest_fs = __DIR__ . '/../../public/' . $history_db_path;
-                
-                // 4. Ensure the history folder exists
-                $dir = dirname($dest_fs);
-                if (!is_dir($dir)) {
-                    mkdir($dir, 0777, true);
-                }
-
-                // 5. Perform the physical copy
-                if (file_exists($src_fs)) {
-                    copy($src_fs, $dest_fs);
-                    return $history_db_path; // Return the new unique path
-                }
-            }
-            
-            return $default_db_path;
-        }
-
-        // Helper function for Attachments
-        private function moveAttachmentsToHistory($errand_id, $history_id) {
-            // 1. Get attachments from the ACTIVE table (Check if your table is 'errand_attachments')
-            $stmt = $this->db->prepare("SELECT * FROM errand_attachments WHERE errand_id = ?");
-            $stmt->bind_param("i", $errand_id);
-            $stmt->execute();
-            $attachments_result = $stmt->get_result();
-
-            while ($file = $attachments_result->fetch_assoc()) {
-                // 2. Generate a unique name for the history folder
-                $extension = pathinfo($file['file_path'], PATHINFO_EXTENSION);
-                $unique_name = $errand_id . '_' . time() . '_' . rand(1000, 9999) . '.' . $extension;
-
-                // 3. Path for the DATABASE (Front-end view)
-                $history_db_path = 'uploads/history/attachments/' . $unique_name;
-
-                // 4. Physical Filesystem Paths (Server-side)
-                // From src/Classes, go up two levels to reach /public/
-                $original_file_fs = __DIR__ . '/../../public/' . ltrim($file['file_path'], '/');
-                $history_file_fs  = __DIR__ . '/../../public/' . $history_db_path;
-
-                // Ensure the history/attachments folder exists
-                $dir = dirname($history_file_fs);
-                if (!is_dir($dir)) {
-                    mkdir($dir, 0777, true);
-                }
-
-                // 5. Copy and then delete the original file
-                if (file_exists($original_file_fs)) {
-                    if (copy($original_file_fs, $history_file_fs)) {
-                        unlink($original_file_fs); // Delete original from active uploads folder
+                    if (!$errand_data) {
+                        throw new Exception("Active errand context not found.");
                     }
-                }
 
-                // 6. Insert into history_attachments table
-                // Note: Check if your column is 'history_errand_id'
-                $insert_stmt = $this->db->prepare("
-                    INSERT INTO history_attachments (history_errand_id, file_path, original_name, uploaded_at)
-                    VALUES (?, ?, ?, ?)
-                ");
-                $insert_stmt->bind_param(
-                    "isss", 
-                    $history_id, 
-                    $history_db_path,
-                    $file['original_name'], 
-                    $file['uploaded_at']
-                );
-                $insert_stmt->execute();
+                    // 2. Fetch the SINGLE attachment belonging to this errand (Strictly 1 maximum)
+                    $attachment_statement = $this->db->prepare("SELECT * FROM errand_attachments WHERE errand_id = ? LIMIT 1");
+                    $attachment_statement->bind_param("i", $errand_id);
+                    $attachment_statement->execute();
+                    $active_attachment = $attachment_statement->get_result()->fetch_assoc();
+                    $attachment_statement->close();
+
+                    // 3. Pre-calculate the history table paths for profiles, receipt, and attachment
+                    $client_history_picture = $this->generateHistoryPath($errand_data['client_id'], $errand_data['client_picture'], 'profile_pictures', '');
+                    $tasker_history_picture = $this->generateHistoryPath($errand_data['tasker_id'], $errand_data['tasker_picture'], 'profile_pictures', '');
+                    
+                    $history_receipt_path = $this->generateHistoryPath($errand_id, $errand_data['payment_receipt_path'], 'receipts', '_receipt');
+                    
+                    $history_attachment_path = null;
+                    if ($active_attachment) {
+                        $history_attachment_path = $this->generateHistoryPath($errand_id, $active_attachment['file_path'], 'attachments', '_attachment');
+                    }
+
+                    $completed_at_timestamp = ($new_status === 'completed') ? $current_timestamp : null;
+                    $failed_at_timestamp    = ($new_status === 'failed') ? $current_timestamp : null;
+
+                    // 4. Record mapping migration execution into History table
+                    $history_insert_query = "INSERT INTO history (
+                        errand_id, title, description, deadline, contact, location, fee, status, payment_receipt_path,
+                        client_id, client_first_name, client_middle_name, client_last_name, client_email, client_contact_number, client_profile_picture,
+                        tasker_id, tasker_first_name, tasker_middle_name, tasker_last_name, tasker_email, tasker_contact_number, tasker_profile_picture,
+                        created_at, accepted_at, in_process_at, completed_at, failed_at, updated_at, tasker_deleted, client_deleted
+                    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
+                    $history_statement = $this->db->prepare($history_insert_query);
+                    $tasker_deleted_flag = 0; 
+                    $client_deleted_flag = 0;
+                    
+                    $history_statement->bind_param("isssssdssissssssissssssssssssii", 
+                        $errand_data['id'], $errand_data['title'], $errand_data['description'], $errand_data['deadline'], $errand_data['contact'], $errand_data['location'], $errand_data['fee'], $new_status, $history_receipt_path,
+                        $errand_data['client_id'], $errand_data['client_first_name'], $errand_data['client_middle_name'], $errand_data['client_last_name'], $errand_data['client_email'], $errand_data['client_contact'], $client_history_picture,
+                        $errand_data['tasker_id'], $errand_data['tasker_first_name'], $errand_data['tasker_middle_name'], $errand_data['tasker_last_name'], $errand_data['tasker_email'], $errand_data['tasker_contact'], $tasker_history_picture,
+                        $errand_data['created_at'], $errand_data['accepted_at'], $errand_data['in_process_at'], $completed_at_timestamp, $failed_at_timestamp, $current_timestamp, $tasker_deleted_flag, $client_deleted_flag
+                    );
+                    $history_statement->execute();
+                    $history_row_id = $this->db->insert_id;
+                    $history_statement->close();
+
+                    // 5. Save the SINGLE attachment record to history attachments table if it exists
+                    if ($active_attachment) {
+                        $history_attachment_statement = $this->db->prepare("
+                            INSERT INTO history_attachments (history_errand_id, file_path, original_name, uploaded_at)
+                            VALUES (?, ?, ?, ?)
+                        ");
+                        $history_attachment_statement->bind_param(
+                            "isss", 
+                            $history_row_id, 
+                            $history_attachment_path, 
+                            $active_attachment['original_name'], 
+                            $active_attachment['uploaded_at']
+                        );
+                        $history_attachment_statement->execute();
+                        $history_attachment_statement->close();
+                    }
+
+                    // 6. Delete active data records cleanly from live operational tables
+                    $this->db->query("DELETE FROM errand_attachments WHERE errand_id = $errand_id");
+                    $this->db->query("DELETE FROM errands WHERE id = $errand_id");
+
+                    $this->db->commit();
+
+                    // 7. Hand over clear tracking references back to the controller to run file migrations safely
+                    return [
+                        'title'                => $errand_data['title'],
+                        'client_id'            => $errand_data['client_id'],
+                        
+                        'old_receipt_path'     => $errand_data['payment_receipt_path'],
+                        'new_receipt_path'     => $history_receipt_path,
+                        
+                        'old_attachment_path'  => $active_attachment ? $active_attachment['file_path'] : null,
+                        'new_attachment_path'  => $history_attachment_path,
+                        
+                        'client_old_picture'   => $errand_data['client_picture'],
+                        'client_new_picture'   => $client_history_picture,
+                        
+                        'tasker_old_picture'   => $errand_data['tasker_picture'],
+                        'tasker_new_picture'   => $tasker_history_picture
+                    ];
+
+                } catch (Exception $exception) {
+                    $this->db->rollback();
+                    error_log("History Error Query Block Failed: " . $exception->getMessage());
+                    return false;
+                }
             }
+
+        // Private Helper: Pure path string generator for structural tables matching database targets.
+        private function generateHistoryPath($target_id, $current_file_path, $target_folder, $filename_suffix = '') {
+            if (empty($current_file_path)) {
+                return ($target_folder === 'profile_pictures') ? 'uploads/history/profile_pictures/default.jpg' : null;
+            }
+            if (basename($current_file_path) === 'default.jpg') {
+                return 'uploads/history/profile_pictures/default.jpg';
+            }
+            
+            $file_extension = pathinfo($current_file_path, PATHINFO_EXTENSION);
+            return "uploads/history/{$target_folder}/" . $target_id . $filename_suffix . '_' . time() . '_' . rand(1000, 9999) . '.' . $file_extension;
         }
 
         // Cancel Request Button

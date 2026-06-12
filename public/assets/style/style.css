@@ -2953,6 +2953,8 @@ select[name="role"] option[value="client"] {
     flex-direction: row;
     align-items: center;
     justify-content: center;
+    gap: 10px;
+    margin: 20px;
 }
 
 /* Spinning clock icon size rules */
@@ -2966,7 +2968,6 @@ select[name="role"] option[value="client"] {
     color: #f39c12;
     font-weight: 700;
     font-size: 1.5rem;
-    margin: 20px;
 }
 
 .status-icon-green {
@@ -2978,7 +2979,6 @@ select[name="role"] option[value="client"] {
     color: #16a34a; 
     font-weight: 700;
     font-size: 1.5rem;
-    margin: 20px;
 }
 
 .payment-status-message {
@@ -3928,5 +3928,9 @@ select[name="role"] option[value="client"] {
         flex-wrap: wrap;           /* allow wrapping on small screens */
         gap: 12px;
         width: 100%;
+    }
+
+    .status-title-orange {
+        font-size: 1.3rem;
     }
 }

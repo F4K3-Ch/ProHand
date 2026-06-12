@@ -200,25 +200,66 @@
                 $errand_id = (int)$_POST['id'];
                 $new_status = $_POST['new_status'];
 
-                // 1. Perform the database transaction (Snapshot to history and delete original)
-                $errand = $this->tasker->completeOrFailErrand($errand_id, $tasker_id, $new_status);
+                // 1. Run Pure DB Query Operation to claim transaction blueprint details
+                $migration_data = $this->tasker->completeOrFailErrand($errand_id, $tasker_id, $new_status);
 
-                if ($errand) {
-                    $errand_title = $errand['title'];
-                    $client_id = (int)$errand['client_id'];
+                if ($migration_data) {
+                    $errand_title = $migration_data['title'];
+                    $client_id    = (int)$migration_data['client_id'];
+                    $base_public  = __DIR__ . '/../../public/';
 
-                    // 2. Fetch full names via the user class for consistency
+                    // A. Process Client Profile Snapshot Copying
+                    if (!empty($migration_data['client_old_picture']) && basename($migration_data['client_old_picture']) !== 'default.jpg') {
+                        $src = $base_public . ltrim($migration_data['client_old_picture'], '/');
+                        $dst = $base_public . ltrim($migration_data['client_new_picture'], '/');
+                        if (!is_dir(dirname($dst))) mkdir(dirname($dst), 0777, true);
+                        if (file_exists($src)) copy($src, $dst);
+                    }
+
+                    // B. Process Tasker Profile Snapshot Copying
+                    if (!empty($migration_data['tasker_old_picture']) && basename($migration_data['tasker_old_picture']) !== 'default.jpg') {
+                        $src = $base_public . ltrim($migration_data['tasker_old_picture'], '/');
+                        $dst = $base_public . ltrim($migration_data['tasker_new_picture'], '/');
+                        if (!is_dir(dirname($dst))) mkdir(dirname($dst), 0777, true);
+                        if (file_exists($src)) copy($src, $dst);
+                    }
+
+                    // C. Process Errand Task Attachment Relocation 
+                    if (!empty($migration_data['old_attachment_path']) && !empty($migration_data['new_attachment_path'])) {
+                        $src = $base_public . ltrim($migration_data['old_attachment_path'], '/');
+                        $dst = $base_public . ltrim($migration_data['new_attachment_path'], '/');
+                        if (!is_dir(dirname($dst))) mkdir(dirname($dst), 0777, true);
+
+                        if (file_exists($src)) {
+                            if (copy($src, $dst)) {
+                                unlink($src);
+                            }
+                        }
+                    }
+
+                    // D. Process Payment Receipt Relocation
+                    if (!empty($migration_data['old_receipt_path']) && !empty($migration_data['new_receipt_path'])) {
+                        $src = $base_public . ltrim($migration_data['old_receipt_path'], '/');
+                        $dst = $base_public . ltrim($migration_data['new_receipt_path'], '/');
+                        if (!is_dir(dirname($dst))) mkdir(dirname($dst), 0777, true);
+
+                        if (file_exists($src)) {
+                            if (copy($src, $dst)) {
+                                unlink($src);
+                            }
+                        }
+                    }
+
                     $tasker_full_name = $this->user->getFullName($tasker_id); 
                     $client_full_name = $this->user->getFullName($client_id);
+                    $notif_type       = "errand";
 
-                    $notif_type = "errand";
-
-                    // 3. Notify Client (Matching your original format with IDs)
+                    // Notify Client
                     $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was updated to \"" . ucfirst($new_status)  . "\" by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
                     $client_link = "../client/view_errand_info.php?errand_id=$errand_id";
                     $this->user->addNotification($client_id, $notif_type, $client_msg, $client_link);
 
-                    // 4. Notify all Admins (Matching your original detailed format with IDs)
+                    // Notify all Admins
                     $admin_msg = "Errand Updated to " . ucfirst($new_status)  . " | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Updated by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
                     $admin_link = "../admin/view_errand_info.php?errand_id=$errand_id";
                     $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
