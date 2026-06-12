@@ -35,7 +35,7 @@
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['delete_id'])) {
             $_POST['id'] = $_POST['delete_id']; 
-            $clientController->handleDeleteErrand(); 
+            $clientController->handleDeletePending();
         } elseif (isset($_POST['cancel_accepted_id'])) {
             $_POST['id'] = $_POST['cancel_accepted_id']; 
             $clientController->handleCancelAccepted(); 
@@ -393,11 +393,11 @@
                                 
                                 <div class="info-box create-errand-input-box">
                                     <label>Upload Receipt Image</label>
-                                    <input type="file" name="gcash_receipt" accept=".jpg,.jpeg,.png" required>
+                                    <input type="file" name="receipt" accept=".jpg,.jpeg,.png" required>
                                     <small>Only PNG, JPG, or JPEG allowed. Maximum size: 10 MB</small>
                                 </div>
 
-                                <button type="submit" name="submit_payment_proof_id" class="btn btn-submit-proof">
+                                <button type="submit" name="submit_payment_proof_id" value="<?= $errand['id']; ?>" class="btn btn-submit-proof">
                                     <i class="fa-solid fa-cloud-arrow-up"></i>Submit Proof of Payment
                                 </button>
                             </form>
@@ -414,7 +414,7 @@
                                 </div>
 
                                 <p class="payment-status-message">
-                                    <strong>Pending. Please wait until the admin checks your uploaded receipt.</strong> 
+                                    <strong>Please wait until the admin checks your uploaded receipt.</strong> 
                                     Once verified, your tasker will be notified immediately to start your errand.
                                 </p>
 
@@ -442,6 +442,7 @@
                                     </div>
                                 </div>
                             </div>
+
                         <?php elseif ($errand['status'] === 'in_process'): ?>
                             <?php 
                                 $receipt_preview_path = '../../public/' . $errand['payment_receipt_path'];
@@ -455,7 +456,89 @@
 
                                 <p class="payment-status-message">
                                     <strong>Your errand receipt has been approved!</strong>
-                                    Thank you for securing your payment.
+                                    Your tasker is now actively working on your request. Please coordinate directly with them if you need to provide extra details or check for live updates.
+                                </p>
+
+                                <div class="payment-receipt-section">
+                                    <span class="receipt-section-label">Your Uploaded Receipt</span>
+                                    
+                                    <div class="attachment-item">
+                                        <a href="<?= htmlspecialchars($receipt_preview_path); ?>" target="_blank" class="attachment-name">
+                                            <i class="fa-solid fa-file-invoice-dollar"></i> <?= htmlspecialchars(basename($errand['payment_receipt_path'])); ?>
+                                        </a>
+
+                                        <form method="GET" action="<?= $download_action; ?>">
+                                            <input type="hidden" name="errand_id" value="<?= $errand_id; ?>">
+                                            <input type="hidden" name="action" value="download_receipt">
+                                            <input type="hidden" name="download_receipt_id" value="<?= $errand_id; ?>">
+                                            
+                                            <?php if (isset($is_finished) && $is_finished): ?>
+                                                <input type="hidden" name="type" value="history">
+                                            <?php endif; ?>
+
+                                            <button type="submit" class="btn-download">
+                                                <i class="fa-solid fa-download"></i>Download
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                        <?php elseif ($errand['status'] === 'completed'): ?>
+                            <?php 
+                                $receipt_preview_path = '../../public/' . $errand['payment_receipt_path'];
+                                $download_action = "view_errand_info.php";
+                            ?>
+                            <div class="payment-verification-panel">
+                                <div class="payment-status-header">
+                                    <i class="fa-solid fa-circle-check status-icon-green"></i>
+                                    <h2 class="status-title-green">Errand Completed Successfully</h2>
+                                </div>
+
+                                <p class="payment-status-message">
+                                    <strong>Thank you for trusting our service!</strong> 
+                                    If you need any assistance or have questions regarding your completed errand, please feel free to contact us or your tasker directly. We look forward to helping you again!
+                                </p>
+
+                                <div class="payment-receipt-section">
+                                    <span class="receipt-section-label">Your Uploaded Receipt</span>
+                                    
+                                    <div class="attachment-item">
+                                        <a href="<?= htmlspecialchars($receipt_preview_path); ?>" target="_blank" class="attachment-name">
+                                            <i class="fa-solid fa-file-invoice-dollar"></i> <?= htmlspecialchars(basename($errand['payment_receipt_path'])); ?>
+                                        </a>
+
+                                        <form method="GET" action="<?= $download_action; ?>">
+                                            <input type="hidden" name="errand_id" value="<?= $errand_id; ?>">
+                                            <input type="hidden" name="action" value="download_receipt">
+                                            <input type="hidden" name="download_receipt_id" value="<?= $errand_id; ?>">
+                                            
+                                            <?php if (isset($is_finished) && $is_finished): ?>
+                                                <input type="hidden" name="type" value="history">
+                                            <?php endif; ?>
+
+                                            <button type="submit" class="btn-download">
+                                                <i class="fa-solid fa-download"></i>Download
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                        <?php elseif ($errand['status'] === 'failed'): ?>
+                            <?php 
+                                $receipt_preview_path = '../../public/' . $errand['payment_receipt_path'];
+                                $download_action = "view_errand_info.php";
+                            ?>
+                            <div class="payment-verification-panel">
+                                <div class="payment-status-header">
+                                    <i class="fa-solid fa-circle-exclamation text-danger status-icon-red"></i>
+                                    <h2 class="status-title-red">Errand Unsuccessful</h2>
+                                </div>
+
+                                <p class="payment-status-message">
+                                    <strong>This errand was marked as failed.</strong> 
+                                    Since your transaction was secured by our platform, you can safely file a dispute or request a refund through our support channels.
                                 </p>
 
                                 <div class="payment-receipt-section">

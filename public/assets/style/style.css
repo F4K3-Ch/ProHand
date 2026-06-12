@@ -2981,6 +2981,17 @@ select[name="role"] option[value="client"] {
     font-size: 1.5rem;
 }
 
+.status-icon-red {
+    color: #dc2626;   
+    font-size: 1.5rem;
+}
+
+.status-title-red {
+    color: #dc2626;  
+    font-weight: 700;
+    font-size: 1.5rem; 
+}
+
 .payment-status-message {
     color: var(--color-text);
     font-size: 1rem;

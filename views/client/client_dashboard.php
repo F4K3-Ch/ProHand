@@ -19,7 +19,7 @@
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['delete_id'])) {
             $_POST['id'] = $_POST['delete_id']; 
-            $clientController->handleDeleteErrand(); 
+            $clientController->handleDeletePending(); 
         } elseif (isset($_POST['cancel_accepted_id'])) {
             $_POST['id'] = $_POST['cancel_accepted_id']; 
             $clientController->handleCancelAccepted(); 

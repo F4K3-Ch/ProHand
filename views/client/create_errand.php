@@ -15,20 +15,23 @@
 
     // 3. Initialize variables to prevent "Undefined Variable" warnings
     $title = $description = $deadline_input = $contact = $location = $fee_input = '';
-    $error = $_SESSION['error'] ?? ''; 
 
-    // 4. Handle Create Errand action
-    // On GET: it returns empty data. On POST: it processes the errand.
+    // 4. Handle Create Errand action FIRST
+    // This processes the form and sets $_SESSION['error'] if validation fails
     $formData = $clientController->handleCreateErrand($_POST, $_FILES);
 
-    // 5. If the controller returned data (because of a validation error), use it
+    // 5. NOW extract the error message from the session after the controller has run
+    $error = $_SESSION['error'] ?? ''; 
+    unset($_SESSION['error']); // Safely clear it for the next request cycle
+
+    // 6. If the controller returned data (because of a validation error), use it
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_array($formData)) {
-        $title = $formData['title'];
-        $description = $formData['description'];
-        $deadline_input = $formData['deadline'];
-        $contact = $formData['contact'];
-        $location = $formData['location'];
-        $fee_input = $formData['fee'];
+        $title = $formData['title'] ?? '';
+        $description = $formData['description'] ?? '';
+        $deadline_input = $formData['deadline'] ?? '';
+        $contact = $formData['contact'] ?? '';
+        $location = $formData['location'] ?? '';
+        $fee_input = $formData['fee'] ?? '';
     }
 ?>
 

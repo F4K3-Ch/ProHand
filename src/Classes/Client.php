@@ -311,6 +311,7 @@
             $update_stmt = $this->db->prepare("
                 UPDATE errands 
                 SET status = 'pending', 
+                    cancel_requested_by_tasker = 0,
                     tasker_id = NULL, 
                     accepted_at = NULL, 
                     in_process_at = NULL, 

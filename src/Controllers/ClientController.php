@@ -150,6 +150,13 @@
                 return $post;
             }
 
+            // Check for negative values or zero fee amounts
+            $fee = (float)($post['fee'] ?? 0);
+            if ($fee <= 0) {
+                $_SESSION['error'] = "The errand fee must be a valid positive amount.";
+                return $post;
+            }
+
             $data = [
                 'client_id'   => $client_id,
                 'title'       => trim($post['title'] ?? ''),
@@ -225,6 +232,13 @@
                 return $post;
             }
 
+            // Check for negative values or zero fee amounts
+            $fee = (float)($post['fee'] ?? 0);
+            if ($fee <= 0) {
+                $_SESSION['error'] = "The errand fee must be a valid positive amount.";
+                return $post;
+            }
+
             $data = [
                 'title'       => trim($post['title'] ?? ''),
                 'description' => trim($post['description'] ?? ''),
@@ -291,17 +305,16 @@
             return $post;
         }
 
-        // Method coordinating total account erasure or standard dashboard deletions
-        public function handleDeleteErrandRequest() {
-            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_errand_id'])) {
+        // Delete pending errand button
+        public function handleDeletePending() {
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
                 $this->auth->restrictTo('client');
                 $client_id = (int)$_SESSION['user_id'];
-                $errand_id = (int)$_POST['delete_errand_id'];
+                $errand_id = (int)$_POST['id'];
 
                 $payload = $this->client->deletePendingErrand($errand_id, $client_id);
 
                 if ($payload) {
-                    // Wipes paths extracted from database response array inside Controller
                     foreach ($payload['files'] as $file_path) {
                         $full_path = "../../public/" . $file_path;
                         if (file_exists($full_path)) {
@@ -309,7 +322,7 @@
                         }
                     }
 
-                    $_SESSION['success'] = "Errand \"{$payload['title']}\" was successfully deleted.";
+                    $_SESSION['success'] = "Errand \"{$payload['title']}\" (ID: {$errand_id}) was successfully deleted.";
                     header("Location: client_dashboard.php");
                     exit;
                 } else {
@@ -318,33 +331,6 @@
                     exit;
                 }
             }
-        }
-        
-        // Delete pending errand button
-        public function handleDeleteErrand() {
-            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
-
-            // 1. Auth Guard and User ID retrieval
-            $this->auth->restrictTo('client');
-            $client_id = $_SESSION['user_id'];
-            
-            // Access $_POST directly, just like your TaskerController does
-            $errand_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-
-            if ($errand_id > 0) {
-                $errand_title = $this->client->deletePendingErrand($errand_id, $client_id);
-
-                if ($errand_title) {
-                    $_SESSION['success'] = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) request has been cancelled and deleted successfully.";
-                } else {
-                    $_SESSION['error'] = "Error in cancelling and deleting your Errand request. Please try again.";
-                }
-            } else {
-                $_SESSION['error'] = "Invalid request.";
-            }
-
-            header("Location: client_dashboard.php");
-            exit;
         }
 
         public function handleCancelAccepted() {
@@ -361,7 +347,7 @@
                 if ($errand_title) {
                     $_SESSION['success'] = "You successfully cancelled Errand: \"{$errand_title}\" (ID: {$errand_id}). The admin and tasker has been notified.";
                 } else {
-                    $_SESSION['error'] = "Failed to cancel Errand (ID: {$errand_id}). It may no longer be in 'Pending Payment' status.";
+                    $_SESSION['error'] = "Failed to cancel Errand: \"{$errand_title}\" (ID: {$errand_id}). It may no longer be in 'Pending Payment' status.";
                 }
             } else {
                 $_SESSION['error'] = "Invalid request.";
@@ -377,17 +363,17 @@
             $client_id = $_SESSION['user_id'];
 
             // 2. Intercept the specific POST form submit trigger
-            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_payment_proof_id'])) {
-                $errand_id = (int)$_POST['errand_id'];
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
+                $errand_id = (int)$_POST['id'];
                 
                 // 3. Structural validation of the upload array
-                if (!isset($_FILES['gcash_receipt']) || $_FILES['gcash_receipt']['error'] !== UPLOAD_ERR_OK) {
+                if (!isset($_FILES['receipt']) || $_FILES['receipt']['error'] !== UPLOAD_ERR_OK) {
                     $_SESSION['error'] = "File upload failed. Please try capturing or uploading the screenshot again.";
                     header("Location: view_errand_info.php?errand_id=" . $errand_id);
                     exit;
                 }
 
-                $file = $_FILES['gcash_receipt'];
+                $file = $_FILES['receipt'];
                 
                 // 4. File Size Constraint Validation (10 MB Maximum limit)
                 $max_size = 10 * 1024 * 1024; // 10 Megabytes in Bytes
