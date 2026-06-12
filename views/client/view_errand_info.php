@@ -299,9 +299,9 @@
                         </form>
 
                     <?php elseif ($errand['status'] === 'in_process'): ?>
-                        <button disabled class="btn-edit-errand-disabled">
-                            <i class="fa-regular fa-pen-to-square"></i>Edit
-                        </button>
+                        <span class="descriptive-status-badge">
+                            <i class="fa-solid fa-spinner fa-spin"></i>Tasker is performing errand...
+                        </span>
                         
                         <?php if ((int)$errand['cancel_requested_by_client'] === 0): ?>
                             <form method="POST" onsubmit="return confirm('This errand is actively In Process. Requesting a cancellation requires Admin review. Proceed?');">
