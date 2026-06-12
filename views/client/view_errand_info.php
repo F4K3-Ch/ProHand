@@ -294,13 +294,13 @@
                         <form method="POST" onsubmit="return confirm('Are you sure you want to cancel this errand? It will return to Pending, and any submitted proof of payment will be preserved for review.');">
                             <input type="hidden" name="cancel_accepted_id" value="<?= $errand['id']; ?>">
                             <button type="submit" class="btn-cancel">
-                                <i class="fa-solid fa-ban"></i>Cancel Errand
+                                <i class="fa-solid fa-ban"></i>Cancel
                             </button>
                         </form>
 
                     <?php elseif ($errand['status'] === 'in_process'): ?>
                         <button disabled class="btn-edit-errand-disabled">
-                            <i class="fa-regular fa-pen-to-square"></i> Edit
+                            <i class="fa-regular fa-pen-to-square"></i>Edit
                         </button>
                         
                         <?php if ((int)$errand['cancel_requested_by_client'] === 0): ?>
@@ -310,7 +310,7 @@
                                     <i class="fa-solid fa-hand-holding-hand"></i>Request Cancel
                                 </button>
                             </form>
-                        <?php else: ?>
+                        <?php elseif ((int)$errand['cancel_requested_by_client'] === 1): ?>
                             <span class="descriptive-status-badge">
                                 <i class="fa-solid fa-spinner fa-spin"></i>Pending Admin Cancel...
                             </span>

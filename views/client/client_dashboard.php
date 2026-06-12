@@ -189,7 +189,7 @@
                                                         <input type="hidden" name="client_request_cancel_id" value="<?= $row['id']; ?>">
                                                         <button type="submit" class="btn-cancel">Cancel</button>
                                                     </form>
-                                                <?php else: ?>
+                                                <?php elseif ((int)$row['cancel_requested_by_client'] === 1): ?>
                                                     <button type="button" disabled class="btn-cancel-disabled">Cancel</button>
                                                 <?php endif; ?>
                                             <?php endif; ?>

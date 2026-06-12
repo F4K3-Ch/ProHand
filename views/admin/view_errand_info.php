@@ -51,6 +51,9 @@
         } elseif (isset($_POST['reject_payment_id'])) {
             $_POST['id'] = $_POST['reject_payment_id'];
             $adminController->handlePaymentRejection();
+        } elseif (isset($_POST['admin_cancel_errand_id'])) {
+            $_POST['id'] = $_POST['admin_cancel_errand_id'];
+            $adminController->handleAdminForceCancellation();
         }
     }
 
@@ -282,45 +285,56 @@
                 </div>
 
                 <div class="info-bot-btn">
-                    <?php if ($errand['status'] === 'pending_payment'): ?>
-                        <form method="POST" onsubmit="return confirm('Confirm you received the GCash deposit? This will change the status to In Process.');">
-                            <input type="hidden" name="approve_payment_id" value="<?= $errand['id']; ?>">
-                            <button type="submit" class="btn-approve">
-                                <i class="fa-solid fa-circle-check"></i>Accept Receipt
-                            </button>
-                        </form>
-                        <form method="POST" onsubmit="return confirm('Reject this proof screenshot? The client will need to submit a valid receipt.');">
-                            <input type="hidden" name="reject_payment_id" value="<?= $errand['id']; ?>">
-                            <button type="submit" class="btn-reject">
-                                <i class="fa-solid fa-circle-xmark"></i>Reject Receipt
-                            </button>
-                        </form>
-                    <?php elseif ($errand['status'] === 'in_process'): ?>
-                        <span class="descriptive-status-badge">
-                            <i class="fa-solid fa-spinner fa-spin"></i>Tasker is performing errand...
-                        </span>
-                    <?php endif; ?>
                     <?php if ($is_active): ?>
-                        <?php if ($errand['status'] === 'in_process'): ?>
-                            <!-- Force Cancel Active Errand Button -->
+                        <?php if ($errand['status'] === 'pending'): ?>
+                            <form method="POST" onsubmit="return confirm('Are you sure you want to delete this pending errand?');">
+                                <input type="hidden" name="delete_active_errand_id" value="<?= $errand['id']; ?>">
+                                <button type="submit" class="btn-delete">
+                                    <i class="fa-regular fa-trash-can"></i>Delete
+                                </button>
+                            </form>
+
+                        <?php elseif ($errand['status'] === 'pending_payment'): ?>
+                            <form method="POST" onsubmit="return confirm('Confirm you received the GCash deposit? This will change the status to In Process.');">
+                                <input type="hidden" name="approve_payment_id" value="<?= $errand['id']; ?>">
+                                <button type="submit" class="btn-approve">
+                                    <i class="fa-solid fa-circle-check"></i>Accept Receipt
+                                </button>
+                            </form>
+
+                            <form method="POST" onsubmit="return confirm('Reject this proof screenshot? The client will need to submit a valid receipt.');">
+                                <input type="hidden" name="reject_payment_id" value="<?= $errand['id']; ?>">
+                                <button type="submit" class="btn-reject">
+                                    <i class="fa-solid fa-circle-xmark"></i>Reject Receipt
+                                </button>
+                            </form>
+
+                            <form method="POST" onsubmit="return confirm('CRITICAL: Force-cancel this Pending Payment errand?');">
+                                <input type="hidden" name="admin_cancel_errand_id" value="<?= $errand['id']; ?>">
+                                <button type="submit" class="btn-cancel">
+                                    <i class="fa-solid fa-ban"></i>Force Cancel
+                                </button>
+                            </form>
+
+                        <?php elseif ($errand['status'] === 'in_process'): ?>
+                            <span class="descriptive-status-badge">
+                                <i class="fa-solid fa-spinner fa-spin"></i>Tasker is performing errand...
+                            </span>
+
                             <form method="POST" onsubmit="return confirm('CRITICAL: Force-cancel this In Process errand?');">
                                 <input type="hidden" name="admin_cancel_errand_id" value="<?= $errand['id']; ?>">
                                 <button type="submit" class="btn-cancel">
-                                    <i class="fa-solid fa-ban"></i>Force Cancel Errand
+                                    <i class="fa-solid fa-ban"></i>Force Cancel
                                 </button>
                             </form>
-                        <?php else: ?>
-                            <!-- Delete Active Errand Button -->
-                            <form method="POST" onsubmit="return confirm('Are you sure you want to delete this errand?');">
-                                <input type="hidden" name="delete_active_errand_id" value="<?= $errand['id']; ?>">
-                                <button type="submit" class="btn-delete"><i class="fa-regular fa-trash-can"></i>Delete</button>
-                            </form>
                         <?php endif; ?>
+
                     <?php elseif ($is_finished): ?>
-                        <!-- Delete Finished Errand Button -->
-                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete this errand?');">
+                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete this finished history log?');">
                             <input type="hidden" name="delete_finished_errand_id" value="<?= $errand['id']; ?>">
-                            <button type="submit" class="btn-delete"><i class="fa-regular fa-trash-can"></i>Delete</button>
+                            <button type="submit" class="btn-delete">
+                                <i class="fa-regular fa-trash-can"></i>Delete
+                            </button>
                         </form>
                     <?php endif; ?>
                 </div>

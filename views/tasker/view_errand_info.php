@@ -27,9 +27,6 @@
         if (isset($_POST['accept_id'])) {
             $_POST['id'] = $_POST['accept_id'];
             $taskerController->accept();
-        } elseif (isset($_POST['start_task_id'])) {
-            $_POST['id'] = $_POST['start_task_id']; 
-            $taskerController->updateStatusInProcess();
         } elseif (isset($_POST['final_status_id'])) {
             $_POST['id'] = $_POST['final_status_id'];
             $taskerController->updateStatusFinal();
@@ -251,7 +248,7 @@
                                     <i class="fa-solid fa-hand-holding-hand"></i>Request Cancel
                                 </button>
                             </form>
-                        <?php else: ?>
+                        <?php elseif ((int)$errand['cancel_requested_by_tasker'] === 1): ?>
                             <span class="descriptive-status-badge">
                                 <i class="fa-solid fa-spinner fa-spin"></i>Pending Admin Cancel...
                             </span>
@@ -277,7 +274,7 @@
                                     <i class="fa-solid fa-hand-holding-hand"></i>Request Cancel
                                 </button>
                             </form>
-                        <?php else: ?>
+                        <?php elseif ((int)$errand['cancel_requested_by_tasker'] === 1): ?>
                             <span class="descriptive-status-badge">
                                 <i class="fa-solid fa-spinner fa-spin"></i>Pending Admin Cancel...
                             </span>

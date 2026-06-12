@@ -14,9 +14,14 @@
     $adminController = new AdminController($db);
 
     // 3. Process delete_active_errand if form was sent here
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_active_errand_id'])) {
-        $_POST['id'] = $_POST['delete_active_errand_id'];
-        $adminController->handleActiveErrandDeletion();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (isset($_POST['delete_active_errand_id'])) {
+            $_POST['id'] = $_POST['delete_active_errand_id']; 
+            $adminController->handleActiveErrandDeletion();
+        } elseif (isset($_POST['admin_cancel_errand_id'])) {
+            $_POST['id'] = $_POST['admin_cancel_errand_id'];
+            $adminController->handleAdminForceCancellation();
+        }
     }
 
     // 4. Extract data for your HTML
@@ -155,24 +160,22 @@
                                     </td>
                                     <td>
                                         <div class="button-row">
-                                            <!-- View Button -->
-                                            <form  method="GET" action="view_errand_info.php">
+                                            <form method="GET" action="view_errand_info.php">
                                                 <input type="hidden" name="errand_id" value="<?= $row['id']; ?>">
                                                 <input type="hidden" name="from" value="dashboard">
                                                 <button type="submit" class="btn-view">View</button>
                                             </form>
 
-                                            <?php if ($row['status'] === 'in_process'): ?>
-                                                <!-- Force Cancel Active Errand Button -->
-                                                <form method="POST" onsubmit="return confirm('CRITICAL: Force-cancel this active errand? The platform will hold the fund for manual payout adjustments.');">
-                                                    <input type="hidden" name="admin_cancel_errand_id" value="<?= $row['id']; ?>">
-                                                    <button type="submit" class="btn-cancel">Cancel</button>
-                                                </form>
-                                            <?php else: ?>
-                                                <!-- Delete Button -->
-                                                <form method="POST" onsubmit="return confirm('Are you sure you want to delete this errand?');">
+                                            <?php if ($row['status'] === 'pending'): ?>
+                                                <form method="POST" onsubmit="return confirm('Are you sure you want to delete this pending errand?');">
                                                     <input type="hidden" name="delete_active_errand_id" value="<?= $row['id']; ?>">
                                                     <button type="submit" class="btn-delete">Delete</button>
+                                                </form>
+
+                                            <?php elseif ($row['status'] === 'pending_payment' || $row['status'] === 'in_process'): ?>
+                                                <form method="POST" onsubmit="return confirm('CRITICAL: Force-cancel this active errand? The platform will hold the funds for manual payout adjustments.');">
+                                                    <input type="hidden" name="admin_cancel_errand_id" value="<?= $row['id']; ?>">
+                                                    <button type="submit" class="btn-cancel">Cancel</button>
                                                 </form>
                                             <?php endif; ?>
                                         </div>

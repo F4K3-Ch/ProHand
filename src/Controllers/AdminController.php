@@ -307,22 +307,13 @@
             }
 
             $errand_title = $errand['title'];
-            $status       = $errand['status'];
             $client_id    = (int)$errand['client_id'];
-            $tasker_id    = isset($errand['tasker_id']) ? (int)$errand['tasker_id'] : 0;
 
             $admin_full_name  = $this->user->getFullName($admin_id);
             $client_full_name = $this->user->getFullName($client_id);
-            $tasker_full_name = ($tasker_id > 0) ? $this->user->getFullName($tasker_id) : "None";
 
-            // Map status codes to your readable labels
-            $status_labels = [
-                'pending'    => 'Pending',
-                'accepted'   => 'Accepted',
-                'in_process' => 'In-Process'
-            ];
-
-            // 2. FILE SYSTEM CLEANUP (Handled in Controller to keep Admin.php pure query)
+            // 2. FILE SYSTEM CLEANUP (Unlinks Task Attachments AND Payment Receipt File)
+            // A. Remove task file attachments
             $attachment_dir = "../../public/uploads/attachments/";
             $attachment_res = $this->admin->getAttachment($errand_id);
             
@@ -332,6 +323,17 @@
                     if (file_exists($file_path)) {
                         unlink($file_path);
                     }
+                }
+            }
+
+            // B. Remove payment receipt file securely using your exact folder structure
+            if (!empty($errand['payment_receipt_path'])) {
+                $receipt_dir = "../../public/uploads/receipts/";
+                $receipt_filename = basename($errand['payment_receipt_path']);
+                $receipt_path = $receipt_dir . $receipt_filename;
+
+                if (file_exists($receipt_path)) {
+                    unlink($receipt_path);
                 }
             }
 
@@ -346,20 +348,9 @@
                     $this->user->addNotification($client_id, $notif_type, $client_msg, $notif_link);
                 }
 
-                // Notify Tasker (if one was assigned to the active errand)
-                if ($tasker_id > 0) {
-                    $tasker_msg = "The Active Errand: \"{$errand_title}\" (ID: {$errand_id}) that you were assigned to has been permanently deleted from the system by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
-                    $this->user->addNotification($tasker_id, $notif_type, $tasker_msg, $notif_link);
-                }
-
-                // Broadcast notification to all other admins using your User object method
-                if (in_array($status, ['accepted', 'in_process'])) {
-                    $admin_msg = "Errand Deleted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Status: \"{$status_labels[$status]}\" | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Assigned to Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
-                    $this->user->notifyOtherAdmins($admin_id, $notif_type, $admin_msg, $notif_link);
-                } elseif ($status === 'pending') {
-                    $admin_msg = "Errand Deleted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Status: \"{$status_labels[$status]}\" | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
-                    $this->user->notifyOtherAdmins($admin_id, $notif_type, $admin_msg, $notif_link);
-                }
+                // Broadcast notification to all other admins (Hardcoded as 'Pending' since it's the only entry point)
+                $admin_msg = "Errand Deleted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Status: \"Pending\" | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                $this->user->notifyOtherAdmins($admin_id, $notif_type, $admin_msg, $notif_link);
 
                 $_SESSION['success'] = "Active Errand: \"{$errand_title}\" (ID: {$errand_id}) was permanently deleted.";
             } else {
@@ -880,5 +871,73 @@
                 header("Location: admin_dashboard.php");
                 exit;
             }
+        }
+
+        // Force Cancel Active Errand by Admin
+        public function handleAdminForceCancellation() {
+            $this->auth->restrictTo('admin');
+            $admin_id = (int)$_SESSION['user_id'];
+
+            // Match the hidden input name from your form: admin_cancel_errand_id
+            $errand_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+            if ($errand_id <= 0) {
+                $_SESSION['error'] = "Invalid errand identification.";
+                header("Location: admin_dashboard.php");
+                exit;
+            }
+
+            // 1. Fetch current details to build targeted notifications
+            $errand = $this->admin->getActiveErrandDetails($errand_id);
+            if (!$errand) {
+                $_SESSION['error'] = "Errand context not found.";
+                header("Location: admin_dashboard.php");
+                exit;
+            }
+
+            $errand_title = $errand['title'];
+            $client_id    = (int)$errand['client_id'];
+            $tasker_id    = isset($errand['tasker_id']) ? (int)$errand['tasker_id'] : 0;
+            $old_status   = $errand['status']; // e.g., 'pending_payment' or 'in_process'
+
+            $admin_full_name  = $this->user->getFullName($admin_id);
+            $client_full_name = $this->user->getFullName($client_id);
+            $tasker_full_name = ($tasker_id > 0) ? $this->user->getFullName($tasker_id) : "None";
+
+            // 2. Execute database update to reset status to 'pending' and nullify tasker assignment
+            $force_cancelled = $this->admin->forceCancelErrandRecord($errand_id);
+
+            if ($force_cancelled) {
+                $notif_type = "errand";
+                
+                // Define destination paths for redirects when users click their notifications
+                $client_link = "../client/view_errand_info.php?errand_id={$errand_id}";
+                $tasker_link = "../tasker/view_errand_info.php?errand_id={$errand_id}";
+                $admin_link  = "../admin/view_errand_info.php?errand_id={$errand_id}";
+
+                // 3. Send Notification to Client
+                if ($client_id > 0) {
+                    $client_msg = "Admin: \"{$admin_full_name}\" has intervened and force-cancelled the current progress on your Errand: \"{$errand_title}\" (ID: {$errand_id}). Your task has been safely reset back to \"Pending\" status. Any uploaded proof of payment remains securely linked.";
+                    $this->user->addNotification($client_id, $notif_type, $client_msg, $client_link);
+                }
+
+                // 4. Send Notification to Tasker (Only if a tasker was actually assigned)
+                if ($tasker_id > 0) {
+                    $tasker_msg = "Admin: \"{$admin_full_name}\" has issued a critical force-cancellation on Errand: \"{$errand_title}\" (ID: {$errand_id}). You have been released from this task, and it has been returned to the pending pool.";
+                    $this->user->addNotification($tasker_id, $notif_type, $tasker_msg, $tasker_link);
+                }
+
+                // 5. Broadcast Log to Other System Admins
+                $readable_status = ($old_status === 'in_process') ? "In Process" : "Pending Payment";
+                $admin_msg = "Critical Force-Cancellation | Errand: \"{$errand_title}\" (ID: {$errand_id}) disrupted from \"{$readable_status}\" and reset to \"Pending\" | Client: \"{$client_full_name}\" (ID: {$client_id}) | Released Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Actioned by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                $this->user->notifyOtherAdmins($admin_id, $notif_type, $admin_msg, $admin_link);
+
+                $_SESSION['success'] = "Errand status critically reset to pending. Tasker released.";
+            } else {
+                $_SESSION['error'] = "Error executing administrative force-cancellation. Please try again.";
+            }
+
+            // Redirect back cleanly to the context view page
+            header("Location: view_errand_info.php?errand_id=" . $errand_id);
+            exit;
         }
     }

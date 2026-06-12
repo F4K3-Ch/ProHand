@@ -679,4 +679,24 @@
             }
             return false;
         }
+
+            public function forceCancelErrandRecord($errand_id) {
+            $query = "UPDATE errands 
+                    SET status = 'pending', 
+                        tasker_id = NULL, 
+                        cancel_requested_by_tasker = 0, 
+                        cancel_requested_by_client = 0 
+                    WHERE id = ?";
+                    
+            $stmt = $this->db->prepare($query);
+            if (!$stmt) {
+                return false;
+            }
+            
+            $stmt->bind_param("i", $errand_id);
+            $result = $stmt->execute();
+            $stmt->close();
+            
+            return $result;
+        }
     }

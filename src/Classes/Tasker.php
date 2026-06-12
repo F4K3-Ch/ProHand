@@ -276,38 +276,6 @@
             return false;
         }
 
-        // Update to In Process Button
-        public function updateToInProcess($errand_id, $tasker_id) {
-            // 1. Fetch info and verify the tasker owns this 'accepted' errand
-            $stmt = $this->db->prepare("
-                SELECT title, client_id 
-                FROM errands 
-                WHERE id = ? AND tasker_id = ? AND status = 'accepted'
-                LIMIT 1
-            ");
-            $stmt->bind_param("ii", $errand_id, $tasker_id);
-            $stmt->execute();
-            $errand = $stmt->get_result()->fetch_assoc();
-
-            if (!$errand) return false;
-
-            // 2. Update the status and set the NEW in_process_at column
-            // We do NOT touch accepted_at here
-            $update = $this->db->prepare("
-                UPDATE errands 
-                SET status = 'in_process', 
-                    in_process_at = NOW(), 
-                    updated_at = NOW() 
-                WHERE id = ?
-            ");
-            $update->bind_param("i", $errand_id);
-            
-            if ($update->execute()) {
-                return $errand;
-            }
-            return false;
-        }
-
         // Update to Completed or Failed Button
         public function completeOrFailErrand($errand_id, $tasker_id, $new_status) {
             // FIX 1: Set the timezone to Philippine Time
