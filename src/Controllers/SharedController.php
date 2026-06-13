@@ -316,98 +316,107 @@
         }
 
         public function handleDeleteHistory() {
+            // 1. Security Check at the very top
             $this->auth->checkLogin();
             
-            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
-                $history_id = (int)$_POST['id'];
-                $user_id = $_SESSION['user_id'];
-                $role = $_SESSION['role'];
+            // 2. Set up your clean project standard variables
+            $history_id = (int)($_POST['id'] ?? 0);
+            $role       = $_SESSION['role'] ?? '';
+            $user_id    = (int)($_SESSION['user_id'] ?? 0);
 
-                // Get the result array from the model
-                $result = $this->user->deleteHistoryRecord($history_id, $user_id, $role);
-                $errand_title = $result['title'];
-                $errand_id = $result['errand_id'];
-
-                if ($result) {
-                    $_SESSION['success'] = "Errand: \"{$errand_title}\" (ID: {$errand_id}) was deleted successfully.";
-                } else {
-                    $_SESSION['error'] = "Error deleting Errand: \"{$errand_title}\" (ID: {$errand_id}). Please try again.";
-                }
-                
+            // 3. The Bouncer Gate Check
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $history_id <= 0 || empty($role)) {
+                $_SESSION['error'] = "Invalid request.";
                 header("Location: ../$role/{$role}_finished_errands.php");
                 exit;
             }
+
+            // 4. Main Feature Logic
+            $result = $this->user->deleteHistoryRecord($history_id, $user_id, $role);
+
+            if ($result) {
+                $errand_title = $result['title'];
+                $errand_id    = $result['errand_id'];
+                $_SESSION['success'] = "Errand: \"{$errand_title}\" (ID: {$errand_id}) was deleted successfully from your history.";
+            } else {
+                $_SESSION['error'] = "Error deleting the requested history record. Please try again.";
+            }
+            
+            // Dynamic redirect based on their role
+            header("Location: ../{$role}/{$role}_finished_errands.php");
+            exit;
         }
 
         public function handleDeleteAccount() {
             // 1. Security Check via your Auth class
             $this->auth->checkLogin();
 
-            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                $userId = $_SESSION['user_id'];
-                $role = $_SESSION['role'];
+            // 2. The Bouncer Gate Check (Blocks everything except a valid POST request)
+            $userId = (int)($_SESSION['user_id'] ?? 0);
+            $role   = trim($_SESSION['role'] ?? '');
 
-                // 2. Role-specific Blocking Logic
-                if ($role === 'client') {
-                    $clientObj = new Client($this->db);
-                    
-                    // Check for 'in_process' errands specifically to block deletion
-                    $metrics = $clientObj->getClientMetrics('active', $userId);
-                    if ($metrics['in_process'] > 0) {
-                        $_SESSION['error'] = "You can't delete your account because you have an Errand In process. Please wait for it to finish or you may request to cancel your errand first.";
-                        header("Location: profile.php");
-                        exit;
-                    }
-                }
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $userId <= 0 || empty($role)) {
+                $_SESSION['error'] = "Invalid request.";
+                header("Location: profile.php");
+                exit;
+            }
 
-                // 3. Execution Logic in User.php (Now properly returns structural metadata payload!)
-                $deletion_payload = $this->user->performAccountDeletion($userId, $role);
-
-                if ($deletion_payload && $deletion_payload['success']) {
-                    // MVC CONTEXT: Handle disk mutations directly here in the Controller
-                    $profile_dir = "../../public/uploads/profile_pictures/";
-                    $attachment_dir = "../../public/uploads/attachments/";
-                    $receipt_dir = "../../public/uploads/receipts/";
-
-                    // 1. Process profile picture deletion
-                    if (!empty($deletion_payload['profile_picture'])) {
-                        $profile_filename = basename($deletion_payload['profile_picture']);
-                        if ($profile_filename !== "default.jpg") {
-                            $profile_path = $profile_dir . $profile_filename;
-                            if (file_exists($profile_path)) {
-                                unlink($profile_path);
-                            }
-                        }
-                    }
-
-                    // 2. Process all collected single errand attachments array safely
-                    if (!empty($deletion_payload['attachment_paths'])) {
-                        foreach ($deletion_payload['attachment_paths'] as $raw_path) {
-                            $attachment_path = $attachment_dir . basename($raw_path);
-                            if (file_exists($attachment_path)) {
-                                unlink($attachment_path);
-                            }
-                        }
-                    }
-
-                    // 3. Process all collected single payment receipts array safely
-                    if (!empty($deletion_payload['receipt_paths'])) {
-                        foreach ($deletion_payload['receipt_paths'] as $raw_receipt) {
-                            $receipt_path = $receipt_dir . basename($raw_receipt);
-                            if (file_exists($receipt_path)) {
-                                unlink($receipt_path);
-                            }
-                        }
-                    }
-
-                    $this->user->logout();
-                    header("Location: ../auth/login.php?success=Your account has been permanently deleted.");
-                    exit;
-                } else {
-                    $_SESSION['error'] = "Error deleting your account. Please try again.";
+            // 2. Role-specific Blocking Logic
+            if ($role === 'client') {
+                $clientObj = new Client($this->db);
+                
+                // Check for 'in_process' errands specifically to block deletion
+                $metrics = $clientObj->getClientMetrics('active', $userId);
+                if ($metrics['in_process'] > 0) {
+                    $_SESSION['error'] = "You can't delete your account because you have an Errand In process. Please wait for it to finish or you may request to cancel your errand first.";
                     header("Location: profile.php");
                     exit;
                 }
+            }
+
+            // 3. Execution Logic in User.php (Now properly returns structural metadata payload!)
+            $deletion_payload = $this->user->performAccountDeletion($userId, $role);
+
+            if ($deletion_payload && $deletion_payload['success']) {
+                // Handle disk mutations directly here in the Controller
+                $profile_dir = "../../public/uploads/profile_pictures/";
+                $attachment_dir = "../../public/uploads/attachments/";
+                $receipt_dir = "../../public/uploads/receipts/";
+
+                // 1. Process profile picture deletion
+                if (!empty($deletion_payload['profile_picture'])) {
+                    $profile_filename = basename($deletion_payload['profile_picture']);
+                    if ($profile_filename !== "default.jpg") {
+                        $profile_path = $profile_dir . $profile_filename;
+                        if (file_exists($profile_path)) {
+                            unlink($profile_path);
+                        }
+                    }
+                }
+
+                // 2. Process all collected single errand attachments array safely
+                if (!empty($deletion_payload['attachment_paths'])) {
+                    foreach ($deletion_payload['attachment_paths'] as $raw_path) {
+                        $attachment_path = $attachment_dir . basename($raw_path);
+                        if (file_exists($attachment_path)) {
+                            unlink($attachment_path);
+                        }
+                    }
+                }
+
+                // 3. Process all collected single payment receipts array safely
+                if (!empty($deletion_payload['receipt_paths'])) {
+                    foreach ($deletion_payload['receipt_paths'] as $raw_receipt) {
+                        $receipt_path = $receipt_dir . basename($raw_receipt);
+                        if (file_exists($receipt_path)) {
+                            unlink($receipt_path);
+                        }
+                    }
+                }
+
+                $this->user->logout();
+                header("Location: ../auth/login.php?success=Your account has been permanently deleted.");
+                exit;
             }
         }
     }

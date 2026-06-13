@@ -16,9 +16,11 @@
     $taskerController = new TaskerController($db);
 
     // Handle "Accept" POST
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept_id'])) {
-        $_POST['id'] = $_POST['accept_id'];
-        $taskerController->accept();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (isset($_POST['accept_id'])) {
+            $_POST['id'] = $_POST['accept_id'];
+            $taskerController->accept();
+        }
     }
 
     // Get Dashboard Data

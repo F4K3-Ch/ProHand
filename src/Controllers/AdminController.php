@@ -251,7 +251,7 @@
 
             // 2. Validate Target User ID
             $target_user_id = (int)($_POST['id'] ?? 0);
-            if ($target_user_id <= 0) {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $target_user_id <= 0) {
                 $_SESSION['error'] = "Invalid user identification.";
                 header("Location: manage_users.php");
                 exit;
@@ -302,8 +302,8 @@
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
 
-            $errand_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-            if ($errand_id <= 0) {
+            $errand_id = (int)($_POST['id'] ?? 0);
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
                 $_SESSION['error'] = "Invalid request.";
                 header("Location: admin_dashboard.php");
                 exit;
@@ -377,8 +377,8 @@
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
 
-            $history_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-            if ($history_id <= 0) {
+            $history_id = (int)($_POST['id'] ?? 0);
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $history_id <= 0) {
                 $_SESSION['error'] = "Invalid request.";
                 header("Location: finished_errands.php");
                 exit;
@@ -403,8 +403,6 @@
             $admin_full_name  = $this->user->getFullName($admin_id);
             $client_full_name = trim($history['client_first_name'] . ' ' . $history['client_middle_name'] . ' ' . $history['client_last_name']);
             $tasker_full_name = trim($history['tasker_first_name'] . ' ' . $history['tasker_middle_name'] . ' ' . $history['tasker_last_name']);
-            
-            $display_status = ucwords(str_replace('_', ' ', $status));
 
             // 2. FILE SYSTEM CLEANUP
             
@@ -561,7 +559,7 @@
             $admin_id = (int)$_SESSION['user_id'];
 
             $user_id = (int)($_POST['id'] ?? 0);
-            if ($user_id <= 0) {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $user_id <= 0) {
                 $_SESSION['error'] = "Invalid user identification.";
                 header("Location: manage_users.php");
                 exit;
@@ -630,10 +628,10 @@
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
 
-            $errand_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-            if ($errand_id <= 0) {
-                $_SESSION['error'] = "Invalid errand identification.";
-                header("Location: view_errand_info.php?errand_id=" . $errand_id);
+            $errand_id = (int)($_POST['id'] ?? 0);
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
+                $_SESSION['error'] = "Invalid request.";
+                header("Location: admin_dashboard.php");
                 exit;
             }
 
@@ -707,10 +705,10 @@
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
 
-            $errand_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-            if ($errand_id <= 0) {
-                $_SESSION['error'] = "Invalid errand identification.";
-                header("Location: view_errand_info.php?errand_id=" . $errand_id);
+            $errand_id = (int)($_POST['id'] ?? 0);
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
+                $_SESSION['error'] = "Invalid request.";
+                header("Location: admin_dashboard.php");
                 exit;
             }
 
@@ -784,11 +782,10 @@
         public function handlePaymentApproval() {
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
-            $notif_type = "errand";
             
-            $errand_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-            if ($errand_id <= 0) {
-                $_SESSION['error'] = "Invalid request parameters.";
+            $errand_id = (int)($_POST['id'] ?? 0);
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
+                $_SESSION['error'] = "Invalid request.";
                 header("Location: admin_dashboard.php");
                 exit;
             }
@@ -807,6 +804,8 @@
                 $errand_title = $deletion_payload['title'];
                 $client_id = (int)$deletion_payload['client_id'];
                 $tasker_id = $deletion_payload['tasker_id'] ? (int)$deletion_payload['tasker_id'] : null;
+
+                $notif_type = "errand";
 
                 $client_link = "../client/view_errand_info.php?errand_id={$errand_id}";
                 $tasker_link = "../tasker/view_errand_info.php?errand_id={$errand_id}";
@@ -840,11 +839,10 @@
         public function handlePaymentRejection() {
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
-            $notif_type = "errand";
 
-            $errand_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-            if ($errand_id <= 0) {
-                $_SESSION['error'] = "Invalid request parameters.";
+            $errand_id = (int)($_POST['id'] ?? 0);
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
+                $_SESSION['error'] = "Invalid request.";
                 header("Location: admin_dashboard.php");
                 exit;
             }
@@ -875,6 +873,7 @@
                 $errand_title = $deletion_payload['title'];
                 $client_id = (int)$deletion_payload['client_id'];
 
+                $notif_type = "errand";
                 $client_link = "../client/view_errand_info.php?errand_id={$errand_id}";
                 $admin_link  = "../admin/view_errand_info.php?errand_id={$errand_id}";
 
@@ -902,8 +901,8 @@
             $admin_id = (int)$_SESSION['user_id'];
 
             // Match the hidden input name from your form: admin_cancel_errand_id
-            $errand_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-            if ($errand_id <= 0) {
+            $errand_id = (int)($_POST['id'] ?? 0);
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
                 $_SESSION['error'] = "Invalid errand identification.";
                 header("Location: admin_dashboard.php");
                 exit;

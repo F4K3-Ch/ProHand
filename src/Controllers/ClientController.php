@@ -307,175 +307,180 @@
 
         // Delete pending errand button
         public function handleDeletePending() {
-            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
-                $this->auth->restrictTo('client');
-                $client_id = (int)$_SESSION['user_id'];
-                $errand_id = (int)$_POST['id'];
+            $this->auth->restrictTo('client');
+            $client_id = (int)$_SESSION['user_id'];
 
-                $payload = $this->client->deletePendingErrand($errand_id, $client_id);
-
-                if ($payload) {
-                    foreach ($payload['files'] as $file_path) {
-                        $full_path = "../../public/" . $file_path;
-                        if (file_exists($full_path)) {
-                            unlink($full_path);
-                        }
-                    }
-
-                    $_SESSION['success'] = "Errand \"{$payload['title']}\" (ID: {$errand_id}) was successfully deleted.";
-                    header("Location: client_dashboard.php");
-                    exit;
-                } else {
-                    $_SESSION['error'] = "Failed to remove the requested errand record.";
-                    header("Location: client_dashboard.php");
-                    exit;
-                }
+            $errand_id = (int)($_POST['id'] ?? 0);
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
+                $_SESSION['error'] = "Invalid request.";
+                header("Location: client_dashboard.php");
+                exit;
             }
+
+            $payload = $this->client->deletePendingErrand($errand_id, $client_id);
+
+            if ($payload) {
+                foreach ($payload['files'] as $file_path) {
+                    $full_path = "../../public/" . $file_path;
+                    if (file_exists($full_path)) {
+                        unlink($full_path);
+                    }
+                }
+
+                $_SESSION['success'] = "Errand \"{$payload['title']}\" (ID: {$errand_id}) was successfully deleted.";
+            } else {
+                $_SESSION['error'] = "Failed to remove the requested errand record.";
+            }
+            header("Location: client_dashboard.php");
+            exit;
         }
 
         public function handleCancelAccepted() {
-            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
-
             $this->auth->restrictTo('client');
-            $client_id = $_SESSION['user_id'];
-            $errand_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+            $client_id = (int)$_SESSION['user_id'];
 
-            if ($errand_id > 0) {
-                // Now returns title or false
-                $errand_title = $this->client->cancelAcceptedErrand($errand_id, $client_id);
-
-                if ($errand_title) {
-                    $_SESSION['success'] = "You successfully cancelled Errand: \"{$errand_title}\" (ID: {$errand_id}). The admin and tasker has been notified.";
-                } else {
-                    $_SESSION['error'] = "Failed to cancel Errand: \"{$errand_title}\" (ID: {$errand_id}). It may no longer be in 'Pending Payment' status.";
-                }
-            } else {
+            $errand_id = (int)($_POST['id'] ?? 0);
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
                 $_SESSION['error'] = "Invalid request.";
+                header("Location: client_dashboard.php");
+                exit;
             }
 
+            // Now returns title or false
+            $errand_title = $this->client->cancelAcceptedErrand($errand_id, $client_id);
+
+            if ($errand_title) {
+                $_SESSION['success'] = "You successfully cancelled Errand: \"{$errand_title}\" (ID: {$errand_id}). The admin and tasker has been notified.";
+            } else {
+                $_SESSION['error'] = "Failed to cancel Errand: \"{$errand_title}\" (ID: {$errand_id}). It may no longer be in 'Pending Payment' status.";
+            }
             header("Location: client_dashboard.php");
             exit;
         }
 
         public function handlePaymentUpload() {
-            // 1. Enforce authentication rules
             $this->auth->restrictTo('client');
-            $client_id = $_SESSION['user_id'];
+            $client_id = (int)$_SESSION['user_id'];
 
-            // 2. Intercept the specific POST form submit trigger
-            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
-                $errand_id = (int)$_POST['id'];
+            $errand_id = (int)($_POST['id'] ?? 0);
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
+                $_SESSION['error'] = "Invalid request.";
+                header("Location: client_dashboard.php");
+                exit;
+            }
                 
-                // 3. Structural validation of the upload array
-                if (!isset($_FILES['receipt']) || $_FILES['receipt']['error'] !== UPLOAD_ERR_OK) {
-                    $_SESSION['error'] = "File upload failed. Please try capturing or uploading the screenshot again.";
-                    header("Location: view_errand_info.php?errand_id=" . $errand_id);
-                    exit;
-                }
-
-                $file = $_FILES['receipt'];
-                
-                // 4. File Size Constraint Validation (10 MB Maximum limit)
-                $max_size = 10 * 1024 * 1024; // 10 Megabytes in Bytes
-                if ($file['size'] > $max_size) {
-                    $_SESSION['error'] = "The file is too large. Maximum allowed size is 10 MB.";
-                    header("Location: view_errand_info.php?errand_id=" . $errand_id);
-                    exit;
-                }
-
-                // 5. Explicit Extension Check
-                $filename = $file['name'];
-                $file_ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-                $allowed_extensions = ['png', 'jpg', 'jpeg'];
-
-                if (!in_array($file_ext, $allowed_extensions)) {
-                    $_SESSION['error'] = "Invalid file type. Only PNG, JPG, and JPEG screenshots are permitted.";
-                    header("Location: view_errand_info.php?errand_id=" . $errand_id);
-                    exit;
-                }
-
-                // 6. Define Target Directory Structure
-                $upload_dir = '../../public/uploads/receipts/';
-                
-                // Safety lock: Automatically generate directory recursively if missing
-                if (!is_dir($upload_dir)) {
-                    mkdir($upload_dir, 0755, true);
-                }
-
-                // 7. Sanitize filename to prevent directory traversal exploits
-                // Formats filename securely: receipt_[ERRAND_ID]_[TIMESTAMP].[EXTENSION]
-                $new_filename = "receipt_" . $errand_id . "_" . time() . "." . $file_ext;
-                $target_filepath = $upload_dir . $new_filename;
-
-                // 8. Move file out of temporary system memory to permanent storage
-                if (move_uploaded_file($file['tmp_name'], $target_filepath)) {
-                    
-                    // 9. Send the sanitized filename path string directly to the model query
-                    $db_save_path = "uploads/receipts/" . $new_filename;
-                    $success = $this->client->submitPaymentReceipt($errand_id, $db_save_path);
-
-                    if ($success) {
-                        $errand_res = $this->client->getActiveErrandWithTasker($errand_id, $client_id);
-                        $errand_data = ($errand_res && $errand_res->num_rows === 1) ? $errand_res->fetch_assoc() : null;
-                        
-                        $errand_title = $errand_data ? $errand_data['title'] : "Unknown Title";
-                        
-                        $client_full_name = $this->user->getFullName($client_id);
-                        $notif_type = "errand";
-                        
-                        // Explicit routing path so admins can click it anywhere outside the /admin/ module context
-                        $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
-                        $admin_msg = "Proof of Payment Uploaded | Client: \"{$client_full_name}\" (ID: {$client_id}) uploaded a receipt for Errand: \"{$errand_title}\" (ID: {$errand_id}). Awaiting verification.";
-                        
-                        // Fire broadcast dispatch logic to all active server administrators
-                        $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
-
-                        $_SESSION['success'] = "Payment proof submitted successfully! Awaiting admin verification.";
-                    } else {
-                        // Garbage Collection: Delete uploaded file if the database query fails
-                        if (file_exists($target_filepath)) {
-                            unlink($target_filepath);
-                        }
-                        $_SESSION['error'] = "Database sync failed. Please attempt upload procedures again.";
-                    }
-                } else {
-                    $_SESSION['error'] = "Failed to write file image to folder directory permissions.";
-                }
-
+            // 1. Structural validation of the upload array
+            if (!isset($_FILES['receipt']) || $_FILES['receipt']['error'] !== UPLOAD_ERR_OK) {
+                $_SESSION['error'] = "File upload failed. Please try capturing or uploading the screenshot again.";
                 header("Location: view_errand_info.php?errand_id=" . $errand_id);
                 exit;
             }
+
+            $file = $_FILES['receipt'];
+            
+            // 2. File Size Constraint Validation (10 MB Maximum limit)
+            $max_size = 10 * 1024 * 1024; // 10 Megabytes in Bytes
+            if ($file['size'] > $max_size) {
+                $_SESSION['error'] = "The file is too large. Maximum allowed size is 10 MB.";
+                header("Location: view_errand_info.php?errand_id=" . $errand_id);
+                exit;
+            }
+
+            // 3. Explicit Extension Check
+            $filename = $file['name'];
+            $file_ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            $allowed_extensions = ['png', 'jpg', 'jpeg'];
+
+            if (!in_array($file_ext, $allowed_extensions)) {
+                $_SESSION['error'] = "Invalid file type. Only PNG, JPG, and JPEG screenshots are permitted.";
+                header("Location: view_errand_info.php?errand_id=" . $errand_id);
+                exit;
+            }
+
+            // 4. Define Target Directory Structure
+            $upload_dir = '../../public/uploads/receipts/';
+            
+            // 5Safety lock: Automatically generate directory recursively if missing
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
+
+            // 6. Sanitize filename to prevent directory traversal exploits
+            // Formats filename securely: receipt_[ERRAND_ID]_[TIMESTAMP].[EXTENSION]
+            $new_filename = "receipt_" . $errand_id . "_" . time() . "." . $file_ext;
+            $target_filepath = $upload_dir . $new_filename;
+
+            // 7. Move file out of temporary system memory to permanent storage
+            if (move_uploaded_file($file['tmp_name'], $target_filepath)) {
+                
+                // 8. Send the sanitized filename path string directly to the model query
+                $db_save_path = "uploads/receipts/" . $new_filename;
+                $success = $this->client->submitPaymentReceipt($errand_id, $db_save_path);
+
+                if ($success) {
+                    $errand_res = $this->client->getActiveErrandWithTasker($errand_id, $client_id);
+                    $errand_data = ($errand_res && $errand_res->num_rows === 1) ? $errand_res->fetch_assoc() : null;
+                    
+                    $errand_title = $errand_data ? $errand_data['title'] : "Unknown Title";
+                    
+                    $client_full_name = $this->user->getFullName($client_id);
+                    $notif_type = "errand";
+                    
+                    // Explicit routing path so admins can click it anywhere outside the /admin/ module context
+                    $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
+                    $admin_msg = "Proof of Payment Uploaded | Client: \"{$client_full_name}\" (ID: {$client_id}) uploaded a receipt for Errand: \"{$errand_title}\" (ID: {$errand_id}). Awaiting verification.";
+                    
+                    // Fire broadcast dispatch logic to all active server administrators
+                    $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
+
+                    $_SESSION['success'] = "Payment proof submitted successfully! Awaiting admin verification.";
+                } else {
+                    // Garbage Collection: Delete uploaded file if the database query fails
+                    if (file_exists($target_filepath)) {
+                        unlink($target_filepath);
+                    }
+                    $_SESSION['error'] = "Database sync failed. Please attempt upload procedures again.";
+                }
+            } else {
+                $_SESSION['error'] = "Failed to write file image to folder directory permissions.";
+            }
+
+            header("Location: view_errand_info.php?errand_id=" . $errand_id);
+            exit;
         }
 
         // Cancel Request Button
         public function clientRequestCancellation() {
             $this->auth->restrictTo('client');
-            $user_id = $_SESSION['user_id'];
-            
-            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
-                $errand_id = (int)$_POST['id'];
+            $client_id = (int)$_SESSION['user_id'];
+
+            $errand_id = (int)($_POST['id'] ?? 0);
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
+                $_SESSION['error'] = "Invalid request.";
+                header("Location: client_dashboard.php");
+                exit;
+            }
                 
-                $data = $this->client->flagClientCancellationRequest($errand_id, $user_id);
+            $data = $this->client->flagClientCancellationRequest($errand_id, $client_id);
 
-                if ($data) {
-                    $errand_title = $data['title'];
-                    $user_full_name = $this->user->getFullName($user_id);
+            if ($data) {
+                $errand_title = $data['title'];
+                $user_full_name = $this->user->getFullName($client_id);
 
-                    $notif_type = "errand";
+                $notif_type = "errand";
 
-                    // Notify Admins about the incoming flag request
-                    $admin_msg = "Cancellation Requested | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$user_full_name}\" (ID: {$user_id}) has a cancellation request.";
-                    $admin_link = "../admin/view_errand_info.php?errand_id=$errand_id";
-                    $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
+                // Notify Admins about the incoming flag request
+                $admin_msg = "Cancellation Requested | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$user_full_name}\" (ID: {$client_id}) has a cancellation request.";
+                $admin_link = "../admin/view_errand_info.php?errand_id=$errand_id";
+                $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
 
-                    $_SESSION['success'] = "Cancellation request submitted to Admin.";
-                    header("Location: view_errand_info.php?errand_id=$errand_id");
-                    exit;
-                } else {
-                    $_SESSION['error'] = "Unable to process request.";
-                    header("Location: client_dashboard.php");
-                    exit;
-                }
+                $_SESSION['success'] = "Cancellation request submitted to Admin.";
+                header("Location: view_errand_info.php?errand_id=$errand_id");
+                exit;
+            } else {
+                $_SESSION['error'] = "Unable to process request.";
+                header("Location: client_dashboard.php");
+                exit;
             }
         }
     }

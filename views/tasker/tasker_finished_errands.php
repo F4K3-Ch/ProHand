@@ -14,9 +14,11 @@
     $taskerController = new TaskerController($db);
     $sharedController = new SharedController($db);
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_history_id'])) {
-        $_POST['id'] = $_POST['delete_history_id'];
-        $sharedController->handleDeleteHistory();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (isset($_POST['delete_history_id'])) {
+            $_POST['id'] = $_POST['delete_history_id'];
+            $sharedController->handleDeleteHistory();
+        }
     }
 
     // 3. Fetch data through the controller instead of manual SQL

@@ -14,9 +14,11 @@
     $adminController = new AdminController($db);
 
     // 3. Process finished_active_errand if form was sent here
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_finished_errand_id'])) {
-        $_POST['id'] = $_POST['delete_finished_errand_id'];
-        $adminController->handleFinishedErrandDeletion();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (isset($_POST['delete_finished_errand_id'])) {
+            $_POST['id'] = $_POST['delete_finished_errand_id']; 
+            $adminController->handleFinishedErrandDeletion();
+        }
     }
 
     // 4. Extract data for your HTML

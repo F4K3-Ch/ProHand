@@ -12,8 +12,10 @@
 
     // Handle "Cancel" POST
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $_POST['id'] = $_POST['tasker_request_cancel_id'];
-        $taskerController->taskerRequestCancellation();
+        if (isset($_POST['tasker_request_cancel_id'])) {
+            $_POST['id'] = $_POST['tasker_request_cancel_id'];
+            $taskerController->taskerRequestCancellation();
+        }
     }
 
     // Get data from OOP Controller 

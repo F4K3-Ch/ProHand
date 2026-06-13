@@ -148,46 +148,45 @@
             $this->auth->restrictTo('tasker');
             $tasker_id = $_SESSION['user_id'];
 
-            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
-                $errand_id = (int)$_POST['id'];
+            $errand_id = (int)($_POST['id'] ?? 0);
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
+                $_SESSION['error'] = "Invalid request.";
+                header("Location: tasker_dashboard.php");
+                exit;
+            }
                 
-                // 1. Perform database update (Sets status to 'accepted' and accepted_at to NOW)
-                $errand = $this->tasker->acceptErrand($errand_id, $tasker_id);
+            // 1. Perform database update (Sets status to 'accepted' and accepted_at to NOW)
+            $errand = $this->tasker->acceptErrand($errand_id, $tasker_id);
 
-                if ($errand) {
-                    $errand_title = $errand['title'];
-                    $client_id = (int)$errand['client_id'];
+            if ($errand) {
+                $errand_title = $errand['title'];
+                $client_id = (int)$errand['client_id'];
 
-                    // 2. Fetch full names via the user class
-                    $tasker_full_name = $this->user->getFullName($tasker_id); 
-                    $client_full_name = $this->user->getFullName($client_id);
+                // 2. Fetch full names via the user class
+                $tasker_full_name = $this->user->getFullName($tasker_id); 
+                $client_full_name = $this->user->getFullName($client_id);
 
-                    $notif_type = "errand";
+                $notif_type = "errand";
 
-                    // 3. Notify Client (Condition added to verify existing proof of payment)
-                    if (!empty($errand['payment_receipt_path'])) {
-                        // Message when payment proof is already present in the system
-                        $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was \"Accepted\" by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Your uploaded proof of payment is under review.";
-                    } else {
-                        // Default fallback message when no payment proof exists yet
-                        $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was \"Accepted\" by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Please settle your payment upload to begin the task.";
-                    }
-                    $client_link = "../client/view_errand_info.php?errand_id={$errand_id}";
-                    $this->user->addNotification($client_id, $notif_type, $client_msg, $client_link);
-
-                    // 4. Notify all Admins (Alerting them to expect a payment upload verification review)
-                    $admin_msg = "Errand Accepted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Awaiting payment verification step.";
-                    $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
-                    $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
-                    
-                    $_SESSION['success'] = "You have successfully accepted this errand.";
-                    header("Location: view_errand_info.php?errand_id=$errand_id");
-                    exit;
+                // 3. Notify Client (Condition added to verify existing proof of payment)
+                if (!empty($errand['payment_receipt_path'])) {
+                    // Message when payment proof is already present in the system
+                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was \"Accepted\" by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Your uploaded proof of payment is under review.";
                 } else {
-                    $_SESSION['error'] = "Invalid request.";
-                    header("Location: tasker_dashboard.php");
-                    exit;
+                    // Default fallback message when no payment proof exists yet
+                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was \"Accepted\" by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Please settle your payment upload to begin the task.";
                 }
+                $client_link = "../client/view_errand_info.php?errand_id={$errand_id}";
+                $this->user->addNotification($client_id, $notif_type, $client_msg, $client_link);
+
+                // 4. Notify all Admins (Alerting them to expect a payment upload verification review)
+                $admin_msg = "Errand Accepted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Awaiting payment verification step.";
+                $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
+                $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
+                
+                $_SESSION['success'] = "You have successfully accepted this errand.";
+                header("Location: view_errand_info.php?errand_id=$errand_id");
+                exit;
             }
         }
 
@@ -195,83 +194,82 @@
         public function updateStatusFinal() {
             $this->auth->restrictTo('tasker');
             $tasker_id = $_SESSION['user_id'];
-            
-            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'], $_POST['new_status'])) {
-                $errand_id = (int)$_POST['id'];
-                $new_status = $_POST['new_status'];
 
-                // 1. Run Pure DB Query Operation to claim transaction blueprint details
-                $migration_data = $this->tasker->completeOrFailErrand($errand_id, $tasker_id, $new_status);
+            $errand_id  = (int)($_POST['id'] ?? 0);
+            $new_status = trim($_POST['new_status'] ?? '');
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0 || empty($new_status)) {
+                $_SESSION['error'] = "Invalid request.";
+                header("Location: your_task.php");
+                exit;
+            }
 
-                if ($migration_data) {
-                    $errand_title = $migration_data['title'];
-                    $client_id    = (int)$migration_data['client_id'];
-                    $base_public  = __DIR__ . '/../../public/';
+            // 1. Run Pure DB Query Operation to claim transaction blueprint details
+            $migration_data = $this->tasker->completeOrFailErrand($errand_id, $tasker_id, $new_status);
 
-                    // A. Process Client Profile Snapshot Copying
-                    if (!empty($migration_data['client_old_picture']) && basename($migration_data['client_old_picture']) !== 'default.jpg') {
-                        $src = $base_public . ltrim($migration_data['client_old_picture'], '/');
-                        $dst = $base_public . ltrim($migration_data['client_new_picture'], '/');
-                        if (!is_dir(dirname($dst))) mkdir(dirname($dst), 0777, true);
-                        if (file_exists($src)) copy($src, $dst);
-                    }
+            if ($migration_data) {
+                $errand_title = $migration_data['title'];
+                $client_id    = (int)$migration_data['client_id'];
+                $base_public  = __DIR__ . '/../../public/';
 
-                    // B. Process Tasker Profile Snapshot Copying
-                    if (!empty($migration_data['tasker_old_picture']) && basename($migration_data['tasker_old_picture']) !== 'default.jpg') {
-                        $src = $base_public . ltrim($migration_data['tasker_old_picture'], '/');
-                        $dst = $base_public . ltrim($migration_data['tasker_new_picture'], '/');
-                        if (!is_dir(dirname($dst))) mkdir(dirname($dst), 0777, true);
-                        if (file_exists($src)) copy($src, $dst);
-                    }
-
-                    // C. Process Errand Task Attachment Relocation 
-                    if (!empty($migration_data['old_attachment_path']) && !empty($migration_data['new_attachment_path'])) {
-                        $src = $base_public . ltrim($migration_data['old_attachment_path'], '/');
-                        $dst = $base_public . ltrim($migration_data['new_attachment_path'], '/');
-                        if (!is_dir(dirname($dst))) mkdir(dirname($dst), 0777, true);
-
-                        if (file_exists($src)) {
-                            if (copy($src, $dst)) {
-                                unlink($src);
-                            }
-                        }
-                    }
-
-                    // D. Process Payment Receipt Relocation
-                    if (!empty($migration_data['old_receipt_path']) && !empty($migration_data['new_receipt_path'])) {
-                        $src = $base_public . ltrim($migration_data['old_receipt_path'], '/');
-                        $dst = $base_public . ltrim($migration_data['new_receipt_path'], '/');
-                        if (!is_dir(dirname($dst))) mkdir(dirname($dst), 0777, true);
-
-                        if (file_exists($src)) {
-                            if (copy($src, $dst)) {
-                                unlink($src);
-                            }
-                        }
-                    }
-
-                    $tasker_full_name = $this->user->getFullName($tasker_id); 
-                    $client_full_name = $this->user->getFullName($client_id);
-                    $notif_type       = "errand";
-
-                    // Notify Client
-                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was updated to \"" . ucfirst($new_status)  . "\" by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
-                    $client_link = "../client/view_errand_info.php?errand_id=$errand_id";
-                    $this->user->addNotification($client_id, $notif_type, $client_msg, $client_link);
-
-                    // Notify all Admins
-                    $admin_msg = "Errand Updated to " . ucfirst($new_status)  . " | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Updated by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
-                    $admin_link = "../admin/view_errand_info.php?errand_id=$errand_id";
-                    $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
-                    
-                    $_SESSION['success'] = "Errand updated to \"" . ucfirst($new_status) . "\".";
-                    header("Location: view_errand_info.php?errand_id={$errand_id}");
-                    exit;
-                } else {
-                    $_SESSION['error'] = "Failed to finalize errand. Please try again.";
-                    header("Location: your_task.php");
-                    exit;
+                // A. Process Client Profile Snapshot Copying
+                if (!empty($migration_data['client_old_picture']) && basename($migration_data['client_old_picture']) !== 'default.jpg') {
+                    $src = $base_public . ltrim($migration_data['client_old_picture'], '/');
+                    $dst = $base_public . ltrim($migration_data['client_new_picture'], '/');
+                    if (!is_dir(dirname($dst))) mkdir(dirname($dst), 0777, true);
+                    if (file_exists($src)) copy($src, $dst);
                 }
+
+                // B. Process Tasker Profile Snapshot Copying
+                if (!empty($migration_data['tasker_old_picture']) && basename($migration_data['tasker_old_picture']) !== 'default.jpg') {
+                    $src = $base_public . ltrim($migration_data['tasker_old_picture'], '/');
+                    $dst = $base_public . ltrim($migration_data['tasker_new_picture'], '/');
+                    if (!is_dir(dirname($dst))) mkdir(dirname($dst), 0777, true);
+                    if (file_exists($src)) copy($src, $dst);
+                }
+
+                // C. Process Errand Task Attachment Relocation 
+                if (!empty($migration_data['old_attachment_path']) && !empty($migration_data['new_attachment_path'])) {
+                    $src = $base_public . ltrim($migration_data['old_attachment_path'], '/');
+                    $dst = $base_public . ltrim($migration_data['new_attachment_path'], '/');
+                    if (!is_dir(dirname($dst))) mkdir(dirname($dst), 0777, true);
+
+                    if (file_exists($src)) {
+                        if (copy($src, $dst)) {
+                            unlink($src);
+                        }
+                    }
+                }
+
+                // D. Process Payment Receipt Relocation
+                if (!empty($migration_data['old_receipt_path']) && !empty($migration_data['new_receipt_path'])) {
+                    $src = $base_public . ltrim($migration_data['old_receipt_path'], '/');
+                    $dst = $base_public . ltrim($migration_data['new_receipt_path'], '/');
+                    if (!is_dir(dirname($dst))) mkdir(dirname($dst), 0777, true);
+
+                    if (file_exists($src)) {
+                        if (copy($src, $dst)) {
+                            unlink($src);
+                        }
+                    }
+                }
+
+                $tasker_full_name = $this->user->getFullName($tasker_id); 
+                $client_full_name = $this->user->getFullName($client_id);
+                $notif_type       = "errand";
+
+                // Notify Client
+                $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was updated to \"" . ucfirst($new_status)  . "\" by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+                $client_link = "../client/view_errand_info.php?errand_id=$errand_id";
+                $this->user->addNotification($client_id, $notif_type, $client_msg, $client_link);
+
+                // Notify all Admins
+                $admin_msg = "Errand Updated to " . ucfirst($new_status)  . " | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Updated by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+                $admin_link = "../admin/view_errand_info.php?errand_id=$errand_id";
+                $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
+                
+                $_SESSION['success'] = "Errand updated to \"" . ucfirst($new_status) . "\".";
+                header("Location: view_errand_info.php?errand_id={$errand_id}");
+                exit;
             }
         }
 
@@ -279,31 +277,30 @@
         public function taskerRequestCancellation() {
             $this->auth->restrictTo('tasker');
             $tasker_id = $_SESSION['user_id'];
-            
-            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
-                $errand_id = (int)$_POST['id'];
-                
-                $data = $this->tasker->flagTaskerCancellationRequest($errand_id, $tasker_id);
 
-                if ($data) {
-                    $errand_title = $data['title'];
-                    $tasker_full_name = $this->user->getFullName($tasker_id);
+            $errand_id = (int)($_POST['id'] ?? 0);
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
+                $_SESSION['error'] = "Invalid request.";
+                header("Location: tasker_dashboard.php");
+                exit;
+            }
 
-                    $notif_type = "errand";
+            $data = $this->tasker->flagTaskerCancellationRequest($errand_id, $tasker_id);
 
-                    // Notify Admins about the incoming flag request
-                    $admin_msg = "Cancellation Requested | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Assigned Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) has a cancellation request.";
-                    $admin_link = "../admin/view_errand_info.php?errand_id=$errand_id";
-                    $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
+            if ($data) {
+                $errand_title = $data['title'];
+                $tasker_full_name = $this->user->getFullName($tasker_id);
 
-                    $_SESSION['success'] = "Cancellation request submitted to Admin.";
-                    header("Location: view_errand_info.php?errand_id=$errand_id&from=your_task");
-                    exit;
-                } else {
-                    $_SESSION['error'] = "Unable to process request.";
-                    header("Location: tasker_dashboard.php");
-                    exit;
-                }
+                $notif_type = "errand";
+
+                // Notify Admins about the incoming flag request
+                $admin_msg = "Cancellation Requested | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Assigned Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) has a cancellation request.";
+                $admin_link = "../admin/view_errand_info.php?errand_id=$errand_id";
+                $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
+
+                $_SESSION['success'] = "Cancellation request submitted to Admin.";
+                header("Location: view_errand_info.php?errand_id=$errand_id&from=your_task");
+                exit;
             }
         }
     }
