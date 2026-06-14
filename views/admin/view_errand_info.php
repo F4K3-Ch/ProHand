@@ -366,7 +366,7 @@
                                     <i class="fa-solid fa-triangle-exclamation"></i>Requesting Cancellation
                                 </p>
                                 <div class="alert-action-buttons">
-                                    <form method="POST" onsubmit="return confirm('Approve Client Cancellation Request? This removes the current tasker but keeps the client payment receipt intact so a new tasker can claim this errand.');">
+                                    <form method="POST" onsubmit="return confirm('Approve Client Cancellation Request? This will remove the current tasker and return the errand status to &quot;Pending&quot; status so a new tasker can claim this errand. The client payment receipt remains intact.');">
                                         <input type="hidden" name="approve_cancellation_id" value="<?= $errand['id']; ?>">
                                         <input type="hidden" name="from" value="<?= htmlspecialchars($source); ?>">
                                         <button type="submit" class="btn-approve-release">
@@ -429,7 +429,7 @@
                                         <i class="fa-solid fa-triangle-exclamation"></i>Requesting Cancellation
                                     </p>
                                     <div class="alert-action-buttons">
-                                        <form method="POST" onsubmit="return confirm('Approve Tasker Cancellation Request? This removes the current tasker but keeps the client payment receipt intact so a new tasker can claim this errand.');">
+                                        <form method="POST" onsubmit="return confirm('Approve Tasker Cancellation Request? This will remove the current tasker and return the errand status to &quot;Pending&quot; status so a new tasker can claim it. The client\'s payment receipt remains intact.');">
                                             <input type="hidden" name="approve_cancellation_id" value="<?= $errand['id']; ?>">
                                             <input type="hidden" name="from" value="<?= htmlspecialchars($source); ?>">
                                             <button type="submit" class="btn-approve-release">

@@ -274,7 +274,7 @@
                         </form>
 
                         <?php if ((int)$errand['cancel_requested_by_tasker'] === 0): ?>
-                            <form method="POST" onsubmit="return confirm('This errand is actively In Process. Requesting a cancellation requires Admin review. Proceed?');">
+                            <form method="POST" onsubmit="return confirm('This errand is actively &quot;In Process&quot; status. Requesting a cancellation requires Admin review. Proceed?');">
                                 <input type="hidden" name="tasker_request_cancel_id" value="<?= $errand['id']; ?>">
                                 <input type="hidden" name="from" value="<?= htmlspecialchars($source); ?>">
                                 <button type="submit" class="btn-cancel">
@@ -288,7 +288,7 @@
                         <?php endif; ?>
 
                     <?php elseif (in_array($errand['status'], ['completed', 'failed'])): ?>
-                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete this archived errand?');">
+                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete this finished errand?');">
                             <input type="hidden" name="delete_history_id" value="<?= $errand['id']; ?>">
                             <button type="submit" class="btn-delete">
                                 <i class="fa-regular fa-trash-can"></i>Delete

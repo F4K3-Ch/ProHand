@@ -173,7 +173,7 @@
                                             </form>
 
                                             <!-- Delete Button -->
-                                            <form method="POST" onsubmit="return confirm('Are you sure you want to delete this archive errand?');">
+                                            <form method="POST" onsubmit="return confirm('Are you sure you want to delete this finished errand?');">
                                                 <input type="hidden" name="delete_history_id" value="<?= $row['id']; ?>">
                                                 <button type="submit" class="btn-delete">Delete</button>
                                             </form>

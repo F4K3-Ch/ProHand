@@ -135,7 +135,7 @@
                             </form>
                             
                             <!-- Delete Account Button -->
-                            <form method="POST" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                            <form method="POST" onsubmit="return confirm('Are you sure you want to delete this user? This will permanently remove all associated data from the system.');">
                                 <input type="hidden" name="delete_user_id" value="<?= (int)$user['id']; ?>">
                                 <button type="submit" class="btn-delete-account"><i class="fa-regular fa-trash-can"></i>Delete this user</button>
                             </form>

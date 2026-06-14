@@ -167,13 +167,13 @@
                                             </form>
 
                                             <?php if ($row['status'] === 'pending'): ?>
-                                                <form method="POST" onsubmit="return confirm('Are you sure you want to delete this pending errand?');">
+                                                <form method="POST" onsubmit="return confirm('Are you sure you want to delete this pending status errand?');">
                                                     <input type="hidden" name="delete_active_errand_id" value="<?= $row['id']; ?>">
                                                     <button type="submit" class="btn-delete">Delete</button>
                                                 </form>
 
                                             <?php elseif ($row['status'] === 'pending_payment' || $row['status'] === 'in_process'): ?>
-                                                <form method="POST" onsubmit="return confirm('CRITICAL: Force-cancel this active errand? The platform will hold the funds for manual payout adjustments.');">
+                                                <form method="POST" onsubmit="return confirm('CRITICAL: Force-cancel this active errand? The errand status will be reset back to &quot;Pending&quot; status and the platform will hold the funds for manual payout adjustments.');">
                                                     <input type="hidden" name="admin_cancel_errand_id" value="<?= $row['id']; ?>">
                                                     <button type="submit" class="btn-cancel">Cancel</button>
                                                 </form>

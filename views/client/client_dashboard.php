@@ -178,14 +178,14 @@
                                                 </form>
 
                                             <?php elseif ($row['status'] === 'pending_payment'): ?>
-                                                <form method="POST" onsubmit="return confirm('Are you sure you want to cancel this errand? It will return to Pending, and any submitted proof of payment will be preserved for review.');">
+                                                <form method="POST" onsubmit="return confirm('Are you sure you want to cancel this errand? It will return to &quot;Pending&quot status, and any submitted proof of payment will be preserved for review.');">
                                                     <input type="hidden" name="cancel_accepted_id" value="<?= $row['id']; ?>">
                                                     <button type="submit" class="btn-cancel">Cancel</button>
                                                 </form>
 
                                             <?php elseif ($row['status'] === 'in_process'): ?>
                                                 <?php if ((int)$row['cancel_requested_by_client'] === 0): ?>
-                                                    <form method="POST" onsubmit="return confirm('Are you sure you want to send a cancellation request to the Admin? This action cannot be undone until processed.');">
+                                                    <form method="POST" onsubmit="return confirm('Are you sure you want to send a cancellation request to the Admin? It will return to &quot;Pending&quot status and this action cannot be undone until processed.');">
                                                         <input type="hidden" name="client_request_cancel_id" value="<?= $row['id']; ?>">
                                                         <button type="submit" class="btn-cancel">Cancel</button>
                                                     </form>
