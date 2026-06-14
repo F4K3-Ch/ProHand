@@ -126,7 +126,7 @@
                                         <a href="<?= htmlspecialchars($link); ?>" class="btn-view">View</a>
                                     <?php endif; ?>
                                     
-                                    <form method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this notification?');">
+                                    <form method="POST">
                                         <input type="hidden" name="notification_id" value="<?= $notif['id']; ?>">
                                         <button type="submit" class="btn-delete">Delete</button>
                                     </form>

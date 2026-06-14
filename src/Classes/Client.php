@@ -260,6 +260,7 @@
             return $file_paths;
         }
 
+        // Delete Pending Errand Button
         public function deletePendingErrand($errand_id, $client_id) {
             // 1. Verify ownership and get title
             $stmt = $this->db->prepare("SELECT id, title FROM errands WHERE id = ? AND client_id = ? LIMIT 1");
@@ -286,7 +287,7 @@
             return $delete_result ? ['title' => $errand_title, 'files' => $paths_to_delete] : false;
         }
 
-        // Cancel Button
+        // Cancel Accepted Errand Button
         public function cancelAcceptedErrand($errand_id, $client_id) {
             // 1. Verify ownership and 'pending_payment' status
             $check_stmt = $this->db->prepare("
@@ -323,19 +324,17 @@
             $update_stmt->execute();
 
             if ($update_stmt->affected_rows === 1) {
-                // 3. Handle Notifications
+                // Collect required metadata for controller notifications
                 $client_full_name = $this->getFullName($client_id);
-                
                 $tasker_full_name = $this->getFullName($tasker_id);
-                $tasker_msg = "The Errand: \"{$errand_title}\" (ID: {$errand_id}) you accepted earlier was \"Cancelled\" by the Client: \"{$client_full_name}\" (ID: {$client_id}).";
-                $tasker_link = "../tasker/view_errand_info.php?errand_id={$errand_id}";
-                $this->addNotification($tasker_id, "errand", $tasker_msg, $tasker_link);
 
-                $admin_msg = "Errand Cancelled | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Previously Assigned to Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Cancelled by Client: \"{$client_full_name}\" (ID: {$client_id}). Status returned to \"Pending\" status. Any submitted receipt remains preserved.";
-                $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
-                $this->notifyAllAdmins("errand", $admin_msg, $admin_link);
-
-                return $errand_title; 
+                return [
+                    'success'          => true,
+                    'errand_title'     => $errand_title,
+                    'tasker_id'        => $tasker_id,
+                    'client_full_name' => $client_full_name,
+                    'tasker_full_name' => $tasker_full_name
+                ];
             }
 
             return false; 

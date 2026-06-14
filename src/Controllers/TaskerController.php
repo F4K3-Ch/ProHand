@@ -143,7 +143,7 @@
             ];
         }
         
-        // Accept button
+        // Accept Errand Button
         public function accept() {
             $this->auth->restrictTo('tasker');
             $tasker_id = $_SESSION['user_id'];
@@ -173,10 +173,10 @@
                 // 3. Notify Client (Condition added to verify existing proof of payment)
                 if (!empty($errand['payment_receipt_path'])) {
                     // Message when payment proof is already present in the system
-                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was \"Accepted\" by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Your uploaded proof of payment is under review.";
+                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Your uploaded proof of payment is under review.";
                 } else {
                     // Default fallback message when no payment proof exists yet
-                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was \"Accepted\" by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Please settle your payment upload to begin the task.";
+                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Please settle your payment upload to begin the task.";
                 }
                 $client_link = "../client/view_errand_info.php?errand_id={$errand_id}";
                 $this->user->addNotification($client_id, $notif_type, $client_msg, $client_link);
@@ -197,6 +197,8 @@
         public function updateStatusFinal() {
             $this->auth->restrictTo('tasker');
             $tasker_id = $_SESSION['user_id'];
+
+            $source = isset($_POST['from']) ? trim($_POST['from']) : '';
 
             $errand_id  = (int)($_POST['id'] ?? 0);
             $new_status = trim($_POST['new_status'] ?? '');
@@ -261,17 +263,17 @@
                 $notif_type       = "errand";
 
                 // Notify Client
-                $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was updated to \"" . ucfirst($new_status)  . "\" by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+                $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was updated to \"" . ucfirst($new_status)  . "\" status by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
                 $client_link = "../client/view_errand_info.php?errand_id=$errand_id";
                 $this->user->addNotification($client_id, $notif_type, $client_msg, $client_link);
 
                 // Notify all Admins
-                $admin_msg = "Errand Updated to " . ucfirst($new_status)  . " | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Updated by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+                $admin_msg = "Errand Updated to \"" . ucfirst($new_status)  . "\" status | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Updated by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
                 $admin_link = "../admin/view_errand_info.php?errand_id=$errand_id";
                 $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
                 
-                $_SESSION['success'] = "Errand updated to \"" . ucfirst($new_status) . "\".";
-                header("Location: view_errand_info.php?errand_id={$errand_id}");
+                $_SESSION['success'] = "Errand updated to \"" . ucfirst($new_status)  . "\" status.";
+                header("Location: view_errand_info.php?errand_id=" . $errand_id . "&from=" . urlencode($source));
                 exit;
             }
         }

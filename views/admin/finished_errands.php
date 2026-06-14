@@ -155,7 +155,7 @@
                 </section>
                 
                 <!-- Finished Errands Table -->
-                <div class="admin-errands-table">
+                <div class="admin-finished-errands-table">
                     <h4>Finished Errands</h4>
                     <div class="table-scroll">
                         <table>

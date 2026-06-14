@@ -1295,6 +1295,7 @@ body {
     background-color: var(--color-btn-hover-bg);
 }
 
+.admin-finished-errands-table h4,
 .admin-errands-table h4,
 .tasker-errands-table h4,
 .client-errands-table h4,
@@ -1305,6 +1306,7 @@ body {
     margin-bottom: 4px;
 }
 
+.admin-finished-errands-table,
 .admin-errands-table,
 .tasker-errands-table,
 .client-errands-table,
@@ -1315,6 +1317,12 @@ body {
     border-radius: 8px;
     padding: 10px;
     overflow-x: auto;   
+}
+
+.admin-finished-errands-table .table-scroll {
+    border: 1px solid var(--color-border);
+    max-height: 403px;   /* Adjust here to show how many rows to show */
+    overflow-y: auto;    /* vertical scroll */
 }
 
 .admin-errands-table .table-scroll,
@@ -1332,6 +1340,7 @@ body {
     overflow-y: auto;    /* vertical scroll */
 }
 
+.admin-finished-errands-table table,
 .admin-errands-table table,
 .tasker-errands-table table,
 .client-errands-table table,
@@ -1345,6 +1354,8 @@ body {
     font-weight: 500;
 }
 
+.admin-finished-errands-table th,
+.admin-finished-errands-table td,
 .admin-errands-table th,
 .admin-errands-table td,
 .tasker-errands-table th,
@@ -1361,6 +1372,7 @@ body {
     text-overflow: ellipsis;    /* truncate long text */
 }
 
+.admin-finished-errands-table th,
 .admin-errands-table th,
 .tasker-errands-table th,
 .client-errands-table th,
@@ -1375,6 +1387,7 @@ body {
     z-index: 2;
 }
 
+.admin-finished-errands-table td,
 .admin-errands-table td,
 .tasker-errands-table td,
 .client-errands-table td,
@@ -1460,6 +1473,7 @@ body {
 }
 
 /* Alternating rows */
+.admin-finished-errands-table tr:nth-child(even),
 .admin-errands-table tr:nth-child(even),
 .tasker-errands-table tr:nth-child(even),
 .client-errands-table tr:nth-child(even),
@@ -1468,6 +1482,7 @@ body {
     background-color: var(--color-bg);
 }
 
+.admin-finished-errands-table tr:nth-child(odd),
 .admin-errands-table tr:nth-child(odd),
 .tasker-errands-table tr:nth-child(odd),
 .client-errands-table tr:nth-child(odd),
@@ -1479,30 +1494,48 @@ body {
 /* Fixed column widths */
 
 /* Admins Errands Table */
+.admin-finished-errands-table th:nth-child(1),
+.admin-finished-errands-table td:nth-child(1),
 .admin-errands-table th:nth-child(1),
 .admin-errands-table td:nth-child(1) { width: 7%; }
 
+.admin-finished-errands-table th:nth-child(2),
+.admin-finished-errands-table td:nth-child(2),
 .admin-errands-table th:nth-child(2),
 .admin-errands-table td:nth-child(2) { width: 10%; }
 
+.admin-finished-errands-table th:nth-child(3),
+.admin-finished-errands-table td:nth-child(3),
 .admin-errands-table th:nth-child(3),
 .admin-errands-table td:nth-child(3) { width: 11%; }
 
+.admin-finished-errands-table th:nth-child(4),
+.admin-finished-errands-table td:nth-child(4),
 .admin-errands-table th:nth-child(4),
 .admin-errands-table td:nth-child(4) { width: 11%; }
 
+.admin-finished-errands-table th:nth-child(5),
+.admin-finished-errands-table td:nth-child(5),
 .admin-errands-table th:nth-child(5),
 .admin-errands-table td:nth-child(5) { width: 15%; }
 
+.admin-finished-errands-table th:nth-child(6),
+.admin-finished-errands-table td:nth-child(6),
 .admin-errands-table th:nth-child(6),
 .admin-errands-table td:nth-child(6) { width: 15%; }
 
+.admin-finished-errands-table th:nth-child(7),
+.admin-finished-errands-table td:nth-child(7),
 .admin-errands-table th:nth-child(7),
 .admin-errands-table td:nth-child(7) { width: 7%; }
 
+.admin-finished-errands-table th:nth-child(8),
+.admin-finished-errands-table td:nth-child(8),
 .admin-errands-table th:nth-child(8),
 .admin-errands-table td:nth-child(8) { width: 12%; }
 
+.admin-finished-errands-table th:nth-child(9),
+.admin-finished-errands-table td:nth-child(9),
 .admin-errands-table th:nth-child(9),
 .admin-errands-table td:nth-child(9) { 
     width: 12%; 

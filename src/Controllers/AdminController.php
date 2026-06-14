@@ -243,7 +243,7 @@
             return $formatted;
         }
 
-        // Reset Password button
+        // Reset Password Button
         public function handlePasswordReset() {
             // 1. Authorization Check
             $this->auth->restrictTo('admin');
@@ -299,7 +299,7 @@
             exit;
         }
 
-        // Delete Active Errand
+        // Delete Active Errand Button
         public function handleActiveErrandDeletion() {
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
@@ -374,7 +374,7 @@
             exit;
         }
 
-        // Delete Finished Errand
+        // Delete Finished Errand Button
         public function handleFinishedErrandDeletion() {
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
@@ -476,6 +476,7 @@
             exit;
         }
 
+        // Add User Button
         public function handleAddUser() {
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
@@ -556,6 +557,7 @@
             return ['fields' => $fields];
         }
 
+        // Delete User Button
         public function handleDeleteUser() {
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
@@ -582,11 +584,60 @@
             $deletion_payload = $this->admin->deleteUserByAdmin($admin_id, $user_id, $user_role, $user_full_name);
 
             if ($deletion_payload && $deletion_payload['success']) {
+                $admin_full_name = $deletion_payload['admin_full_name'];
+
+                if ($user_role === 'tasker') {
+                    if (!empty($deletion_payload['affected_errands'])) {
+                        foreach ($deletion_payload['affected_errands'] as $errand) {
+                            $errand_id = $errand['id'];
+                            $errand_title = $errand['title'];
+                            $target_client_id = $errand['client_id'];
+
+                            $msg = "Tasker: \"{$user_full_name}\" (ID: {$user_id}), who accepted your Errand: \"{$errand_title}\" (ID: {$errand_id}), had their account deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). The errand status has been returned to \"Pending\".";
+                            $link = "../client/view_errand_info.php?errand_id={$errand_id}";
+                            $this->user->addNotification($target_client_id, "errand", $msg, $link);
+
+                            $admin_msg = "Account Deleted | Tasker: \"{$user_full_name}\" (ID: {$user_id}) | Affected Errand: \"{$errand_title}\" (ID: {$errand_id}) | Status Returned To: \"Pending\" | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                            $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
+                            $this->admin->notifyOtherAdmins($admin_id, "errand", $admin_msg, $admin_link);
+                        }
+                    } else {
+                        $admin_msg = "Account Deleted | Tasker: \"{$user_full_name}\" (ID: {$user_id}) | No errands were affected | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                        $this->admin->notifyOtherAdmins($admin_id, "system", $admin_msg, "");
+                    }
+
+                } elseif ($user_role === 'client') {
+                    if (!empty($deletion_payload['affected_errands'])) {
+                        foreach ($deletion_payload['affected_errands'] as $errand) {
+                            $errand_id = $errand['id'];
+                            $errand_title = $errand['title'];
+                            $target_tasker_id = $errand['tasker_id'];
+
+                            if ($target_tasker_id !== null) {
+                                $msg = "Client: \"{$user_full_name}\" (ID: {$user_id}), whose Errand: \"{$errand_title}\" (ID: {$errand_id}) you accepted, had their account deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). The errand has been removed.";
+                                $this->user->addNotification($target_tasker_id, "errand", $msg, "");
+                            }
+
+                            $admin_msg = "Account Deleted | Client: \"{$user_full_name}\" (ID: {$user_id}) | Errand: \"{$errand_title}\" (ID: {$errand_id}) has been removed | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                            $this->admin->notifyOtherAdmins($admin_id, "errand", $admin_msg, "");
+                        }
+                    } else {
+                        $admin_msg = "Account Deleted | Client: \"{$user_full_name}\" (ID: {$user_id}) | No errands were affected | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                        $this->admin->notifyOtherAdmins($admin_id, "system", $admin_msg, "");
+                    }
+                
+                } elseif ($user_role === 'admin') {
+                    $admin_msg = "Account Deleted | Admin: \"{$user_full_name}\" (ID: {$user_id}) | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                    $this->admin->notifyOtherAdmins($admin_id, "system", $admin_msg, "");
+                }
+
+
+                // FILE SYSTEM CLEANUP
                 $profile_dir = "../../public/uploads/profile_pictures/";
                 $attachment_dir = "../../public/uploads/attachments/";
                 $receipt_dir = "../../public/uploads/receipts/";
 
-                // 1. Delete single profile picture
+                // 1. Delete profile picture
                 if (!empty($deletion_payload['profile_picture'])) {
                     $profile_filename = basename($deletion_payload['profile_picture']);
                     if ($profile_filename !== "default.jpg") {
@@ -597,7 +648,7 @@
                     }
                 }
 
-                // 2. Use a loop to clean up all attachment files returned across all user errands
+                // 2. Clean up attachments
                 if (!empty($deletion_payload['attachment_paths'])) {
                     foreach ($deletion_payload['attachment_paths'] as $raw_path) {
                         $attachment_path = $attachment_dir . basename($raw_path);
@@ -607,7 +658,7 @@
                     }
                 }
 
-                // 3. Use a loop to clean up all receipt files returned across all user errands
+                // 3. Clean up receipts
                 if (!empty($deletion_payload['receipt_paths'])) {
                     foreach ($deletion_payload['receipt_paths'] as $raw_receipt) {
                         $receipt_path = $receipt_dir . basename($raw_receipt);
@@ -617,15 +668,16 @@
                     }
                 }
 
-                $_SESSION['success'] = "User: \"{$user_full_name}\" (ID: {$user_id}) has been deleted successfully.";
+                $_SESSION['success'] = ucfirst($user_role) . ": \"{$user_full_name}\" (ID: {$user_id}) has been deleted successfully.";
             } else {
-                $_SESSION['error'] = "Error deleting this account. Please try again.";
+                $_SESSION['error'] = "Error deleting the account. Please try again.";
             }
 
             header("Location: manage_users.php");
             exit;
         }
 
+        // Approve Cancellation Button
         public function handleApproveCancellation() {
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
@@ -682,21 +734,21 @@
                 // 2. Send Notification to Tasker
                 if ($tasker_id > 0) {
                     if ($tasker_was_cancelling && $client_was_cancelling) {
-                        $tasker_msg = "Since both you and the client submitted cancellation requests, Admin: \"{$admin_full_name}\" (ID: {$admin_id}) has approved the mutual cancellation for Errand: \"{$errand_title}\" (ID: {$errand_id}). You are officially released from this task, and the errand has returned to the pending pool.";
+                        $tasker_msg = "Since both you and the client submitted cancellation requests, Admin: \"{$admin_full_name}\" (ID: {$admin_id}) has approved the mutual cancellation for Errand: \"{$errand_title}\" (ID: {$errand_id}). You are officially released from this task, and the errand has returned to the \"Pending\" status.";
                     } elseif ($tasker_was_cancelling) {
                         $tasker_msg = "Your cancellation request from Errand: \"{$errand_title}\" (ID: {$errand_id}) has been approved by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). You (Tasker ID: {$tasker_id}) are no longer assigned to this task. The errand has returned to \"Pending\" status.";
                     } else {
-                        $tasker_msg = "The client \"{$client_full_name}\" (ID: {$client_id}) has requested to cancel your assignment on Errand: \"{$errand_title}\" (ID: {$errand_id}), which has been approved by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). You are released from this task; the errand has been reset to \"Pending\" and the client's payment is preserved.";
+                        $tasker_msg = "The client \"{$client_full_name}\" (ID: {$client_id}) has requested to cancel your assignment on Errand: \"{$errand_title}\" (ID: {$errand_id}), which has been approved by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). You are released from this task; the errand has been reset to \"Pending\" status and the client's payment is preserved.";
                     }
                     $this->user->addNotification($tasker_id, $notif_type, $tasker_msg, $tasker_link);
                 }
 
                 // 3. Admin Broadcast Logger
                 $initiator = ($tasker_was_cancelling && $client_was_cancelling) ? "Both Client & Tasker" : ($tasker_was_cancelling ? "Tasker" : "Client");
-                $admin_msg = "{$initiator} Requested Cancellation Approved | Errand: \"{$errand_title}\" (ID: {$errand_id}) dropped back to \"Pending\" | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Approved by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                $admin_msg = "{$initiator} Requested Cancellation Approved | Errand: \"{$errand_title}\" (ID: {$errand_id}) dropped back to \"Pending\" status | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Approved by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
                 $this->user->notifyOtherAdmins($admin_id, $notif_type, $admin_msg, $admin_link);
 
-                $_SESSION['success'] = "Cancellation approved successfully. Errand reset back to pending pool.";
+                $_SESSION['success'] = "Cancellation approved successfully. Errand reset back to \"Pending\" status.";
             } else {
                 $_SESSION['error'] = "Error approving cancellation. Please try again.";
             }
@@ -706,6 +758,7 @@
             exit;
         }
 
+        // Deny Cancellation Button
         public function handleDenyCancellation() {
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
@@ -786,7 +839,7 @@
             exit;
         }
 
-        // Case A: ADMIN APPROVES RECEIPT
+        // Approve Receipt Button
         public function handlePaymentApproval() {
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
@@ -800,7 +853,6 @@
                 exit;
             }
 
-            // SAFETY CHECK
             $errand_check = $this->admin->getActiveErrandDetails($errand_id);
             if (!$errand_check || empty($errand_check['payment_receipt_path'])) {
                 $_SESSION['error'] = "Action denied: No proof of payment has been uploaded for this errand yet.";
@@ -822,20 +874,20 @@
                 $admin_link  = "../admin/view_errand_info.php?errand_id={$errand_id}";
 
                 // 1. Notify Client
-                $client_msg = "Payment Verified! Your Errand: \"{$errand_title}\" (ID: {$errand_id}) has been approved by Admin: \"{$admin_full_name}\" (ID: {$admin_id}) and is now \"In Process\".";
+                $client_msg = "Payment Verified! Your Errand: \"{$errand_title}\" (ID: {$errand_id}) has been approved by Admin: \"{$admin_full_name}\" (ID: {$admin_id}) and is now \"In Process\" status.";
                 $this->user->addNotification($client_id, $notif_type, $client_msg, $client_link);
 
                 // 2. Notify Assigned Tasker (if assigned)
                 if ($tasker_id) {
-                    $tasker_msg = "Payment Secured! Errand: \"{$errand_title}\" (ID: {$errand_id}) has been verified by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). You may now begin the task.";
+                    $tasker_msg = "Payment Secured! Errand: \"{$errand_title}\" (ID: {$errand_id}) has been verified and now updated to \"In Process\" status by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). You may now begin the task.";
                     $this->user->addNotification($tasker_id, $notif_type, $tasker_msg, $tasker_link);
                 }
 
                 // 3. Broadcast notification to all other admins
-                $admin_msg = "Payment Verification Approved | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Approved by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). Errand is now In Process.";
+                $admin_msg = "Payment Verification Approved | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Approved by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). Errand is now \"In Process\" status.";
                 $this->user->notifyOtherAdmins($admin_id, $notif_type, $admin_msg, $admin_link);
 
-                $_SESSION['success'] = "Payment approved successfully. Errand is now In Process.";
+                $_SESSION['success'] = "Payment approved successfully. Errand is now \"In Process\" status.";
                 // Redirect back while maintaining tracking context
                 header("Location: view_errand_info.php?errand_id=" . $errand_id . "&from=" . urlencode($source));
                 exit;
@@ -846,8 +898,8 @@
             }
         }
 
-        // Case B: ADMIN REJECTS RECEIPT
-        public function handlePaymentRejection() {
+        // Reject Receipt Button
+        public function handlePaymentRejection() { 
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
 
@@ -909,14 +961,13 @@
             }
         }
 
-        // Force Cancel Active Errand by Admin
+        // Force Cancel Button
         public function handleAdminForceCancellation() {
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
 
             $source = isset($_POST['from']) ? trim($_POST['from']) : '';
 
-            // Match the hidden input name from your form: admin_cancel_errand_id
             $errand_id = (int)($_POST['id'] ?? 0);
             if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
                 $_SESSION['error'] = "Invalid errand identification.";
@@ -960,16 +1011,16 @@
 
                 // 4. Send Notification to Tasker (Only if a tasker was actually assigned)
                 if ($tasker_id > 0) {
-                    $tasker_msg = "Admin: \"{$admin_full_name}\" has issued a critical force-cancellation on Errand: \"{$errand_title}\" (ID: {$errand_id}). You have been released from this task, and it has been returned to the pending pool.";
+                    $tasker_msg = "Admin: \"{$admin_full_name}\" has issued a critical force-cancellation on Errand: \"{$errand_title}\" (ID: {$errand_id}). You have been released from this task, and it has been returned to \"Pending\" status.";
                     $this->user->addNotification($tasker_id, $notif_type, $tasker_msg, $tasker_link);
                 }
 
                 // 5. Broadcast Log to Other System Admins
                 $readable_status = ($old_status === 'in_process') ? "In Process" : "Pending Payment";
-                $admin_msg = "Critical Force-Cancellation | Errand: \"{$errand_title}\" (ID: {$errand_id}) disrupted from \"{$readable_status}\" and reset to \"Pending\" | Client: \"{$client_full_name}\" (ID: {$client_id}) | Released Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Actioned by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
+                $admin_msg = "Critical Force-Cancellation | Errand: \"{$errand_title}\" (ID: {$errand_id}) disrupted from \"{$readable_status}\" and reset to \"Pending\" status | Client: \"{$client_full_name}\" (ID: {$client_id}) | Released Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Actioned by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
                 $this->user->notifyOtherAdmins($admin_id, $notif_type, $admin_msg, $admin_link);
 
-                $_SESSION['success'] = "Errand status critically reset to pending. Tasker released.";
+                $_SESSION['success'] = "Errand status critically reset to \"Pending\" status. Tasker released.";
             } else {
                 $_SESSION['error'] = "Error executing administrative force-cancellation. Please try again.";
             }

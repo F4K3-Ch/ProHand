@@ -235,7 +235,7 @@
             exit;
         }
 
-        // Standard Attachment Download Controller
+        // Download Attachment Button
         public function handleDownload($id, $type = 'regular') {
             $this->auth->checkLogin();
             $role = $_SESSION['role'];
@@ -275,7 +275,7 @@
             exit;
         }
 
-        // Receipt Download Controller
+        // Download Receipt Button
         public function handleReceiptDownload($errand_id, $type = 'regular') {
             $this->auth->checkLogin();
             $role = $_SESSION['role'];
@@ -315,6 +315,7 @@
             exit;
         }
 
+        // Delete History Errand Button
         public function handleDeleteHistory() {
             // 1. Security Check at the very top
             $this->auth->checkLogin();
@@ -347,26 +348,27 @@
             exit;
         }
 
+        // Delete Account Button
         public function handleDeleteAccount() {
             // 1. Security Check via your Auth class
             $this->auth->checkLogin();
 
             // 2. The Bouncer Gate Check (Blocks everything except a valid POST request)
-            $userId = (int)($_SESSION['user_id'] ?? 0);
+            $user_id = (int)($_SESSION['user_id'] ?? 0);
             $role   = trim($_SESSION['role'] ?? '');
 
-            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $userId <= 0 || empty($role)) {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $user_id  <= 0 || empty($role)) {
                 $_SESSION['error'] = "Invalid request.";
                 header("Location: profile.php");
                 exit;
             }
 
-            // 2. Role-specific Blocking Logic
+            // 3. Role-specific Blocking Logic
             if ($role === 'client') {
                 $clientObj = new Client($this->db);
                 
                 // Check for 'in_process' errands specifically to block deletion
-                $metrics = $clientObj->getClientMetrics('active', $userId);
+                $metrics = $clientObj->getClientMetrics('active', $user_id );
                 if ($metrics['in_process'] > 0) {
                     $_SESSION['error'] = "You can't delete your account because you have an Errand In process. Please wait for it to finish or you may request to cancel your errand first.";
                     header("Location: profile.php");
@@ -374,11 +376,66 @@
                 }
             }
 
-            // 3. Execution Logic in User.php (Now properly returns structural metadata payload!)
-            $deletion_payload = $this->user->performAccountDeletion($userId, $role);
+            // 4. Execution Logic in User.php (Now properly returns structural metadata payload!)
+            $deletion_payload = $this->user->performAccountDeletion($user_id, $role);
 
             if ($deletion_payload && $deletion_payload['success']) {
-                // Handle disk mutations directly here in the Controller
+                $full_name = $deletion_payload['full_name'];
+
+                if ($role === 'tasker') {
+                    if (!empty($deletion_payload['affected_errands'])) {
+                        foreach ($deletion_payload['affected_errands'] as $errand) {
+                            $errand_id = $errand['id'];
+                            $errand_title = $errand['title'];
+                            $target_client_id = $errand['client_id'];
+
+                            // Notify client that their tasker deleted their own account
+                            $msg = "Tasker: \"{$full_name}\" (ID: {$user_id}), who accepted your Errand: \"{$errand_title}\" (ID: {$errand_id}) has deleted their account. The errand status has been returned to \"Pending\".";
+                            $link = "../client/view_errand_info.php?errand_id={$errand_id}";
+                            $this->user->addNotification($target_client_id, "errand", $msg, $link);
+
+                            // Notify fellow admins about this broken connection
+                            $admin_msg = "Account Deleted | Tasker: \"{$full_name}\" (ID: {$user_id}) | Affected Errand: \"{$errand_title}\" (ID: {$errand_id}) | Status Returned To: \"Pending\" | This account was deleted by the Tasker themselves.";
+                            $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
+                            $this->user->notifyOtherAdmins($user_id, "errand", $admin_msg, $admin_link);
+                        }
+                    } else {
+                        // No errands affected, send a single summary notification to peer admins
+                        $admin_msg = "Account Deleted | Tasker: \"{$full_name}\" (ID: {$user_id}) | No errands were affected | This account was deleted by the Tasker themselves.";
+                        $this->user->notifyOtherAdmins($user_id, "system", $admin_msg, "");
+                    }
+
+                } elseif ($role === 'client') {
+                    if (!empty($deletion_payload['affected_errands'])) {
+                        foreach ($deletion_payload['affected_errands'] as $errand) {
+                            $errand_id = $errand['id'];
+                            $errand_title = $errand['title'];
+                            $target_tasker_id = $errand['tasker_id'];
+
+                            // Notify tasker assigned to this deleted client's errand
+                            if ($target_tasker_id !== null) {
+                                $msg = "Client: \"{$full_name}\" (ID: {$user_id}), whose Errand: \"{$errand_title}\" (ID: {$errand_id}) you accepted has deleted their account. The errand has been removed.";
+                                $this->user->addNotification($target_tasker_id, "errand", $msg, "");
+                            }
+
+                            // Notify fellow admins about dropped client post
+                            $admin_msg = "Account Deleted | Client: \"{$full_name}\" (ID: {$user_id}) | Errand: \"{$errand_title}\" (ID: {$errand_id}) has been removed | This account was deleted by the Client themselves.";
+                            $this->user->notifyOtherAdmins($user_id, "errand", $admin_msg, "");
+                        }
+                    } else {
+                        // No client posts to clear out, send summary alert
+                        $admin_msg = "Account Deleted | Client: \"{$full_name}\" (ID: {$user_id}) | No errands were affected | This account was deleted by the Client themselves.";
+                        $this->user->notifyOtherAdmins($user_id, "system", $admin_msg, "");
+                    }
+
+                } elseif ($role === 'admin') {
+                    // If an admin account deletes themselves, log it cleanly
+                    $admin_msg = "Account Deleted | Admin: \"{$full_name}\" (ID: {$user_id}) | This account was deleted by the Admin themselves.";
+                    $this->user->notifyOtherAdmins($user_id, "system", $admin_msg, "");
+                }
+
+
+                // --- DISK FILES CLEANUP ENGINE ---
                 $profile_dir = "../../public/uploads/profile_pictures/";
                 $attachment_dir = "../../public/uploads/attachments/";
                 $receipt_dir = "../../public/uploads/receipts/";
@@ -394,7 +451,7 @@
                     }
                 }
 
-                // 2. Process all collected single errand attachments array safely
+                // 2. Process all collected attachment files
                 if (!empty($deletion_payload['attachment_paths'])) {
                     foreach ($deletion_payload['attachment_paths'] as $raw_path) {
                         $attachment_path = $attachment_dir . basename($raw_path);
@@ -404,7 +461,7 @@
                     }
                 }
 
-                // 3. Process all collected single payment receipts array safely
+                // 3. Process all collected payment receipts
                 if (!empty($deletion_payload['receipt_paths'])) {
                     foreach ($deletion_payload['receipt_paths'] as $raw_receipt) {
                         $receipt_path = $receipt_dir . basename($raw_receipt);
@@ -414,8 +471,13 @@
                     }
                 }
 
+                // 5. Final Logout Operations and Redirection Context
                 $this->user->logout();
                 header("Location: ../auth/login.php?success=Your account has been permanently deleted.");
+                exit;
+            } else {
+                $_SESSION['error'] = "Error deleting your account. Please try again.";
+                header("Location: profile.php");
                 exit;
             }
         }

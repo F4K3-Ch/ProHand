@@ -92,7 +92,6 @@
             return $result->fetch_assoc();
         }
 
-        // Returns the full name of a user by ID
         public function getFullName($user_id) {
             $stmt = $this->db->prepare("SELECT first_name, middle_name, last_name FROM users WHERE id = ? LIMIT 1");
             $stmt->bind_param("i", $user_id);
@@ -104,7 +103,6 @@
             return trim($res['first_name'] . ' ' . ($res['middle_name'] ?? '') . ' ' . $res['last_name']);
         }
 
-        // Fetches all users with a specific role
         public function getUsersByRole($role) {
             $stmt = $this->db->prepare("SELECT id FROM users WHERE role = ?");
             $stmt->bind_param("s", $role);
@@ -126,7 +124,6 @@
         }
 
         public function updateProfileInfo($data) {
-            // Note: $data['id'] is now $data['user_id'] to match your request
             $stmt = $this->db->prepare("UPDATE users SET email=?, first_name=?, middle_name=?, last_name=?, contact_number=? WHERE id=?");
             $stmt->bind_param("sssssi", 
                 $data['email'], 
@@ -203,7 +200,6 @@
             return $stmt->execute();
         }
 
-        // Standardized method to add notifications
         public function addNotification($user_id, $type, $message, $link) {
             $stmt = $this->db->prepare("INSERT INTO notifications (user_id, type, message, link) VALUES (?, ?, ?, ?)");
             $stmt->bind_param("isss", $user_id, $type, $message, $link);
@@ -211,7 +207,6 @@
         }
 
         public function notifyAllAdmins($type, $message, $link) {
-            // This replicates the "SELECT id FROM users WHERE role = 'admin'" logic
             $stmt = $this->db->prepare("SELECT id FROM users WHERE role = 'admin'");
             $stmt->execute();
             $result = $stmt->get_result();
@@ -223,7 +218,6 @@
         }
 
         public function notifyOtherAdmins($current_admin_id, $type, $message, $link) {
-            // Identical logic, but with the "AND id != ?" condition added
             $stmt = $this->db->prepare("SELECT id FROM users WHERE role = 'admin' AND id != ?");
             $stmt->bind_param("i", $current_admin_id);
             $stmt->execute();
@@ -330,9 +324,11 @@
             // Standardized tracking payload to pass back up to the Controller
             $payload = [
                 'success'          => false,
+                'full_name'        => $full_name,
                 'profile_picture'  => '',
                 'attachment_paths' => [],
-                'receipt_paths'    => []
+                'receipt_paths'    => [],
+                'affected_errands' => [] // Populated with metadata for the controller
             ];
 
             // 2. Fetch the target profile picture file path early for later disk cleanup
@@ -346,7 +342,7 @@
                 $payload['profile_picture'] = $user_data['profile_picture'];
             }
 
-            // 3. Notify Affected Users & Peer Admins based on the Target's Role
+            // 3. Collect Affected Errand Metadata based on the Target's Role
             if ($role === 'tasker') {
                 $stmt = $this->db->prepare("SELECT id, title, client_id FROM errands WHERE tasker_id = ?");
                 $stmt->bind_param("i", $user_id);
@@ -356,28 +352,15 @@
 
                 if ($errands_result->num_rows > 0) {
                     while ($row = $errands_result->fetch_assoc()) {
-                        $errand_id = (int)$row['id'];
-                        $errand_title = $row['title'];
-                        $target_client_id = (int)$row['client_id'];
-
-                        // Notify client that their tasker deleted their own account
-                        $msg = "Tasker: \"{$full_name}\" (ID: {$user_id}), who accepted your Errand: \"{$errand_title}\" (ID: {$errand_id}) has deleted their account. The errand status has been returned to \"Pending\".";
-                        $link = "../client/view_errand_info.php?errand_id={$errand_id}";
-                        $this->addNotification($target_client_id, "errand", $msg, $link);
-
-                        // Notify fellow admins about this broken connection using internal helper
-                        $admin_msg = "Account Deleted | Tasker: \"{$full_name}\" (ID: {$user_id}) | Affected Errand: \"{$errand_title}\" (ID: {$errand_id}) | Status Returned To: \"Pending\" | This account was deleted by the Tasker themselves.";
-                        $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
-                        $this->notifyOtherAdmins($user_id, "errand", $admin_msg, $admin_link);
+                        $payload['affected_errands'][] = [
+                            'id'        => (int)$row['id'],
+                            'title'     => $row['title'],
+                            'client_id' => (int)$row['client_id']
+                        ];
                     }
-                } else {
-                    // No errands affected, send a single summary notification to peer admins
-                    $admin_msg = "Account Deleted | Tasker: \"{$full_name}\" (ID: {$user_id}) | No errands were affected | This account was deleted by the Tasker themselves.";
-                    $this->notifyOtherAdmins($user_id, "system", $admin_msg, "");
                 }
 
             } elseif ($role === 'client') {
-                // CHANGED: We now fetch payment_receipt_path as well
                 $stmt = $this->db->prepare("SELECT id, title, tasker_id, payment_receipt_path FROM errands WHERE client_id = ?");
                 $stmt->bind_param("i", $user_id);
                 $stmt->execute();
@@ -387,25 +370,18 @@
                 if ($errands_result->num_rows > 0) {
                     while ($row = $errands_result->fetch_assoc()) {
                         $errand_id = (int)$row['id'];
-                        $errand_title = $row['title'];
-                        $target_tasker_id = $row['tasker_id'] !== null ? (int)$row['tasker_id'] : null;
 
-                        // FIXED: Collect receipt paths into the payload array safely
                         if (!empty($row['payment_receipt_path'])) {
                             $payload['receipt_paths'][] = $row['payment_receipt_path'];
                         }
 
-                        // Notify tasker assigned to this deleted client's errand
-                        if ($target_tasker_id !== null) {
-                            $msg = "Client: \"{$full_name}\" (ID: {$user_id}), whose Errand: \"{$errand_title}\" (ID: {$errand_id}) you accepted has deleted their account. The errand has been removed.";
-                            $this->addNotification($target_tasker_id, "errand", $msg, "");
-                        }
+                        $payload['affected_errands'][] = [
+                            'id'        => $errand_id,
+                            'title'     => $row['title'],
+                            'tasker_id' => $row['tasker_id'] !== null ? (int)$row['tasker_id'] : null
+                        ];
 
-                        // Notify fellow admins about dropped client post using internal helper
-                        $admin_msg = "Account Deleted | Client: \"{$full_name}\" (ID: {$user_id}) | Errand: \"{$errand_title}\" (ID: {$errand_id}) has been removed | This account was deleted by the Client themselves.";
-                        $this->notifyOtherAdmins($user_id, "errand", $admin_msg, "");
-
-                        // FIXED: Collect attachment paths into the payload array instead of unlinking them here
+                        // Collect attachment paths into the payload array
                         $stmt_a = $this->db->prepare("SELECT file_path FROM errand_attachments WHERE errand_id = ?");
                         $stmt_a->bind_param("i", $errand_id);
                         $stmt_a->execute();
@@ -424,16 +400,7 @@
                         $stmt_d->execute();
                         $stmt_d->close();
                     }
-                } else {
-                    // No client posts to clear out, send summary alert
-                    $admin_msg = "Account Deleted | Client: \"{$full_name}\" (ID: {$user_id}) | No errands were affected | This account was deleted by the Client themselves.";
-                    $this->notifyOtherAdmins($user_id, "system", $admin_msg, "");
                 }
-
-            } elseif ($role === 'admin') {
-                // If an admin account deletes themselves, log it cleanly
-                $admin_msg = "Account Deleted | Admin: \"{$full_name}\" (ID: {$user_id}) | This account was deleted by the Admin themselves.";
-                $this->notifyOtherAdmins($user_id, "system", $admin_msg, "");
             }
 
             // 4. Cascade Structural Records Inside the Database Engine

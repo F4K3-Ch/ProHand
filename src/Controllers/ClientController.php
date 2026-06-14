@@ -309,7 +309,7 @@
             return $post;
         }
 
-        // Delete pending errand button
+        // Delete Pending Errand Button
         public function handleDeletePending() {
             $this->auth->restrictTo('client');
             $client_id = (int)$_SESSION['user_id'];
@@ -339,6 +339,7 @@
             exit;
         }
 
+        // Cancel Accepted Errand Button
         public function handleCancelAccepted() {
             $this->auth->restrictTo('client');
             $client_id = (int)$_SESSION['user_id'];
@@ -350,14 +351,30 @@
                 exit;
             }
 
-            // Now returns title or false
-            $errand_title = $this->client->cancelAcceptedErrand($errand_id, $client_id);
+            // Now returns a structural data payload array or false
+            $cancel_payload = $this->client->cancelAcceptedErrand($errand_id, $client_id);
 
-            if ($errand_title) {
+            if ($cancel_payload && $cancel_payload['success']) {
+                $errand_title     = $cancel_payload['errand_title'];
+                $tasker_id        = $cancel_payload['tasker_id'];
+                $client_full_name = $cancel_payload['client_full_name'];
+                $tasker_full_name = $cancel_payload['tasker_full_name'];
+
+                // 1. Notify the Tasker
+                $tasker_msg = "The Errand: \"{$errand_title}\" (ID: {$errand_id}) you accepted earlier was Cancelled by the Client: \"{$client_full_name}\" (ID: {$client_id}).";
+                $tasker_link = "../tasker/view_errand_info.php?errand_id={$errand_id}";
+                $this->user->addNotification($tasker_id, "errand", $tasker_msg, $tasker_link);
+
+                // 2. Notify Admins
+                $admin_msg = "Errand Cancelled | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Previously Assigned to Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Cancelled by Client: \"{$client_full_name}\" (ID: {$client_id}). Status returned to \"Pending\". Any submitted receipt remains preserved.";
+                $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
+                $this->user->notifyAllAdmins("errand", $admin_msg, $admin_link);
+
                 $_SESSION['success'] = "You successfully cancelled Errand: \"{$errand_title}\" (ID: {$errand_id}). The admin and tasker has been notified.";
             } else {
-                $_SESSION['error'] = "Failed to cancel Errand: \"{$errand_title}\" (ID: {$errand_id}). It may no longer be in 'Pending Payment' status.";
+                $_SESSION['error'] = "Failed to cancel the requested Errand. It may no longer be in 'Pending Payment' status.";
             }
+
             header("Location: client_dashboard.php");
             exit;
         }

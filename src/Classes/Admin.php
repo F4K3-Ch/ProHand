@@ -326,7 +326,6 @@
             return $data;
         }
 
-        // Reset password
         public function resetUserPassword($user_id, $hashed_password) {
             $stmt = $this->db->prepare("UPDATE users SET password = ? WHERE id = ?");
             $stmt->bind_param("si", $hashed_password, $user_id);
@@ -413,7 +412,6 @@
             return $stmt->get_result();
         }
         
-        // delete active errand query
         public function deleteActiveErrandRecord($errand_id) {
             // Delete active attachment database rows
             $stmt = $this->db->prepare("DELETE FROM errand_attachments WHERE errand_id = ?");
@@ -430,7 +428,6 @@
             return $success;
         }
 
-        // Delete finished errand query
         public function deleteFinishedErrandRecord($history_id) {
             // Delete attachment history row records from database
             $stmt = $this->db->prepare("DELETE FROM history_attachments WHERE history_errand_id = ?");
@@ -447,7 +444,6 @@
             return $success;
         }
 
-        // Add user
         public function addUserByAdmin($data) {
             $hashed_password = password_hash($data['password'], PASSWORD_DEFAULT);
             $default_pic = 'uploads/profile_pictures/default.jpg';
@@ -471,7 +467,6 @@
             return $success ? $new_id : false;
         }
 
-        // Delete User via Admin Context
         public function deleteUserByAdmin($admin_id, $user_id, $role, $full_name) {
             if ($full_name === "Unknown User") {
                 return ['success' => false];
@@ -479,12 +474,13 @@
 
             $admin_full_name = $this->getFullName($admin_id);
             
-            // FIXED: Using arrays to safely catch files across MULTIPLE separate errands
             $payload = [
                 'success'          => false,
                 'profile_picture'  => '',
                 'attachment_paths' => [], 
-                'receipt_paths'    => []  
+                'receipt_paths'    => [],
+                'affected_errands' => [], // Dynamic collection passed back to the controller
+                'admin_full_name'  => $admin_full_name
             ];
 
             // 1. Fetch profile picture path
@@ -508,21 +504,12 @@
 
                 if ($errands_result->num_rows > 0) {
                     while ($row = $errands_result->fetch_assoc()) {
-                        $errand_id = (int)$row['id'];
-                        $errand_title = $row['title'];
-                        $target_client_id = (int)$row['client_id'];
-
-                        $msg = "Tasker: \"{$full_name}\" (ID: {$user_id}), who accepted your Errand: \"{$errand_title}\" (ID: {$errand_id}), had their account deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). The errand status has been returned to \"Pending\".";
-                        $link = "../client/view_errand_info.php?errand_id={$errand_id}";
-                        $this->addNotification($target_client_id, "errand", $msg, $link);
-
-                        $admin_msg = "Account Deleted | Tasker: \"{$full_name}\" (ID: {$user_id}) | Affected Errand: \"{$errand_title}\" (ID: {$errand_id}) | Status Returned To: \"Pending\" | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
-                        $admin_link = "../admin/view_errand_info.php?errand_id={$errand_id}";
-                        $this->notifyOtherAdmins($admin_id, "errand", $admin_msg, $admin_link);
+                        $payload['affected_errands'][] = [
+                            'id'        => (int)$row['id'],
+                            'title'     => $row['title'],
+                            'client_id' => (int)$row['client_id']
+                        ];
                     }
-                } else {
-                    $admin_msg = "Account Deleted | Tasker: \"{$full_name}\" (ID: {$user_id}) | No errands were affected | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
-                    $this->notifyOtherAdmins($admin_id, "system", $admin_msg, "");
                 }
 
             // 3. Handle Client-specific cascades
@@ -536,30 +523,24 @@
                 if ($errands_result->num_rows > 0) {
                     while ($row = $errands_result->fetch_assoc()) {
                         $errand_id = (int)$row['id'];
-                        $errand_title = $row['title'];
-                        $target_tasker_id = $row['tasker_id'] !== null ? (int)$row['tasker_id'] : null;
 
-                        // FIXED: Append receipt path to list array so multiple errands don't overwrite each other
                         if (!empty($row['payment_receipt_path'])) {
                             $payload['receipt_paths'][] = $row['payment_receipt_path'];
                         }
 
-                        if ($target_tasker_id !== null) {
-                            $msg = "Client: \"{$full_name}\" (ID: {$user_id}), whose Errand: \"{$errand_title}\" (ID: {$errand_id}) you accepted, had their account deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). The errand has been removed.";
-                            $this->addNotification($target_tasker_id, "errand", $msg, "");
-                        }
+                        $payload['affected_errands'][] = [
+                            'id'        => $errand_id,
+                            'title'     => $row['title'],
+                            'tasker_id' => $row['tasker_id'] !== null ? (int)$row['tasker_id'] : null
+                        ];
 
-                        $admin_msg = "Account Deleted | Client: \"{$full_name}\" (ID: {$user_id}) | Errand: \"{$errand_title}\" (ID: {$errand_id}) has been removed | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
-                        $this->notifyOtherAdmins($admin_id, "errand", $admin_msg, "");
-
-                        // Captures single attachment file entry for this precise loop iteration
+                        // Capture single attachment file entry for this precision loop iteration
                         $stmt_a = $this->db->prepare("SELECT file_path FROM errand_attachments WHERE errand_id = ? LIMIT 1");
                         $stmt_a->bind_param("i", $errand_id);
                         $stmt_a->execute();
                         $file_data = $stmt_a->get_result()->fetch_assoc();
                         $stmt_a->close();
 
-                        // FIXED: Append attachment path to list array
                         if ($file_data) {
                             $payload['attachment_paths'][] = $file_data['file_path'];
                         }
@@ -570,13 +551,7 @@
                         $stmt_d->execute();
                         $stmt_d->close();
                     }
-                } else {
-                    $admin_msg = "Account Deleted | Client: \"{$full_name}\" (ID: {$user_id}) | No errands were affected | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
-                    $this->notifyOtherAdmins($admin_id, "system", $admin_msg, "");
                 }
-            } elseif ($role === 'admin') {
-                $admin_msg = "Account Deleted | Admin: \"{$full_name}\" (ID: {$user_id}) | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin_id}).";
-                $this->notifyOtherAdmins($admin_id, "system", $admin_msg, "");
             }
 
             // 4. Structural Cascades
@@ -647,7 +622,6 @@
             return $stmt->execute();
         }
         
-        // Approve Receipt & Transition to In Process
         public function approvePaymentReceipt($errand_id) {
             // Fetch info to verify state and gather text context for notifications
             $stmt = $this->db->prepare("
@@ -686,7 +660,6 @@
             return false;
         }
 
-        // Reject Receipt & Reset Path Field / Maintain pending_payment status
         public function rejectPaymentReceipt($errand_id) {
             $stmt = $this->db->prepare("
                 SELECT title, client_id, payment_receipt_path 
@@ -723,7 +696,7 @@
             return false;
         }
 
-            public function forceCancelErrandRecord($errand_id) {
+        public function forceCancelErrandRecord($errand_id) {
             $query = "UPDATE errands 
                     SET status = 'pending', 
                         tasker_id = NULL, 

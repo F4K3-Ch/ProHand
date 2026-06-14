@@ -181,7 +181,7 @@
                     WHERE status = 'pending'
                 ");
             } elseif ($type === 'accepted') {
-                // Your Tasks: Accepted & In Processc  
+                // Your Tasks: Accepted & In Process
                 $stmt = $this->db->prepare("
                     SELECT 
                         IFNULL(SUM(status = 'pending_payment'), 0) AS pending_payment,
@@ -260,7 +260,7 @@
             return $stmt->get_result();
         }
 
-        // Accept button
+        // Accept Errand Button
         public function acceptErrand($errand_id, $tasker_id) {
             $check_stmt = $this->db->prepare("SELECT title, client_id, payment_receipt_path FROM errands WHERE id = ? AND status = 'pending' LIMIT 1");
             $check_stmt->bind_param("i", $errand_id);

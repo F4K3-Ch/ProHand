@@ -262,6 +262,7 @@
                     <?php elseif ($errand['status'] === 'in_process'): ?>
                         <form method="POST">
                             <input type="hidden" name="final_status_id" value="<?= $errand['id']; ?>">
+                            <input type="hidden" name="from" value="<?= htmlspecialchars($source); ?>">
                             <div class="update-wrapper">
                                 <select name="new_status" required>
                                     <option value="">Select</option>
