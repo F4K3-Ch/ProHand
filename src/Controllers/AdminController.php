@@ -249,6 +249,8 @@
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
 
+            $source = isset($_POST['from']) ? trim($_POST['from']) : '';
+
             // 2. Validate Target User ID
             $target_user_id = (int)($_POST['id'] ?? 0);
             if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $target_user_id <= 0) {
@@ -293,7 +295,7 @@
                 $_SESSION['error'] = "Failed to reset password. Please try again.";
             }
 
-            header("Location: view_user_info.php?id=" . $target_user_id);
+            header("Location: view_user_info.php?id=" . $target_user_id . "&from=" . urlencode($source));
             exit;
         }
 
@@ -628,6 +630,8 @@
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
 
+            $source = isset($_POST['from']) ? trim($_POST['from']) : '';
+
             $errand_id = (int)($_POST['id'] ?? 0);
             if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
                 $_SESSION['error'] = "Invalid request.";
@@ -697,13 +701,16 @@
                 $_SESSION['error'] = "Error approving cancellation. Please try again.";
             }
 
-            header("Location: view_errand_info.php?errand_id=" . $errand_id);
+            // Redirect back while maintaining tracking context
+            header("Location: view_errand_info.php?errand_id=" . $errand_id . "&from=" . urlencode($source));
             exit;
         }
 
         public function handleDenyCancellation() {
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
+
+            $source = isset($_POST['from']) ? trim($_POST['from']) : '';
 
             $errand_id = (int)($_POST['id'] ?? 0);
             if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
@@ -774,7 +781,8 @@
                 $_SESSION['error'] = "Error denying cancellation. Please try again.";
             }
 
-            header("Location: view_errand_info.php?errand_id=" . $errand_id);
+            // Redirect back while maintaining tracking context
+            header("Location: view_errand_info.php?errand_id=" . $errand_id . "&from=" . urlencode($source));
             exit;
         }
 
@@ -782,6 +790,8 @@
         public function handlePaymentApproval() {
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
+
+            $source = isset($_POST['from']) ? trim($_POST['from']) : '';
             
             $errand_id = (int)($_POST['id'] ?? 0);
             if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
@@ -794,7 +804,7 @@
             $errand_check = $this->admin->getActiveErrandDetails($errand_id);
             if (!$errand_check || empty($errand_check['payment_receipt_path'])) {
                 $_SESSION['error'] = "Action denied: No proof of payment has been uploaded for this errand yet.";
-                header("Location: view_errand_info.php?errand_id={$errand_id}");
+                header("Location: view_errand_info.php?errand_id=" . $errand_id . "&from=" . urlencode($source));
                 exit;
             }
 
@@ -826,7 +836,8 @@
                 $this->user->notifyOtherAdmins($admin_id, $notif_type, $admin_msg, $admin_link);
 
                 $_SESSION['success'] = "Payment approved successfully. Errand is now In Process.";
-                header("Location: view_errand_info.php?errand_id={$errand_id}");
+                // Redirect back while maintaining tracking context
+                header("Location: view_errand_info.php?errand_id=" . $errand_id . "&from=" . urlencode($source));
                 exit;
             } else {
                 $_SESSION['error'] = "Failed to approve payment verification request.";
@@ -840,6 +851,8 @@
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
 
+            $source = isset($_POST['from']) ? trim($_POST['from']) : '';
+
             $errand_id = (int)($_POST['id'] ?? 0);
             if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
                 $_SESSION['error'] = "Invalid request.";
@@ -851,7 +864,7 @@
             $errand_check = $this->admin->getActiveErrandDetails($errand_id);
             if (!$errand_check || empty($errand_check['payment_receipt_path'])) {
                 $_SESSION['error'] = "Action denied: There is no receipt file to reject.";
-                header("Location: view_errand_info.php?errand_id={$errand_id}");
+                header("Location: view_errand_info.php?errand_id=" . $errand_id . "&from=" . urlencode($source));
                 exit;
             }
 
@@ -886,7 +899,8 @@
                 $this->user->notifyOtherAdmins($admin_id, $notif_type, $admin_msg, $admin_link);
 
                 $_SESSION['success'] = "Payment receipt rejected. Client has been notified to re-upload.";
-                header("Location: view_errand_info.php?errand_id={$errand_id}");
+                // Redirect back while maintaining tracking context
+                header("Location: view_errand_info.php?errand_id=" . $errand_id . "&from=" . urlencode($source));
                 exit;
             } else {
                 $_SESSION['error'] = "Failed to reject payment verification request.";
@@ -899,6 +913,8 @@
         public function handleAdminForceCancellation() {
             $this->auth->restrictTo('admin');
             $admin_id = (int)$_SESSION['user_id'];
+
+            $source = isset($_POST['from']) ? trim($_POST['from']) : '';
 
             // Match the hidden input name from your form: admin_cancel_errand_id
             $errand_id = (int)($_POST['id'] ?? 0);
@@ -958,8 +974,8 @@
                 $_SESSION['error'] = "Error executing administrative force-cancellation. Please try again.";
             }
 
-            // Redirect back cleanly to the context view page
-            header("Location: view_errand_info.php?errand_id=" . $errand_id);
+            // Redirect back on failure while maintaining tracking context
+            header("Location: view_errand_info.php?errand_id=" . $errand_id . "&from=" . urlencode($source));
             exit;
         }
     }

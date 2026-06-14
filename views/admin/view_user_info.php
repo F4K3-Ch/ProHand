@@ -1,17 +1,20 @@
 <?php
     session_start();
 
-    // 1. Load Dependencies
+    // Load Dependencies
     require_once "../../src/Classes/Database.php";
     require_once "../../src/Classes/User.php";
     require_once "../../src/Classes/Auth.php";
     require_once "../../src/Classes/Admin.php";
     require_once "../../src/Controllers/AdminController.php";
 
-    // 2. Initialize Objects
+    // Initialize Objects
     $database = new Database();
     $db = $database->getConnection();
     $adminController = new AdminController($db);
+
+    // Capture the tracking source string safely at the top
+    $source = isset($_GET['from']) ? trim($_GET['from']) : '';
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['reset_password_id'])) {
@@ -23,7 +26,7 @@
         }
     }
 
-    // 4. Fetch specific user data based on $_GET['id']
+    // Fetch specific user data based on $_GET['id']
     $viewData = $adminController->viewUserInfo();
     extract($viewData);
 ?>
@@ -127,6 +130,7 @@
                             <!-- Reset Password Button -->
                             <form method="POST" onsubmit="return confirm('Are you sure you want to reset this user\'s password?');">
                                 <input type="hidden" name="reset_password_id" value="<?= htmlspecialchars($user['id']) ?>">
+                                <input type="hidden" name="from" value="<?= htmlspecialchars($source); ?>">
                                 <button type="submit" class="btn-reset-password"><i class="fa-solid fa-arrows-rotate"></i>Reset Password</button>
                             </form>
                             

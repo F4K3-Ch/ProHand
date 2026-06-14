@@ -833,6 +833,26 @@ span {
     justify-content: center;
 }
 
+/* ==========================================
+    Active Sidebar Link States
+   ========================================== */
+.sidebar-links li a.active {
+    background-color: var(--color-btn-bg);
+    color: var(--color-btn-text);
+    font-weight: 600;
+    transition: all 0.1s ease;
+}
+
+/* Forces the active icon to match your button text color */
+.sidebar-links li a.active i {
+    color: var(--color-btn-text);
+}
+
+/* Prevents the standard hover overlay from making the active button unreadable */
+.sidebar-links li a.active:hover {
+    background-color: var(--color-btn-hover-bg);
+}
+
 /* ===========================
     Notification Badge
 =========================== */
@@ -2593,76 +2613,95 @@ select[name="role"] option[value="client"] {
     background-color: #c0392b;
 }
 
-.payment-instruction-wrapper {
+.split-payment-container {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr; 
+    gap: 20px;
+    background-color: rgba(52, 152, 219, 0.06); 
+    border: 1px solid rgba(52, 152, 219, 0.2);
+    border-radius: 8px;
+    padding: 15px;
+    align-items: stretch; 
+}
+
+.payment-action-panel {
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 15px;
+    flex-direction: column;
+    justify-content: space-between; 
+    gap: 10px;
+    width: 100%;
+}
+
+.payment-qr-frame a {
+    display: block;
+    width: 100%;
+}
+
+.payment-qr-img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    display: block;
+    transition: transform 0.2s ease-in-out;
 }
 
 .payment-qr-frame {
     background-color: #ffffff;
     border: 1px solid var(--color-input-border);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 0;
+    padding: 2px;
+    width: 190px; 
+    align-self: center;
+    overflow: hidden; 
 }
 
-.payment-qr-img {
-    width: 110px;
-    height: 110px;
-    object-fit: contain;
-    display: block;
+.payment-qr-frame a:hover .payment-qr-img {
+    transform: scale(1.05); 
+    cursor: pointer;
+}
+
+.payment-info-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; 
+    width: 100%;
 }
 
 .payment-text-details {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    flex: 1;
+    gap: 6px;
+}
+
+.payment-right-upload {
+    margin-top: auto; 
+    text-align: left;
+}
+
+.alert-text {
+    color: var(--color-text);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.merchant-number {
+    color: #2ecc71;
+    font-size: 1.2rem;
+    font-weight: bold;
 }
 
 .qr-hint-text {
     font-size: 0.75rem;
     color: var(--color-sec-text);
     font-style: italic;
-    margin-top: 2px;
-}
-
-.alert-box {
-    padding: 12px;
-    border-radius: 6px;
-    margin-bottom: 15px;
-}
-
-.alert-blue {
-    background-color: rgba(52, 152, 219, 0.1);
-}
-
-.alert-text {
-    color: var(--color-text);
-    font-size: 0.85rem;
-    margin: 0;
-    line-height: 1.4;
-}
-
-.merchant-number {
-    color: #2ecc71;
-    font-size: 1.1rem;
-    font-weight: bold;
-    margin: 5px 0 0 0;
-}
-
-.payment-upload-form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
 }
 
 .file-input-field {
     cursor: pointer;
-    padding: 4px 8px;
+    padding: 6px 0;
+    width: 100%;
+    color: var(--color-text);
 }
 
 .btn-submit-proof {
@@ -3966,5 +4005,44 @@ select[name="role"] option[value="client"] {
 
     .total-card.span-full {
         grid-column: span 2;
+    }
+
+    .split-payment-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    /* 2. Dissolve the sub-panel container divs so their children can be sorted globally */
+    .payment-action-panel,
+    .payment-info-panel {
+        display: contents;
+    }
+
+    /* 3. Drop desktop margin constraints */
+    .payment-right-upload {
+        margin-top: 0;
+    }
+
+    .alert-text {
+        text-align: center;
+    }
+
+    /* 4. Sequentially arrange the elements from top-to-bottom using order properties */
+    .payment-qr-frame {
+        order: 1;    /* 1st: QR Code image frame box stays at the very top */
+        align-self: center;
+    }
+
+    .payment-text-details {
+        order: 2;    /* 2nd: Text instructions description text block */
+    }
+
+    .payment-right-upload {
+        order: 3;    /* 3rd: The upload input file form element box */
+    }
+
+    .btn-submit-proof {
+        order: 4;    /* 4th: The green payment submit action button at the absolute bottom */
     }
 }

@@ -13,6 +13,9 @@
     $clientController = new ClientController($db);
     $sharedController = new SharedController($db);
 
+    // Capture the tracking source string safely at the top
+    $source = isset($_GET['from']) ? trim($_GET['from']) : '';
+
     // Standard Attachment Download Logic
     if (isset($_GET['action']) && $_GET['action'] === 'download' && isset($_GET['download_attachment_id'])) {
         $is_history_download = (isset($_GET['type']) && $_GET['type'] === 'history');
@@ -276,6 +279,7 @@
                     <?php if ($errand['status'] === 'pending'): ?>
                         <form method="GET" action="edit_errand.php">
                             <input type="hidden" name="errand_id" value="<?= $errand['id']; ?>">
+                            <input type="hidden" name="from" value="<?= htmlspecialchars($source); ?>">
                             <button type="submit" class="btn-edit-errand">
                                 <i class="fa-regular fa-pen-to-square"></i>Edit
                             </button>
@@ -306,6 +310,7 @@
                         <?php if ((int)$errand['cancel_requested_by_client'] === 0): ?>
                             <form method="POST" onsubmit="return confirm('This errand is actively In Process. Requesting a cancellation requires Admin review. Proceed?');">
                                 <input type="hidden" name="client_request_cancel_id" value="<?= $errand['id']; ?>">
+                                <input type="hidden" name="from" value="<?= htmlspecialchars($source); ?>">
                                 <button type="submit" class="btn-cancel">
                                     <i class="fa-solid fa-hand-holding-hand"></i>Request Cancel
                                 </button>
@@ -369,37 +374,43 @@
                         <h1>Secure Payment</h1>
 
                         <?php if ($errand['status'] === 'pending_payment' && empty($errand['payment_receipt_path'])): ?>
-                            <div class="info-box alert-box alert-blue payment-instruction-wrapper">
-                                <div class="payment-qr-frame">
-                                    <a href="../../public/assets/img/gcash-full-qr.jpg" target="_blank">
-                                        <img src="../../public/assets/img/gcash-qr.jpg" alt="GCash Merchant QR Code" class="payment-qr-img">
-                                    </a>
-                                </div>
                                 
-                                <div class="payment-text-details">
-                                    <p class="alert-text">
-                                        <strong>GCash Payment Instructions:</strong><br>
-                                        Scan the QR code or send the exact amount of <strong>₱<?= number_format($errand['fee'], 2); ?></strong> to our business wallet to securely lock in your tasker:
-                                    </p>
-                                    <p class="merchant-number">
-                                        <i class="fa-solid fa-mobile-screen"></i> 0994-221-5875
-                                    </p>
-                                    <span class="qr-hint-text"><i class="fa-solid fa-qrcode"></i> Tip: Save QR to gallery to scan via GCash App</span>
-                                </div>
-                            </div>
-
-                            <form method="POST" enctype="multipart/form-data" class="payment-upload-form">
+                            <form method="POST" enctype="multipart/form-data" class="split-payment-container">
                                 <input type="hidden" name="errand_id" value="<?= $errand['id']; ?>">
+                                <input type="hidden" name="from" value="<?= htmlspecialchars($source); ?>">
                                 
-                                <div class="info-box create-errand-input-box">
-                                    <label>Upload Receipt Image</label>
-                                    <input type="file" name="receipt" accept=".jpg,.jpeg,.png" required>
-                                    <small>Only PNG, JPG, or JPEG allowed. Maximum size: 10 MB</small>
+                                <div class="payment-action-panel">
+                                    <div class="payment-qr-frame">
+                                        <a href="../../public/assets/img/gcash-full-qr.jpg" target="_blank" title="Click to view full image">
+                                            <img src="../../public/assets/img/gcash-qr.jpg" alt="GCash Merchant QR Code" class="payment-qr-img">
+                                        </a>
+                                    </div>
+
+                                    <button type="submit" name="submit_payment_proof_id" value="<?= $errand['id']; ?>" class="btn-submit-proof">
+                                        <i class="fa-solid fa-cloud-arrow-up"></i> Submit Payment
+                                    </button>
                                 </div>
 
-                                <button type="submit" name="submit_payment_proof_id" value="<?= $errand['id']; ?>" class="btn btn-submit-proof">
-                                    <i class="fa-solid fa-cloud-arrow-up"></i>Submit Proof of Payment
-                                </button>
+                                <div class="payment-info-panel">
+                                    <div class="payment-text-details">
+                                        <p class="alert-text">
+                                            <strong>GCash Payment Instructions:</strong><br>
+                                            Scan the QR code or send the exact amount of <strong>₱<?= number_format($errand['fee'], 2); ?></strong> to our business wallet to securely lock in your tasker:
+                                        </p>
+                                        <p class="merchant-number">
+                                            <i class="fa-solid fa-mobile-screen"></i> 0994-221-5875
+                                        </p>
+                                        <span class="qr-hint-text">
+                                            <i class="fa-solid fa-qrcode"></i> Tip: Save QR to gallery to scan via GCash App.
+                                        </span>
+                                    </div>
+
+                                    <div class="info-box create-errand-input-box payment-right-upload">
+                                        <label>Upload Receipt Image</label>
+                                        <input type="file" name="receipt" accept=".jpg,.jpeg,.png" required class="file-input-field">
+                                        <small style="color: var(--color-sec-text); font-size: 0.75rem;">Only PNG, JPG, or JPEG allowed. Max: 10 MB</small>
+                                    </div>
+                                </div>
                             </form>
 
                         <?php elseif ($errand['status'] === 'pending_payment' && !empty($errand['payment_receipt_path'])): ?>

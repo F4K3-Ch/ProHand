@@ -296,8 +296,12 @@
                     }
                 }
 
+                // Grab the hidden 'from' tracking input from the submitted $_POST data
+                $source = isset($post['from']) ? trim($post['from']) : '';
+
                 $_SESSION['success'] = "Errand updated successfully!";
-                header("Location: view_errand_info.php?errand_id=$errand_id");
+                // Redirect to the destination file while maintaining the url context parameter!
+                header("Location: view_errand_info.php?errand_id=" . $errand_id . "&from=" . urlencode($source));
                 exit;
             }
 
@@ -361,6 +365,8 @@
         public function handlePaymentUpload() {
             $this->auth->restrictTo('client');
             $client_id = (int)$_SESSION['user_id'];
+
+            $source = isset($_POST['from']) ? trim($_POST['from']) : '';
 
             $errand_id = (int)($_POST['id'] ?? 0);
             if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
@@ -444,8 +450,9 @@
             } else {
                 $_SESSION['error'] = "Failed to write file image to folder directory permissions.";
             }
-
-            header("Location: view_errand_info.php?errand_id=" . $errand_id);
+            
+            // Redirect back on failure while maintaining tracking context
+            header("Location: view_errand_info.php?errand_id=" . $errand_id . "&from=" . urlencode($source));
             exit;
         }
 
@@ -453,6 +460,8 @@
         public function clientRequestCancellation() {
             $this->auth->restrictTo('client');
             $client_id = (int)$_SESSION['user_id'];
+
+            $source = isset($_POST['from']) ? trim($_POST['from']) : '';
 
             $errand_id = (int)($_POST['id'] ?? 0);
             if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
@@ -466,20 +475,21 @@
             if ($data) {
                 $errand_title = $data['title'];
                 $user_full_name = $this->user->getFullName($client_id);
-
                 $notif_type = "errand";
 
                 // Notify Admins about the incoming flag request
                 $admin_msg = "Cancellation Requested | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$user_full_name}\" (ID: {$client_id}) has a cancellation request.";
                 $admin_link = "../admin/view_errand_info.php?errand_id=$errand_id";
                 $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
-
+                
                 $_SESSION['success'] = "Cancellation request submitted to Admin.";
-                header("Location: view_errand_info.php?errand_id=$errand_id");
+                // Redirect back while maintaining tracking context
+                header("Location: view_errand_info.php?errand_id=" . $errand_id . "&from=" . urlencode($source));
                 exit;
             } else {
                 $_SESSION['error'] = "Unable to process request.";
-                header("Location: client_dashboard.php");
+                // Redirect back on failure while maintaining tracking context
+                header("Location: view_errand_info.php?errand_id=" . $errand_id . "&from=" . urlencode($source));
                 exit;
             }
         }

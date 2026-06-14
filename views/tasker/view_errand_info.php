@@ -13,6 +13,9 @@
     $taskerController = new TaskerController($db);
     $sharedController = new SharedController($db);
 
+    // Capture the tracking source string safely at the top
+    $source = isset($_GET['from']) ? trim($_GET['from']) : '';
+
     // Standard Attachment Download Logic
     if (isset($_GET['action']) && $_GET['action'] === 'download' && isset($_GET['download_attachment_id'])) {
         $is_history_download = (isset($_GET['type']) && $_GET['type'] === 'history');
@@ -231,6 +234,7 @@
                     <?php if ($errand['status'] === 'pending'): ?>
                         <form method="POST" onsubmit="return confirm('Do you want to accept this errand?');">
                             <input type="hidden" name="accept_id" value="<?= $errand['id']; ?>">
+                            <input type="hidden" name="from" value="<?= htmlspecialchars($source); ?>">
                             <button type="submit" class="btn-accept">
                                 <i class="fa-solid fa-check"></i>Accept
                             </button>
@@ -244,6 +248,7 @@
                         <?php if ((int)$errand['cancel_requested_by_tasker'] === 0): ?>
                             <form method="POST" onsubmit="return confirm('Are you sure you want to send a cancellation request to the Admin? This action cannot be undone until processed.');">
                                 <input type="hidden" name="tasker_request_cancel_id" value="<?= $errand['id']; ?>"> 
+                                <input type="hidden" name="from" value="<?= htmlspecialchars($source); ?>">
                                 <button type="submit" class="btn-cancel">
                                     <i class="fa-solid fa-hand-holding-hand"></i>Request Cancel
                                 </button>
@@ -270,6 +275,7 @@
                         <?php if ((int)$errand['cancel_requested_by_tasker'] === 0): ?>
                             <form method="POST" onsubmit="return confirm('This errand is actively In Process. Requesting a cancellation requires Admin review. Proceed?');">
                                 <input type="hidden" name="tasker_request_cancel_id" value="<?= $errand['id']; ?>">
+                                <input type="hidden" name="from" value="<?= htmlspecialchars($source); ?>">
                                 <button type="submit" class="btn-cancel">
                                     <i class="fa-solid fa-hand-holding-hand"></i>Request Cancel
                                 </button>

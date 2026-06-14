@@ -13,6 +13,9 @@
     $errand_id = (int)$_GET['errand_id'];
     $data = $clientController->viewErrandDetails($errand_id); 
 
+    // Capture the tracking source string safely at the top
+    $source = isset($_GET['from']) ? trim($_GET['from']) : '';
+
     // Process form if submitted
     $formData = $clientController->handleEditErrand($errand_id, $_POST, $_FILES);
 
@@ -42,7 +45,7 @@
     <?php include '../../includes/sidebar.php'; ?>
 
     <!-- Back button -->
-    <a href="view_errand_info.php?errand_id=<?= (int)$errand_id; ?>" class="btn-back">
+    <a href="view_errand_info.php?errand_id=<?= (int)$errand_id; ?>&from=<?= htmlspecialchars($source); ?>" class="btn-back">
         <i class="fa-solid fa-arrow-left"></i> 
         Back
     </a>
@@ -66,6 +69,8 @@
             </div>
 
             <form method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="from" value="<?= htmlspecialchars($source); ?>">
+
                 <div class="edit-errand-input-box">
                     <label>Title</label>
                     <input type="text" name="title" value="<?= htmlspecialchars($errand['title']); ?>" required>

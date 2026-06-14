@@ -13,6 +13,9 @@
     $adminController = new AdminController($db);
     $sharedController = new SharedController($db);
 
+    // Capture the tracking source string safely at the top
+    $source = isset($_GET['from']) ? trim($_GET['from']) : '';
+
     // Standard Attachment Download Logic
     if (isset($_GET['action']) && $_GET['action'] === 'download' && isset($_GET['download_attachment_id'])) {
         $is_history_download = (isset($_GET['type']) && $_GET['type'] === 'history');
@@ -297,6 +300,7 @@
                         <?php elseif ($errand['status'] === 'pending_payment'): ?>
                             <form method="POST" onsubmit="return confirm('Confirm you received the GCash deposit? This will change the status to In Process.');">
                                 <input type="hidden" name="approve_payment_id" value="<?= $errand['id']; ?>">
+                                <input type="hidden" name="from" value="<?= htmlspecialchars($source); ?>">
                                 <button type="submit" class="btn-approve">
                                     <i class="fa-solid fa-circle-check"></i>Accept Receipt
                                 </button>
@@ -304,6 +308,7 @@
 
                             <form method="POST" onsubmit="return confirm('Reject this proof screenshot? The client will need to submit a valid receipt.');">
                                 <input type="hidden" name="reject_payment_id" value="<?= $errand['id']; ?>">
+                                <input type="hidden" name="from" value="<?= htmlspecialchars($source); ?>">
                                 <button type="submit" class="btn-reject">
                                     <i class="fa-solid fa-circle-xmark"></i>Reject Receipt
                                 </button>
@@ -311,6 +316,7 @@
 
                             <form method="POST" onsubmit="return confirm('CRITICAL: Force-cancel this Pending Payment errand?');">
                                 <input type="hidden" name="admin_cancel_errand_id" value="<?= $errand['id']; ?>">
+                                <input type="hidden" name="from" value="<?= htmlspecialchars($source); ?>">
                                 <button type="submit" class="btn-cancel">
                                     <i class="fa-solid fa-ban"></i>Force Cancel
                                 </button>
@@ -323,6 +329,7 @@
 
                             <form method="POST" onsubmit="return confirm('CRITICAL: Force-cancel this In Process errand?');">
                                 <input type="hidden" name="admin_cancel_errand_id" value="<?= $errand['id']; ?>">
+                                <input type="hidden" name="from" value="<?= htmlspecialchars($source); ?>">
                                 <button type="submit" class="btn-cancel">
                                     <i class="fa-solid fa-ban"></i>Force Cancel
                                 </button>
@@ -359,15 +366,17 @@
                                     <i class="fa-solid fa-triangle-exclamation"></i>Requesting Cancellation
                                 </p>
                                 <div class="alert-action-buttons">
-                                    <form method="POST" onsubmit="return confirm('Approve tasker release? This removes the current tasker but keeps the client payment receipt intact so a new tasker can claim this errand.');">
+                                    <form method="POST" onsubmit="return confirm('Approve Client Cancellation Request? This removes the current tasker but keeps the client payment receipt intact so a new tasker can claim this errand.');">
                                         <input type="hidden" name="approve_cancellation_id" value="<?= $errand['id']; ?>">
+                                        <input type="hidden" name="from" value="<?= htmlspecialchars($source); ?>">
                                         <button type="submit" class="btn-approve-release">
                                             <i class="fa-solid fa-user-minus"></i>Approve
                                         </button>
                                     </form>
 
-                                    <form method="POST" onsubmit="return confirm('Deny tasker release? This forces the tasker to stay locked into the commitment.');">
+                                    <form method="POST" onsubmit="return confirm('Deny Client Cancellation Request? This keeps the errand active and requires the current tasker to proceed with the job.');">
                                         <input type="hidden" name="deny_cancellation_id" value="<?= $errand['id']; ?>">
+                                        <input type="hidden" name="from" value="<?= htmlspecialchars($source); ?>">
                                         <button type="submit" class="btn-deny-release">
                                             <i class="fa-solid fa-user-check"></i>Deny
                                         </button>
@@ -420,15 +429,17 @@
                                         <i class="fa-solid fa-triangle-exclamation"></i>Requesting Cancellation
                                     </p>
                                     <div class="alert-action-buttons">
-                                        <form method="POST" onsubmit="return confirm('Approve tasker release? This removes the current tasker but keeps the client payment receipt intact so a new tasker can claim this errand.');">
+                                        <form method="POST" onsubmit="return confirm('Approve Tasker Cancellation Request? This removes the current tasker but keeps the client payment receipt intact so a new tasker can claim this errand.');">
                                             <input type="hidden" name="approve_cancellation_id" value="<?= $errand['id']; ?>">
+                                            <input type="hidden" name="from" value="<?= htmlspecialchars($source); ?>">
                                             <button type="submit" class="btn-approve-release">
                                                 <i class="fa-solid fa-user-minus"></i>Approve
                                             </button>
                                         </form>
 
-                                        <form method="POST" onsubmit="return confirm('Deny tasker release? This forces the tasker to stay locked into the commitment.');">
+                                        <form method="POST" onsubmit="return confirm('Deny Tasker Cancellation Request? This forces the tasker to stay locked into the commitment.');">
                                             <input type="hidden" name="deny_cancellation_id" value="<?= $errand['id']; ?>">
+                                            <input type="hidden" name="from" value="<?= htmlspecialchars($source); ?>">
                                             <button type="submit" class="btn-deny-release">
                                                 <i class="fa-solid fa-user-check"></i>Deny
                                             </button>

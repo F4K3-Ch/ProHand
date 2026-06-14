@@ -148,6 +148,8 @@
             $this->auth->restrictTo('tasker');
             $tasker_id = $_SESSION['user_id'];
 
+            $source = isset($_POST['from']) ? trim($_POST['from']) : '';
+
             $errand_id = (int)($_POST['id'] ?? 0);
             if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
                 $_SESSION['error'] = "Invalid request.";
@@ -185,7 +187,8 @@
                 $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
                 
                 $_SESSION['success'] = "You have successfully accepted this errand.";
-                header("Location: view_errand_info.php?errand_id=$errand_id");
+                // Redirect back on failure while maintaining tracking context
+                header("Location: view_errand_info.php?errand_id=" . $errand_id . "&from=" . urlencode($source));
                 exit;
             }
         }
@@ -278,6 +281,8 @@
             $this->auth->restrictTo('tasker');
             $tasker_id = $_SESSION['user_id'];
 
+            $source = isset($_POST['from']) ? trim($_POST['from']) : '';
+
             $errand_id = (int)($_POST['id'] ?? 0);
             if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $errand_id <= 0) {
                 $_SESSION['error'] = "Invalid request.";
@@ -299,7 +304,13 @@
                 $this->user->notifyAllAdmins($notif_type, $admin_msg, $admin_link);
 
                 $_SESSION['success'] = "Cancellation request submitted to Admin.";
-                header("Location: view_errand_info.php?errand_id=$errand_id&from=your_task");
+                // Redirect back while maintaining tracking context
+                header("Location: view_errand_info.php?errand_id=" . $errand_id . "&from=" . urlencode($source));
+                exit;
+            } else {
+                $_SESSION['error'] = "Unable to process request.";
+                // Redirect back on failure while maintaining tracking context
+                header("Location: view_errand_info.php?errand_id=" . $errand_id . "&from=" . urlencode($source));
                 exit;
             }
         }
