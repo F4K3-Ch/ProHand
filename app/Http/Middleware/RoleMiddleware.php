@@ -16,13 +16,14 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        // Check if user is authenticated and has a permitted role
         if ($request->user() && in_array($request->user()->role, $roles)) {
-            return $next($request);
+            $response = $next($request);
+            
+            return $response->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+                            ->header('Pragma', 'no-cache')
+                            ->header('Expires', '0');
         }
 
-        // Redirect if unauthorized
-        // You can change this to abort(403) if you prefer a standard error page
         return redirect()->route('login')->withErrors(['error' => 'Unauthorized access.']);
     }
 }

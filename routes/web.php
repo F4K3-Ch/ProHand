@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ClientController;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -16,30 +18,13 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::middleware('auth')->group(function () {
-    Route::post('/logout', function (Request $request) {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        return redirect('/login');
-    })->name('logout');
-});
 
-// Dashboards (Protected)
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return view('admin.admin_dashboard');
-    })->name('admin.dashboard');
-});
+Route::middleware(['auth'])->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-Route::middleware(['auth', 'role:client'])->group(function () {
-    Route::get('/client/dashboard', function () {
-        return view('client.client_dashboard');
-    })->name('client.dashboard');
-});
-
-Route::middleware(['auth', 'role:tasker'])->group(function () {
-    Route::get('/tasker/dashboard', function () {
-        return view('tasker.tasker_dashboard');
-    })->name('tasker.dashboard');
+    Route::middleware('role:client')->get('/client/dashboard', [ClientController::class, 'dashboard'])->name('client.dashboard');
+    
+    Route::middleware('role:admin')->get('/admin/dashboard', fn() => view('admin.admin_dashboard'))->name('admin.dashboard');
+    
+    Route::middleware('role:tasker')->get('/tasker/dashboard', fn() => view('tasker.tasker_dashboard'))->name('tasker.dashboard');
 });

@@ -9,6 +9,7 @@
     <title>@yield('title', 'ProHand')</title>
 </head>
 <body>
+    <input type="checkbox" id="sidebar-toggle-check" class="sidebar-checkbox">
     @include('layouts.sidebar.' . auth()->user()->role)
 
     @yield('content')
