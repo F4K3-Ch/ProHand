@@ -8,22 +8,9 @@
     <link rel="stylesheet" href="{{ asset('style/style.css') }}">
     <title>@yield('title', 'ProHand')</title>
 </head>
-<body class="dashboard-body">
+<body>
+    @include('layouts.sidebar.' . auth()->user()->role)
 
-    {{-- The header is now a section that pages can override --}}
-    @section('header')
-        <header class="default-header">
-            <img src="{{ asset('img/ProHand(Adapt).png') }}" alt="Logo">
-        </header>
-    @show
-
-    <div class="app-container">
-        @include('layouts.sidebar.' . auth()->user()->role)
-
-        <main class="main-content">
-            @yield('content')
-        </main>
-    </div>
-
+    @yield('content')
 </body>
 </html>
