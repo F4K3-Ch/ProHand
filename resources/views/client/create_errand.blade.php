@@ -62,13 +62,20 @@
         </form>
     </div>
 </main>
-
-<script>
-    flatpickr("#deadline", {
-        enableTime: true,
-        dateFormat: "F j, Y h:i K",
-        minDate: "today",
-        time_24hr: false
-    });
-</script>
 @endsection
+
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+@endpush
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        flatpickr("#deadline", {
+            enableTime: true,
+            dateFormat: "F j, Y h:i K",
+            minDate: "today",
+            time_24hr: false
+        });
+    </script>
+@endpush
