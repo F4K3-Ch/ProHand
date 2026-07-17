@@ -19,11 +19,9 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Client Routes Group
+    // Client Routes
     Route::middleware('role:client')->group(function () {
         Route::get('/client/dashboard', [ClientController::class, 'dashboard'])->name('client.dashboard');
-        
-        // Creation routes now protected by 'role:client'
         Route::get('/client/create', [ClientController::class, 'create'])->name('client.create');
         Route::post('/client/create', [ClientController::class, 'store'])->name('errand.store');
     });
