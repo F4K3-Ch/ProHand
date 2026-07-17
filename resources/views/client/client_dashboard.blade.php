@@ -34,6 +34,16 @@
     </div>
 
     <div class="dashboard">
+        @if (session('success') || session('error'))
+            <div class="error-success-message">
+                @if (session('success'))
+                    <p class="success">{{ session('success') }}</p>
+                @elseif (session('error'))
+                    <p class="error">{{ session('error') }}</p>
+                @endif
+            </div>
+        @endif
+        
         <div class="contents">
             <section class="totals">
                 <h3>Errand Status Metrics</h3>
@@ -101,19 +111,19 @@
                             </td>
                             <td>
                                 <div class="button-row">
-                                    <a href="{{ route('errands.show', $row->id) }}" class="btn-view">View</a>
+                                    <a href="#" class="btn-view">View</a>
                                     @if ($row->status === 'pending')
-                                        <form action="{{ route('errands.destroy', $row->id) }}" method="POST" onsubmit="return confirm('Delete permanently?');">
+                                        <form action="#" method="POST" onsubmit="return confirm('Delete permanently?');">
                                             @csrf @method('DELETE')
                                             <button type="submit" class="btn-delete">Delete</button>
                                         </form>
                                     @elseif ($row->status === 'pending_payment')
-                                        <form action="{{ route('errands.cancel', $row->id) }}" method="POST">
+                                        <form action="#" method="POST">
                                             @csrf
                                             <button type="submit" class="btn-cancel">Cancel</button>
                                         </form>
                                     @elseif ($row->status === 'in_process' && !$row->cancel_requested_by_client)
-                                        <form action="{{ route('errands.request-cancel', $row->id) }}" method="POST">
+                                        <form action="#" method="POST">
                                             @csrf
                                             <button type="submit" class="btn-cancel">Cancel</button>
                                         </form>

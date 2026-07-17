@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\Errand;
+use App\Models\ErrandAttachment;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -35,5 +38,49 @@ class ClientController extends Controller
             'total_errands' => $stats->total ?? 0,
             'search' => $search
         ]);
+    }
+
+    public function create()
+    {
+        return view('client.create_errand');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'title'       => 'required|string|max:100',
+            'description' => 'required|string',
+            'deadline'    => 'required', 
+            'contact'     => 'required|string',
+            'location'    => 'required|string|max:255',
+            'fee'         => 'required|numeric|min:0',
+            'attachment'  => 'nullable|file|mimes:pdf,jpg,jpeg,png,gif,docx|max:10240', 
+        ]);
+
+        $deadline = Carbon::createFromFormat('F j, Y h:i A', $request->deadline);
+
+        $errand = Errand::create([
+            'client_id'   => Auth::id(),
+            'title'       => $validated['title'],
+            'description' => $validated['description'],
+            'deadline'    => $deadline,
+            'contact'     => $validated['contact'],
+            'location'    => $validated['location'],
+            'fee'         => $validated['fee'],
+            'status'      => 'pending',
+        ]);
+
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $path = $file->store('uploads/attachments', 'public');
+
+            ErrandAttachment::create([
+                'errand_id'     => $errand->id,
+                'file_path'     => $path,
+                'original_name' => $file->getClientOriginalName(),
+            ]);
+        }
+
+        return redirect()->route('client.dashboard')->with('success', 'Errand created successfully!');
     }
 }

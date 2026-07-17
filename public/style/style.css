@@ -1409,7 +1409,8 @@ body {
     align-items: center;
 }
 
-.button-row button {
+.button-row button,
+.button-row a {
     color: var(--color-btn-text);
     font-size: 0.9rem;
     padding: 4px 12px;
