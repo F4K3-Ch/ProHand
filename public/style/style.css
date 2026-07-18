@@ -2260,6 +2260,7 @@ body {
     outline: none;
 }
 
+.create-errand-input-box
 select[name="role"] option[value="admin"] {
     background-color: rgba(239, 68, 68, 0.15);  
     color: #ef4444; 
@@ -2342,7 +2343,8 @@ select[name="role"] option[value="client"] {
     font-weight: 600;
 }
 
-.create-errand-input-box input {
+.create-errand-input-box input,
+.create-errand-input-box select {
     background-color: var(--color-card-bg);
     color: var(--color-text);
     border: 1px solid var(--color-input-border);
@@ -2376,7 +2378,8 @@ select[name="role"] option[value="client"] {
 }
 
 .create-errand-input-box input:focus,
-.create-errand-input-box textarea:focus {
+.create-errand-input-box textarea:focus,
+.create-errand-input-box select:focus {
     border-color: var(--color-input-focus-border);
     box-shadow: var(--shadow-input-focus);
     outline: none;
@@ -2405,6 +2408,17 @@ select[name="role"] option[value="client"] {
 
 .create-errand-input-box input[type="file"]::-webkit-file-upload-button:hover {
     filter: brightness(0.9);
+}
+
+.create-errand-container .price-display {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #2ecc71;
+    background-color: rgba(46, 204, 113, 0.1);
+    padding: 3px;
+    border-radius: 6px;
+    border: 1px dashed #2ecc71;
+    text-align: center;
 }
 
 .create-errand-container .btn {
