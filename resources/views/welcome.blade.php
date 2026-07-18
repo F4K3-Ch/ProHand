@@ -24,92 +24,33 @@
     <main class="index-info-container">
 
         <section class="hero">
-            <h1>Your Time Matters. Let Us <span>Handle</span> the Errands.</h1>
-            <p>
-                ProHand connects you with trusted taskers to run errands,
-                handle small jobs, and get things done quickly and reliably.
-            </p>
-            <div class="hero-actions">
-                <a href="/register" class="get-started">Get Started</a>
-            </div>
+            <h1>Simplify Your Day. <br> <span>Professional Help for Your Errands.</span></h1>
+            <p>Post your task, choose your category, and get matched with verified taskers. 
+            Transparent, hourly-based pricing that gets the job done right.</p>
+            <a href="/register" class="get-started">Get Started Now</a>
         </section>
 
         <section class="services">
-            <h2 class="section-title">How It <span>Works?</span></h2>
-
+            <h2 class="section-title">How It <span>Works<span></h2>
             <div class="services-container">
                 <div class="service-card">
-                    <h3>Post an Errand</h3>
-                    <p>
-                        Describe your task, set a location and budget,
-                        and submit your request.
-                    </p>
+                    <h3>Post Your Task</h3>
+                    <p>Tell us what you need done and pick a category. Our system calculates the fair hourly rate for you.</p>
                 </div>
-
                 <div class="service-card">
-                    <h3>Tasker Accepts</h3>
-                    <p>
-                        A qualified tasker accepts and starts working
-                        based on your requirements.
-                    </p>
+                    <h3>Verified Taskers</h3>
+                    <p>Work with reliable, checked professionals who are ready to handle your request efficiently.</p>
                 </div>
-
                 <div class="service-card">
-                    <h3>Get It Done</h3>
-                    <p>
-                        Monitor the progress of your errand. Completion is recorded and updated
-                        exclusively by the assigned tasker.
-                    </p>
+                    <h3>Track & Complete</h3>
+                    <p>Stay updated on progress from start to finish. Transparent, simple, and reliable service every time.</p>
                 </div>
             </div>
-        </section>
-
-        <section class="why-prohand">
-            <h2 class="section-title">Why Choose Pro<span>Hand?</span></h2>
-
-            <div class="why-container">
-                <div class="why-card">
-                    <h3>Fast & Convenient</h3>
-                    <p>
-                        Save time by outsourcing everyday errands
-                        without disrupting your schedule.
-                    </p>
-                </div>
-
-                <div class="why-card">
-                    <h3>Trusted Taskers</h3>
-                    <p>
-                        Taskers are verified and reviewed
-                        to ensure safety, reliability, and quality.
-                    </p>
-                </div>
-
-                <div class="why-card">
-                    <h3>Transparent Pricing</h3>
-                    <p>
-                        Set your own budget upfront.
-                        No hidden fees or surprise charges.
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <section class="trust-safety">
-            <h2 class="section-title">Safe. Secure. <span>Reliable.</span></h2>
-            <p>
-                At ProHand, your errands are handled by dedicated, verified taskers
-                under our full control. Each task is monitored to ensure timely,
-                secure, and high-quality completion, giving you complete peace of mind.
-            </p>
         </section>
 
         <section class="final-cta">
-            <h2 class="section-title">Ready to Simplify Your <span>Errands?</span></h2>
-            <p>
-                Register as a client today and let our dedicated, verified taskers
-                handle your errands efficiently and securely.
-            </p>
-            <a href="/register" class="get-started">Register as Client</a>
+            <h2>Ready to hand off your to-do list?</h2>
+            <a href="/register" class="get-started">Join ProHand Today</a>
         </section>
 
         <footer class="index-footer">
