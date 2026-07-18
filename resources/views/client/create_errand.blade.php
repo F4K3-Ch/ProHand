@@ -12,13 +12,13 @@
         <h1>Create Errand</h1>
 
         @if ($errors->any() || session('error'))
-            <div class="create-errand-error-success-message">
+            <div class="error-success-message">
                 @foreach ($errors->all() as $error)
-                    <p>{{ $error }}</p>
+                    <p class="error">{{ $error }}</p>
                 @endforeach
                 
                 @if (session('error'))
-                    <p>{{ session('error') }}</p>
+                    <p class="error">{{ session('error') }}</p>
                 @endif
             </div>
         @endif

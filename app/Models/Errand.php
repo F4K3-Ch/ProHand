@@ -42,6 +42,11 @@ class Errand extends Model
         'failed_at'     => 'datetime',
     ];
 
+    public function getCategoryAttribute($value)
+    {
+        return ucwords(str_replace('_', ' ', $value));
+    }
+
     public function client(): BelongsTo 
     { 
         return $this->belongsTo(User::class, 'client_id'); 

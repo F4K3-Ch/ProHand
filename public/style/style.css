@@ -1510,29 +1510,26 @@ body {
 
 /* Client Table*/
 .client-errands-table th:nth-child(1),
-.client-errands-table td:nth-child(1) { width: 7%; }
+.client-errands-table td:nth-child(1) { width: 8%; }
 
 .client-errands-table th:nth-child(2),
-.client-errands-table td:nth-child(2) { width: 10%; }
+.client-errands-table td:nth-child(2) { width: 20%; }
 
 .client-errands-table th:nth-child(3),
-.client-errands-table td:nth-child(3) { width: 15%; }
+.client-errands-table td:nth-child(3) { width: 14%; }
 
 .client-errands-table th:nth-child(4),
-.client-errands-table td:nth-child(4) { width: 17%; }
+.client-errands-table td:nth-child(4) { width: 16%; }
 
 .client-errands-table th:nth-child(5),
-.client-errands-table td:nth-child(5) { width: 17%; }
+.client-errands-table td:nth-child(5) { width: 12%; }
 
 .client-errands-table th:nth-child(6),
-.client-errands-table td:nth-child(6) { width: 8%; }
+.client-errands-table td:nth-child(6) { width: 14%; }
 
 .client-errands-table th:nth-child(7),
-.client-errands-table td:nth-child(7) { width: 14%; }
-
-.client-errands-table th:nth-child(8),
-.client-errands-table td:nth-child(8) { 
-    width: 12%; 
+.client-errands-table td:nth-child(7) { 
+    width: 16%; 
     text-align: center; 
 }
 
@@ -2248,22 +2245,6 @@ select[name="role"] option[value="client"] {
     font-weight: 600;
     text-align: center;
     margin-bottom: 5px;
-}
-
-.create-errand-error-success-message {
-    min-height: 25px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    overflow: hidden; 
-}
-
-.create-errand-error-success-message p {
-    margin: 0;
-    padding: 0;
-    font-size: 0.9rem;
-    word-wrap: break-word;
 }
 
 .create-errand-input-box {

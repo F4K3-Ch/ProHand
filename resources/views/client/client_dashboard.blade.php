@@ -89,8 +89,7 @@
                         <tr>
                             <th>Errand ID</th>
                             <th>Title</th>
-                            <th>Location</th>
-                            <th>Created At</th>
+                            <th>Category</th>
                             <th>Deadline</th>
                             <th>Fee</th>
                             <th>Status</th>
@@ -98,15 +97,14 @@
                         </tr>
                         @forelse($errands as $row)
                         <tr>
-                            <td>{{ $row->id }}</td>
+                            <td>#{{ $row->id }}</td>
                             <td>{{ $row->title }}</td>
-                            <td>{{ $row->location }}</td>
-                            <td>{{ $row->created_at->format('F j, Y g:i A') }}</td>
-                            <td>{{ $row->deadline ? $row->deadline->format('F j, Y g:i A') : 'N/A' }}</td>
+                            <td>{{ ucwords(str_replace('_', ' ', $row->category)) }}</td>
+                            <td>{{ $row->deadline ? $row->deadline->format('M d, g:i A') : 'N/A' }}</td>
                             <td>₱{{ number_format($row->fee, 2) }}</td>
                             <td>
                                 <span class="status-badge status-{{ $row->status }}">
-                                    {{ ucfirst(str_replace('_', ' ', $row->status)) }}
+                                    {{ ucwords(str_replace('_', ' ', $row->status)) }}
                                 </span>
                             </td>
                             <td>

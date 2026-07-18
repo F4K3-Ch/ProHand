@@ -35,18 +35,18 @@ class ClientController extends Controller
 
         $errands = Errand::where('client_id', $user->id)
             ->when($search, function ($query) use ($search, $searchDate) {
-                $query->where(function ($q) use ($search, $searchDate) {
+                $searchSlug = str_replace(' ', '_', strtolower($search));
+
+                $query->where(function ($q) use ($search, $searchDate, $searchSlug) {
                     $q->where('id', $search)
                     ->orWhere('title', 'like', "%{$search}%")
-                    ->orWhere('location', 'like', "%{$search}%")
+                    ->orWhere('category', 'like', "%{$searchSlug}%")
+                    ->orWhere('deadline', 'like', "%{$search}%")
                     ->orWhere('fee', 'like', "%{$search}%")
-                    ->orWhere('status', 'like', "%{$search}%")
-                    ->orWhere('created_at', 'like', "%{$search}%")
-                    ->orWhere('deadline', 'like', "%{$search}%");
+                    ->orWhere('status', 'like', "%{$search}%");
 
                     if ($searchDate) {
-                        $q->orWhereDate('created_at', $searchDate)
-                        ->orWhereDate('deadline', $searchDate);
+                        $q->orWhereDate('deadline', $searchDate);
                     }
                 });
             })
@@ -84,13 +84,15 @@ class ClientController extends Controller
         $validated = $request->validate([
             'title'          => 'required|string|max:150',
             'category'       => 'required|in:delivery,moving,cleaning,repair,tutoring,pet_care',
-            'expected_hours' => 'required|numeric|min:0.5',
+            'expected_hours' => 'required|numeric|min:0.5|max:100',
             'description'    => 'required|string',
             'deadline'       => 'required', 
             'contact'        => 'required|string',
             'location'       => 'required|string|max:200',
             'attachment'     => 'nullable|file|mimes:pdf,jpg,jpeg,png,gif,docx|max:10240', 
         ], [
+            'expected_hours.max' => 'The duration is too long. Please enter a value of 100 hours or less.',
+            'expected_hours.min' => 'The duration must be at least 0.5 hours.',
             'attachment.max' => 'The file is too large. Maximum size is 10MB.',
             'attachment.mimes' => 'The file type you uploaded is not allowed. Allowed types: PDF, JPG, JPEG, PNG, GIF, DOCX.',
         ]);
