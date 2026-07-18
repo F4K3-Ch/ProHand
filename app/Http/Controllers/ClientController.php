@@ -43,7 +43,7 @@ class ClientController extends Controller
                     ->orWhere('category', 'like', "%{$searchSlug}%")
                     ->orWhere('deadline', 'like', "%{$search}%")
                     ->orWhere('fee', 'like', "%{$search}%")
-                    ->orWhere('status', 'like', "%{$search}%");
+                    ->orWhere('status', 'like', "%{$searchSlug}%");
 
                     if ($searchDate) {
                         $q->orWhereDate('deadline', $searchDate);

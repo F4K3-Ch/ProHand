@@ -116,15 +116,21 @@
                                             <button type="submit" class="btn-delete">Delete</button>
                                         </form>
                                     @elseif ($row->status === 'pending_payment')
-                                        <form action="#" method="POST">
+                                        <form action="#" method="POST" onsubmit="return confirm('Are you sure you want to cancel this errand? It will return to &quot;Pending&quot status, and any submitted proof of payment will be preserved for review.');">
                                             @csrf
                                             <button type="submit" class="btn-cancel">Cancel</button>
                                         </form>
-                                    @elseif ($row->status === 'in_process' && !$row->cancel_requested_by_client)
-                                        <form action="#" method="POST">
-                                            @csrf
-                                            <button type="submit" class="btn-cancel">Cancel</button>
-                                        </form>
+                                    @elseif ($row->status === 'in_process')
+                                        @if (!$row->cancel_requested_by_client)
+                                            <form action="#" method="POST" 
+                                                onsubmit="return confirm('Are you sure you want to send a cancellation request to the Admin? It will return to &quot;Pending&quot status and this action cannot be undone until processed.');">
+                                                @csrf
+                                                <input type="hidden" name="client_request_cancel_id" value="{{ $row->id }}">
+                                                <button type="submit" class="btn-cancel">Cancel</button>
+                                            </form>
+                                        @else
+                                            <button type="button" disabled class="btn-cancel-disabled">Cancel</button>
+                                        @endif
                                     @endif
                                 </div>
                             </td>
