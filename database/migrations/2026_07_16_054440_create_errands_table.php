@@ -23,7 +23,7 @@ return new class extends Migration
             $table->dateTime('deadline');
             $table->string('location', 200);
             $table->text('contact');
-            $table->enum('status', ['pending', 'pending_payment', 'in_process'])->default('pending');
+            $table->enum('status', ['pending', 'pending_payment', 'in_process', 'pending_completion', 'pending_failure', 'dispute'])->default('pending');
             $table->string('payment_receipt_path', 255)->nullable();
             $table->boolean('cancel_requested_by_tasker')->default(0)->comment('0 = normal, 1 = tasker wants to cancel');
             $table->boolean('cancel_requested_by_client')->default(0)->comment('0 = normal, 1 = client wants to cancel');
