@@ -47,8 +47,8 @@ return new class extends Migration
             $table->dateTime('failed_at')->nullable();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
 
-            $table->tinyInteger('tasker_deleted')->default(0)->comment('0 = visible, 1 = deleted by tasker');
-            $table->tinyInteger('client_deleted')->default(0)->comment('0 = visible, 1 = deleted by client');
+            $table->boolean('tasker_deleted')->default(false)->comment('false = visible, true = deleted by tasker');
+            $table->boolean('client_deleted')->default(false)->comment('false = visible, true = deleted by client');
         });
     }
 

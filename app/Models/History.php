@@ -61,4 +61,9 @@ class History extends Model
     {
         return $this->hasOne(HistoryAttachment::class, 'history_errand_id');
     }
+
+    public function paymentProof(): HasOne 
+    {
+        return $this->hasOne(HistoryPaymentProof::class, 'history_errand_id');
+    }
 }

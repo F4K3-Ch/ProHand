@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Errand extends Model
 {
@@ -54,6 +55,11 @@ class Errand extends Model
 
     public function attachment() {
         return $this->hasOne(ErrandAttachment::class, 'errand_id');
+    }
+
+    public function paymentProof(): HasOne 
+    {
+        return $this->hasOne(PaymentProof::class, 'errand_id');
     }
 
     public function client(): BelongsTo 
