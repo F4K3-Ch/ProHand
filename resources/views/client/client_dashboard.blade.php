@@ -90,6 +90,7 @@
                             <th>Errand ID</th>
                             <th>Title</th>
                             <th>Category</th>
+                            <th>Created At</th>
                             <th>Deadline</th>
                             <th>Fee</th>
                             <th>Status</th>
@@ -100,6 +101,7 @@
                             <td>#{{ $row->id }}</td>
                             <td>{{ $row->title }}</td>
                             <td>{{ ucwords(str_replace('_', ' ', $row->category)) }}</td>
+                            <td>{{ $row->created_at->timezone('Asia/Manila')->format('M d, h:i A') }}</td>
                             <td>{{ $row->deadline ? $row->deadline->format('M d, g:i A') : 'N/A' }}</td>
                             <td>₱{{ number_format($row->fee, 2) }}</td>
                             <td>
@@ -109,7 +111,7 @@
                             </td>
                             <td>
                                 <div class="button-row">
-                                    <a href="#" class="btn-view">View</a>
+                                    <a href="{{ route('errand.show', $row->id) }}" class="btn-view">View</a>
                                     @if ($row->status === 'pending')
                                         <form action="#" method="POST" onsubmit="return confirm('Delete permanently?');">
                                             @csrf @method('DELETE')

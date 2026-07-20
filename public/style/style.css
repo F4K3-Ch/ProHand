@@ -1510,27 +1510,30 @@ body {
 
 /* Client Table*/
 .client-errands-table th:nth-child(1),
-.client-errands-table td:nth-child(1) { width: 8%; }
+.client-errands-table td:nth-child(1) { width: 10%; }
 
 .client-errands-table th:nth-child(2),
-.client-errands-table td:nth-child(2) { width: 20%; }
+.client-errands-table td:nth-child(2) { width: 14%; }
 
 .client-errands-table th:nth-child(3),
-.client-errands-table td:nth-child(3) { width: 14%; }
+.client-errands-table td:nth-child(3) { width: 12%; }
 
 .client-errands-table th:nth-child(4),
-.client-errands-table td:nth-child(4) { width: 16%; }
+.client-errands-table td:nth-child(4) { width: 14%; }
 
 .client-errands-table th:nth-child(5),
-.client-errands-table td:nth-child(5) { width: 12%; }
+.client-errands-table td:nth-child(5) { width: 14%; }
 
 .client-errands-table th:nth-child(6),
-.client-errands-table td:nth-child(6) { width: 14%; }
+.client-errands-table td:nth-child(6) { width: 10%; }
 
 .client-errands-table th:nth-child(7),
-.client-errands-table td:nth-child(7) { 
-    width: 16%; 
-    text-align: center; 
+.client-errands-table td:nth-child(7) { width: 14%; }
+
+.client-errands-table th:nth-child(8),
+.client-errands-table td:nth-child(8) {
+    width: 12%;
+    text-align: center;
 }
 
 /* Finished Errands Table */

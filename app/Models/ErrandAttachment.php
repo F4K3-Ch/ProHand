@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ErrandAttachment extends Model
 {
+    protected $table = 'errand_attachments';
     public $timestamps = false; 
 
     protected $fillable = [

@@ -27,7 +27,7 @@ class ClientController extends Controller
             try {
                 if ($search) {
                     // Handles formats like "July 17, 2026" or "2026-07-17"
-                    $searchDate = \Carbon\Carbon::parse($search)->format('Y-m-d');
+                    $searchDate = Carbon::parse($search)->format('Y-m-d');
                 }
             } catch (\Exception $e) {
                 // Search isn't a date, ignore it

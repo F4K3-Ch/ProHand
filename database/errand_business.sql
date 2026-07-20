@@ -34,7 +34,6 @@ CREATE TABLE IF NOT EXISTS errands (
     location VARCHAR(200) NOT NULL,
     contact TEXT NOT NULL,
     status ENUM('pending','pending_payment','in_process', 'pending_completion', 'pending_failure', 'dispute') DEFAULT 'pending',
-    payment_receipt_path VARCHAR(255) NULL DEFAULT NULL, 
     cancel_requested_by_tasker TINYINT(1) DEFAULT 0 COMMENT '0 = normal, 1 = tasker wants to cancel',
     cancel_requested_by_client TINYINT(1) DEFAULT 0 COMMENT '0 = normal, 1 = client wants to cancel',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -56,6 +55,18 @@ CREATE TABLE IF NOT EXISTS errand_attachments (
     errand_id INT NOT NULL,
     file_path VARCHAR(255), -- e.g., uploads/attachments/file1.jpg
     original_name VARCHAR(255),
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (errand_id) REFERENCES errands(id) ON DELETE CASCADE
+);
+
+-- ==========================
+-- PAYMENT PROOFS TABLE
+-- ==========================
+CREATE TABLE IF NOT EXISTS payment_proofs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    errand_id INT NOT NULL,
+    file_path VARCHAR(255) NOT NULL, -- e.g., uploads/payments/proof1.jpg
+    original_name VARCHAR(255) NOT NULL,
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (errand_id) REFERENCES errands(id) ON DELETE CASCADE
 );
@@ -89,7 +100,6 @@ CREATE TABLE IF NOT EXISTS history (
     location VARCHAR(200) NOT NULL,
     contact TEXT NOT NULL,
     status ENUM('completed','failed') NOT NULL,
-    payment_receipt_path VARCHAR(255) NULL DEFAULT NULL, 
 
     client_id INT,
     client_last_name VARCHAR(50),
@@ -130,4 +140,16 @@ CREATE TABLE IF NOT EXISTS history_attachments (
     original_name VARCHAR(255),
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (history_errand_id) REFERENCES history(id) ON DELETE CASCADE
+);
+
+-- ==========================
+-- HISTORY PAYMENT PROOFS TABLE
+-- ==========================
+CREATE TABLE IF NOT EXISTS history_payment_proofs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    history_errand_id INT NOT NULL,     -- references history_errands.id 
+    file_path VARCHAR(255) NOT NULL,    -- e.g., uploads/history/payments/proof1.jpg
+    original_name VARCHAR(255) NOT NULL,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (history_errand_id) REFERENCES history_errands(id) ON DELETE CASCADE
 );
