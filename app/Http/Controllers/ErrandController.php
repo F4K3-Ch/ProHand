@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Errand;
 use App\Models\History;
 use App\Models\ErrandAttachment;
+use App\Models\PaymentProof;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -34,6 +35,23 @@ class ErrandController extends Controller
     }
 
     public function download(ErrandAttachment $attachment)
+    {
+        $path = storage_path('app/public/' . $attachment->file_path);
+
+        if (!file_exists($path)) {
+            abort(404, 'File not found on server.');
+        }
+
+        $response = response()->download($path, $attachment->original_name);
+
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+
+        return $response;
+    }
+
+    public function downloadPaymentProof(PaymentProof $attachment)
     {
         $path = storage_path('app/public/' . $attachment->file_path);
 

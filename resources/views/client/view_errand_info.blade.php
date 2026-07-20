@@ -115,6 +115,21 @@
                             @endif
                         </div>
                     </div>
+
+                    @if($errand->paymentProof && $errand->status === 'Pending')
+                        <div class="info-box">
+                            <label>Proof of Payment</label>
+                            <div class="attachment-item">
+                                <a href="{{ asset('storage/' . $errand->paymentProof->file_path) }}" target="_blank" class="attachment-name">
+                                    <i class="fa-solid fa-file-lines"></i> {{ $errand->paymentProof->original_name }}
+                                </a>
+                                
+                                <a href="{{ route('errand.payment-proof.download', $errand->paymentProof->id) }}" class="btn-download">
+                                    Download
+                                </a>
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
                 <div class="info-bot-btn">
