@@ -39,22 +39,16 @@
                 </div>
 
                 <form method="POST" action="{{ route('login') }}">
-                    @csrf {{-- CRITICAL: Protects against Cross-Site Request Forgery --}}
+                    @csrf
 
                     <div class="login-input-box">
                         <label for="email">Email</label>
-                        <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus>
+                        <input type="email" id="email" name="email" value="{{ old('email') }}" required>
                     </div>
 
                     <div class="login-input-box">
                         <label for="password">Password</label>
                         <input type="password" id="password" name="password" required>
-                    </div>
-
-                    <div id="auth-status" 
-                        data-email-error="{{ $errors->has('email') ? '1' : '0' }}" 
-                        data-pass-error="{{ $errors->has('password') ? '1' : '0' }}"
-                        style="display: none;">
                     </div>
 
                     <button type="submit" class="btn">Login</button>
@@ -72,24 +66,5 @@
             <p>&copy; {{ date('Y') }} ProHand. All rights reserved.</p>
         </footer>
     </main>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const status = document.getElementById("auth-status");
-            const emailInput = document.getElementById("email");
-            const passwordInput = document.getElementById("password");
-
-            // Check for errors from our data attributes
-            if (status.dataset.emailError === '1') {
-                emailInput.focus();
-                // Move cursor to the end
-                const val = emailInput.value;
-                emailInput.value = '';
-                emailInput.value = val;
-            } else if (status.dataset.passError === '1') {
-                passwordInput.focus();
-            }
-        });
-    </script>
 </body>
 </html>

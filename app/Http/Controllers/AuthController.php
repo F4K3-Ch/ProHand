@@ -9,7 +9,10 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function showRegister() { return view('auth.register'); }
+    public function showRegister() 
+    { 
+        return view('auth.register'); 
+    }
 
     public function register(Request $request)
     {
@@ -50,13 +53,22 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
+        $userExists = User::where('email', $credentials['email'])->exists();
+
+        if (!$userExists) {
+            return back()
+                ->withErrors(['email' => 'This email address is not registered in our system.'])
+                ->withInput($request->only('email'));
+        }
+
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             return $this->redirectBasedOnRole(Auth::user());
         }
 
-        return back()->withInput($request->only('email'))
-                    ->withErrors(['email' => 'Invalid credentials provided.']);
+        return back()
+            ->withErrors(['password' => 'Oops! The password you entered is incorrect.'])
+            ->withInput($request->only('email')); 
     }
 
     private function redirectBasedOnRole($user)
@@ -74,7 +86,7 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login')->withHeaders([
+        return redirect('login')->withHeaders([
             'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
             'Pragma' => 'no-cache',
             'Expires' => '0',
