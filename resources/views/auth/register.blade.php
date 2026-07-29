@@ -18,15 +18,11 @@
     <div class="register-container">
         <h1>Register Here</h1>
 
-        @if ($errors->any())
-            <div class="error-success-message">
-                @foreach ($errors->all() as $error)
-                    <p class="error">{{ $error }}</p>
-                @endforeach
-            </div>
-        @endif
+        <div class="error-success-message">
+            <p id="errorElement" class="error" style="display: none;"></p>
+        </div>
 
-        <form method="POST" action="{{ route('register') }}">
+        <form id="registerForm">
             @csrf
 
             <div class="register-input-box">
@@ -64,12 +60,95 @@
                 <input type="password" id="password_confirmation" name="password_confirmation" required>
             </div>
 
-            <button type="submit" class="btn">Register</button>
+            <button type="submit" class="btn">
+                Register <div class="circle-spinner" id="registerSpinner" style="display: none;"></div>
+            </button>
         </form>
 
         <p class="login-link">Already have an account?
             <a href="{{ route('login') }}">Login here</a>
         </p>
     </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const passwordConfirmationInput = document.getElementById('password_confirmation');
+            const errorElement = document.getElementById('errorElement');
+            const registerSpinner = document.getElementById('registerSpinner');
+
+            registerSpinner.style.display = 'inline-block';
+            errorElement.textContent = '';
+            errorElement.style.display = 'none';
+
+            const formData = {
+                email: emailInput.value,
+                last_name: document.getElementById('last_name').value,
+                first_name: document.getElementById('first_name').value,
+                middle_name: document.getElementById('middle_name').value,
+                contact_number: document.getElementById('contact_number').value,
+                password: passwordInput.value,
+                password_confirmation: passwordConfirmationInput.value,
+            };
+
+            fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json().then(data => {
+                if (!response.ok) {
+                    throw data;
+                }
+                return data;
+            }))
+            .then(data => {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user_role', data.role);
+                
+                window.location.href = "/client/dashboard";
+            })
+            .catch(err => {
+                let errorMessage = 'An unexpected error occurred.';
+                let hasEmailError = false;
+                
+                if (err.error) {
+                    errorMessage = err.error;
+                } else if (err.message) {
+                    errorMessage = err.message;
+                } else if (err.errors) {
+                    if (err.errors.email && err.errors.email.length > 0) {
+                        errorMessage = err.errors.email[0];
+                        hasEmailError = true;
+                    } else {
+                        const firstKey = Object.keys(err.errors)[0];
+                        errorMessage = err.errors[firstKey][0];
+                    }
+                }
+
+                errorElement.textContent = errorMessage;
+                errorElement.style.display = 'block';
+
+                if (hasEmailError || errorMessage.toLowerCase().includes('email')) {
+                    emailInput.focus();
+                    passwordInput.value = '';
+                    passwordConfirmationInput.value = '';
+                } else {
+                    passwordInput.value = '';
+                    passwordConfirmationInput.value = '';
+                    passwordInput.focus();
+                }
+            })
+            .finally(() => {
+                registerSpinner.style.display = 'none';
+            });
+        });
+    </script>
 </body>
 </html>

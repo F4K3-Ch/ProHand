@@ -4,88 +4,79 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function showRegister() 
-    { 
-        return view('auth.register'); 
+    public function showLogin()
+    {
+        return view('auth.login');
+    }
+
+    public function showRegister()
+    {
+        return view('auth.register');
+    }
+
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (! $user) {
+            return response()->json([
+                'error' => 'No account found with this email address.'
+            ], 422);
+        }
+
+        if (! Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'error' => 'Incorrect password. Please try again.'
+            ], 422);
+        }
+
+        $user->tokens()->delete();
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'token' => $token,
+            'role' => $user->role,
+            'message' => 'Login successful'
+        ]);
     }
 
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'email' => 'required|email|unique:users',
-            'first_name' => 'required|max:50',
-            'last_name' => 'required|max:50',
-            'contact_number' => 'required|max:20',
-            'password' => 'required|confirmed|min:3',
+            'email' => ['required', 'string', 'email', 'max:100', 'unique:users'],
+            'last_name' => ['required', 'string', 'max:50'],
+            'first_name' => ['required', 'string', 'max:50'],
+            'middle_name' => ['nullable', 'string', 'max:50'],
+            'contact_number' => ['required', 'string', 'max:20'],
+            'password' => ['required', 'string', 'min:3', 'confirmed'],
         ]);
 
         $user = User::create([
             'email' => $validated['email'],
-            'first_name' => $validated['first_name'],
-            'middle_name' => $request->middle_name,
             'last_name' => $validated['last_name'],
+            'first_name' => $validated['first_name'],
+            'middle_name' => $validated['middle_name'] ?? null,
             'contact_number' => $validated['contact_number'],
             'password' => Hash::make($validated['password']),
-            'role' => 'client', 
+            'role' => 'client',
+            'profile_picture' => 'uploads/profile_pictures/default.jpg',
         ]);
 
-        Auth::login($user);
-        return redirect()->route('client.dashboard');
-    }
+        $token = $user->createToken('auth_token')->plainTextToken;
 
-    public function showLogin() 
-    { 
-        if (Auth::check()) {
-            return $this->redirectBasedOnRole(Auth::user());
-        }
-        return view('auth.login'); 
-    }
-
-    public function login(Request $request)
-    {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-
-        $userExists = User::where('email', $credentials['email'])->exists();
-
-        if (!$userExists) {
-            return back()
-                ->withErrors(['email' => 'This email address is not registered in our system.'])
-                ->withInput($request->only('email'));
-        }
-
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            return $this->redirectBasedOnRole(Auth::user());
-        }
-
-        return back()
-            ->withErrors(['password' => 'Oops! The password you entered is incorrect.'])
-            ->withInput($request->only('email')); 
-    }
-
-    private function redirectBasedOnRole($user)
-    {
-        return match ($user->role) {
-            'admin'  => redirect()->route('admin.dashboard'),
-            'tasker' => redirect()->route('tasker.dashboard'),
-            'client' => redirect()->route('client.dashboard'),
-        };
-    }
-
-    public function logout(Request $request)
-    {
-        Auth::guard('web')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect('login');
+        return response()->json([
+            'token' => $token,
+            'role' => $user->role,
+            'message' => 'Registration successful'
+        ], 201);
     }
 }

@@ -25,25 +25,17 @@
                 </div>
 
                 <div class="login-error-success-message">
-                    @if (session('success'))
-                        <div class="error-success-message">
-                            <p class="success">{{ session('success') }}</p>
-                        </div>
-                    @endif
-                    
-                    @if ($errors->any())
-                        <div class="error-success-message">
-                            <p class="error">{{ $errors->first() }}</p>
-                        </div>
-                    @endif
+                    <div class="error-success-message">
+                        <p id="errorElement" class="error" style="display: none;"></p>
+                    </div>
                 </div>
 
-                <form method="POST" action="{{ route('login') }}">
+                <form id="loginForm">
                     @csrf
 
                     <div class="login-input-box">
                         <label for="email">Email</label>
-                        <input type="email" id="email" name="email" value="{{ old('email') }}" required>
+                        <input type="email" id="email" name="email" required>
                     </div>
 
                     <div class="login-input-box">
@@ -51,7 +43,9 @@
                         <input type="password" id="password" name="password" required>
                     </div>
 
-                    <button type="submit" class="btn">Login</button>
+                    <button type="submit" class="btn">
+                        Login <div class="circle-spinner" id="loginSpinner" style="display: none;"></div>
+                    </button>
                 </form>
 
                 <p class="register-link">
@@ -66,5 +60,74 @@
             <p>&copy; {{ date('Y') }} ProHand. All rights reserved.</p>
         </footer>
     </main>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            const errorElement = document.getElementById('errorElement');
+            const loginSpinner = document.getElementById('loginSpinner');
+
+            loginSpinner.style.display = 'inline-block';
+            errorElement.textContent = '';
+            errorElement.style.display = 'none';
+
+            fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            })
+            .then(response => response.json().then(data => {
+                if (!response.ok) {
+                    throw data;
+                }
+                return data;
+            }))
+            .then(data => {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user_role', data.role);
+                
+                if (data.role === 'admin') {
+                    window.location.href = "/admin/dashboard";
+                } else if (data.role === 'tasker') {
+                    window.location.href = "/tasker/dashboard";
+                } else {
+                    window.location.href = "/client/dashboard";
+                }
+            })
+            .catch(err => {
+                let errorMessage = 'An unexpected error occurred.';
+                
+                if (err.error) {
+                    errorMessage = err.error;
+                } else if (err.message) {
+                    errorMessage = err.message;
+                } else if (err.errors) {
+                    const firstKey = Object.keys(err.errors)[0];
+                    errorMessage = err.errors[firstKey][0];
+                }
+
+                errorElement.textContent = errorMessage;
+                errorElement.style.display = 'block';
+
+                if (errorMessage.toLowerCase().includes('email')) {
+                    emailInput.focus();
+                } else {
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
+            })
+            .finally(() => {
+                loginSpinner.style.display = 'none';
+            });
+        });
+    </script>
 </body>
 </html>

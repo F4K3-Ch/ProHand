@@ -1,11 +1,11 @@
 <div class="sidebar">
     <div class="sidebar-top">
         <div class="profile-info">
-            <img src="{{ asset(auth()->user()->profile_picture) }}" class="profile-img">
+            <img src="#" class="profile-img">
             <div class="profile-text">
                 <p class="role">Tasker</p>
-                <p class="name">{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</p>
-                <p class="email">{{ auth()->user()->email }}</p>
+                <p class="name">#</p>
+                <p class="email">#</p>
             </div>
         </div>
 
@@ -16,10 +16,7 @@
             <li><a href="#"><i class="fa-solid fa-circle-user"></i> My Profile</a></li>
             <li><a href="#" class="notif-link"><i class="fa-solid fa-bell"></i> Notifications</a></li>
             <li>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
-                </form>
+                <button type="submit"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
             </li>
         </ul>
     </div>
