@@ -1,11 +1,11 @@
 <div class="sidebar">
     <div class="sidebar-top">
         <div class="profile-info">
-            <img src="#" class="profile-img">
+            <img id="sidebar-profile-img" class="profile-img">
             <div class="profile-text">
-                <p class="role">Client</p>
-                <p class="name">#</p>
-                <p class="email">#</p>
+                <p id="sidebar-user-role" class="role">Loading...</p>
+                <p id="sidebar-user-name" class="name">Loading...</p>
+                <p id="sidebar-user-email" class="email">Loading...</p>
             </div>
         </div>
 
@@ -20,7 +20,9 @@
             <li><a href="#"><i class="fa-solid fa-circle-user"></i> My Profile</a></li>
             <li><a href="#" class="notif-link"><i class="fa-solid fa-bell"></i> Notifications</a></li>
             <li>
-                <button type="submit"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                <button type="button" id="logoutBtn">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
             </li>
         </ul>
     </div>

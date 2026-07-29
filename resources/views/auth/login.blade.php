@@ -119,6 +119,7 @@
 
                 if (errorMessage.toLowerCase().includes('email')) {
                     emailInput.focus();
+                    passwordInput.value = '';
                 } else {
                     passwordInput.value = '';
                     passwordInput.focus();

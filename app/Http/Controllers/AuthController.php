@@ -27,13 +27,13 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (! $user) {
+        if (!$user) {
             return response()->json([
                 'error' => 'No account found with this email address.'
             ], 422);
         }
 
-        if (! Hash::check($request->password, $user->password)) {
+        if (!Hash::check($request->password, $user->password)) {
             return response()->json([
                 'error' => 'Incorrect password. Please try again.'
             ], 422);
@@ -78,5 +78,16 @@ class AuthController extends Controller
             'role' => $user->role,
             'message' => 'Registration successful'
         ], 201);
+    }
+
+    public function logout(Request $request)
+    {
+        if ($request->user() && $request->user()->currentAccessToken()) {
+            $request->user()->currentAccessToken()->delete();
+        }
+
+        return response()->json([
+            'message' => 'Logged out successfully'
+        ]);
     }
 }

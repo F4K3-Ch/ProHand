@@ -745,7 +745,7 @@ span {
 
 /* Individual Link */
 .sidebar-links li a,
-.sidebar-links li form button{
+.sidebar-links li button{
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -770,14 +770,14 @@ span {
 
 /* Hover */
 .sidebar-links li a:hover,
-.sidebar-links li form button:hover {
+.sidebar-links li button:hover {
     background-color: var(--sidebar-link-hover-bg);
     backdrop-filter: var(--sidebar-link-hover-blur);
 }
 
 /* Icon */
 .sidebar-links li a i,
-.sidebar-links li form button i {
+.sidebar-links li button i {
     color: var(--color-icon-fill);
     font-size: 17px;    
     flex-shrink: 0;

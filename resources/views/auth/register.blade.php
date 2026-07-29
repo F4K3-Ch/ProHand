@@ -116,7 +116,6 @@
             })
             .catch(err => {
                 let errorMessage = 'An unexpected error occurred.';
-                let hasEmailError = false;
                 
                 if (err.error) {
                     errorMessage = err.error;
@@ -125,7 +124,6 @@
                 } else if (err.errors) {
                     if (err.errors.email && err.errors.email.length > 0) {
                         errorMessage = err.errors.email[0];
-                        hasEmailError = true;
                     } else {
                         const firstKey = Object.keys(err.errors)[0];
                         errorMessage = err.errors[firstKey][0];
@@ -135,7 +133,7 @@
                 errorElement.textContent = errorMessage;
                 errorElement.style.display = 'block';
 
-                if (hasEmailError || errorMessage.toLowerCase().includes('email')) {
+                if (errorMessage.toLowerCase().includes('email')) {
                     emailInput.focus();
                     passwordInput.value = '';
                     passwordConfirmationInput.value = '';
