@@ -19,7 +19,11 @@
             </li>
             <li><a href="#"><i class="fa-solid fa-clipboard-check"></i> Finished Errands</a></li>
             <li><a href="#"><i class="fa-solid fa-users"></i> Manage Users</a></li>
-            <li><a href="#"><i class="fa-solid fa-circle-user"></i> My Profile</a></li>
+            <li>
+                <a href="{{ route('admin.profile') }}" class="{{ request()->routeIs('*.profile') ? 'active' : '' }}">
+                    <i class="fa-solid fa-circle-user"></i> My Profile
+                </a>
+            </li>
             <li><a href="#" class="notif-link"><i class="fa-solid fa-bell"></i> Notifications</a></li>
             <li>
                 <button type="button" id="logoutBtn">

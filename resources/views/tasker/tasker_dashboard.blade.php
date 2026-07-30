@@ -8,6 +8,6 @@
 
 @section('content')
     <main class="main">
-        <h1>Admin Dashboard</h1>
+        <h1>Tasker Dashboard</h1>
     </main>
 @endsection

@@ -68,13 +68,23 @@
                     }
 
                     if (authorizedRolesForCurrentPage.length > 0 && !authorizedRolesForCurrentPage.includes(role)) {
-                        if (window.history.length > 1) {
-                            window.history.back();
+                        const lastSafePage = sessionStorage.getItem('last_known_safe_url');
+
+                        if (lastSafePage && lastSafePage !== path) {
+                            window.location.href = lastSafePage;
                         } else {
-                            window.location.href = '/'; 
+                            if (role === 'admin') {
+                                window.location.href = "{{ route('admin.dashboard') }}";
+                            } else if (role === 'tasker') {
+                                window.location.href = "{{ route('tasker.dashboard') }}";
+                            } else {
+                                window.location.href = "{{ route('client.dashboard') }}";
+                            }
                         }
                         return;
                     }
+
+                    sessionStorage.setItem('last_known_safe_url', path);
 
                     const fullName = user.middle_name 
                         ? `${user.first_name} ${user.middle_name} ${user.last_name}` 
@@ -123,6 +133,7 @@
                     })
                     .finally(() => {
                         localStorage.clear();
+                        sessionStorage.clear();
                         window.location.href = "{{ route('login') }}";
                     });
                 });

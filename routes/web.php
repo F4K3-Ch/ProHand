@@ -25,3 +25,15 @@ Route::get('/client/finished', function () {
 Route::get('/tasker/dashboard', function () {
     return view('tasker.tasker_dashboard');
 })->name('tasker.dashboard');
+
+Route::get('/admin/profile', function () {
+    return view('shared.profile');
+})->name('admin.profile');
+
+Route::get('/tasker/profile', function () {
+    return view('shared.profile');
+})->name('tasker.profile');
+
+Route::get('/client/profile', function () {
+    return view('shared.profile');
+})->name('client.profile');

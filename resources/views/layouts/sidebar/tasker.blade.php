@@ -19,7 +19,11 @@
             </li>
             <li><a href="#"><i class="fa-solid fa-clipboard-list"></i> Your Task</a></li>
             <li><a href="#"><i class="fa-solid fa-clipboard-check"></i> Finished Errands</a></li>
-            <li><a href="#"><i class="fa-solid fa-circle-user"></i> My Profile</a></li>
+            <li>
+                <a href="{{ route('tasker.profile') }}" class="{{ request()->routeIs('*.profile') ? 'active' : '' }}">
+                    <i class="fa-solid fa-circle-user"></i> My Profile
+                </a>
+            </li>
             <li><a href="#" class="notif-link"><i class="fa-solid fa-bell"></i> Notifications</a></li>
             <li>
                 <button type="button" id="logoutBtn">
