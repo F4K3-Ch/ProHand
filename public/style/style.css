@@ -127,8 +127,26 @@
 }
 
 /* ===========================
-    Universal Message Styles
+    Universal Styles
 =========================== */
+.circle-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--color-btn-text);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: circleRotate 0.6s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 8px;
+}
+
+@keyframes circleRotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 /* Error */
 .error {
     color: #dc2626;
@@ -380,24 +398,6 @@ span {
 /* ===========================
     Register Page
 =========================== */
-.circle-spinner {
-    width: 18px;
-    height: 18px;
-    border: 2px solid var(--color-btn-text);
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: circleRotate 0.6s linear infinite;
-    display: inline-block;
-    vertical-align: middle;
-    margin-left: 8px;
-}
-
-@keyframes circleRotate {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
 .register-page {
     background-color: var(--color-bg);  
     display: flex;

@@ -18,6 +18,10 @@ Route::get('/client/dashboard', function () {
     return view('client.client_dashboard');
 })->name('client.dashboard');
 
+Route::get('/client/finished', function () {
+    return view('client.client_finished_errands');
+})->name('client.finished');
+
 Route::get('/tasker/dashboard', function () {
     return view('tasker.tasker_dashboard');
 })->name('tasker.dashboard');

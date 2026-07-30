@@ -11,38 +11,30 @@
 </head>
 <body>
     <script>
-        const token = localStorage.getItem('token');
-        const userRole = localStorage.getItem('user_role');
+        const path = window.location.pathname;
+        if (path !== '/login' && path !== '/register') {
+            const token = localStorage.getItem('token');
+            const userRole = localStorage.getItem('user_role');
 
-        if (!token || !userRole) {
-            localStorage.clear();
-            window.location.href = "{{ route('login') }}";
+            if (!token || !userRole) {
+                localStorage.clear();
+                window.location.href = "{{ route('login') }}";
+            }
         }
     </script>
 
     <input type="checkbox" id="sidebar-toggle-check" class="sidebar-checkbox">
 
-    <div id="sidebar-wrapper">
-        @php
-            $user = auth()->user();
-        @endphp
-
-        @if($user && $user->role === 'admin')
-            @include('layouts.sidebar.admin')
-        @elseif($user && $user->role === 'tasker')
-            @include('layouts.sidebar.tasker')
-        @else
-            @include('layouts.sidebar.client')
-        @endif
-    </div>
+    @yield('sidebar')
 
     @yield('content')
     
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const token = localStorage.getItem('token');
+            const path = window.location.pathname;
 
-            if (token) {
+            if (token && path !== '/login' && path !== '/register') {
                 fetch('/api/user', {
                     method: 'GET',
                     headers: {
@@ -56,6 +48,34 @@
                     return response.json();
                 })
                 .then(user => {
+                    if (user.role) {
+                        localStorage.setItem('user_role', user.role);
+                    }
+
+                    const role = user.role.trim().toLowerCase();
+
+                    const rolePrefixes = {
+                        'admin': ['/admin'],
+                        'client': ['/client'],
+                        'tasker': ['/tasker']
+                    };
+
+                    let authorizedRolesForCurrentPage = [];
+                    for (const [allowedRole, prefixes] of Object.entries(rolePrefixes)) {
+                        if (prefixes.some(prefix => path.startsWith(prefix))) {
+                            authorizedRolesForCurrentPage.push(allowedRole);
+                        }
+                    }
+
+                    if (authorizedRolesForCurrentPage.length > 0 && !authorizedRolesForCurrentPage.includes(role)) {
+                        if (window.history.length > 1) {
+                            window.history.back();
+                        } else {
+                            window.location.href = '/'; 
+                        }
+                        return;
+                    }
+
                     const fullName = user.middle_name 
                         ? `${user.first_name} ${user.middle_name} ${user.last_name}` 
                         : `${user.first_name} ${user.last_name}`;
@@ -64,11 +84,23 @@
                     const emailEl = document.getElementById('sidebar-user-email');
                     const roleEl = document.getElementById('sidebar-user-role');
                     const imgEl = document.getElementById('sidebar-profile-img');
+                    const imgSpinner = document.getElementById('sidebar-img-spinner');
 
                     if (nameEl) nameEl.textContent = fullName;
                     if (emailEl) emailEl.textContent = user.email;
                     if (roleEl) roleEl.textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
-                    if (imgEl && user.profile_picture) imgEl.src = '/' + user.profile_picture;
+                    
+                    if (imgEl) {
+                        if (user.profile_picture) {
+                            imgEl.src = "{{ asset('storage') }}/" + user.profile_picture;
+                        } else {
+                            imgEl.src = "{{ asset('storage/uploads/profile_pictures/default.jpg') }}";
+                        }
+                        imgEl.style.display = 'block';
+                    }
+                    if (imgSpinner) {
+                        imgSpinner.style.display = 'none';
+                    }
                 })
                 .catch(() => {
                     localStorage.clear();
