@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Errand extends Model
@@ -18,7 +17,6 @@ class Errand extends Model
         'title',
         'category',
         'description',
-        'expected_hours',
         'fee',
         'deadline',
         'location',
@@ -42,18 +40,13 @@ class Errand extends Model
         'in_process_at' => 'datetime',
         'completed_at'  => 'datetime',
         'failed_at'     => 'datetime',
-        'fee'           => 'decimal:2',
-        'expected_hours'=> 'decimal:2',
+
         'cancel_requested_by_tasker' => 'boolean',
         'cancel_requested_by_client' => 'boolean',
     ];
 
-    public function getCategoryAttribute($value)
+    public function attachment(): HasOne 
     {
-        return ucwords(str_replace('_', ' ', $value));
-    }
-
-    public function attachment() {
         return $this->hasOne(ErrandAttachment::class, 'errand_id');
     }
 

@@ -16,9 +16,8 @@ return new class extends Migration
             $table->foreignId('client_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('tasker_id')->nullable()->constrained('users')->onDelete('set null');
             $table->string('title', 150);
-            $table->enum('category', ['delivery', 'moving', 'cleaning', 'repair', 'tutoring', 'pet_care']);
+            $table->enum('category', ['delivery', 'moving', 'cleaning', 'repair', 'grocery', 'laundry']);
             $table->text('description');
-            $table->decimal('expected_hours', 5, 2);
             $table->decimal('fee', 10, 2)->default(0.00);
             $table->dateTime('deadline');
             $table->string('location', 200);

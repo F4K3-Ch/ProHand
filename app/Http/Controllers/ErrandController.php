@@ -3,68 +3,65 @@
 namespace App\Http\Controllers;
 
 use App\Models\Errand;
-use App\Models\History;
 use App\Models\ErrandAttachment;
-use App\Models\PaymentProof;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ErrandController extends Controller
 {
-    public function show($id)
+    public function store(Request $request)
     {
-        $userId = Auth::id();
+        $validated = $request->validate([
+            'title' => 'required|string|max:150',
+            'category' => 'required|in:delivery,moving,cleaning,repair,grocery,laundry',
+            'description' => 'required|string',
+            'fee' => 'required|numeric|min:0',
+            'deadline' => 'required|date',
+            'location' => 'required|string|max:200',
+            'contact' => 'required|string',
+            'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png,gif,docx|max:10240',
+        ]);
 
-        $errand = Errand::with('attachment')
-            ->where('id', $id)
-            ->where('client_id', $userId)
-            ->first();
+        try {
+            DB::beginTransaction();
 
-        $isFinished = false;
+            $errand = Errand::create([
+                'client_id' => $request->user()->id,
+                'title' => $validated['title'],
+                'category' => $validated['category'],
+                'description' => $validated['description'],
+                'fee' => $validated['fee'],
+                'deadline' => $validated['deadline'],
+                'location' => $validated['location'],
+                'contact' => $validated['contact'],
+                'status' => 'pending',
+            ]);
 
-        if (!$errand) {
-            $errand = History::with('attachment')
-                ->where('errand_id', $id)
-                ->where('client_id', $userId)
-                ->firstOrFail();
-            
-            $isFinished = true;
+            if ($request->hasFile('attachment')) {
+                $file = $request->file('attachment');
+                $filePath = $file->store('uploads/errands', 'public');
+
+                ErrandAttachment::create([
+                    'errand_id' => $errand->id,
+                    'file_path' => $filePath,
+                    'original_name' => $file->getClientOriginalName(),
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Errand created successfully!',
+                'errand' => $errand->load('attachment')
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'error' => 'Failed to create errand. Please try again.'
+            ], 500);
         }
-
-        return view('client.view_errand_info', compact('errand', 'isFinished'));
-    }
-
-    public function download(ErrandAttachment $attachment)
-    {
-        $path = storage_path('app/public/' . $attachment->file_path);
-
-        if (!file_exists($path)) {
-            abort(404, 'File not found on server.');
-        }
-
-        $response = response()->download($path, $attachment->original_name);
-
-        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-        $response->headers->set('Pragma', 'no-cache');
-        $response->headers->set('Expires', '0');
-
-        return $response;
-    }
-
-    public function downloadPaymentProof(PaymentProof $attachment)
-    {
-        $path = storage_path('app/public/' . $attachment->file_path);
-
-        if (!file_exists($path)) {
-            abort(404, 'File not found on server.');
-        }
-
-        $response = response()->download($path, $attachment->original_name);
-
-        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-        $response->headers->set('Pragma', 'no-cache');
-        $response->headers->set('Expires', '0');
-
-        return $response;
     }
 }

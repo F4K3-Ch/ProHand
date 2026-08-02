@@ -36,8 +36,30 @@
                 </div>
             </header>
         </div>
+        
         <div class="dashboard">
+            <div class="error-success-message" id="flashMessageContainer" style="display: none;">
+                <p class="success" id="flashMessageText"></p>
+            </div>
+
             <h1>Client Dashboard</h1>
         </div>
     </main>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const successMsg = sessionStorage.getItem('success_message');
+            if (successMsg) {
+                const container = document.getElementById('flashMessageContainer');
+                const textEl = document.getElementById('flashMessageText');
+                
+                textEl.textContent = successMsg;
+                container.style.display = 'block';
+
+                sessionStorage.removeItem('success_message');
+            }
+        });
+    </script>
+@endpush

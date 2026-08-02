@@ -15,7 +15,6 @@ class History extends Model
         'title',
         'category',
         'description',
-        'expected_hours',
         'fee',
         'deadline',
         'location',
@@ -52,7 +51,6 @@ class History extends Model
         'completed_at'   => 'datetime',
         'failed_at'      => 'datetime',
         'fee'            => 'decimal:2',
-        'expected_hours' => 'decimal:2',
         'tasker_deleted' => 'boolean',
         'client_deleted' => 'boolean',
     ];
