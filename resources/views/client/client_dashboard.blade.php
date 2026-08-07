@@ -133,7 +133,7 @@
                     </div>
 
                     <div id="pagination-container" class="pagination-container">
-                        <!-- JS will inject buttons here -->
+
                     </div>
                 </div>
             </div>

@@ -70,83 +70,135 @@
         </p>
     </div>
 
-    <script>
-        document.getElementById('registerForm').addEventListener('submit', function (e) {
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+
+        const registerForm = document.getElementById('registerForm');
+        const errorElement = document.getElementById('errorElement');
+        const spinner = document.getElementById('registerSpinner');
+
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const passwordConfirmationInput = document.getElementById('password_confirmation');
+
+        const token = localStorage.getItem('token');
+
+        if (token) {
+            try {
+                const response = await fetch('/api/me', {
+                    headers: {
+                        Accept: 'application/json',
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    switch (data.user.role) {
+                        case 'admin':
+                            window.location.href = '/admin/dashboard';
+                            return;
+                        case 'tasker':
+                            window.location.href = '/tasker/dashboard';
+                            return;
+                        case 'client':
+                            window.location.href = '/client/dashboard';
+                            return;
+                    }
+                } else {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                }
+            } catch {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+            }
+        }
+
+        registerForm.addEventListener('submit', async function (e) {
             e.preventDefault();
-
-            const emailInput = document.getElementById('email');
-            const passwordInput = document.getElementById('password');
-            const passwordConfirmationInput = document.getElementById('password_confirmation');
-            const errorElement = document.getElementById('errorElement');
-            const registerSpinner = document.getElementById('registerSpinner');
-
-            registerSpinner.style.display = 'inline-block';
-            errorElement.textContent = '';
+            spinner.style.display = 'inline-block';
             errorElement.style.display = 'none';
+            errorElement.textContent = '';
 
-            const formData = {
-                email: emailInput.value,
-                last_name: document.getElementById('last_name').value,
-                first_name: document.getElementById('first_name').value,
-                middle_name: document.getElementById('middle_name').value,
-                contact_number: document.getElementById('contact_number').value,
-                password: passwordInput.value,
-                password_confirmation: passwordConfirmationInput.value,
-            };
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
 
-            fetch('/api/register', {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            })
-            .then(response => response.json().then(data => {
+                    body: JSON.stringify({
+                        email: emailInput.value.trim(),
+                        last_name: document.getElementById('last_name').value.trim(),
+                        first_name: document.getElementById('first_name').value.trim(),
+                        middle_name: document.getElementById('middle_name').value.trim(),
+                        contact_number: document.getElementById('contact_number').value.trim(),
+                        password: passwordInput.value,
+                        password_confirmation: passwordConfirmationInput.value
+                    })
+                });
+
+                const data = await response.json();
+
                 if (!response.ok) {
                     throw data;
                 }
-                return data;
-            }))
-            .then(data => {
+
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+
                 localStorage.setItem('token', data.token);
-                localStorage.setItem('user_role', data.role);
-                
-                window.location.href = "/client/dashboard";
-            })
-            .catch(err => {
-                let errorMessage = 'An unexpected error occurred.';
-                
-                if (err.error) {
-                    errorMessage = err.error;
-                } else if (err.message) {
-                    errorMessage = err.message;
-                } else if (err.errors) {
-                    if (err.errors.email && err.errors.email.length > 0) {
-                        errorMessage = err.errors.email[0];
-                    } else {
-                        const firstKey = Object.keys(err.errors)[0];
-                        errorMessage = err.errors[firstKey][0];
-                    }
+                localStorage.setItem('user', JSON.stringify(data.user));
+
+                switch (data.user.role) {
+                    case 'admin':
+                        window.location.href = '/admin/dashboard';
+                        break;
+                    case 'tasker':
+                        window.location.href = '/tasker/dashboard';
+                        break;
+                    case 'client':
+                        window.location.href = '/client/dashboard';
+                        break;
+                    default:
+                        localStorage.clear();
+                        errorElement.textContent = 'Unknown user role.';
+                        errorElement.style.display = 'block';
+                }
+            }
+            catch (error) {
+                let message = 'Registration failed.';
+                if (error.error) {
+                    message = error.error;
+                }
+                if (error.message) {
+                    message = error.message;
+                }
+                if (error.errors) {
+                    const firstKey = Object.keys(error.errors)[0];
+                    message = error.errors[firstKey][0];
                 }
 
-                errorElement.textContent = errorMessage;
+                passwordInput.value = '';
+                passwordConfirmationInput.value = '';
+
+                errorElement.textContent = message;
                 errorElement.style.display = 'block';
 
-                if (errorMessage.toLowerCase().includes('email')) {
+                if (message.toLowerCase().includes('email')) {
                     emailInput.focus();
-                    passwordInput.value = '';
-                    passwordConfirmationInput.value = '';
                 } else {
-                    passwordInput.value = '';
-                    passwordConfirmationInput.value = '';
                     passwordInput.focus();
                 }
-            })
-            .finally(() => {
-                registerSpinner.style.display = 'none';
-            });
+
+            }
+            finally {
+                spinner.style.display = 'none';
+            }
         });
-    </script>
+    });
+</script>
 </body>
 </html>

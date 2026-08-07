@@ -43,9 +43,18 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
+            'message' => 'Login successful.',
             'token' => $token,
-            'role' => $user->role,
-            'message' => 'Login successful'
+            'user' => [
+                'id' => $user->id,
+                'email' => $user->email,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'middle_name' => $user->middle_name,
+                'contact_number' => $user->contact_number,
+                'role' => $user->role,
+                'profile_picture' => $user->profile_picture,
+            ]
         ]);
     }
 
@@ -74,20 +83,45 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
+            'message' => 'Registration successful.',
             'token' => $token,
-            'role' => $user->role,
-            'message' => 'Registration successful'
+            'user' => [
+                'id' => $user->id,
+                'email' => $user->email,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'middle_name' => $user->middle_name,
+                'contact_number' => $user->contact_number,
+                'role' => $user->role,
+                'profile_picture' => $user->profile_picture,
+            ]
         ], 201);
     }
 
     public function logout(Request $request)
     {
-        if ($request->user() && $request->user()->currentAccessToken()) {
-            $request->user()->currentAccessToken()->delete();
-        }
+        $request->user()->currentAccessToken()->delete();
 
         return response()->json([
-            'message' => 'Logged out successfully'
+            'message' => 'Logged out successfully.'
+        ]);
+    }
+
+    public function me(Request $request)
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'email' => $user->email,
+                'first_name' => $user->first_name,
+                'middle_name' => $user->middle_name,
+                'last_name' => $user->last_name,
+                'contact_number' => $user->contact_number,
+                'role' => $user->role,
+                'profile_picture' => $user->profile_picture,
+            ]
         ]);
     }
 }

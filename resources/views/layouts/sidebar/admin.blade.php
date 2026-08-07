@@ -1,7 +1,7 @@
 <div class="sidebar">
     <div class="sidebar-top">
         <div class="profile-info">
-            <img id="sidebar-profile-img" class="profile-img" style="display: none;">
+            <img id="sidebar-profile-img" class="profile-img" alt="Profile Picture" style="display: none;">
             <div id="sidebar-img-spinner" class="circle-spinner" style="width: 40px; height: 40px; border-width: 2px;"></div>
             
             <div class="profile-text">
@@ -28,6 +28,11 @@
             <li>
                 <button type="button" id="logoutBtn">
                     <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    <span
+                        id="logoutSpinner"
+                        class="circle-spinner"
+                        style="display:none;">
+                    </span>
                 </button>
             </li>
         </ul>
