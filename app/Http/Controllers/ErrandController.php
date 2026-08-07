@@ -6,7 +6,6 @@ use App\Models\Errand;
 use App\Models\ErrandAttachment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class ErrandController extends Controller
 {
@@ -40,7 +39,7 @@ class ErrandController extends Controller
 
             if ($request->hasFile('attachment')) {
                 $file = $request->file('attachment');
-                $filePath = $file->store('uploads/errands', 'public');
+                $filePath = $file->store('uploads/attachments', 'public');
 
                 ErrandAttachment::create([
                     'errand_id' => $errand->id,
