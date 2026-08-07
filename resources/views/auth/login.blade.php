@@ -35,12 +35,12 @@
 
                     <div class="login-input-box">
                         <label for="email">Email</label>
-                        <input type="email" id="email" required>
+                        <input type="email" id="email" name="email" required>
                     </div>
 
                     <div class="login-input-box">
                         <label for="password">Password</label>
-                        <input type="password" id="password" required>
+                        <input type="password" id="password" name="password" required>
                     </div>
 
                     <button type="submit" class="btn">
@@ -62,165 +62,116 @@
         </footer>
     </main>
 
-<script>
-document.addEventListener('DOMContentLoaded', async () => {
+    <script>
+        const token = localStorage.getItem('token');
 
-    const loginForm = document.getElementById('loginForm');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const errorElement = document.getElementById('errorElement');
-    const spinner = document.getElementById('loginSpinner');
-
-
-    const token = localStorage.getItem('token');
-
-    if (token) {
-
-        try {
-
-            const response = await fetch('/api/me', {
+        if (token) {
+            fetch('/api/me', {
+                method: 'GET',
                 headers: {
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': 'Bearer ' + token
                 }
-            });
-
-            if (response.ok) {
-
-                const data = await response.json();
-
-                switch (data.user.role) {
-
-                    case 'admin':
-                        window.location.href = '/admin/dashboard';
-                        return;
-
-                    case 'tasker':
-                        window.location.href = '/tasker/dashboard';
-                        return;
-
-                    case 'client':
-                        window.location.href = '/client/dashboard';
-                        return;
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error();
                 }
-
-            } else {
-
+                return response.json();
+            })
+            .then(data => {
+                localStorage.setItem('user', JSON.stringify(data.user));
+                if (data.user.role === 'admin') {
+                    window.location.href = '/admin/dashboard';
+                }
+                else if (data.user.role === 'tasker') {
+                    window.location.href = '/tasker/dashboard';
+                }
+                else {
+                    window.location.href = '/client/dashboard';
+                }
+            })
+            .catch(() => {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-
-            }
-
-        } catch (error) {
-
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-
+            });
         }
 
-    }
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
 
-    loginForm.addEventListener('submit', async function (e) {
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            const errorElement = document.getElementById('errorElement');
+            const spinner = document.getElementById('loginSpinner');
 
-        e.preventDefault();
+            spinner.style.display = 'inline-block';
 
-        spinner.style.display = 'inline-block';
-        errorElement.style.display = 'none';
-        errorElement.textContent = '';
+            errorElement.textContent = '';
+            errorElement.style.display = 'none';
 
-        try {
-
-            const response = await fetch('/api/login', {
-
+            fetch('/api/login', {
                 method: 'POST',
-
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
+                body: JSON.stringify({ email, password })
+            })
+            .then(response => {
+                return response.json().then(data => {
+                    if (!response.ok) {
+                        throw data;
+                    }
+                    return data;
+                });
+            })
+            .then(data => {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
 
-                body: JSON.stringify({
-                    email: emailInput.value.trim(),
-                    password: passwordInput.value
-                })
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
 
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw data;
-            }
-
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-
-
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
-
-            switch (data.user.role) {
-
-                case 'admin':
+                if (data.user.role === 'admin') {
                     window.location.href = '/admin/dashboard';
-                    break;
-
-                case 'tasker':
+                } else if (data.user.role === 'tasker') {
                     window.location.href = '/tasker/dashboard';
-                    break;
-
-                case 'client':
+                } else if (data.user.role === 'client') {
                     window.location.href = '/client/dashboard';
-                    break;
-
-                default:
-
+                } else {
                     localStorage.clear();
-
                     errorElement.textContent = 'Unknown user role.';
                     errorElement.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                let message = 'Login failed.';
+                if (error.error) {
+                    message = error.error;
+                } else if (error.message) {
+                    message = error.message;
+                } else if (error.errors) {
+                    const firstKey = Object.keys(error.errors)[0];
+                    message = error.errors[firstKey][0];
+                }
 
-            }
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
 
-        }
-        catch (error) {
-
-            let message = 'Login failed.';
-
-            if (error.error) {
-                message = error.error;
-            }
-
-            if (error.message) {
-                message = error.message;
-            }
-
-            if (error.errors) {
-
-                const firstKey = Object.keys(error.errors)[0];
-
-                message = error.errors[firstKey][0];
-
-            }
-
-            passwordInput.value = '';
-
-            errorElement.textContent = message;
-            errorElement.style.display = 'block';
-
-            passwordInput.focus();
-
-        }
-        finally {
-
-            spinner.style.display = 'none';
-
-        }
-
-    });
-
-});
-</script>
-
+                if (message.toLowerCase().includes('email')) {
+                    emailInput.focus();
+                } else {
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
+            })
+            .finally(() => {
+                spinner.style.display = 'none';
+            });
+        });
+    </script>
 </body>
 </html>

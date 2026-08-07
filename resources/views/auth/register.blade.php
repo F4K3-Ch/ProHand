@@ -70,113 +70,112 @@
         </p>
     </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', async () => {
-
-        const registerForm = document.getElementById('registerForm');
-        const errorElement = document.getElementById('errorElement');
-        const spinner = document.getElementById('registerSpinner');
-
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const passwordConfirmationInput = document.getElementById('password_confirmation');
-
+    <script>
         const token = localStorage.getItem('token');
 
         if (token) {
-            try {
-                const response = await fetch('/api/me', {
-                    headers: {
-                        Accept: 'application/json',
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    switch (data.user.role) {
-                        case 'admin':
-                            window.location.href = '/admin/dashboard';
-                            return;
-                        case 'tasker':
-                            window.location.href = '/tasker/dashboard';
-                            return;
-                        case 'client':
-                            window.location.href = '/client/dashboard';
-                            return;
-                    }
-                } else {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
+            fetch('/api/me', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': 'Bearer ' + token
                 }
-            } catch {
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error();
+                }
+                return response.json();
+            })
+            .then(data => {
+                localStorage.setItem('user', JSON.stringify(data.user));
+                if (data.user.role === 'admin') {
+                    window.location.href = '/admin/dashboard';
+                }
+                else if (data.user.role === 'tasker') {
+                    window.location.href = '/tasker/dashboard';
+                }
+                else {
+                    window.location.href = '/client/dashboard';
+                }
+            })
+            .catch(() => {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-            }
+            });
         }
 
-        registerForm.addEventListener('submit', async function (e) {
+        document.getElementById('registerForm').addEventListener('submit', function (e) {
             e.preventDefault();
+
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const passwordConfirmationInput = document.getElementById('password_confirmation');
+
+            const errorElement = document.getElementById('errorElement');
+            const spinner = document.getElementById('registerSpinner');
+
             spinner.style.display = 'inline-block';
-            errorElement.style.display = 'none';
+
             errorElement.textContent = '';
+            errorElement.style.display = 'none';
 
-            try {
-                const response = await fetch('/api/register', {
-                    method: 'POST',
-                    headers: {
-                        Accept: 'application/json',
-                        'Content-Type': 'application/json'
-                    },
+            const formData = {
+                email: emailInput.value.trim(),
+                last_name: document.getElementById('last_name').value.trim(),
+                first_name: document.getElementById('first_name').value.trim(),
+                middle_name: document.getElementById('middle_name').value.trim(),
+                contact_number: document.getElementById('contact_number').value.trim(),
+                password: passwordInput.value,
+                password_confirmation: passwordConfirmationInput.value
 
-                    body: JSON.stringify({
-                        email: emailInput.value.trim(),
-                        last_name: document.getElementById('last_name').value.trim(),
-                        first_name: document.getElementById('first_name').value.trim(),
-                        middle_name: document.getElementById('middle_name').value.trim(),
-                        contact_number: document.getElementById('contact_number').value.trim(),
-                        password: passwordInput.value,
-                        password_confirmation: passwordConfirmationInput.value
-                    })
+            };
+
+            fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                return response.json().then(data => {
+                    if (!response.ok) {
+                        throw data;
+                    }
+                    return data;
                 });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw data;
-                }
-
+            })
+            .then(data => {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
 
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
 
-                switch (data.user.role) {
-                    case 'admin':
-                        window.location.href = '/admin/dashboard';
-                        break;
-                    case 'tasker':
-                        window.location.href = '/tasker/dashboard';
-                        break;
-                    case 'client':
-                        window.location.href = '/client/dashboard';
-                        break;
-                    default:
-                        localStorage.clear();
-                        errorElement.textContent = 'Unknown user role.';
-                        errorElement.style.display = 'block';
+                if (data.user.role === 'admin') {
+                    window.location.href = '/admin/dashboard';
                 }
-            }
-            catch (error) {
+                else if (data.user.role === 'tasker') {
+                    window.location.href = '/tasker/dashboard';
+                }
+                else if (data.user.role === 'client') {
+                    window.location.href = '/client/dashboard';
+                }
+                else {
+                    localStorage.clear();
+                    errorElement.textContent = 'Unknown user role.';
+                    errorElement.style.display = 'block';
+                }
+            })
+            .catch(error => {
                 let message = 'Registration failed.';
                 if (error.error) {
                     message = error.error;
-                }
-                if (error.message) {
+                } else if (error.message) {
                     message = error.message;
-                }
-                if (error.errors) {
+                } else if (error.errors) {
                     const firstKey = Object.keys(error.errors)[0];
                     message = error.errors[firstKey][0];
                 }
@@ -192,13 +191,12 @@
                 } else {
                     passwordInput.focus();
                 }
-
-            }
-            finally {
+            })
+            .finally(() => {
                 spinner.style.display = 'none';
-            }
+            });
         });
-    });
-</script>
+
+    </script>
 </body>
 </html>
