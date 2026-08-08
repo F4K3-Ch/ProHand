@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Admin Dashboard')
+@section('title', 'Tasker Dashboard')
 
 @section('sidebar')
-    @include('layouts.sidebar.admin')
+    @include('layouts.sidebar.tasker')
 @endsection
 
 @section('content')

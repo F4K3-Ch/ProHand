@@ -81,14 +81,16 @@
             })
             .then(data => {
                 localStorage.setItem('user', JSON.stringify(data.user));
+
                 if (data.user.role === 'admin') {
                     window.location.href = '/admin/dashboard';
-                }
-                else if (data.user.role === 'tasker') {
+                } else if (data.user.role === 'tasker') {
                     window.location.href = '/tasker/dashboard';
-                }
-                else {
+                } else if (data.user.role === 'client') {
                     window.location.href = '/client/dashboard';
+                } else {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
                 }
             })
             .catch(() => {
@@ -131,18 +133,36 @@
             .then(data => {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-
                 localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
 
-                if (data.user.role === 'admin') {
+                return fetch('/api/me', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': 'Bearer ' + data.token
+                    }
+                });
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to retrieve user information.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const user = data.user;
+
+                localStorage.setItem('user', JSON.stringify(user));
+
+                if (user.role === 'admin') {
                     window.location.href = '/admin/dashboard';
-                } else if (data.user.role === 'tasker') {
+                } else if (user.role === 'tasker') {
                     window.location.href = '/tasker/dashboard';
-                } else if (data.user.role === 'client') {
+                } else if (user.role === 'client') {
                     window.location.href = '/client/dashboard';
                 } else {
-                    localStorage.clear();
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
                     errorElement.textContent = 'Unknown user role.';
                     errorElement.style.display = 'block';
                 }
