@@ -35,6 +35,8 @@
                         <option value="repair">Repair</option>
                         <option value="grocery">Grocery</option>
                         <option value="laundry">Laundry</option>
+                        <option value="project">Project</option>
+                        <option value="others">Others</option>
                     </select>
                 </div>
 
@@ -122,7 +124,7 @@
 
             const formData = new FormData(this);
 
-            fetch('/api/tasks', {
+            fetch('/api/client/tasks', {
                 method: 'POST',
                 headers: {
                     'Authorization': 'Bearer ' + token,
@@ -137,7 +139,7 @@
                 return data;
             }))
             .then(data => {
-                sessionStorage.setItem('success_message', data.message || 'Errand created successfully!');
+                sessionStorage.setItem('success_message', data.message);
                 window.location.href = '/client/dashboard';
             })
             .catch(err => {

@@ -139,41 +139,19 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', async function () {
-            const token = localStorage.getItem('token');
+        document.addEventListener('DOMContentLoaded', function () {
+            const message = sessionStorage.getItem('success_message');
+            const container = document.getElementById('flashMessageContainer');
+            const text = document.getElementById('flashMessageText');
 
-            if (!token) {
-                return;
-            }
+            if (message && container && text) {
+                text.textContent = message;
+                container.style.display = 'block';
+                sessionStorage.removeItem('success_message');
 
-            try {
-                const response = await fetch('/api/client/dashboard', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': 'Bearer ' + token,
-                        'Accept': 'application/json'
-                    }
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw data;
-                }
-
-                const container = document.getElementById('flashMessageContainer');
-                const text = document.getElementById('flashMessageText');
-
-                if (container && text && data.message) {
-                    text.textContent = data.message;
-                    container.style.display = 'block';
-
-                    setTimeout(() => {
-                        container.style.display = 'none';
-                    }, 3000);
-                }
-            } catch (error) {
-                console.error('Dashboard error:', error);
+                setTimeout(() => {
+                    container.style.display = 'none';
+                }, 3000);
             }
         });
     </script>

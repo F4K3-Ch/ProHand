@@ -36,11 +36,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:client')
         ->prefix('client')
         ->group(function () {
-            Route::get('/dashboard', function () {
-                return response()->json([
-                    'message' => 'Welcome Client',
-                    'user' => request()->user()
-                ]);
-            });
+            Route::post('/tasks', [ErrandController::class, 'store']);
         });
 });
