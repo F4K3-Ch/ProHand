@@ -25,8 +25,7 @@
 
         <section class="hero">
             <h1>Simplify Your Day. <br> <span>Professional Help for Your Errands.</span></h1>
-            <p>Post your task, choose your category, and get matched with verified taskers. 
-            Transparent, hourly-based pricing that gets the job done right.</p>
+            <p>Post your errands, choose your category, set your own price, and let trusted taskers handle the rest efficiently.</p>
             <a href="/register" class="get-started">Get Started Now</a>
         </section>
 
@@ -35,11 +34,11 @@
             <div class="services-container">
                 <div class="service-card">
                     <h3>Post Your Task</h3>
-                    <p>Tell us what you need done and pick a category. Our system calculates the fair hourly rate for you.</p>
+                    <p>Tell us what you need done, pick a category, and set your own custom price or budget for the task.</p>
                 </div>
                 <div class="service-card">
                     <h3>Verified Taskers</h3>
-                    <p>Work with reliable, checked professionals who are ready to handle your request efficiently.</p>
+                    <p>Work with reliable, checked taskers who are ready to handle your request professionally and efficiently.</p>
                 </div>
                 <div class="service-card">
                     <h3>Track & Complete</h3>
