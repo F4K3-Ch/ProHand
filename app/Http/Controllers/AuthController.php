@@ -102,9 +102,7 @@ class AuthController extends Controller
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json([
-            'message' => 'Logged out successfully.'
-        ]);
+        return response()->noContent();
     }
 
     public function me(Request $request)
@@ -121,6 +119,7 @@ class AuthController extends Controller
                 'contact_number' => $user->contact_number,
                 'role' => $user->role,
                 'profile_picture' => $user->profile_picture,
+                'created_at' => $user->created_at,
             ]
         ]);
     }

@@ -90,63 +90,80 @@
 @endsection
 
 @push('scripts')
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const token = localStorage.getItem('token');
-        if (!token) return;
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
 
-        fetch('/api/user', {
-            method: 'GET',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
+            const userData = localStorage.getItem('user');
+
+            if (!userData) {
+                return;
             }
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Failed to fetch profile');
-            return response.json();
-        })
-        .then(user => {
+
+            const user = JSON.parse(userData);
+
             document.getElementById('user-id').value = user.id || '';
             document.getElementById('user-email').value = user.email || '';
             document.getElementById('user-last-name').value = user.last_name || '';
             document.getElementById('user-first-name').value = user.first_name || '';
             document.getElementById('user-middle-name').value = user.middle_name || '';
             document.getElementById('user-contact').value = user.contact_number || '';
-            
+
             if (user.created_at) {
                 const date = new Date(user.created_at);
-                document.getElementById('user-created').value = date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + ' ' + date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+                document.getElementById('user-created').value =
+                    date.toLocaleDateString('en-US', {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric'
+                    }) +
+                    ' ' +
+                    date.toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit'
+                    });
+            } else {
+                document.getElementById('user-created').value = '';
             }
 
             const roleInput = document.getElementById('user-role-input');
-            const formattedRole = user.role.charAt(0).toUpperCase() + user.role.slice(1);
-            roleInput.value = formattedRole;
-            roleInput.classList.add('role-' + user.role.toLowerCase());
+            const role = user.role ? user.role.toLowerCase() : '';
 
-            const imgEl = document.getElementById('profile-preview-photo');
-            const imgSpinner = document.getElementById('profile-photo-spinner');
-            const imgLink = document.getElementById('profile-photo-link');
-            
-            const pictureUrl = user.profile_picture 
-                ? `/storage/${user.profile_picture}` 
-                : `/storage/uploads/profile_pictures/default.jpg`;
+            if (roleInput) {
+                roleInput.value =
+                    role.charAt(0).toUpperCase() +
+                    role.slice(1);
+                roleInput.classList.add('role-' + role);
+            }
 
-            imgEl.src = pictureUrl;
-            imgLink.href = pictureUrl;
-            imgEl.style.display = 'block';
-            if (imgSpinner) imgSpinner.style.display = 'none';
+            const imageElement = document.getElementById('profile-preview-photo');
 
-            const role = user.role.toLowerCase();
-            const backBtn = document.getElementById('back-btn');
-            
-            backBtn.href = `/${role}/dashboard`;
+            const imageSpinner = document.getElementById('profile-photo-spinner');
 
-        })
-        .catch(error => {
-            console.error(error);
+            const imageLink = document.getElementById('profile-photo-link');
+
+            const pictureUrl = user.profile_picture
+                ? "{{ asset('storage') }}/" + user.profile_picture
+                : "{{ asset('storage/uploads/profile_pictures/default.jpg') }}";
+
+            if (imageElement) {
+                imageElement.src = pictureUrl;
+                imageElement.style.display = 'block';
+            }
+
+            if (imageLink) {
+                imageLink.href = pictureUrl;
+            }
+
+            if (imageSpinner) {
+                imageSpinner.style.display = 'none';
+            }
+
+            const backButton = document.getElementById('back-btn');
+
+            if (backButton && role) {
+                backButton.href = `/${role}/dashboard`;
+            }
         });
-    });
-</script>
+    </script>
 @endpush
