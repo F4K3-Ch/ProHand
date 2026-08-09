@@ -160,77 +160,6 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const message = sessionStorage.getItem('success_message');
-            const container = document.getElementById('flashMessageContainer');
-            const text = document.getElementById('flashMessageText');
-
-            if (message && container && text) {
-                text.textContent = message;
-                container.style.display = 'block';
-                sessionStorage.removeItem('success_message');
-
-                setTimeout(() => {
-                    container.style.display = 'none';
-                }, 3000);
-            }
-
-            const token = localStorage.getItem('token');
-
-            if (!token) {
-                return;
-            }
-
-            fetch('/api/client/activeMetrics', {
-                method: 'GET',
-                headers: {
-                    'Authorization': 'Bearer ' + token,
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to retrieve errand metrics.');
-                }
-
-                return response.json();
-            })
-            .then(metrics => {
-                const metricCards = {
-                    pending: 'metric-card-pending',
-                    pending_payment: 'metric-card-pending-payment',
-                    in_process: 'metric-card-in-process',
-                    pending_completion: 'metric-card-pending-completion',
-                    pending_failure: 'metric-card-pending-failure',
-                    dispute: 'metric-card-dispute'
-                };
-
-                Object.entries(metricCards).forEach(([key, cardId]) => {
-                    const card = document.getElementById(cardId);
-                    const value = document.getElementById('metric-' + key);
-
-                    if (!card || !value) {
-                        return;
-                    }
-
-                    const count = Number(metrics[key] || 0);
-
-                    if (count > 0) {
-                        value.textContent = count;
-                        card.style.display = 'flex';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-
-                const totalValue = document.getElementById('metric-total');
-
-                if (totalValue) {
-                    totalValue.textContent = Number(metrics.total || 0);
-                }
-            })
-            .catch(error => {
-                console.error('Errand metrics error:', error);
-            });
 
             const tableBody = document.getElementById('errands-table-body');
             const paginationContainer = document.getElementById('pagination-container');
@@ -239,11 +168,82 @@
             const searchButton = document.getElementById('searchButton');
             const clearSearchButton = document.getElementById('clearSearchButton');
 
-            let currentPage = 1;
 
-            function fetchErrands(page = 1) {
-                const perPage = perPageSelect ? perPageSelect.value : 10;
-                const search = searchInput ? searchInput.value.trim() : '';
+            // API helper
+            async function apiFetch(url) {
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Request failed: ${response.status}`);
+                }
+
+                return response.json();
+            }
+
+            // Flash message
+            const message = sessionStorage.getItem('success_message');
+            const messageContainer = document.getElementById('flashMessageContainer');
+            const messageText = document.getElementById('flashMessageText');
+
+            if (message && messageContainer && messageText) {
+                messageText.textContent = message;
+                messageContainer.style.display = 'block';
+
+                sessionStorage.removeItem('success_message');
+
+                setTimeout(() => {
+                    messageContainer.style.display = 'none';
+                }, 3000);
+            }
+
+            // Metrics
+            async function fetchMetrics() {
+                try {
+                    const metrics = await apiFetch('/api/client/activeMetrics');
+
+                    const cards = {
+                        pending: 'metric-card-pending',
+                        pending_payment: 'metric-card-pending-payment',
+                        in_process: 'metric-card-in-process',
+                        pending_completion: 'metric-card-pending-completion',
+                        pending_failure: 'metric-card-pending-failure',
+                        dispute: 'metric-card-dispute'
+                    };
+
+                    Object.entries(cards).forEach(([key, cardId]) => {
+                        const card = document.getElementById(cardId);
+                        const value = document.getElementById(`metric-${key}`);
+
+                        if (!card || !value) {
+                            return;
+                        }
+
+                        const count = Number(metrics[key] || 0);
+
+                        value.textContent = count;
+                        card.style.display = count > 0 ? 'flex' : 'none';
+                    });
+
+                    const totalValue = document.getElementById('metric-total');
+
+                    if (totalValue) {
+                        totalValue.textContent = Number(metrics.total || 0);
+                    }
+
+                } catch (error) {
+                    console.error('Metrics error:', error);
+                }
+            }
+
+            // Errands
+            async function fetchErrands(page = 1) {
+                const perPage = perPageSelect?.value || 10;
+                const search = searchInput?.value.trim() || '';
 
                 tableBody.innerHTML = `
                     <tr>
@@ -256,35 +256,23 @@
                 `;
 
                 const params = new URLSearchParams({
-                    page: page,
+                    page,
                     per_page: perPage
                 });
 
-                if (search !== '') {
+                if (search) {
                     params.append('search', search);
                 }
 
-                fetch(`/api/client/activeErrands?${params.toString()}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': 'Bearer ' + token,
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to retrieve errands.');
-                    }
-
-                    return response.json();
-                })
-                .then(data => {
-                    currentPage = data.current_page;
+                try {
+                    const data = await apiFetch(
+                        `/api/client/activeErrands?${params.toString()}`
+                    );
 
                     renderErrands(data.data);
                     renderPagination(data);
-                })
-                .catch(error => {
+
+                } catch (error) {
                     console.error('Errands error:', error);
 
                     tableBody.innerHTML = `
@@ -296,11 +284,12 @@
                     `;
 
                     paginationContainer.innerHTML = '';
-                });
+                }
             }
 
+            // Render errands
             function renderErrands(errands) {
-                if (!errands || errands.length === 0) {
+                if (!errands?.length) {
                     tableBody.innerHTML = `
                         <tr>
                             <td class="no-found" colspan="8">
@@ -308,39 +297,38 @@
                             </td>
                         </tr>
                     `;
-
                     return;
                 }
 
-                tableBody.innerHTML = '';
-
-                errands.forEach(errand => {
-                    const row = document.createElement('tr');
-
-                    row.innerHTML = `
-                        <td>${errand.id}</td>
+                tableBody.innerHTML = errands.map(errand => `
+                    <tr>
+                        <td>${escapeHtml(errand.id)}</td>
                         <td>${escapeHtml(errand.title)}</td>
-                        <td>${formatCategory(errand.category)}</td>
-                        <td>${formatDate(errand.created_at)}</td>
-                        <td>${formatDate(errand.deadline)}</td>
+                        <td>${escapeHtml(formatCategory(errand.category))}</td>
+                        <td>${escapeHtml(formatDate(errand.created_at))}</td>
+                        <td>${escapeHtml(formatDate(errand.deadline))}</td>
                         <td>₱${Number(errand.fee).toFixed(2)}</td>
                         <td>
-                            <span class="status-badge status-${errand.status}">
-                                ${formatStatus(errand.status)}
+                            <span class="status-badge status-${escapeHtml(errand.status)}">
+                                ${escapeHtml(formatStatus(errand.status))}
                             </span>
                         </td>
                         <td>
                             <div class="button-row">
-                                <button type="#" class="btn-view">View</button>
-                                <button type="#" class="btn-delete">Delete</button>
+                                <button type="button" class="btn-view">
+                                    View
+                                </button>
+
+                                <button type="button" class="btn-delete">
+                                    Delete
+                                </button>
                             </div>
                         </td>
-                    `;
-
-                    tableBody.appendChild(row);
-                });
+                    </tr>
+                `).join('');
             }
 
+            // Pagination
             function renderPagination(data) {
                 paginationContainer.innerHTML = '';
 
@@ -348,59 +336,58 @@
                     return;
                 }
 
-                const previousButton = document.createElement('button');
+                const previous = document.createElement('button');
 
-                previousButton.textContent = 'Previous';
-                previousButton.disabled = data.current_page === 1;
+                previous.textContent = 'Previous';
+                previous.disabled = data.current_page === 1;
 
-                previousButton.addEventListener('click', function () {
-                    if (data.current_page > 1) {
-                        fetchErrands(data.current_page - 1);
-                    }
-                });
+                previous.onclick = () => {
+                    fetchErrands(data.current_page - 1);
+                };
 
-                paginationContainer.appendChild(previousButton);
+                paginationContainer.appendChild(previous);
 
                 for (let page = 1; page <= data.last_page; page++) {
-                    const pageButton = document.createElement('button');
+                    const button = document.createElement('button');
 
-                    pageButton.textContent = page;
+                    button.textContent = page;
 
                     if (page === data.current_page) {
-                        pageButton.classList.add('active');
+                        button.classList.add('active');
                     }
 
-                    pageButton.addEventListener('click', function () {
+                    button.onclick = () => {
                         fetchErrands(page);
-                    });
+                    };
 
-                    paginationContainer.appendChild(pageButton);
+                    paginationContainer.appendChild(button);
                 }
 
-                const nextButton = document.createElement('button');
+                const next = document.createElement('button');
 
-                nextButton.textContent = 'Next';
-                nextButton.disabled = data.current_page === data.last_page;
+                next.textContent = 'Next';
+                next.disabled = data.current_page === data.last_page;
 
-                nextButton.addEventListener('click', function () {
-                    if (data.current_page < data.last_page) {
-                        fetchErrands(data.current_page + 1);
-                    }
-                });
+                next.onclick = () => {
+                    fetchErrands(data.current_page + 1);
+                };
 
-                paginationContainer.appendChild(nextButton);
+                paginationContainer.appendChild(next);
             }
 
-            function formatCategory(category) {
-                return category
+            // Formatting
+            function formatText(value) {
+                return String(value || '')
                     .replace(/_/g, ' ')
                     .replace(/\b\w/g, letter => letter.toUpperCase());
             }
 
-            function formatStatus(status) {
-                return status
-                    .replace(/_/g, ' ')
-                    .replace(/\b\w/g, letter => letter.toUpperCase());
+            function formatCategory(value) {
+                return formatText(value);
+            }
+
+            function formatStatus(value) {
+                return formatText(value);
             }
 
             function formatDate(date) {
@@ -423,48 +410,46 @@
                 return div.innerHTML;
             }
 
+            // Search
             function updateClearButton() {
-                if (clearSearchButton && searchInput) {
-                    clearSearchButton.style.display =
-                        searchInput.value.trim() === '' ? 'none' : 'inline-block';
+                if (!clearSearchButton) {
+                    return;
                 }
+
+                clearSearchButton.style.display =
+                    searchInput?.value.trim()
+                        ? 'inline-block'
+                        : 'none';
             }
 
-            if (searchButton) {
-                searchButton.addEventListener('click', function () {
+            searchButton?.addEventListener('click', () => {
+                fetchErrands(1);
+            });
+
+            searchInput?.addEventListener('input', updateClearButton);
+
+            searchInput?.addEventListener('keydown', event => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
                     fetchErrands(1);
-                });
-            }
+                }
+            });
 
-            if (searchInput) {
-                searchInput.addEventListener('input', function () {
-                    updateClearButton();
-                });
+            clearSearchButton?.addEventListener('click', () => {
+                searchInput.value = '';
+                updateClearButton();
+                fetchErrands(1);
+            });
 
-                searchInput.addEventListener('keydown', function (event) {
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        fetchErrands(1);
-                    }
-                });
-            }
+            perPageSelect?.addEventListener('change', () => {
+                fetchErrands(1);
+            });
 
-            if (clearSearchButton) {
-                clearSearchButton.addEventListener('click', function () {
-                    searchInput.value = '';
-                    updateClearButton();
-                    fetchErrands(1);
-                });
-            }
-
-            if (perPageSelect) {
-                perPageSelect.addEventListener('change', function () {
-                    fetchErrands(1);
-                });
-            }
-
+            // Initial load
             updateClearButton();
-            fetchErrands(1);
+            fetchMetrics();
+            fetchErrands();
+
         });
     </script>
 @endpush

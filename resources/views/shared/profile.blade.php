@@ -28,7 +28,7 @@
                 <div class="profile-photo-section">
                     <a id="profile-photo-link" href="#" target="_blank">
                         <img id="profile-preview-photo" class="profile-preview-photo" style="display: none;" alt="Profile Picture">
-                        <div id="profile-photo-spinner" class="circle-spinner" style="width: 150px; height: 150px; border-width: 4px;"></div>
+                        <div id="profile-photo-spinner" class="circle-spinner" style="width: 80px; height: 80px; border-width: 4px;"></div>
                     </a>
                 </div>
 
@@ -91,78 +91,92 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', async function () {
+            try {
+                const response = await fetch('/api/me', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Accept': 'application/json'
+                    }
+                });
 
-            const userData = localStorage.getItem('user');
+                if (!response.ok) {
+                    throw new Error('Failed to retrieve user profile.');
+                }
 
-            if (!userData) {
-                return;
-            }
+                const data = await response.json();
+                const user = data.user;
 
-            const user = JSON.parse(userData);
+                if (!user) {
+                    throw new Error('User data was not returned.');
+                }
 
-            document.getElementById('user-id').value = user.id || '';
-            document.getElementById('user-email').value = user.email || '';
-            document.getElementById('user-last-name').value = user.last_name || '';
-            document.getElementById('user-first-name').value = user.first_name || '';
-            document.getElementById('user-middle-name').value = user.middle_name || '';
-            document.getElementById('user-contact').value = user.contact_number || '';
+                document.getElementById('user-id').value = user.id || '';
+                document.getElementById('user-email').value = user.email || '';
+                document.getElementById('user-last-name').value = user.last_name || '';
+                document.getElementById('user-first-name').value = user.first_name || '';
+                document.getElementById('user-middle-name').value = user.middle_name || '';
+                document.getElementById('user-contact').value = user.contact_number || '';
 
-            if (user.created_at) {
-                const date = new Date(user.created_at);
+                if (user.created_at) {
+                    const date = new Date(user.created_at);
 
-                document.getElementById('user-created').value =
-                    date.toLocaleDateString('en-US', {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric'
-                    }) +
-                    ' ' +
-                    date.toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit'
-                    });
-            } else {
-                document.getElementById('user-created').value = '';
-            }
+                    document.getElementById('user-created').value =
+                        date.toLocaleDateString('en-US', {
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric'
+                        }) + ' ' +
+                        date.toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit'
+                        });
+                } else {
+                    document.getElementById('user-created').value = '';
+                }
 
-            const roleInput = document.getElementById('user-role-input');
-            const role = user.role ? user.role.toLowerCase() : '';
+                const roleInput = document.getElementById('user-role-input');
+                const role = user.role?.toLowerCase() || '';
 
-            if (roleInput) {
-                roleInput.value =
-                    role.charAt(0).toUpperCase() +
-                    role.slice(1);
-                roleInput.classList.add('role-' + role);
-            }
+                if (roleInput) {
+                    roleInput.value =
+                        role.charAt(0).toUpperCase() + role.slice(1);
 
-            const imageElement = document.getElementById('profile-preview-photo');
+                    if (role) {
+                        roleInput.classList.add('role-' + role);
+                    }
+                }
 
-            const imageSpinner = document.getElementById('profile-photo-spinner');
+                const imageElement = document.getElementById('profile-preview-photo');
+                const imageSpinner = document.getElementById('profile-photo-spinner');
+                const imageLink = document.getElementById('profile-photo-link');
 
-            const imageLink = document.getElementById('profile-photo-link');
+                const pictureUrl = user.profile_picture
+                    ? "{{ asset('storage') }}/" + user.profile_picture
+                    : "{{ asset('storage/uploads/profile_pictures/default.jpg') }}";
 
-            const pictureUrl = user.profile_picture
-                ? "{{ asset('storage') }}/" + user.profile_picture
-                : "{{ asset('storage/uploads/profile_pictures/default.jpg') }}";
+                if (imageElement) {
+                    imageElement.src = pictureUrl;
+                    imageElement.style.display = 'block';
+                }
 
-            if (imageElement) {
-                imageElement.src = pictureUrl;
-                imageElement.style.display = 'block';
-            }
+                if (imageLink) {
+                    imageLink.href = pictureUrl;
+                }
 
-            if (imageLink) {
-                imageLink.href = pictureUrl;
-            }
+                if (imageSpinner) {
+                    imageSpinner.style.display = 'none';
+                }
 
-            if (imageSpinner) {
-                imageSpinner.style.display = 'none';
-            }
+                const backButton = document.getElementById('back-btn');
 
-            const backButton = document.getElementById('back-btn');
+                if (backButton && role) {
+                    backButton.href = `/${role}/dashboard`;
+                }
 
-            if (backButton && role) {
-                backButton.href = `/${role}/dashboard`;
+            } catch (error) {
+                console.error('Profile error:', error);
             }
         });
     </script>
