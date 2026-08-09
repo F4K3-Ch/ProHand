@@ -28,7 +28,7 @@
                 <div class="profile-photo-section">
                     <a id="profile-photo-link" href="#" target="_blank">
                         <img id="profile-preview-photo" class="profile-preview-photo" style="display: none;" alt="Profile Picture">
-                        <div id="profile-photo-spinner" class="circle-spinner" style="width: 80px; height: 80px; border-width: 4px;"></div>
+                        <div id="profile-photo-spinner" class="circle-spinner" style="width: 150px; height: 150px; border-width: 4px;"></div>
                     </a>
                 </div>
 

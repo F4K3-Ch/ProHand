@@ -42,54 +42,60 @@
                 <section class="totals">
                     <h3>Errand Status Metrics</h3>
                     <div class="total-cards-container">
-                        <div class="total-card bg-pending">
+                        <div class="total-card bg-pending" id="metric-card-pending" style="display: none;">
                             <div class="card-header">
                                 <span class="status-circle circle-pending"></span>
                                 <h3>Pending</h3>
                             </div>
-                            <p id="metric-pending">0</p>
+                            <p id="metric-pending"></p>
                         </div>
-                        <div class="total-card bg-accepted">
+
+                        <div class="total-card bg-accepted" id="metric-card-pending-payment" style="display: none;">
                             <div class="card-header">
                                 <span class="status-circle circle-accepted"></span>
                                 <h3>Pending Payment</h3>
                             </div>
-                            <p id="metric-pending-payment">0</p>
+                            <p id="metric-pending-payment"></p>
                         </div>
-                        <div class="total-card bg-process">
+
+                        <div class="total-card bg-process" id="metric-card-in-process" style="display: none;">
                             <div class="card-header">
                                 <span class="status-circle circle-process"></span>
                                 <h3>In Process</h3>
                             </div>
-                            <p id="metric-in-process">0</p>
+                            <p id="metric-in-process"></p>
                         </div>
-                        <div class="total-card bg-completed">
+
+                        <div class="total-card bg-completed" id="metric-card-pending-completion" style="display: none;">
                             <div class="card-header">
                                 <span class="status-circle circle-complete"></span>
                                 <h3>Pending Completion</h3>
                             </div>
-                            <p id="metric-pending-completion">0</p>
+                            <p id="metric-pending-completion"></p>
                         </div>
-                        <div class="total-card bg-failed">
+
+                        <div class="total-card bg-failed" id="metric-card-pending-failure" style="display: none;">
                             <div class="card-header">
                                 <span class="status-circle circle-failed"></span>
-                                <h3>Pending Failured</h3>
+                                <h3>Pending Failure</h3>
                             </div>
-                            <p id="metric-pending-failure">0</p>
+                            <p id="metric-pending-failure"></p>
                         </div>
-                        <div class="total-card bg-failed">
+
+                        <div class="total-card bg-failed" id="metric-card-dispute" style="display: none;">
                             <div class="card-header">
                                 <span class="status-circle circle-failed"></span>
                                 <h3>Dispute</h3>
                             </div>
-                            <p id="metric-dispute">0</p>
+                            <p id="metric-dispute"></p>
                         </div>
+
                         <div class="total-card bg-total">
                             <div class="card-header">
                                 <span class="status-circle circle-total"></span>
                                 <h3>Total Active Errands</h3>
                             </div>
-                            <p id="metric-total">0</p>
+                            <p id="metric-total">Loading...</p>
                         </div>
                     </div>
                 </section>
@@ -153,6 +159,64 @@
                     container.style.display = 'none';
                 }, 3000);
             }
+
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                return;
+            }
+
+            fetch('/api/client/metrics', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to retrieve errand metrics.');
+                }
+
+                return response.json();
+            })
+            .then(metrics => {
+                const metricCards = {
+                    pending: 'metric-card-pending',
+                    pending_payment: 'metric-card-pending-payment',
+                    in_process: 'metric-card-in-process',
+                    pending_completion: 'metric-card-pending-completion',
+                    pending_failure: 'metric-card-pending-failure',
+                    dispute: 'metric-card-dispute'
+                };
+
+                Object.entries(metricCards).forEach(([key, cardId]) => {
+                    const card = document.getElementById(cardId);
+                    const value = document.getElementById('metric-' + key);
+
+                    if (!card || !value) {
+                        return;
+                    }
+
+                    const count = Number(metrics[key] || 0);
+
+                    if (count > 0) {
+                        value.textContent = count;
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                const totalValue = document.getElementById('metric-total');
+
+                if (totalValue) {
+                    totalValue.textContent = Number(metrics.total || 0);
+                }
+            })
+            .catch(error => {
+                console.error('Errand metrics error:', error);
+            });
         });
     </script>
 @endpush

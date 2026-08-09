@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ErrandController;
+use App\Http\Controllers\ClientController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
@@ -37,5 +38,6 @@ Route::middleware('auth:sanctum')->group(function () {
         ->prefix('client')
         ->group(function () {
             Route::post('/tasks', [ErrandController::class, 'store']);
+            Route::get('/metrics', [ClientController::class, 'metrics']);
         });
 });

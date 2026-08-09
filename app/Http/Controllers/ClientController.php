@@ -7,48 +7,38 @@ use App\Models\Errand;
 
 class ClientController extends Controller
 {
-    public function dashboardData(Request $request)
+    public function metrics(Request $request)
     {
-        $user = $request->user();
-        $search = $request->input('search');
-        $perPage = $request->input('per_page', 10); 
+        $clientId = $request->user()->id;
 
-        $query = Errand::where('client_id', $user->id);
+        $metrics = [
+            'pending' => Errand::where('client_id', $clientId)
+                ->where('status', 'pending')
+                ->count(),
 
-        if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('location', 'like', "%{$search}%");
-            });
-        }
+            'pending_payment' => Errand::where('client_id', $clientId)
+                ->where('status', 'pending_payment')
+                ->count(),
 
-        $errands = $query->orderBy('created_at', 'desc')->paginate($perPage);
+            'in_process' => Errand::where('client_id', $clientId)
+                ->where('status', 'in_process')
+                ->count(),
 
-        $statusCounts = [
-            'pending'             => Errand::where('client_id', $user->id)->where('status', 'pending')->count(),
-            'pending_payment'     => Errand::where('client_id', $user->id)->where('status', 'pending_payment')->count(),
-            'in_process'          => Errand::where('client_id', $user->id)->where('status', 'in_process')->count(),
-            'pending_completion'  => Errand::where('client_id', $user->id)->where('status', 'pending_completion')->count(),
-            'pending_failure'     => Errand::where('client_id', $user->id)->where('status', 'pending_failure')->count(),
-            'dispute'             => Errand::where('client_id', $user->id)->where('status', 'dispute')->count(),
+            'pending_completion' => Errand::where('client_id', $clientId)
+                ->where('status', 'pending_completion')
+                ->count(),
+
+            'pending_failure' => Errand::where('client_id', $clientId)
+                ->where('status', 'pending_failure')
+                ->count(),
+
+            'dispute' => Errand::where('client_id', $clientId)
+                ->where('status', 'dispute')
+                ->count(),
         ];
 
-        $totalErrands = Errand::where('client_id', $user->id)->count();
+        $metrics['total'] = array_sum($metrics);
 
-        $statusLabels = [
-            'pending'            => 'Pending',
-            'pending_payment'    => 'Pending Payment',
-            'in_process'         => 'In Process',
-            'pending_completion' => 'Pending Completion',
-            'pending_failure'    => 'Pending Failure',
-            'dispute'            => 'Dispute',
-        ];
-
-        return response()->json([
-            'status_counts' => $statusCounts,
-            'total_errands' => $totalErrands,
-            'status_labels' => $statusLabels,
-            'errands'       => $errands,
-        ]);
+        return response()->json($metrics);
     }
 }

@@ -5,9 +5,9 @@
             <div id="sidebar-img-spinner" class="circle-spinner" style="width: 40px; height: 40px; border-width: 2px;"></div>
             
             <div class="profile-text">
-                <p id="sidebar-user-role" class="role">Loading <span class="circle-spinner"></span></p>
-                <p id="sidebar-user-name" class="name">Loading <span class="circle-spinner"></span></p>
-                <p id="sidebar-user-email" class="email">Loading <span class="circle-spinner"></span></p>
+                <p id="sidebar-user-role" class="role">Loading...</p>
+                <p id="sidebar-user-name" class="name">Loading...</p>
+                <p id="sidebar-user-email" class="email">Loading...</p>
             </div>
         </div>
 
