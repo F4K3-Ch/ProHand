@@ -41,4 +41,23 @@ class ClientController extends Controller
 
         return response()->json($metrics);
     }
+
+    public function activeErrands(Request $request)
+    {
+        $clientId = $request->user()->id;
+        $search = $request->input('search');
+
+        $errands = Errand::where('client_id', $clientId)
+            ->when($search, function ($query, $search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('title', 'like', "%{$search}%")
+                        ->orWhere('category', 'like', "%{$search}%")
+                        ->orWhere('status', 'like', "%{$search}%");
+                });
+            })
+            ->latest('created_at')
+            ->paginate($request->input('per_page', 10));
+
+        return response()->json($errands);
+    }
 }

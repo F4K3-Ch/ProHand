@@ -936,64 +936,80 @@ body {
     align-items: center;
 }
 
-.search-form {
+.search-wrapper {
     display: flex;
     align-items: center;
-    gap: 5px;
+    border: 1px solid var(--color-input-border);
+    border-radius: 6px;
+    overflow: hidden;
+    width: 350px;
+    background-color: var(--color-card-bg);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.search-wrapper {
-    border: 1px solid var(--color-input-border);
-    display: flex;             /* make input + clear button inline-flex */
-    align-items: center;       /* vertically center */
-    border-radius: 6px;
-    overflow: hidden;          /* hide any overflow */
-    width: 350px;
+.search-wrapper:focus-within {
+    border-color: var(--color-input-focus-border);
+    box-shadow: var(--shadow-input-focus);
+}
+
+/* Inner Search Bar container holding input and clear button */
+.search-wrapper .search-bar {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    background-color: transparent;
+    position: relative;
 }
 
 .search-wrapper input {
-    background-color: var(--color-card-bg);
+    background-color: transparent;
     color: var(--color-text);
-    border-radius: 4px;
-    flex: 1;                   /* take all available space */
-    border: none;              /* remove default input border */
-    padding: 9px;
-    font-size: 1rem;
+    flex: 1;
+    border: none;
+    padding: 9px 12px;
+    font-size: 0.95rem;
     outline: none;
+    min-width: 0;
 }
 
-/* Text-based clear button */
-.clear {
-    color: var(--color-text);
-    display: flex;
-    align-items: center;
-    padding: 0 7px;
+.search-wrapper input::placeholder {
+    color: var(--color-sec-text);
+}
+
+/* Clear Button styling */
+.search-wrapper .btn-clear {
+    background: transparent;
+    border: none;
+    color: var(--color-sec-text);
+    padding: 0 10px;
+    font-size: 0.85rem;
     cursor: pointer;
-    font-size: 1rem;
-    text-decoration: none;
     white-space: nowrap;
+    transition: color 0.2s ease;
 }
 
-.clear:hover {
-    color: var(--color-link-hover);
+.search-wrapper .btn-clear:hover {
+    color: var(--color-text);
 }
 
-.btn-search {
+/* Search Button styling */
+.search-wrapper .btn-search {
     background-color: var(--color-btn-bg);
     color: var(--color-btn-text);
     border: none;
+    border-radius: 0;
     justify-content: center;
     align-items: center;
-    padding: 9px;
-    font-size: 1rem;
-    border-radius: 6px;
+    padding: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
     cursor: pointer;
     min-width: 70px;
     display: inline-flex;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease;
 }
 
-.btn-search:hover {
+.search-wrapper .btn-search:hover {
     background-color: var(--color-btn-hover-bg);
 }
 
@@ -1274,25 +1290,13 @@ body {
     overflow-x: auto;   
 }
 
-.admin-finished-errands-table .table-scroll {
-    border: 1px solid var(--color-border);
-    max-height: 403px;   /* Adjust here to show how many rows to show */
-    overflow-y: auto;    /* vertical scroll */
-}
-
+.admin-finished-errands-table .table-scroll,
 .admin-errands-table .table-scroll,
 .tasker-errands-table .table-scroll,
 .client-errands-table .table-scroll,
-.finished-errands-table .table-scroll {
-    border: 1px solid var(--color-border);
-    max-height: 443px;   /* Adjust here to show how many rows to show */
-    overflow-y: auto;    /* vertical scroll */
-}
-
+.finished-errands-table .table-scroll,
 .users-table .table-scroll {
     border: 1px solid var(--color-border);
-    max-height: 439px;   /* Adjust here to show how many rows to show */
-    overflow-y: auto;    /* vertical scroll */
 }
 
 .table-header-controls {
@@ -1333,6 +1337,47 @@ body {
 .table-header-controls .rows-per-page select.form-control:focus {
     border-color: var(--color-input-focus-border);
     box-shadow: var(--shadow-input-focus);
+}
+
+/* Pagination Container & Buttons */
+.pagination-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 12px;
+    padding: 0 4px;
+}
+
+.pagination-container button {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.pagination-container button:hover:not(:disabled) {
+    background-color: var(--color-btn-bg);
+    border-color: var(--color-input-focus-border);
+    color: var(--color-btn-text);
+}
+
+.pagination-container button.active {
+    background-color: var(--color-span);
+    border-color: var(--color-span);
+    color: #ffffff;
+}
+
+.pagination-container button:disabled {
+    background-color: var(--color-card-bg);
+    color: var(--color-sec-text);
+    border-color: var(--color-border);
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
 .admin-finished-errands-table table,
@@ -3910,6 +3955,34 @@ select[name="role"] option[value="client"] {
         padding: 3px;
         min-width: unset;
         width: 100%;               /* Ensures individual status boxes expand to full block width */
+    }
+
+    .table-header-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .table-header-controls .rows-per-page {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .table-header-controls .rows-per-page select.form-control {
+        flex-grow: 1;
+        max-width: 80px;
+    }
+
+    .pagination-container {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 10px;
+    }
+
+    .pagination-container button {
+        padding: 4px 8px;
+        font-size: 0.8rem;
     }
 
     /* Notifications */

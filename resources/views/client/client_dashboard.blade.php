@@ -25,10 +25,17 @@
                 </div>
                 <div class="header-right">
                     <div class="search-wrapper">
-                        <input type="text" name="search" value="" placeholder="Search">
+                        <div class="search-bar">
+                            <input
+                                type="text"
+                                id="errandSearch"
+                                placeholder="Search errands..."
+                                autocomplete="off"
+                            >
+                            <button type="button" class="btn-clear" id="clearSearchButton">Clear</button>
+                        </div>
+                        <button type="button" class="btn-search" id="searchButton">Search</button>
                     </div>
-                    <button type="submit" class="btn-search">Search</button>
-                    </form>
                 </div>
             </header>
         </div>
@@ -95,7 +102,7 @@
                                 <span class="status-circle circle-total"></span>
                                 <h3>Total Active Errands</h3>
                             </div>
-                            <p id="metric-total">Loading...</p>
+                            <p id="metric-total"><span class="circle-spinner" style="width: 15px; height: 15px; border-width: 2px;"></span></p>
                         </div>
                     </div>
                 </section>
@@ -103,8 +110,12 @@
                 <div class="client-errands-table">
                     <div class="table-header-controls">
                         <h4>My Errands</h4>
+
                         <div class="rows-per-page">
-                            <label for="perPageSelect"><h4>Show: </h4></label>
+                            <label for="perPageSelect">
+                                <h4>Show:</h4>
+                            </label>
+
                             <select id="perPageSelect" class="form-control">
                                 <option value="5">5</option>
                                 <option value="10" selected>10</option>
@@ -113,7 +124,7 @@
                             </select>
                         </div>
                     </div>
-                    
+
                     <div class="table-scroll">
                         <table>
                             <thead>
@@ -128,15 +139,18 @@
                                     <th>Actions</th>
                                 </tr>
                             </thead>
+
                             <tbody id="errands-table-body">
-                                <tr><td class="no-found" colspan="8">Loading errands...</td></tr>
+                                <tr>
+                                    <td class="no-found" colspan="8">
+                                        <span class="circle-spinner" style="width: 20px; height: 20px; border-width: 2px;"></span>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <div id="pagination-container" class="pagination-container">
-
-                    </div>
+                    <div id="pagination-container" class="pagination-container"></div>
                 </div>
             </div>
         </div>
@@ -217,6 +231,240 @@
             .catch(error => {
                 console.error('Errand metrics error:', error);
             });
+
+            const tableBody = document.getElementById('errands-table-body');
+            const paginationContainer = document.getElementById('pagination-container');
+            const perPageSelect = document.getElementById('perPageSelect');
+            const searchInput = document.getElementById('errandSearch');
+            const searchButton = document.getElementById('searchButton');
+            const clearSearchButton = document.getElementById('clearSearchButton');
+
+            let currentPage = 1;
+
+            function fetchErrands(page = 1) {
+                const perPage = perPageSelect ? perPageSelect.value : 10;
+                const search = searchInput ? searchInput.value.trim() : '';
+
+                tableBody.innerHTML = `
+                    <tr>
+                        <td class="no-found" colspan="8">
+                            <span class="circle-spinner"
+                                style="width: 20px; height: 20px; border-width: 2px;">
+                            </span>
+                        </td>
+                    </tr>
+                `;
+
+                const params = new URLSearchParams({
+                    page: page,
+                    per_page: perPage
+                });
+
+                if (search !== '') {
+                    params.append('search', search);
+                }
+
+                fetch(`/api/client/activeErrands?${params.toString()}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to retrieve errands.');
+                    }
+
+                    return response.json();
+                })
+                .then(data => {
+                    currentPage = data.current_page;
+
+                    renderErrands(data.data);
+                    renderPagination(data);
+                })
+                .catch(error => {
+                    console.error('Errands error:', error);
+
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td class="no-found" colspan="8">
+                                Failed to load errands.
+                            </td>
+                        </tr>
+                    `;
+
+                    paginationContainer.innerHTML = '';
+                });
+            }
+
+            function renderErrands(errands) {
+                if (!errands || errands.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td class="no-found" colspan="8">
+                                No errands found.
+                            </td>
+                        </tr>
+                    `;
+
+                    return;
+                }
+
+                tableBody.innerHTML = '';
+
+                errands.forEach(errand => {
+                    const row = document.createElement('tr');
+
+                    row.innerHTML = `
+                        <td>${errand.id}</td>
+                        <td>${escapeHtml(errand.title)}</td>
+                        <td>${formatCategory(errand.category)}</td>
+                        <td>${formatDate(errand.created_at)}</td>
+                        <td>${formatDate(errand.deadline)}</td>
+                        <td>₱${Number(errand.fee).toFixed(2)}</td>
+                        <td>
+                            <span class="status-badge status-${errand.status}">
+                                ${formatStatus(errand.status)}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="button-row">
+                                <button type="#" class="btn-view">View</button>
+                                <button type="#" class="btn-delete">Delete</button>
+                            </div>
+                        </td>
+                    `;
+
+                    tableBody.appendChild(row);
+                });
+            }
+
+            function renderPagination(data) {
+                paginationContainer.innerHTML = '';
+
+                if (data.last_page <= 1) {
+                    return;
+                }
+
+                const previousButton = document.createElement('button');
+
+                previousButton.textContent = 'Previous';
+                previousButton.disabled = data.current_page === 1;
+
+                previousButton.addEventListener('click', function () {
+                    if (data.current_page > 1) {
+                        fetchErrands(data.current_page - 1);
+                    }
+                });
+
+                paginationContainer.appendChild(previousButton);
+
+                for (let page = 1; page <= data.last_page; page++) {
+                    const pageButton = document.createElement('button');
+
+                    pageButton.textContent = page;
+
+                    if (page === data.current_page) {
+                        pageButton.classList.add('active');
+                    }
+
+                    pageButton.addEventListener('click', function () {
+                        fetchErrands(page);
+                    });
+
+                    paginationContainer.appendChild(pageButton);
+                }
+
+                const nextButton = document.createElement('button');
+
+                nextButton.textContent = 'Next';
+                nextButton.disabled = data.current_page === data.last_page;
+
+                nextButton.addEventListener('click', function () {
+                    if (data.current_page < data.last_page) {
+                        fetchErrands(data.current_page + 1);
+                    }
+                });
+
+                paginationContainer.appendChild(nextButton);
+            }
+
+            function formatCategory(category) {
+                return category
+                    .replace(/_/g, ' ')
+                    .replace(/\b\w/g, letter => letter.toUpperCase());
+            }
+
+            function formatStatus(status) {
+                return status
+                    .replace(/_/g, ' ')
+                    .replace(/\b\w/g, letter => letter.toUpperCase());
+            }
+
+            function formatDate(date) {
+                if (!date) {
+                    return '-';
+                }
+
+                return new Date(date).toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit'
+                });
+            }
+
+            function escapeHtml(value) {
+                const div = document.createElement('div');
+                div.textContent = value ?? '';
+                return div.innerHTML;
+            }
+
+            function updateClearButton() {
+                if (clearSearchButton && searchInput) {
+                    clearSearchButton.style.display =
+                        searchInput.value.trim() === '' ? 'none' : 'inline-block';
+                }
+            }
+
+            if (searchButton) {
+                searchButton.addEventListener('click', function () {
+                    fetchErrands(1);
+                });
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function () {
+                    updateClearButton();
+                });
+
+                searchInput.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        fetchErrands(1);
+                    }
+                });
+            }
+
+            if (clearSearchButton) {
+                clearSearchButton.addEventListener('click', function () {
+                    searchInput.value = '';
+                    updateClearButton();
+                    fetchErrands(1);
+                });
+            }
+
+            if (perPageSelect) {
+                perPageSelect.addEventListener('change', function () {
+                    fetchErrands(1);
+                });
+            }
+
+            updateClearButton();
+            fetchErrands(1);
         });
     </script>
 @endpush
