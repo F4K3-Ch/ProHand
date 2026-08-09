@@ -38,6 +38,6 @@ Route::middleware('auth:sanctum')->group(function () {
         ->prefix('client')
         ->group(function () {
             Route::post('/tasks', [ErrandController::class, 'store']);
-            Route::get('/metrics', [ClientController::class, 'metrics']);
+            Route::get('/activeMetrics', [ClientController::class, 'activeMetrics']);
         });
 });

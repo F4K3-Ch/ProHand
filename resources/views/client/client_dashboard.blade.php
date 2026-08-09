@@ -166,7 +166,7 @@
                 return;
             }
 
-            fetch('/api/client/metrics', {
+            fetch('/api/client/activeMetrics', {
                 method: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + token,

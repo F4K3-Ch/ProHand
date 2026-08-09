@@ -7,7 +7,7 @@ use App\Models\Errand;
 
 class ClientController extends Controller
 {
-    public function metrics(Request $request)
+    public function activeMetrics(Request $request)
     {
         $clientId = $request->user()->id;
 
