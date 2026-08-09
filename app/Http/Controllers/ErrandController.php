@@ -13,7 +13,7 @@ class ErrandController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:150',
-            'category' => 'required|in:delivery,moving,cleaning,repair,grocery,laundry,project,others',
+            'category' => 'required|in:delivery,moving,cleaning,repair,grocery,laundry,project,other',
             'description' => 'required|string',
             'fee' => 'required|numeric|min:0',
             'deadline' => 'required|date',

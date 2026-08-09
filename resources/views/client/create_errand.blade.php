@@ -36,7 +36,7 @@
                         <option value="grocery">Grocery</option>
                         <option value="laundry">Laundry</option>
                         <option value="project">Project</option>
-                        <option value="others">Others</option>
+                        <option value="other">Other</option>
                     </select>
                 </div>
 
