@@ -3945,16 +3945,13 @@ select[name="role"] option[value="client"] {
     }
 
     .total-cards-container {
-        display: flex;             /* Switches layout style from side-by-side grids */
-        flex-direction: column;    /* Forces the metric total boxes to stack vertically */
-        gap: 8px;                 /* Maintains breathing room clearance space between elements */
-        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
     }
-    
-    .total-card {
-        padding: 3px;
-        min-width: unset;
-        width: 100%;               /* Ensures individual status boxes expand to full block width */
+
+    .total-card.span-full {
+        grid-column: span 2;
     }
 
     .table-header-controls {
@@ -4107,16 +4104,6 @@ select[name="role"] option[value="client"] {
 
     .payment-verification-panel.status-title-completed h2.status-title-green.status-title-completed {
         font-size: 1.3rem;
-    }
-
-    .total-cards-container {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-
-    .total-card.span-full {
-        grid-column: span 2;
     }
 
     .split-payment-container {
