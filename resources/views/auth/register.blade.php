@@ -152,6 +152,7 @@
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 localStorage.setItem('token', data.token);
+                sessionStorage.setItem('success_message', data.message);
 
                 return fetch('/api/me', {
                     method: 'GET',

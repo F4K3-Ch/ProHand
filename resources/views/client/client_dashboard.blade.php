@@ -315,9 +315,9 @@
                         </td>
                         <td>
                             <div class="button-row">
-                                <button type="button" class="btn-view">
+                                <a href="/client/view-errand/${errand.id}" class="btn-view">
                                     View
-                                </button>
+                                </a>
 
                                 <button type="button" class="btn-delete">
                                     Delete

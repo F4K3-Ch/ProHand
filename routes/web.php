@@ -14,6 +14,10 @@ Route::view('/tasker/dashboard', 'tasker.tasker_dashboard')->name('tasker.dashbo
 
 Route::view('/client/dashboard', 'client.client_dashboard')->name('client.dashboard');
 
+Route::get('/client/view-errand/{id}', function ($id) {
+    return view('client.view_errand_info', compact('id'));
+})->name('client.view.errand');
+
 Route::view('/client/create-errand', 'client.create_errand')->name('client.create.errand');
 
 Route::view('/client/finished', 'client.client_finished_errands')->name('client.finished');
