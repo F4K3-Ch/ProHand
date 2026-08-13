@@ -9,6 +9,19 @@ use Illuminate\Support\Facades\DB;
 
 class ErrandController extends Controller
 {
+    public function clientErrands(Request $request)
+    {
+        $user = $request->user();
+
+        $errands = Errand::where('client_id', $user->id)
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'errands' => $errands
+        ]);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
