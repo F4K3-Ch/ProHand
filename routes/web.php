@@ -15,11 +15,6 @@ Route::get('/register', function () {
     return view('auth.register');
 })->name('register');
 
-Route::middleware('preventAccess')->group(function () {
-    Route::post('/api/login', [AuthController::class, 'login'])->name('api.login');
-    Route::post('/api/register', [AuthController::class, 'register'])->name('api.register');
-});
-
 Route::middleware('auth')->group(function () {
     Route::get('/profile', function () {
         return view('shared.profile');

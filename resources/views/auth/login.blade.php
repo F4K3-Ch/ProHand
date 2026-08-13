@@ -79,7 +79,7 @@
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
         const apiKey = document.querySelector('meta[name="api-key"]').content;
-        const apiOrigin = document.querySelector('meta[name="api-origin"]').content;
+        const Origin = document.querySelector('meta[name="api-origin"]').content;
 
         try {
             const response = await fetch('/api/login', {
@@ -88,8 +88,8 @@
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
-                    'X-API-KEY': apiKey,
-                    'X-ORIGIN': apiOrigin
+                    'x-api-key': apiKey,
+                    'Origin': Origin
                 },
                 credentials: 'same-origin',
                 body: JSON.stringify({

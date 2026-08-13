@@ -25,10 +25,15 @@ class AccessMiddleware
             ], 401);
         }
 
-        $expectedApiKey = config('services.my_api.api_key');
-        $expectedOrigin = config('services.my_api.origin');
+        $access = AccessToken::find(1);
 
-        if ($apiKey !== $expectedApiKey || $origin !== $expectedOrigin) {
+        if (!$access) {
+            return response()->json([
+                'message' => 'Server error: Access Token not found'
+            ], 500);
+        }
+
+        if ($apiKey !== $access->token || $origin !== $access->origin) {
             return response()->json([
                 'message' => 'Forbidden.'
             ], 403);
