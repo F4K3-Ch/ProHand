@@ -16,7 +16,7 @@ class AccessMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $apiKey = $request->header('x-api-key');
+        $apiKey = $request->header('X-API-KEY');
         $origin = $request->header('Origin');
 
         if (empty($apiKey) || empty($origin)) {
@@ -25,18 +25,13 @@ class AccessMiddleware
             ], 401);
         }
 
-        $access = AccessToken::find(1);
+        $expectedApiKey = config('services.my_api.api_key');
+        $expectedOrigin = config('services.my_api.origin');
 
-        if (!$access) {
-            return response()->json([
-                'message' => 'Server error: Access Token not found'
-            ], 500);
-        }
-
-        if ($access->token !== $apiKey || $access->origin !== $origin) {
+        if ($apiKey !== $expectedApiKey || $origin !== $expectedOrigin) {
             return response()->json([
                 'message' => 'Forbidden.'
-            ], 401);
+            ], 403);
         }
 
         return $next($request);

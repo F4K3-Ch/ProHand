@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="api-key" content="{{ config('services.my_api.api_key') }}">
+    <meta name="api-origin" content="{{ config('services.my_api.origin') }}">
     <link rel="icon" type="image/png" href="{{ asset('img/ProHand(Adapt).png') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('style/style.css') }}">
@@ -88,6 +89,7 @@
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
         const apiKey = document.querySelector('meta[name="api-key"]').content;
+        const apiOrigin = document.querySelector('meta[name="api-origin"]').content;
 
         try {
             const response = await fetch('/api/register', {
@@ -96,7 +98,8 @@
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
-                    'X-API-KEY': apiKey
+                    'X-API-KEY': apiKey,
+                    'X-ORIGIN': apiOrigin
                 },
                 credentials: 'same-origin',
                 body: JSON.stringify({

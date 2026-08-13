@@ -76,7 +76,7 @@
                         <input
                             type="text"
                             readonly
-                            value="{{ auth()->user()->created_at->format('F d, Y') }}"
+                            value="{{ auth()->user()->created_at->timezone('Asia/Manila')->format('F d, Y h:i A') }}"
                         >
                     </div>
 
