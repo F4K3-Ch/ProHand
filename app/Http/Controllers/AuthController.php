@@ -36,8 +36,9 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Registration successful.',
             'user' => $user,
-            'redirect' => route('dashboard'),
-        ], 201);
+            'role' => $user->role,
+            'redirect' => $this->getRedirectUrl($user->role),
+        ]);
     }
 
     public function login(Request $request)
