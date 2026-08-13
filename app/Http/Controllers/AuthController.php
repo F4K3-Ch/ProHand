@@ -35,8 +35,6 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Registration successful.',
-            'user' => $user,
-            'role' => $user->role,
             'redirect' => $this->getRedirectUrl($user->role),
         ]);
     }
@@ -60,8 +58,6 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Login successful.',
-            'user' => $user,
-            'role' => $user->role,
             'redirect' => $this->getRedirectUrl($user->role),
         ]);
     }
