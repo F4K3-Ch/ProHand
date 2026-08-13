@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'my_api' => [
+        'api_key' => env('MY_API_KEY'),
+        'origin' => env('ORIGIN')
+    ],
 ];

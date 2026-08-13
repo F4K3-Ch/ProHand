@@ -3,27 +3,45 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 
-Route::view('/', 'welcome');
+Route::get('/', function () {
+    return view('welcome');
+})->name('welcome');
 
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::get('/login', function () {
+    return view('auth.login');
+})->name('login');
 
-Route::view('/admin/dashboard', 'admin.admin_dashboard')->name('admin.dashboard');
+Route::get('/register', function () {
+    return view('auth.register');
+})->name('register');
 
-Route::view('/tasker/dashboard', 'tasker.tasker_dashboard')->name('tasker.dashboard');
+Route::middleware('preventAccess')->group(function () {
+    Route::post('/api/login', [AuthController::class, 'login'])->name('api.login');
+    Route::post('/api/register', [AuthController::class, 'register'])->name('api.register');
+});
 
-Route::view('/client/dashboard', 'client.client_dashboard')->name('client.dashboard');
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', function () {
+        return view('shared.profile');
+    })->name('profile');
 
-Route::get('/client/view-errand/{id}', function ($id) {
-    return view('client.view_errand_info', compact('id'));
-})->name('client.view.errand');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});
 
-Route::view('/client/create-errand', 'client.create_errand')->name('client.create.errand');
+Route::middleware(['auth', 'role:client'])->group(function () {
+    Route::get('/client/dashboard', function () {
+        return view('client.client_dashboard');
+    })->name('client.dashboard');
+});
 
-Route::view('/client/finished', 'client.client_finished_errands')->name('client.finished');
+Route::middleware(['auth', 'role:tasker'])->group(function () {
+    Route::get('/tasker/dashboard', function () {
+        return view('tasker.tasker_dashboard');
+    })->name('tasker.dashboard');
+});
 
-Route::view('/admin/profile', 'shared.profile')->name('admin.profile');
-
-Route::view('/tasker/profile', 'shared.profile')->name('tasker.profile');
-
-Route::view('/client/profile', 'shared.profile')->name('client.profile');
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/admin/dashboard', function () {
+        return view('admin.admin_dashboard');
+    })->name('admin.dashboard');
+});

@@ -4,84 +4,91 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function showLogin()
-    {
-        return view('auth.login');
-    }
-
-    public function showRegister()
-    {
-        return view('auth.register');
-    }
-
-    public function login(Request $request)
-    {
-        $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
-
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user) {
-            return response()->json([
-                'error' => 'No account found with this email address.'
-            ], 422);
-        }
-
-        if (!Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'error' => 'Incorrect password. Please try again.'
-            ], 422);
-        }
-
-        $user->tokens()->delete();
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'message' => 'Login successful.',
-            'token' => $token,
-        ]);
-    }
-
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'email' => ['required', 'string', 'email', 'max:100', 'unique:users'],
-            'last_name' => ['required', 'string', 'max:50'],
+            'email' => ['required', 'email', 'max:100', 'unique:users,email'],
             'first_name' => ['required', 'string', 'max:50'],
             'middle_name' => ['nullable', 'string', 'max:50'],
-            'contact_number' => ['required', 'string', 'max:20'],
+            'last_name' => ['required', 'string', 'max:50'],
             'password' => ['required', 'string', 'min:3', 'confirmed'],
+            'contact_number' => ['required', 'string', 'max:20'],
         ]);
 
         $user = User::create([
             'email' => $validated['email'],
-            'last_name' => $validated['last_name'],
             'first_name' => $validated['first_name'],
             'middle_name' => $validated['middle_name'] ?? null,
-            'contact_number' => $validated['contact_number'],
+            'last_name' => $validated['last_name'],
             'password' => Hash::make($validated['password']),
+            'contact_number' => $validated['contact_number'],
             'role' => 'client',
-            'profile_picture' => 'uploads/profile_pictures/default.jpg',
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        Auth::login($user);
+        $request->session()->regenerate();
 
         return response()->json([
             'message' => 'Registration successful.',
-            'token' => $token,
+            'user' => $user,
+            'redirect' => route('dashboard'),
         ], 201);
+    }
+
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        if (!Auth::attempt($credentials)) {
+            return response()->json([
+                'message' => 'Invalid email or password.'
+            ], 401);
+        }
+
+        $request->session()->regenerate();
+
+        $user = Auth::user();
+
+        return response()->json([
+            'message' => 'Login successful.',
+            'user' => $user,
+            'role' => $user->role,
+            'redirect' => $this->getRedirectUrl($user->role),
+        ]);
     }
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        Auth::logout();
 
-        return response()->noContent();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login');
+    }
+
+    public function me(Request $request)
+    {
+        return response()->json([
+            'user' => $request->user(),
+        ]);
+    }
+
+    private function getRedirectUrl(string $role)
+    {
+        return match ($role) {
+            'admin' => route('admin.dashboard'),
+            'tasker' => route('tasker.dashboard'),
+            'client' => route('client.dashboard'),
+            default => route('login'),
+        };
     }
 }

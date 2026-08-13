@@ -8,20 +8,19 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureUserHasRole
 {
+    /**
+     * Handle an incoming request.
+     *
+     * @param  Closure(Request): (Response)  $next
+     */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        $user = $request->user();
-
-        if (!$user) {
-            return response()->json([
-                'message' => 'Unauthenticated.'
-            ], 401);
+        if (!$request->user()) {
+            return redirect()->route('login');
         }
 
-        if (!in_array($user->role, $roles)) {
-            return response()->json([
-                'message' => 'Forbidden.'
-            ], 403);
+        if (!in_array($request->user()->role, $roles)) {
+            abort(403, 'You are not authorized to access this page.');
         }
 
         return $next($request);

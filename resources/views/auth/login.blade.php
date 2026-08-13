@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="api-key" content="{{ config('services.my_api.api_key') }}">
     <link rel="icon" type="image/png" href="{{ asset('img/ProHand(Adapt).png') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('style/style.css') }}">
@@ -43,7 +45,7 @@
                         <input type="password" id="password" name="password" required>
                     </div>
 
-                    <button type="submit" class="btn">
+                    <button type="submit" class="btn" id="loginButton">
                         Login
                         <div class="circle-spinner" id="loginSpinner" style="display:none;"></div>
                     </button>
@@ -62,137 +64,56 @@
         </footer>
     </main>
 
-    <script>
-        const token = localStorage.getItem('token');
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
 
-        if (token) {
-            fetch('/api/me', {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error();
-                }
-                return response.json();
-            })
-            .then(data => {
-                localStorage.setItem('user', JSON.stringify(data.user));
+        const button = document.getElementById('loginButton');
+        const spinner = document.getElementById('loginSpinner');
+        const error = document.getElementById('errorElement');
 
-                if (data.user.role === 'admin') {
-                    window.location.href = '/admin/dashboard';
-                } else if (data.user.role === 'tasker') {
-                    window.location.href = '/tasker/dashboard';
-                } else if (data.user.role === 'client') {
-                    window.location.href = '/client/dashboard';
-                } else {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                }
-            })
-            .catch(() => {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-            });
-        }
+        button.disabled = true;
+        spinner.style.display = 'inline-block';
+        error.style.display = 'none';
 
-        document.getElementById('loginForm').addEventListener('submit', function (e) {
-            e.preventDefault();
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+        const apiKey = document.querySelector('meta[name="api-key"]').content;
 
-            const emailInput = document.getElementById('email');
-            const passwordInput = document.getElementById('password');
-            const email = emailInput.value;
-            const password = passwordInput.value;
-            const errorElement = document.getElementById('errorElement');
-            const spinner = document.getElementById('loginSpinner');
-
-            spinner.style.display = 'inline-block';
-
-            errorElement.textContent = '';
-            errorElement.style.display = 'none';
-
-            fetch('/api/login', {
+        try {
+            const response = await fetch('/api/login', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-API-KEY': apiKey
                 },
-                body: JSON.stringify({ email, password })
-            })
-            .then(response => {
-                return response.json().then(data => {
-                    if (!response.ok) {
-                        throw data;
-                    }
-                    return data;
-                });
-            })
-            .then(data => {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                localStorage.setItem('token', data.token);
-                sessionStorage.setItem('success_message', data.message);
-
-                return fetch('/api/me', {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Authorization': 'Bearer ' + data.token
-                    }
-                });
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to retrieve user information.');
-                }
-                return response.json();
-            })
-            .then(data => {
-                const user = data.user;
-
-                localStorage.setItem('user', JSON.stringify(user));
-
-                if (user.role === 'admin') {
-                    window.location.href = '/admin/dashboard';
-                } else if (user.role === 'tasker') {
-                    window.location.href = '/tasker/dashboard';
-                } else if (user.role === 'client') {
-                    window.location.href = '/client/dashboard';
-                } else {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                    errorElement.textContent = 'Unknown user role.';
-                    errorElement.style.display = 'block';
-                }
-            })
-            .catch(error => {
-                let message = 'Login failed.';
-                if (error.error) {
-                    message = error.error;
-                } else if (error.message) {
-                    message = error.message;
-                } else if (error.errors) {
-                    const firstKey = Object.keys(error.errors)[0];
-                    message = error.errors[firstKey][0];
-                }
-
-                errorElement.textContent = message;
-                errorElement.style.display = 'block';
-
-                if (message.toLowerCase().includes('email')) {
-                    emailInput.focus();
-                } else {
-                    passwordInput.value = '';
-                    passwordInput.focus();
-                }
-            })
-            .finally(() => {
-                spinner.style.display = 'none';
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    email: document.getElementById('email').value,
+                    password: document.getElementById('password').value
+                })
             });
-        });
-    </script>
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                if (data.errors) {
+                    const messages = Object.values(data.errors).flat();
+                    throw new Error(messages.join(' '));
+                }
+
+                throw new Error(data.message || 'Login failed.');
+            }
+
+            window.location.href = data.redirect;
+        } catch (err) {
+            error.textContent = err.message;
+            error.style.display = 'block';
+            button.disabled = false;
+            spinner.style.display = 'none';
+        }
+    });
+</script>
 </body>
 </html>
