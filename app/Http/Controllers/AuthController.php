@@ -85,6 +85,10 @@ class AuthController extends Controller
             'role' => 'client',
         ]);
 
+        Auth::login($user);
+
+        $request->session()->regenerate();
+
         return response()->json([
             'success' => true,
             'message' => 'Registration successful.',

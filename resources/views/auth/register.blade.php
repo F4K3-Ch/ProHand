@@ -119,7 +119,15 @@
                 return;
             }
 
-            window.location.href = "{{ route('login') }}";
+            const role = result.user.role;
+
+            if (role === 'admin') {
+                window.location.href = '/admin/dashboard';
+            } else if (role === 'tasker') {
+                window.location.href = '/tasker/dashboard';
+            } else {
+                window.location.href = '/client/dashboard';
+            }
 
         } catch (error) {
             console.error('Registration error:', error);
