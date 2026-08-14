@@ -15,13 +15,11 @@ class EnsureUserHasRole
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        if (!$request->user()) {
-            return redirect()->route('login');
-        }
+        $user = $request->user();
 
-        if (!in_array($request->user()->role, $roles)) {
+        if (!in_array($user->role, $roles, true)) {
             return redirect()
-                ->route($request->user()->role . '.dashboard')
+                ->route($user->role . '.dashboard')
                 ->with('error', 'You are not authorized to access this page.');
         }
 

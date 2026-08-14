@@ -16,24 +16,19 @@ class AccessMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $apiKey = $request->header('x-api-key');
+        $apiKey = $request->header('X-API-Key');
         $origin = $request->header('Origin');
 
-        if (empty($apiKey) || empty($origin)) {
+        $expectedApiKey = config('services.my_api.api_key');
+        $expectedOrigin = config('services.my_api.origin');
+
+        if (!$apiKey || !$origin) {
             return response()->json([
                 'message' => 'Unauthorized.'
             ], 401);
         }
 
-        $access = AccessToken::find(1);
-
-        if (!$access) {
-            return response()->json([
-                'message' => 'Server error: Access Token not found'
-            ], 500);
-        }
-
-        if ($apiKey !== $access->token || $origin !== $access->origin) {
+        if (!hash_equals($expectedApiKey, $apiKey) || $origin !== $expectedOrigin) {
             return response()->json([
                 'message' => 'Forbidden.'
             ], 403);

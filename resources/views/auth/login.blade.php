@@ -3,9 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="api-key" content="{{ config('services.my_api.api_key') }}">
-    <meta name="api-origin" content="{{ config('services.my_api.origin') }}">
     <link rel="icon" type="image/png" href="{{ asset('img/ProHand(Adapt).png') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('style/style.css') }}">
@@ -66,55 +63,70 @@
     </main>
 
 <script>
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
+    document.getElementById('loginForm').addEventListener('submit', async function (event) {
+        event.preventDefault();
 
-        const button = document.getElementById('loginButton');
-        const spinner = document.getElementById('loginSpinner');
-        const error = document.getElementById('errorElement');
+        const loginButton = document.getElementById('loginButton');
+        const loginSpinner = document.getElementById('loginSpinner');
+        const errorElement = document.getElementById('errorElement');
 
-        button.disabled = true;
-        spinner.style.display = 'inline-block';
-        error.style.display = 'none';
+        errorElement.style.display = 'none';
+        errorElement.textContent = '';
 
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-        const apiKey = document.querySelector('meta[name="api-key"]').content;
-        const Origin = document.querySelector('meta[name="api-origin"]').content;
+        loginButton.disabled = true;
+        loginSpinner.style.display = 'inline-block';
+
+        const formData = new FormData(this);
 
         try {
-            const response = await fetch('/api/login', {
+            const response = await fetch("{{ route('login') }}", {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'x-api-key': apiKey,
-                    'Origin': Origin
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
                 },
-                credentials: 'same-origin',
-                body: JSON.stringify({
-                    email: document.getElementById('email').value,
-                    password: document.getElementById('password').value
-                })
+                body: formData,
+                credentials: 'same-origin'
             });
 
-            const data = await response.json();
+            const result = await response.json();
 
             if (!response.ok) {
-                if (data.errors) {
-                    const messages = Object.values(data.errors).flat();
-                    throw new Error(messages.join(' '));
+                if (result.errors) {
+                    if (result.errors.email) {
+                        errorElement.textContent = result.errors.email[0];
+                    } else if (result.errors.password) {
+                        errorElement.textContent = result.errors.password[0];
+                    } else {
+                        errorElement.textContent = Object.values(result.errors)[0][0];
+                    }
+                } else {
+                    errorElement.textContent = result.message || 'Login failed.';
                 }
 
-                throw new Error(data.message || 'Login failed.');
+                errorElement.style.display = 'block';
+                return;
             }
 
-            window.location.href = data.redirect;
-        } catch (err) {
-            error.textContent = err.message;
-            error.style.display = 'block';
-            button.disabled = false;
-            spinner.style.display = 'none';
+            const role = result.user.role;
+
+            if (role === 'admin') {
+                window.location.href = '/admin/dashboard';
+            } else if (role === 'tasker') {
+                window.location.href = '/tasker/dashboard';
+            } else {
+                window.location.href = '/client/dashboard';
+            }
+
+        } catch (error) {
+            console.error(error);
+
+            errorElement.textContent = 'Something went wrong. Please try again.';
+            errorElement.style.display = 'block';
+
+        } finally {
+            loginButton.disabled = false;
+            loginSpinner.style.display = 'none';
         }
     });
 </script>
