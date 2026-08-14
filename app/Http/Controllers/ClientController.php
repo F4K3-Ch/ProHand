@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ClientController extends Controller
 {
-    public function activeMetrics(Request $request)
+    public function activeMetrics()
     {
         $clientId = Auth::id();
 
