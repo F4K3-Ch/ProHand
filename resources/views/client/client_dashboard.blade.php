@@ -256,7 +256,6 @@
                     headers: {
                         'Accept': 'application/json',
                         'x-api-key': apiKey,
-                        'Origin': Origin
                     },
                     credentials: 'same-origin'
                 });

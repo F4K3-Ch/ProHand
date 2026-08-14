@@ -16,7 +16,7 @@ class AccessMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $apiKey = $request->header('X-API-KEY');
+        $apiKey = $request->header('x-api-key');
         $origin = $request->header('Origin');
 
         if (empty($apiKey) || empty($origin)) {
