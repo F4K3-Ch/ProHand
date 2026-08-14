@@ -20,7 +20,9 @@ class EnsureUserHasRole
         }
 
         if (!in_array($request->user()->role, $roles)) {
-            abort(403, 'You are not authorized to access this page.');
+            return redirect()
+                ->route($request->user()->role . '.dashboard')
+                ->with('error', 'You are not authorized to access this page.');
         }
 
         return $next($request);

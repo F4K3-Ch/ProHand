@@ -25,16 +25,45 @@
                 </div>
                 <div class="header-right">
                     <div class="search-wrapper">
-                        <input type="text" name="search" value="" placeholder="Search">
+                        <div class="search-bar">
+                            <input
+                                type="text"
+                                id="errandSearch"
+                                placeholder="Search errands..."
+                                autocomplete="off"
+                            >
+                            <button type="button" class="btn-clear" id="clearSearchButton">Clear</button>
+                        </div>
+                        <button type="button" class="btn-search" id="searchButton">Search</button>
                     </div>
-                    <button type="submit" class="btn-search">Search</button>
-                    </form>
                 </div>
             </header>
         </div>
 
         <div class="dashboard">
-            
+            <div class="error-success-message" id="flashMessageContainer" data-message="{{ session('error') }}" style="display: none;">
+                <p class="success" id="flashMessageText"></p>
+            </div>
         </div>
     </main>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const container = document.getElementById('flashMessageContainer');
+            const text = document.getElementById('flashMessageText');
+            const message = container.dataset.message;
+
+            if (message) {
+                text.textContent = message;
+                text.className = 'error';
+                container.style.display = 'block';
+                setTimeout(function () {
+                    container.style.display = 'none';
+                }, 3000);
+            }
+        });
+    </script>
+@endpush
