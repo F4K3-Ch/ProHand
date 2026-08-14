@@ -4,7 +4,7 @@
             <img src="{{ asset(auth()->user()->profile_picture) }}" class="profile-img">
             <div class="profile-text">
                 <p class="role">{{ ucfirst(auth()->user()->role) }}</p>
-                <p class="name">{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</p>
+                <p class="name">{{ auth()->user()->first_name }} {{ auth()->user()->middle_name }}  {{ auth()->user()->last_name }}</p>
                 <p class="email">{{ auth()->user()->email }}</p>
             </div>
         </div>
