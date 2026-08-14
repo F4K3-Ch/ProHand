@@ -4,60 +4,29 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Errand;
+use Illuminate\Support\Facades\Auth;
 
 class ClientController extends Controller
 {
     public function activeMetrics(Request $request)
     {
-        $clientId = $request->user()->id;
+        $clientId = Auth::id();
 
-        $metrics = [
-            'pending' => Errand::where('client_id', $clientId)
-                ->where('status', 'pending')
-                ->count(),
+        $counts = Errand::where('client_id', $clientId)
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
 
-            'pending_payment' => Errand::where('client_id', $clientId)
-                ->where('status', 'pending_payment')
-                ->count(),
-
-            'in_process' => Errand::where('client_id', $clientId)
-                ->where('status', 'in_process')
-                ->count(),
-
-            'pending_completion' => Errand::where('client_id', $clientId)
-                ->where('status', 'pending_completion')
-                ->count(),
-
-            'pending_failure' => Errand::where('client_id', $clientId)
-                ->where('status', 'pending_failure')
-                ->count(),
-
-            'dispute' => Errand::where('client_id', $clientId)
-                ->where('status', 'dispute')
-                ->count(),
-        ];
-
-        $metrics['total'] = array_sum($metrics);
-
-        return response()->json($metrics);
-    }
-
-    public function activeErrands(Request $request)
-    {
-        $query = Errand::where('client_id', $request->user()->id);
-
-        if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('id', 'like', "%{$search}%")
-                ->orwhere('title', 'like', "%{$search}%")
-                ->orWhere('category', 'like', "%{$search}%")
-                ->orWhere('status', 'like', "%{$search}%");
-            });
-        }
-
-        return response()->json(
-            $query->latest('created_at')
-                ->paginate($request->input('per_page', 10))
-        );
+        return response()->json([
+            'status_counts' => [
+                'pending'             => $counts->get('pending', 0),
+                'pending_payment'     => $counts->get('pending_payment', 0),
+                'in_process'          => $counts->get('in_process', 0),
+                'pending_completion'  => $counts->get('pending_completion', 0),
+                'pending_failure'     => $counts->get('pending_failure', 0),
+                'dispute'             => $counts->get('dispute', 0),
+            ],
+            'total_errands' => $counts->sum()
+        ]);
     }
 }

@@ -41,7 +41,7 @@
         </div>
         
         <div class="dashboard">
-            <div class="error-success-message" id="flashMessageContainer" style="display: none;">
+            <div class="error-success-message" id="flashMessageContainer" data-message="{{ session('error') }}" style="display: none;">
                 <p class="success" id="flashMessageText"></p>
             </div>
 
