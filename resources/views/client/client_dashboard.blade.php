@@ -204,7 +204,7 @@
             // Metrics
             async function fetchMetrics() {
                 try {
-                    const metrics = await apiFetch('/api/client/activeMetrics');
+                    const metrics = await apiFetch('/api/client/active-metrics');
 
                     const cards = {
                         pending: 'metric-card-pending',
@@ -266,7 +266,7 @@
 
                 try {
                     const data = await apiFetch(
-                        `/api/client/activeErrands?${params.toString()}`
+                        `/api/client/active-errands?${params.toString()}`
                     );
 
                     renderErrands(data.data);

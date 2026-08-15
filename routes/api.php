@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ErrandController;
 use App\Http\Controllers\ClientController;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -37,8 +36,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:client')
         ->prefix('client')
         ->group(function () {
-            Route::post('/tasks', [ErrandController::class, 'store']);
-            Route::get('/activeMetrics', [ClientController::class, 'activeMetrics']);
-            Route::get('/activeErrands', [ClientController::class, 'activeErrands']);
+            Route::post('/create-errand', [ClientController::class, 'createErrand']);
+            Route::get('/active-metrics', [ClientController::class, 'activeMetrics']);
+            Route::get('/active-errands', [ClientController::class, 'activeErrands']);
         });
 });

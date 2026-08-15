@@ -124,7 +124,7 @@
 
             const formData = new FormData(this);
 
-            fetch('/api/client/tasks', {
+            fetch('/api/client/create-errand', {
                 method: 'POST',
                 headers: {
                     'Authorization': 'Bearer ' + token,
