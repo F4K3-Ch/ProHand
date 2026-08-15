@@ -164,5 +164,77 @@
 @endsection    
 
 @push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', async function () {
 
+        const metricSpinner = document.getElementById('metric-spinner');
+
+        try {
+            const response = await fetch('/api/client/dashboard/active-metrics', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-API-Key': "{{ \App\Models\AccessToken::find(1)->token }}"
+                },
+                credentials: 'same-origin'
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.message || 'Failed to load dashboard data.'
+                );
+            }
+
+            const metrics = result.metrics;
+
+            document.getElementById('metric-pending').textContent =
+                metrics.pending;
+
+            document.getElementById('metric-pending-payment').textContent =
+                metrics.pending_payment;
+
+            document.getElementById('metric-in-process').textContent =
+                metrics.in_process;
+
+            document.getElementById('metric-pending-completion').textContent =
+                metrics.pending_completion;
+
+            document.getElementById('metric-pending-failure').textContent =
+                metrics.pending_failure;
+
+            document.getElementById('metric-dispute').textContent =
+                metrics.dispute;
+
+            document.getElementById('metric-total').textContent =
+                metrics.total;
+
+            showMetricCard('metric-card-pending', metrics.pending);
+            showMetricCard('metric-card-pending-payment', metrics.pending_payment);
+            showMetricCard('metric-card-in-process', metrics.in_process);
+            showMetricCard('metric-card-pending-completion', metrics.pending_completion);
+            showMetricCard('metric-card-pending-failure', metrics.pending_failure);
+            showMetricCard('metric-card-dispute', metrics.dispute);
+
+        } catch (error) {
+            console.error('Dashboard error:', error);
+
+            document.getElementById('metric-total').textContent = '—';
+
+        } finally {
+            if (metricSpinner) {
+                metricSpinner.style.display = 'none';
+            }
+        }
+    });
+
+    function showMetricCard(cardId, value) {
+        const card = document.getElementById(cardId);
+
+        if (card && value > 0) {
+            card.style.display = 'flex';
+        }
+    }
+</script>
 @endpush
