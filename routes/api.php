@@ -1,10 +1,9 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ClientController;
 
-Route::middleware(['web', 'preventAccess'])->group(function () {
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/register', [AuthController::class, 'register']);
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::get('/profile/data', [ProfileController::class, 'data'])
+        ->name('profile.data');
 });
