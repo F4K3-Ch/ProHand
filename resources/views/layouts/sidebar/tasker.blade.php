@@ -14,7 +14,7 @@
             <li><a href="#"><i class="fa-solid fa-clipboard-list"></i> Your Task</a></li>
             <li><a href="#"><i class="fa-solid fa-clipboard-check"></i> Finished Errands</a></li>
             <li>
-                <a href="#" class="{{ request()->routeIs('profile') ? 'active' : '' }}">
+                <a href="{{ route('profile') }}" class="{{ request()->routeIs('profile') ? 'active' : '' }}">
                     <i class="fa-solid fa-circle-user"></i> My Profile
                 </a>
             </li>

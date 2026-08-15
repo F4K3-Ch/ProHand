@@ -41,8 +41,14 @@
         </div>
         
         <div class="dashboard">
-            <div class="error-success-message" id="flashMessageContainer" data-message="{{ session('error') }}" style="display: none;">
-                <p class="success" id="flashMessageText"></p>
+            <div
+                class="error-success-message"
+                id="flashMessageContainer"
+                data-error="{{ session('error') }}"
+                data-success="{{ session('success') }}"
+                style="display: none;"
+            >
+                <p id="flashMessageText"></p>
             </div>
 
             <div class="contents">
@@ -158,21 +164,5 @@
 @endsection    
 
 @push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
 
-            const container = document.getElementById('flashMessageContainer');
-            const text = document.getElementById('flashMessageText');
-            const message = container.dataset.message;
-
-            if (message) {
-                text.textContent = message;
-                text.className = 'error';
-                container.style.display = 'block';
-                setTimeout(function () {
-                    container.style.display = 'none';
-                }, 3000);
-            }
-        });
-    </script>
 @endpush

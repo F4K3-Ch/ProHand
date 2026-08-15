@@ -51,6 +51,37 @@
         }
     </script>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const container = document.getElementById('flashMessageContainer');
+            const text = document.getElementById('flashMessageText');
+
+            if (!container || !text) {
+                return;
+            }
+
+            const errorMessage = container.dataset.error;
+            const successMessage = container.dataset.success;
+
+            if (successMessage) {
+                text.textContent = successMessage;
+                text.className = 'success';
+                container.style.display = 'block';
+            } else if (errorMessage) {
+                text.textContent = errorMessage;
+                text.className = 'error';
+                container.style.display = 'block';
+            }
+
+            if (errorMessage || successMessage) {
+                setTimeout(function () {
+                    container.style.display = 'none';
+                }, 3000);
+            }
+        });
+    </script>
+
     @stack('scripts')
 </body>
 </html>

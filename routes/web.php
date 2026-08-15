@@ -24,6 +24,10 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    Route::get('/profile', function () {
+        return view('shared.profile');
+    })->name('profile');
+
     // Client dashboard
     Route::middleware('role:client')->group(function () {
         Route::get('/client/dashboard', function () {
