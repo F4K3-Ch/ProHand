@@ -19,35 +19,33 @@
         <h1>Register Here</h1>
 
         <div class="error-success-message">
-            <p id="errorElement" class="error" style="display: none;"></p>
+            <p id="errorElement" class="error" style="display:none;"></p>
         </div>
 
         <form id="registerForm">
-            @csrf
-
             <div class="register-input-box">
                 <label for="email">Email</label>
-                <input type="email" id="email" name="email" value="{{ old('email') }}" required>
+                <input type="email" id="email" name="email" required>
             </div>
 
             <div class="register-input-box">
                 <label for="last_name">Last Name</label>
-                <input type="text" id="last_name" name="last_name" value="{{ old('last_name') }}" required>
+                <input type="text" id="last_name" name="last_name" required>
             </div>
 
             <div class="register-input-box">
                 <label for="first_name">First Name</label>
-                <input type="text" id="first_name" name="first_name" value="{{ old('first_name') }}" required>
+                <input type="text" id="first_name" name="first_name" required>
             </div>
 
             <div class="register-input-box">
                 <label for="middle_name">Middle Name (optional)</label>
-                <input type="text" id="middle_name" name="middle_name" value="{{ old('middle_name') }}">
+                <input type="text" id="middle_name" name="middle_name">
             </div>
 
             <div class="register-input-box">
                 <label for="contact_number">Contact Number</label>
-                <input type="text" id="contact_number" name="contact_number" value="{{ old('contact_number') }}" required>
+                <input type="text" id="contact_number" name="contact_number" required>
             </div>
 
             <div class="register-input-box">
@@ -60,17 +58,41 @@
                 <input type="password" id="password_confirmation" name="password_confirmation" required>
             </div>
 
-            <button type="submit" class="btn">
-                Register <div class="circle-spinner" id="registerSpinner" style="display: none;"></div>
+            <button type="submit" class="btn" id="registerButton">
+                Register
+                <div class="circle-spinner" id="registerSpinner" style="display:none;"></div>
             </button>
         </form>
 
-        <p class="login-link">Already have an account?
+        <p class="login-link">
+            Already have an account?
             <a href="{{ route('login') }}">Login here</a>
         </p>
     </div>
 
     <script>
+        const registerForm = document.getElementById('registerForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const passwordConfirmationInput = document.getElementById('password_confirmation');
+        const errorElement = document.getElementById('errorElement');
+        const spinner = document.getElementById('registerSpinner');
+        const registerButton = document.getElementById('registerButton');
+
+        function redirectByRole(user) {
+            if (user.role === 'admin') {
+                window.location.href = '/admin/dashboard';
+            } else if (user.role === 'tasker') {
+                window.location.href = '/tasker/dashboard';
+            } else if (user.role === 'client') {
+                window.location.href = '/client/dashboard';
+            } else {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                throw new Error('Unknown user role.');
+            }
+        }
+
         const token = localStorage.getItem('token');
 
         if (token) {
@@ -85,21 +107,12 @@
                 if (!response.ok) {
                     throw new Error();
                 }
+
                 return response.json();
             })
             .then(data => {
                 localStorage.setItem('user', JSON.stringify(data.user));
-
-                if (data.user.role === 'admin') {
-                    window.location.href = '/admin/dashboard';
-                } else if (data.user.role === 'tasker') {
-                    window.location.href = '/tasker/dashboard';
-                } else if (data.user.role === 'client') {
-                    window.location.href = '/client/dashboard';
-                } else {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                }
+                redirectByRole(data.user);
             })
             .catch(() => {
                 localStorage.removeItem('token');
@@ -107,19 +120,8 @@
             });
         }
 
-        document.getElementById('registerForm').addEventListener('submit', function (e) {
+        registerForm.addEventListener('submit', function (e) {
             e.preventDefault();
-
-            const emailInput = document.getElementById('email');
-            const passwordInput = document.getElementById('password');
-            const passwordConfirmationInput = document.getElementById('password_confirmation');
-            const errorElement = document.getElementById('errorElement');
-            const spinner = document.getElementById('registerSpinner');
-
-            spinner.style.display = 'inline-block';
-
-            errorElement.textContent = '';
-            errorElement.style.display = 'none';
 
             const formData = {
                 email: emailInput.value.trim(),
@@ -129,8 +131,13 @@
                 contact_number: document.getElementById('contact_number').value.trim(),
                 password: passwordInput.value,
                 password_confirmation: passwordConfirmationInput.value
-
             };
+
+            spinner.style.display = 'inline-block';
+            registerButton.disabled = true;
+
+            errorElement.textContent = '';
+            errorElement.style.display = 'none';
 
             fetch('/api/register', {
                 method: 'POST',
@@ -145,49 +152,20 @@
                     if (!response.ok) {
                         throw data;
                     }
+
                     return data;
                 });
             })
             .then(data => {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
                 localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
                 sessionStorage.setItem('success_message', data.message);
 
-                return fetch('/api/me', {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Authorization': 'Bearer ' + data.token
-                    }
-                });
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to retrieve user information.');
-                }
-                return response.json();
-            })
-            .then(data => {
-                const user = data.user;
-
-                localStorage.setItem('user', JSON.stringify(user));
-
-                if (user.role === 'admin') {
-                    window.location.href = '/admin/dashboard';
-                } else if (user.role === 'tasker') {
-                    window.location.href = '/tasker/dashboard';
-                } else if (user.role === 'client') {
-                    window.location.href = '/client/dashboard';
-                } else {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                    errorElement.textContent = 'Unknown user role.';
-                    errorElement.style.display = 'block';
-                }
+                redirectByRole(data.user);
             })
             .catch(error => {
                 let message = 'Registration failed.';
+
                 if (error.error) {
                     message = error.error;
                 } else if (error.message) {
@@ -211,6 +189,7 @@
             })
             .finally(() => {
                 spinner.style.display = 'none';
+                registerButton.disabled = false;
             });
         });
     </script>

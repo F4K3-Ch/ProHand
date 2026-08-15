@@ -57,20 +57,18 @@
 
                 localStorage.setItem('user', JSON.stringify(user));
 
-                const role = user.role.toLowerCase();
-
-                if (path.startsWith('/admin') && role !== 'admin') {
-                    window.location.href = '/login';
+                if (path.startsWith('/admin/') && user.role !== 'admin') {
+                    window.location.href = `/${user.role}/dashboard`;
                     return;
                 }
 
-                if (path.startsWith('/tasker') && role !== 'tasker') {
-                    window.location.href = '/login';
+                if (path.startsWith('/tasker/') && user.role !== 'tasker') {
+                    window.location.href = `/${user.role}/dashboard`;
                     return;
                 }
 
-                if (path.startsWith('/client') && role !== 'client') {
-                    window.location.href = '/login';
+                if (path.startsWith('/client/') && user.role !== 'client') {
+                    window.location.href = `/${user.role}/dashboard`;
                     return;
                 }
 
@@ -108,13 +106,12 @@
                 if (spinnerElement) {
                     spinnerElement.style.display = 'none';
                 }
-            }
-
-            catch (error) {
+            } catch (error) {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 sessionStorage.clear();
                 window.location.href = "{{ route('login') }}";
+                return;
             }
 
             const logoutButton = document.getElementById('logoutBtn');
@@ -123,10 +120,13 @@
             if (logoutButton) {
                 logoutButton.addEventListener('click', async function (e) {
                     e.preventDefault();
+
                     logoutButton.disabled = true;
+
                     if (logoutSpinner) {
                         logoutSpinner.style.display = 'inline-block';
                     }
+
                     try {
                         await fetch('/api/logout', {
                             method: 'POST',
@@ -135,11 +135,9 @@
                                 'Accept': 'application/json'
                             }
                         });
-                    }
-                    catch (error) {
+                    } catch (error) {
                         console.error(error);
-                    }
-                    finally {
+                    } finally {
                         localStorage.removeItem('token');
                         localStorage.removeItem('user');
                         sessionStorage.clear();

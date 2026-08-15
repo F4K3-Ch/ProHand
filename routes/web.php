@@ -1,12 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
 
 Route::view('/', 'welcome');
 
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::view('/login', 'auth.login')->name('login');
+
+Route::view('/register', 'auth.register')->name('register');
 
 Route::view('/admin/dashboard', 'admin.admin_dashboard')->name('admin.dashboard');
 

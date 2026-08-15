@@ -8,21 +8,11 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function showLogin()
-    {
-        return view('auth.login');
-    }
-
-    public function showRegister()
-    {
-        return view('auth.register');
-    }
-
     public function login(Request $request)
     {
         $request->validate([
             'email' => ['required', 'email'],
-            'password' => ['required'],
+            'password' => ['required', 'string'],
         ]);
 
         $user = User::where('email', $request->email)->first();
@@ -39,19 +29,19 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user->tokens()->delete();
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'message' => 'Login successful.',
             'token' => $token,
-        ]);
+            'user' => $user,
+        ], 200);
     }
 
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'email' => ['required', 'string', 'email', 'max:100', 'unique:users'],
+            'email' => ['required', 'string', 'email', 'max:100', 'unique:users,email'],
             'last_name' => ['required', 'string', 'max:50'],
             'first_name' => ['required', 'string', 'max:50'],
             'middle_name' => ['nullable', 'string', 'max:50'],
@@ -75,32 +65,23 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Registration successful.',
             'token' => $token,
+            'user' => $user,
         ], 201);
+    }
+
+    public function me(Request $request)
+    {
+        return response()->json([
+            'user' => $request->user(),
+        ], 200);
     }
 
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->noContent();
-    }
-
-    public function me(Request $request)
-    {
-        $user = $request->user();
-
         return response()->json([
-            'user' => [
-                'id' => $user->id,
-                'email' => $user->email,
-                'first_name' => $user->first_name,
-                'middle_name' => $user->middle_name,
-                'last_name' => $user->last_name,
-                'contact_number' => $user->contact_number,
-                'role' => $user->role,
-                'profile_picture' => $user->profile_picture,
-                'created_at' => $user->created_at,
-            ]
-        ]);
+            'message' => 'Logout successful.',
+        ], 200);
     }
 }

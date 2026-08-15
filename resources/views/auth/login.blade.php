@@ -18,7 +18,6 @@
     <main class="login-main">
         <section class="login-wrapper">
             <div class="login-container">
-
                 <div class="login-logo">
                     <img src="{{ asset('img/ProHand(Adapt).png') }}" alt="ProHand Logo" class="logo-img">
                     <h1>Login to Pro<span>Hand</span></h1>
@@ -31,8 +30,6 @@
                 </div>
 
                 <form id="loginForm">
-                    @csrf
-
                     <div class="login-input-box">
                         <label for="email">Email</label>
                         <input type="email" id="email" name="email" required>
@@ -43,7 +40,7 @@
                         <input type="password" id="password" name="password" required>
                     </div>
 
-                    <button type="submit" class="btn">
+                    <button type="submit" class="btn" id="loginButton">
                         Login
                         <div class="circle-spinner" id="loginSpinner" style="display:none;"></div>
                     </button>
@@ -53,7 +50,6 @@
                     Don't have an account?
                     <a href="{{ route('register') }}">Register here</a>
                 </p>
-
             </div>
         </section>
 
@@ -63,6 +59,27 @@
     </main>
 
     <script>
+        const loginForm = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const errorElement = document.getElementById('errorElement');
+        const spinner = document.getElementById('loginSpinner');
+        const loginButton = document.getElementById('loginButton');
+
+        function redirectByRole(user) {
+            if (user.role === 'admin') {
+                window.location.href = '/admin/dashboard';
+            } else if (user.role === 'tasker') {
+                window.location.href = '/tasker/dashboard';
+            } else if (user.role === 'client') {
+                window.location.href = '/client/dashboard';
+            } else {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                throw new Error('Unknown user role.');
+            }
+        }
+
         const token = localStorage.getItem('token');
 
         if (token) {
@@ -77,21 +94,12 @@
                 if (!response.ok) {
                     throw new Error();
                 }
+
                 return response.json();
             })
             .then(data => {
                 localStorage.setItem('user', JSON.stringify(data.user));
-
-                if (data.user.role === 'admin') {
-                    window.location.href = '/admin/dashboard';
-                } else if (data.user.role === 'tasker') {
-                    window.location.href = '/tasker/dashboard';
-                } else if (data.user.role === 'client') {
-                    window.location.href = '/client/dashboard';
-                } else {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                }
+                redirectByRole(data.user);
             })
             .catch(() => {
                 localStorage.removeItem('token');
@@ -99,17 +107,14 @@
             });
         }
 
-        document.getElementById('loginForm').addEventListener('submit', function (e) {
+        loginForm.addEventListener('submit', function (e) {
             e.preventDefault();
 
-            const emailInput = document.getElementById('email');
-            const passwordInput = document.getElementById('password');
-            const email = emailInput.value;
+            const email = emailInput.value.trim();
             const password = passwordInput.value;
-            const errorElement = document.getElementById('errorElement');
-            const spinner = document.getElementById('loginSpinner');
 
             spinner.style.display = 'inline-block';
+            loginButton.disabled = true;
 
             errorElement.textContent = '';
             errorElement.style.display = 'none';
@@ -120,56 +125,30 @@
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({
+                    email,
+                    password
+                })
             })
             .then(response => {
                 return response.json().then(data => {
                     if (!response.ok) {
                         throw data;
                     }
+
                     return data;
                 });
             })
             .then(data => {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
                 localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
                 sessionStorage.setItem('success_message', data.message);
 
-                return fetch('/api/me', {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Authorization': 'Bearer ' + data.token
-                    }
-                });
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to retrieve user information.');
-                }
-                return response.json();
-            })
-            .then(data => {
-                const user = data.user;
-
-                localStorage.setItem('user', JSON.stringify(user));
-
-                if (user.role === 'admin') {
-                    window.location.href = '/admin/dashboard';
-                } else if (user.role === 'tasker') {
-                    window.location.href = '/tasker/dashboard';
-                } else if (user.role === 'client') {
-                    window.location.href = '/client/dashboard';
-                } else {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                    errorElement.textContent = 'Unknown user role.';
-                    errorElement.style.display = 'block';
-                }
+                redirectByRole(data.user);
             })
             .catch(error => {
                 let message = 'Login failed.';
+
                 if (error.error) {
                     message = error.error;
                 } else if (error.message) {
@@ -191,6 +170,7 @@
             })
             .finally(() => {
                 spinner.style.display = 'none';
+                loginButton.disabled = false;
             });
         });
     </script>
