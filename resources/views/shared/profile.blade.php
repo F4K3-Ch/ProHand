@@ -115,7 +115,7 @@
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
-                    'X-API-Key': "{{ \App\Models\AccessToken::find(1)->token }}",
+                    'X-API-Key': "{{ config('services.my_api.api_key') }}",
                 },
             });
 

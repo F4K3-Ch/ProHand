@@ -20,18 +20,9 @@ class AccessMiddleware
             ], 401);
         }
 
-        $access = AccessToken::find(1);
+        $expectedApiKey = config('services.my_api.api_key');
 
-        if (!$access) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Server error: Access Token not found.'
-            ], 500);
-        }
-
-        if (
-            !hash_equals($access->token, $apiKey)
-        ) {
+        if (!hash_equals($expectedApiKey, $apiKey)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Forbidden.'
