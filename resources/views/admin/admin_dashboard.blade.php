@@ -34,51 +34,13 @@
         </div>
 
         <div class="dashboard">
-            <div class="error-success-message" id="flashMessageContainer" style="display: none;">
-                <p class="success" id="flashMessageText"></p>
+            <div class="error-success-message">
+                <p class="success" id="flashMessageText" style="display: none;"></p>
             </div>
         </div>
     </main>
 @endsection
 
 @push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', async function () {
-            const token = localStorage.getItem('token');
 
-            if (!token) {
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/admin/dashboard', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': 'Bearer ' + token,
-                        'Accept': 'application/json'
-                    }
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw data;
-                }
-
-                const container = document.getElementById('flashMessageContainer');
-                const text = document.getElementById('flashMessageText');
-
-                if (container && text && data.message) {
-                    text.textContent = data.message;
-                    container.style.display = 'block';
-
-                    setTimeout(() => {
-                        container.style.display = 'none';
-                    }, 3000);
-                }
-            } catch (error) {
-                console.error('Dashboard error:', error);
-            }
-        });
-    </script>
 @endpush

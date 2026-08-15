@@ -16,7 +16,7 @@
             <h1>Create Errand</h1>
 
             <div class="error-success-message">
-                <p id="errorElement" class="error" style="display: none;"></p>
+                <p class="error" id="errorElement" style="display: none;"></p>
             </div>
 
             <form id="create-errand-form">

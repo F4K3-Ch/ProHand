@@ -114,6 +114,22 @@
                 return;
             }
 
+            // Flash message
+            const flashMessage = sessionStorage.getItem('success_message');
+            const flashMessageText = document.getElementById('flashMessageText');
+
+            if (flashMessage && flashMessageText) {
+                flashMessageText.textContent = flashMessage;
+                flashMessageText.style.display = 'block';
+
+                sessionStorage.removeItem('success_message');
+
+                setTimeout(() => {
+                    flashMessageText.textContent = '';
+                    flashMessageText.style.display = 'none';
+                }, 3000);
+            }
+
             const logoutButton = document.getElementById('logoutBtn');
             const logoutSpinner = document.getElementById('logoutSpinner');
 

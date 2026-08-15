@@ -41,8 +41,8 @@
         </div>
         
         <div class="dashboard">
-            <div class="error-success-message" id="flashMessageContainer" style="display: none;">
-                <p class="success" id="flashMessageText"></p>
+            <div class="error-success-message">
+                <p class="success" id="flashMessageText" style="display: none;"></p>
             </div>
 
             <div class="contents">
@@ -183,22 +183,6 @@
                 }
 
                 return response.json();
-            }
-
-            // Flash message
-            const message = sessionStorage.getItem('success_message');
-            const messageContainer = document.getElementById('flashMessageContainer');
-            const messageText = document.getElementById('flashMessageText');
-
-            if (message && messageContainer && messageText) {
-                messageText.textContent = message;
-                messageContainer.style.display = 'block';
-
-                sessionStorage.removeItem('success_message');
-
-                setTimeout(() => {
-                    messageContainer.style.display = 'none';
-                }, 3000);
             }
 
             // Metrics
