@@ -15,7 +15,7 @@ class UserSeeder extends Seeder
     {
         $default_users = [
             [
-                'email' => 'admin@gmail.com',
+                'email' => 'admin@example-email.com',
                 'first_name' => 'Super',
                 'middle_name' => null,
                 'last_name' => 'Admin',
@@ -23,7 +23,7 @@ class UserSeeder extends Seeder
                 'role' => 'admin'
             ],
             [
-                'email' => 'tasker@gmail.com',
+                'email' => 'tasker@example-email.com',
                 'first_name' => 'Christian',
                 'middle_name' => 'Luego',
                 'last_name' => 'Mejorada',
@@ -31,7 +31,7 @@ class UserSeeder extends Seeder
                 'role' => 'tasker'
             ],
             [
-                'email' => 'client@gmail.com',
+                'email' => 'client@example-email.com',
                 'first_name' => 'Iries',
                 'middle_name' => 'Fra',
                 'last_name' => 'Ra',

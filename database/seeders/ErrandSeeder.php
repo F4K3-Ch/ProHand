@@ -13,6 +13,6 @@ class ErrandSeeder extends Seeder
      */
     public function run(): void
     {
-        Errand::factory()->count(10)->create();
+        Errand::factory()->count(60)->create();
     }
 }
