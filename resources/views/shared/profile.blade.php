@@ -27,8 +27,14 @@
                         class="profile-preview-photo"
                         src=""
                         alt="Profile Picture"
+                        style="display: none;"
                     >
-                    
+
+                    <div
+                        id="profile-photo-spinner"
+                        class="circle-spinner"
+                        style="width: 150px; height: 150px; border-width: 4px;"
+                    ></div>
                 </div>
 
                 <div class="profile-bot-container">
@@ -101,6 +107,8 @@
     document.addEventListener('DOMContentLoaded', async function () {
 
         const messageContainer = document.getElementById('error-message');
+        const profilePhoto = document.getElementById('profile-preview-photo');
+        const profilePhotoSpinner = document.getElementById('profile-photo-spinner');
 
         try {
             const response = await fetch('/api/profile/data', {
@@ -151,8 +159,20 @@
                 'role-' + user.role.toLowerCase()
             );
 
-            document.getElementById('profile-preview-photo').src =
-                user.profile_picture;
+            const profilePhoto = document.getElementById('profile-preview-photo');
+            const profilePhotoSpinner = document.getElementById('profile-photo-spinner');
+
+            profilePhoto.onload = function () {
+                profilePhotoSpinner.style.display = 'none';
+                profilePhoto.style.display = 'block';
+            };
+
+            profilePhoto.onerror = function () {
+                profilePhotoSpinner.style.display = 'none';
+                profilePhoto.style.display = 'block';
+            };
+
+            profilePhoto.src = user.profile_picture;
 
         } catch (error) {
             console.error('Profile error:', error);
