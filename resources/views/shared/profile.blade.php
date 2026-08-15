@@ -17,7 +17,9 @@
             <div class="profile-container">
                 <h1>My Profile</h1>
 
-                <div class="view-main-error-success-message" id="message-container"></div>
+                <div class="view-main-error-success-message">
+                    <p class="error" id="error-message" style="display: none;"></p>
+                </div>
 
                 <div class="profile-photo-section">
                     <img
@@ -26,58 +28,50 @@
                         src=""
                         alt="Profile Picture"
                     >
+                    
                 </div>
 
                 <div class="profile-bot-container">
                     <div class="profile-box">
                         <label>ID</label>
-                        <input type="text" id="profile-id" readonly>
+                        <span id="profile-id">Loading...</span>
                     </div>
 
                     <div class="profile-box">
                         <label>Email</label>
-                        <input type="text" id="profile-email" readonly>
+                        <span id="profile-email">Loading...</span>
                     </div>
 
                     <div class="group-profile-box">
                         <div class="profile-box">
                             <label>Last Name</label>
-                            <input type="text" id="profile-last-name" readonly>
+                            <span id="profile-last-name">Loading...</span>
                         </div>
 
                         <div class="profile-box">
                             <label>First Name</label>
-                            <input type="text" id="profile-first-name" readonly>
+                            <span id="profile-first-name">Loading...</span>
                         </div>
 
                         <div class="profile-box">
                             <label>Middle Name</label>
-                            <input type="text" id="profile-middle-name" readonly>
+                            <span id="profile-middle-name">Loading...</span>
                         </div>
                     </div>
 
                     <div class="profile-box">
                         <label>Role</label>
-                        <input
-                            type="text"
-                            id="profile-role"
-                            readonly
-                            class="role-input-field"
-                        >
+                        <span id="profile-role" class="role-input-field">Loading...</span>
                     </div>
 
                     <div class="profile-box">
                         <label>Contact Number</label>
-                        <input type="text" id="profile-contact-number" readonly>
+                        <span id="profile-contact-number">Loading...</span>
                     </div>
 
                     <div class="profile-box">
                         <label>Created At</label>
-                        <input
-                            type="text"
-                            id="profile-created-at"
-                            readonly
-                        >
+                        <span id="profile-created-at">Loading...</span>
                     </div>
 
                     <div class="profile-bot-btn">
@@ -106,38 +100,54 @@
 <script>
     document.addEventListener('DOMContentLoaded', async function () {
 
-        const messageContainer = document.getElementById('message-container');
+        const messageContainer = document.getElementById('error-message');
 
         try {
-            const response = await fetch("{{ route('profile.data') }}", {
+            const response = await fetch('/api/profile/data', {
                 method: 'GET',
                 headers: {
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'X-API-Key': "{{ \App\Models\AccessToken::find(1)->token }}",
                 },
-                credentials: 'same-origin'
             });
 
             const result = await response.json();
 
             if (!response.ok || !result.success) {
-                throw new Error(result.message || 'Failed to load profile.');
+                throw new Error(
+                    result.message || 'Failed to load profile information.'
+                );
             }
 
             const user = result.user;
 
-            document.getElementById('profile-id').value = user.id;
-            document.getElementById('profile-email').value = user.email;
-            document.getElementById('profile-last-name').value = user.last_name;
-            document.getElementById('profile-first-name').value = user.first_name;
-            document.getElementById('profile-middle-name').value = user.middle_name ?? '';
-            document.getElementById('profile-contact-number').value = user.contact_number;
-            document.getElementById('profile-created-at').value = user.created_at;
+            document.getElementById('profile-id').textContent =
+                user.id;
 
-            const roleInput = document.getElementById('profile-role');
+            document.getElementById('profile-email').textContent =
+                user.email;
 
-            roleInput.value = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+            document.getElementById('profile-last-name').textContent =
+                user.last_name;
 
-            roleInput.classList.add(
+            document.getElementById('profile-first-name').textContent =
+                user.first_name;
+
+            document.getElementById('profile-middle-name').textContent =
+                user.middle_name ?? '';
+
+            document.getElementById('profile-contact-number').textContent =
+                user.contact_number;
+
+            document.getElementById('profile-created-at').textContent =
+                user.created_at;
+
+            const roleElement = document.getElementById('profile-role');
+
+            roleElement.textContent =
+                user.role.charAt(0).toUpperCase() + user.role.slice(1);
+
+            roleElement.classList.add(
                 'role-' + user.role.toLowerCase()
             );
 
@@ -148,7 +158,7 @@
             console.error('Profile error:', error);
 
             messageContainer.textContent =
-                'Unable to load profile information.';
+                error.message || 'Unable to load profile information.';
 
             messageContainer.style.display = 'block';
         }
