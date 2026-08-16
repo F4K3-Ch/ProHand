@@ -291,7 +291,7 @@
                         <td>${escapeHtml(formatCategory(errand.category))}</td>
                         <td>${escapeHtml(formatDate(errand.created_at))}</td>
                         <td>${escapeHtml(formatDate(errand.deadline))}</td>
-                        <td>₱${Number(errand.fee).toFixed(2)}</td>
+                        <td>₱${Number(errand.fee).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         <td>
                             <span class="status-badge status-${escapeHtml(errand.status)}">
                                 ${escapeHtml(formatStatus(errand.status))}
