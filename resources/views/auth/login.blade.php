@@ -86,8 +86,8 @@
             fetch('/api/me', {
                 method: 'GET',
                 headers: {
-                    'Accept': 'application/json',
-                    'Authorization': 'Bearer ' + token
+                    'Authorization': 'Bearer ' + token,
+                    'Accept': 'application/json'
                 }
             })
             .then(response => {

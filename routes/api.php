@@ -14,23 +14,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:admin')
         ->prefix('admin')
         ->group(function () {
-            Route::get('/dashboard', function () {
-                return response()->json([
-                    'message' => 'Welcome Admin',
-                    'user' => request()->user()
-                ]);
-            });
+
         });
 
     Route::middleware('role:tasker')
         ->prefix('tasker')
         ->group(function () {
-            Route::get('/dashboard', function () {
-                return response()->json([
-                    'message' => 'Welcome Tasker',
-                    'user' => request()->user()
-                ]);
-            });
+
         });
 
     Route::middleware('role:client')
