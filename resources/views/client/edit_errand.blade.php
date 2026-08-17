@@ -15,7 +15,7 @@
         <div class="create-errand-container">
             <h1>Edit Errand</h1>
 
-            <div class="view-main-error-success-message">
+            <div class="error-success-message">
                 <p class="error" id="errorElement" style="display: none;"></p>
             </div>
 
@@ -107,10 +107,7 @@
 @endsection
 
 @push('styles')
-    <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
-    >
+    <link rel="stylesheet"href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 @endpush
 
 @push('scripts')
@@ -157,27 +154,18 @@
                 errorElement.style.display = 'none';
             }
 
-            fileInput.addEventListener('change', function () {
-                const maxSize = 10 * 1024 * 1024;
-
+            fileInput.addEventListener('change', function() {
+                const maxSize = 10 * 1024 * 1024; 
                 if (this.files.length > 0) {
-                    if (this.files[0].size > maxSize) {
-                        showError(
-                            'This file is too large! Please choose a file smaller than 10MB.'
-                        );
-
+                    const fileSize = this.files[0].size;
+                    if (fileSize > maxSize) {
+                        errorElement.textContent = 'This file is too large! Please choose a file smaller than 10MB.';
+                        errorElement.style.display = 'block';
                         this.value = '';
-                        return;
+                    } else {
+                        errorElement.textContent = '';
+                        errorElement.style.display = 'none';
                     }
-
-                    const removeCheckbox =
-                        document.getElementById('remove_current_file');
-
-                    if (removeCheckbox) {
-                        removeCheckbox.checked = false;
-                    }
-
-                    hideError();
                 }
             });
 
@@ -216,23 +204,12 @@
                     return;
                 }
 
-                document.getElementById('title').value =
-                    errand.title ?? '';
-
-                document.getElementById('category').value =
-                    errand.category ?? '';
-
-                document.getElementById('description').value =
-                    errand.description ?? '';
-
-                document.getElementById('location').value =
-                    errand.location ?? '';
-
-                document.getElementById('fee').value =
-                    errand.fee ?? '';
-
-                document.getElementById('contact').value =
-                    errand.contact ?? '';
+                document.getElementById('title').value = errand.title ?? '';
+                document.getElementById('category').value = errand.category ?? '';
+                document.getElementById('description').value = errand.description ?? '';
+                document.getElementById('location').value = errand.location ?? '';
+                document.getElementById('fee').value = errand.fee ?? '';
+                document.getElementById('contact').value = errand.contact ?? '';
 
                 if (errand.deadline) {
                     document
