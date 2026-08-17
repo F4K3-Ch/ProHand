@@ -15,7 +15,7 @@
         <div class="create-errand-container">
             <h1>Edit Errand</h1>
 
-            <div class="error-success-message">
+            <div class="view-main-error-success-message">
                 <p class="error" id="errorElement" style="display: none;"></p>
             </div>
 
