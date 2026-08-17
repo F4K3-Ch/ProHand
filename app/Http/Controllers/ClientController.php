@@ -131,4 +131,22 @@ class ClientController extends Controller
             ], 500);
         }
     }
+
+    public function showErrand(Request $request, $id)
+    {
+        $errand = Errand::with(['attachment', 'paymentProof'])
+            ->where('id', $id)
+            ->where('client_id', $request->user()->id)
+            ->first();
+
+        if (!$errand) {
+            return response()->json([
+                'error' => 'Errand not found.'
+            ], 404);
+        }
+
+        return response()->json([
+            'errand' => $errand
+        ], 200);
+    }
 }

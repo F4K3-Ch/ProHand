@@ -299,7 +299,7 @@
                         </td>
                         <td>
                             <div class="button-row">
-                                <a href="/client/view-errand/${errand.id}" class="btn-view">
+                                <a href="{{ url('/client/view-errand') }}/${errand.id}" class="btn-view">
                                     View
                                 </a>
 
