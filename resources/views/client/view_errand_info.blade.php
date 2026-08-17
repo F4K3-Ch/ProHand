@@ -16,7 +16,7 @@
             <div class="errand-details-container">
                 <h1>Errand Details</h1>
 
-                <div class="error-success-message">
+                <div class="view-main-error-success-message">
                     <p class="success" id="flashMessageText" style="display: none;"></p>
                 </div>
 
@@ -110,6 +110,18 @@
                         <label>Proof Of Payment</label>
                         <div id="errand-payment-proof"></div>
                     </div>
+                </div>
+
+                <div class="info-bot-btn">
+                    <a href="#" id="edit-errand-btn" class="btn-edit-errand" style="display: none;">
+                        <i class="fa-solid fa-pen"></i>
+                        Edit Errand
+                    </a>
+
+                    <button type="button" id="delete-errand-btn" class="btn-delete" style="display: none;">
+                        <i class="fa-solid fa-trash"></i>
+                        Delete Errand
+                    </button>
                 </div>
             </div>
         </div>
@@ -269,6 +281,22 @@
                         statusElement.classList.add(
                             'status-' + errand.status
                         );
+                    }
+                }
+
+                // Edit and delete buttons
+                const editErrandButton = document.getElementById('edit-errand-btn');
+                const deleteErrandButton = document.getElementById('delete-errand-btn');
+
+                if (errand.status === 'pending') {
+                    if (editErrandButton) {
+                        editErrandButton.href = `/client/edit-errand/${errand.id}`;
+
+                        editErrandButton.style.display = 'inline-flex';
+                    }
+
+                    if (deleteErrandButton) {
+                        deleteErrandButton.style.display = 'inline-flex';
                     }
                 }
 

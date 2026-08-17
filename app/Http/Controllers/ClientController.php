@@ -7,6 +7,7 @@ use App\Models\ErrandAttachment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Throwable;
+use Illuminate\Support\Facades\Storage;
 
 class ClientController extends Controller
 {
@@ -148,5 +149,73 @@ class ClientController extends Controller
         return response()->json([
             'errand' => $errand
         ], 200);
+    }
+
+    public function updateErrand(Request $request, $id)
+    {
+        $errand = Errand::with('attachment')
+            ->where('id', $id)
+            ->where('client_id', $request->user()->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if (!$errand) {
+            return response()->json([
+                'error' => 'Errand not found or cannot be edited.'
+            ], 404);
+        }
+
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:150'],
+            'category' => ['required', 'in:delivery,moving,cleaning,repair,grocery,laundry,project,other'],
+            'description' => ['required', 'string'],
+            'fee' => ['required', 'numeric', 'min:0'],
+            'deadline' => ['required', 'date'],
+            'location' => ['required', 'string', 'max:200'],
+            'contact' => ['required', 'string'],
+            'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,gif,docx', 'max:10240'],
+        ]);
+
+        try {
+            $updatedErrand = DB::transaction(function () use ($request, $validated, $errand) {
+                $errand->update([
+                    'title' => $validated['title'],
+                    'category' => $validated['category'],
+                    'description' => $validated['description'],
+                    'fee' => $validated['fee'],
+                    'deadline' => $validated['deadline'],
+                    'location' => $validated['location'],
+                    'contact' => $validated['contact'],
+                ]);
+
+                if ($request->hasFile('attachment')) {
+                    if ($errand->attachment) {
+                        Storage::disk('public')->delete($errand->attachment->file_path);
+                        $errand->attachment->delete();
+                    }
+
+                    $file = $request->file('attachment');
+                    $filePath = $file->store('uploads/attachments', 'public');
+
+                    ErrandAttachment::create([
+                        'errand_id' => $errand->id,
+                        'file_path' => $filePath,
+                        'original_name' => $file->getClientOriginalName(),
+                    ]);
+                }
+
+                return $errand->fresh('attachment');
+            });
+
+            return response()->json([
+                'message' => 'Errand updated successfully!',
+                'errand' => $updatedErrand,
+            ], 200);
+
+        } catch (Throwable $e) {
+            return response()->json([
+                'error' => 'Failed to update errand. Please try again.',
+            ], 500);
+        }
     }
 }

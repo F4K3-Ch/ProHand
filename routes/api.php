@@ -30,5 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/active-metrics', [ClientController::class, 'activeMetrics']);
             Route::get('/active-errands', [ClientController::class, 'activeErrands']);
             Route::get('/errands/{id}', [ClientController::class, 'showErrand']);
+            Route::put('/errands/{id}', [ClientController::class, 'updateErrand']);
+            Route::delete('/errands/{id}', [ClientController::class, 'deleteErrand']);
         });
 });
