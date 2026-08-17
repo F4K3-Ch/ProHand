@@ -62,44 +62,40 @@
 
                 <div class="edit-errand-input-box">
                     <label>Contact</label>
-                    <textarea
-                        name="contact"
-                        id="contact"
-                        placeholder="Phone, email, social media..."
-                        required
-                    ></textarea>
+                    <textarea name="contact" id="contact" placeholder="Phone, email, social media..." required></textarea>
                 </div>
 
                 <div class="edit-errand-input-box">
                     <label>Existing Attachment</label>
 
                     <div id="current-attachment">
-                        Loading...
+                        <div id="current-file" class="edit-attachment-item" style="display: none;">
+                            <a href="#" id="current-file-link" target="_blank" class="edit-attachment-name" title="Preview File">
+                                <i class="fa-solid fa-file"></i>
+                                <span id="current-file-name"></span>
+                            </a>
+
+                            <label class="delete-checkbox">
+                                <input type="checkbox" name="remove_current_file" id="remove_current_file" value="1">
+                                <span>Remove file</span>
+                            </label>
+                        </div>
+
+                        <div id="no-current-file" class="no-attachments">
+                            <p class="no-attachment">None</p>
+                        </div>
                     </div>
                 </div>
 
                 <div class="edit-errand-input-box">
                     <label>Replace Attachment (Optional)</label>
-
-                    <input
-                        type="file"
-                        name="attachment"
-                        id="attachment"
-                        accept=".pdf,.jpg,.jpeg,.png,.gif,.docx"
-                    >
-
-                    <small>
-                        Only 1 file allowed. Maximum size: 10 MB
-                    </small>
+                    <input type="file" name="attachment" id="attachment" accept=".pdf,.jpg,.jpeg,.png,.gif,.docx">
+                    <small>Only 1 file allowed. Maximum size: 10 MB</small>
                 </div>
 
                 <button type="submit" class="btn">
                     Update Errand
-                    <div
-                        class="circle-spinner"
-                        id="errandSpinner"
-                        style="display: none;"
-                    ></div>
+                    <div class="circle-spinner" id="errandSpinner" style="display: none;"></div>
                 </button>
             </form>
         </div>
@@ -114,7 +110,7 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', async function () {
+        document.addEventListener('DOMContentLoaded', async function() {
             const token = localStorage.getItem('token');
             const mainElement = document.querySelector('.view-main');
             const errandId = mainElement?.dataset.errandId;
@@ -123,7 +119,11 @@
             const errorElement = document.getElementById('errorElement');
             const spinner = document.getElementById('errandSpinner');
             const fileInput = document.getElementById('attachment');
-            const currentAttachment = document.getElementById('current-attachment');
+
+            const currentFile = document.getElementById('current-file');
+            const currentFileLink = document.getElementById('current-file-link');
+            const currentFileName = document.getElementById('current-file-name');
+            const noCurrentFile = document.getElementById('no-current-file');
 
             if (!token || !errandId) {
                 showError('Unable to identify the errand.');
@@ -138,12 +138,6 @@
                 minDate: 'today'
             });
 
-            function escapeHtml(value) {
-                const div = document.createElement('div');
-                div.textContent = value ?? '';
-                return div.innerHTML;
-            }
-
             function showError(message) {
                 errorElement.textContent = message;
                 errorElement.style.display = 'block';
@@ -155,23 +149,21 @@
             }
 
             fileInput.addEventListener('change', function() {
-                const maxSize = 10 * 1024 * 1024; 
-                if (this.files.length > 0) {
-                    const fileSize = this.files[0].size;
-                    if (fileSize > maxSize) {
-                        errorElement.textContent = 'This file is too large! Please choose a file smaller than 10MB.';
-                        errorElement.style.display = 'block';
-                        this.value = '';
-                    } else {
-                        errorElement.textContent = '';
-                        errorElement.style.display = 'none';
-                    }
+                const maxSize = 10 * 1024 * 1024;
+
+                if (!this.files.length) return;
+
+                if (this.files[0].size > maxSize) {
+                    showError('This file is too large! Please choose a file smaller than 10MB.');
+                    this.value = '';
+                } else {
+                    hideError();
                 }
             });
 
             try {
                 const response = await fetch(
-                    `/api/client/errands/${encodeURIComponent(errandId)}`,
+                    '/api/client/errands/' + encodeURIComponent(errandId),
                     {
                         method: 'GET',
                         headers: {
@@ -190,16 +182,11 @@
                 const errand = data.errand;
 
                 if (!errand) {
-                    throw new Error(
-                        'Errand data was not returned.'
-                    );
+                    throw new Error('Errand data was not returned.');
                 }
 
                 if (errand.status !== 'pending') {
-                    showError(
-                        'Only pending errands can be edited.'
-                    );
-
+                    showError('Only pending errands can be edited.');
                     form.style.display = 'none';
                     return;
                 }
@@ -212,10 +199,10 @@
                 document.getElementById('contact').value = errand.contact ?? '';
 
                 if (errand.deadline) {
-                    document
-                        .querySelector('#deadline')
-                        ._flatpickr
-                        .setDate(errand.deadline, true);
+                    document.getElementById('deadline')._flatpickr.setDate(
+                        errand.deadline,
+                        true
+                    );
                 }
 
                 if (errand.attachment) {
@@ -223,44 +210,19 @@
                         "{{ asset('storage') }}/" +
                         errand.attachment.file_path;
 
-                    currentAttachment.innerHTML = `
-                        <div class="edit-attachment-item">
-                            <a
-                                href="${attachmentUrl}"
-                                target="_blank"
-                                class="edit-attachment-name"
-                                title="Preview File"
-                            >
-                                <i class="fa-solid fa-file"></i>
-                                ${escapeHtml(
-                                    errand.attachment.original_name
-                                )}
-                            </a>
+                    currentFileLink.href = attachmentUrl;
+                    currentFileName.textContent =
+                        errand.attachment.original_name;
 
-                            <label class="delete-checkbox">
-                                <input
-                                    type="checkbox"
-                                    name="remove_current_file"
-                                    id="remove_current_file"
-                                    value="1"
-                                >
-                                <span>Remove file</span>
-                            </label>
-                        </div>
-                    `;
+                    currentFile.style.display = 'flex';
+                    noCurrentFile.style.display = 'none';
                 } else {
-                    currentAttachment.innerHTML = `
-                        <div class="no-attachments">
-                            <p class="no-attachment">None</p>
-                        </div>
-                    `;
+                    currentFile.style.display = 'none';
+                    noCurrentFile.style.display = 'block';
                 }
 
             } catch (error) {
-                console.error(
-                    'Failed to load errand:',
-                    error
-                );
+                console.error('Failed to load errand:', error);
 
                 showError(
                     error.error ||
@@ -272,8 +234,8 @@
                 return;
             }
 
-            form.addEventListener('submit', async function (e) {
-                e.preventDefault();
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault();
 
                 hideError();
                 spinner.style.display = 'inline-block';
@@ -282,7 +244,7 @@
 
                 try {
                     const response = await fetch(
-                        `/api/client/errands/${encodeURIComponent(errandId)}`,
+                        '/api/client/errands/' + encodeURIComponent(errandId),
                         {
                             method: 'POST',
                             headers: {
@@ -305,27 +267,20 @@
                     );
 
                     window.location.href =
-                        `/client/view-errand/${errandId}`;
+                        '/client/view-errand/' + errandId;
 
                 } catch (error) {
-                    console.error(
-                        'Failed to update errand:',
-                        error
-                    );
+                    console.error('Failed to update errand:', error);
 
-                    let errorMessage =
-                        'An unexpected error occurred.';
+                    let errorMessage = 'An unexpected error occurred.';
 
                     if (error.error) {
                         errorMessage = error.error;
                     } else if (error.message) {
                         errorMessage = error.message;
                     } else if (error.errors) {
-                        const firstKey =
-                            Object.keys(error.errors)[0];
-
-                        errorMessage =
-                            error.errors[firstKey][0];
+                        const firstKey = Object.keys(error.errors)[0];
+                        errorMessage = error.errors[firstKey][0];
                     }
 
                     showError(errorMessage);

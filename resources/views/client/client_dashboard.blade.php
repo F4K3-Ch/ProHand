@@ -9,10 +9,11 @@
 @section('content')
     <main class="main">
         <div class="fixed-wrapper">
-            <header class="header"> 
+            <header class="header">
                 <div class="header-left">
                     <div class="logo">
                         <img src="{{ asset('img/ProHand(Adapt).png') }}" alt="ProHand Logo" class="logo-img">
+
                         <div class="title">
                             <h1>Pro<span>Hand</span></h1>
                             <h2>Dashboard</h2>
@@ -23,23 +24,20 @@
                         </label>
                     </div>
                 </div>
+
                 <div class="header-right">
                     <div class="search-wrapper">
                         <div class="search-bar">
-                            <input
-                                type="text"
-                                id="errandSearch"
-                                placeholder="Search errands..."
-                                autocomplete="off"
-                            >
+                            <input type="text" id="errandSearch" placeholder="Search errands..." autocomplete="off">
                             <button type="button" class="btn-clear" id="clearSearchButton">Clear</button>
                         </div>
+
                         <button type="button" class="btn-search" id="searchButton">Search</button>
                     </div>
                 </div>
             </header>
         </div>
-        
+
         <div class="dashboard">
             <div class="error-success-message">
                 <p class="success" id="flashMessageText" style="display: none;"></p>
@@ -48,6 +46,7 @@
             <div class="contents">
                 <section class="totals">
                     <h3>Errand Status Metrics</h3>
+
                     <div class="total-cards-container">
                         <div class="total-card bg-pending" id="metric-card-pending" style="display: none;">
                             <div class="card-header">
@@ -102,7 +101,10 @@
                                 <span class="status-circle circle-total"></span>
                                 <h3>Total Active Errands</h3>
                             </div>
-                            <p id="metric-total"><span class="circle-spinner" style="width: 15px; height: 15px; border-width: 2px;"></span></p>
+
+                            <p id="metric-total">
+                                <span class="circle-spinner" style="width: 15px; height: 15px; border-width: 2px;"></span>
+                            </p>
                         </div>
                     </div>
                 </section>
@@ -141,35 +143,85 @@
                             </thead>
 
                             <tbody id="errands-table-body">
-                                <tr>
+                                <tr id="table-loading-row">
                                     <td class="no-found" colspan="8">
                                         <span class="circle-spinner" style="width: 20px; height: 20px; border-width: 2px;"></span>
+                                    </td>
+                                </tr>
+
+                                <tr id="table-empty-row" style="display: none;">
+                                    <td class="no-found" colspan="8">
+                                        No errands found.
+                                    </td>
+                                </tr>
+
+                                <tr id="table-error-row" style="display: none;">
+                                    <td class="no-found" colspan="8">
+                                        Failed to load errands.
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <div id="pagination-container" class="pagination-container"></div>
+                    <div id="pagination-container" class="pagination-container" style="display: none;">
+                        <button type="button" id="pagination-previous">Previous</button>
+                        <div id="pagination-pages"></div>
+                        <button type="button" id="pagination-next">Next</button>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
+
+    <template id="errand-row-template">
+        <tr class="errand-row">
+            <td class="errand-id"></td>
+            <td class="errand-title"></td>
+            <td class="errand-category"></td>
+            <td class="errand-created-at"></td>
+            <td class="errand-deadline"></td>
+            <td class="errand-fee"></td>
+
+            <td>
+                <span class="status-badge errand-status-badge"></span>
+            </td>
+
+            <td>
+                <div class="button-row">
+                    <a href="#" class="btn-view">View</a>
+                    <button type="button" class="btn-delete">Delete</button>
+                </div>
+            </td>
+        </tr>
+    </template>
+
+    <template id="pagination-page-template">
+        <button type="button" class="pagination-page"></button>
+    </template>
 @endsection
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-
+        document.addEventListener('DOMContentLoaded', function() {
             const tableBody = document.getElementById('errands-table-body');
             const paginationContainer = document.getElementById('pagination-container');
+            const paginationPages = document.getElementById('pagination-pages');
+            const paginationPrevious = document.getElementById('pagination-previous');
+            const paginationNext = document.getElementById('pagination-next');
+
+            const loadingRow = document.getElementById('table-loading-row');
+            const emptyRow = document.getElementById('table-empty-row');
+            const errorRow = document.getElementById('table-error-row');
+
             const perPageSelect = document.getElementById('perPageSelect');
             const searchInput = document.getElementById('errandSearch');
             const searchButton = document.getElementById('searchButton');
             const clearSearchButton = document.getElementById('clearSearchButton');
 
+            const errandRowTemplate = document.getElementById('errand-row-template');
+            const paginationPageTemplate = document.getElementById('pagination-page-template');
 
-            // API helper
             async function apiFetch(url) {
                 const response = await fetch(url, {
                     headers: {
@@ -179,13 +231,12 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Request failed: ${response.status}`);
+                    throw new Error('Request failed: ' + response.status);
                 }
 
                 return response.json();
             }
 
-            // Metrics
             async function fetchMetrics() {
                 try {
                     const metrics = await apiFetch('/api/client/active-metrics');
@@ -199,13 +250,11 @@
                         dispute: 'metric-card-dispute'
                     };
 
-                    Object.entries(cards).forEach(([key, cardId]) => {
+                    Object.entries(cards).forEach(function([key, cardId]) {
                         const card = document.getElementById(cardId);
-                        const value = document.getElementById(`metric-${key}`);
+                        const value = document.getElementById('metric-' + key);
 
-                        if (!card || !value) {
-                            return;
-                        }
+                        if (!card || !value) return;
 
                         const count = Number(metrics[key] || 0);
 
@@ -218,29 +267,48 @@
                     if (totalValue) {
                         totalValue.textContent = Number(metrics.total || 0);
                     }
-
                 } catch (error) {
                     console.error('Metrics error:', error);
                 }
             }
 
-            // Errands
-            async function fetchErrands(page = 1) {
+            function hideTableStates() {
+                loadingRow.style.display = 'none';
+                emptyRow.style.display = 'none';
+                errorRow.style.display = 'none';
+            }
+
+            function showTableLoading() {
+                hideTableStates();
+                loadingRow.style.display = 'table-row';
+            }
+
+            function showTableEmpty() {
+                hideTableStates();
+                emptyRow.style.display = 'table-row';
+            }
+
+            function showTableError() {
+                hideTableStates();
+                errorRow.style.display = 'table-row';
+            }
+
+            function removeErrandRows() {
+                tableBody.querySelectorAll('.errand-row').forEach(function(row) {
+                    row.remove();
+                });
+            }
+
+            async function fetchErrands(page) {
+                page = page || 1;
+
                 const perPage = perPageSelect?.value || 10;
                 const search = searchInput?.value.trim() || '';
 
-                tableBody.innerHTML = `
-                    <tr>
-                        <td class="no-found" colspan="8">
-                            <span class="circle-spinner"
-                                style="width: 20px; height: 20px; border-width: 2px;">
-                            </span>
-                        </td>
-                    </tr>
-                `;
+                showTableLoading();
 
                 const params = new URLSearchParams({
-                    page,
+                    page: page,
                     per_page: perPage
                 });
 
@@ -250,120 +318,126 @@
 
                 try {
                     const data = await apiFetch(
-                        `/api/client/active-errands?${params.toString()}`
+                        '/api/client/active-errands?' + params.toString()
                     );
 
                     renderErrands(data.data);
                     renderPagination(data);
-
                 } catch (error) {
                     console.error('Errands error:', error);
 
-                    tableBody.innerHTML = `
-                        <tr>
-                            <td class="no-found" colspan="8">
-                                Failed to load errands.
-                            </td>
-                        </tr>
-                    `;
+                    removeErrandRows();
+                    showTableError();
 
-                    paginationContainer.innerHTML = '';
+                    paginationContainer.style.display = 'none';
                 }
             }
 
-            // Render errands
             function renderErrands(errands) {
-                if (!errands?.length) {
-                    tableBody.innerHTML = `
-                        <tr>
-                            <td class="no-found" colspan="8">
-                                No errands found.
-                            </td>
-                        </tr>
-                    `;
+                removeErrandRows();
+
+                if (!errands || !errands.length) {
+                    showTableEmpty();
+                    paginationContainer.style.display = 'none';
                     return;
                 }
 
-                tableBody.innerHTML = errands.map(errand => `
-                    <tr>
-                        <td>${escapeHtml(errand.id)}</td>
-                        <td>${escapeHtml(errand.title)}</td>
-                        <td>${escapeHtml(formatCategory(errand.category))}</td>
-                        <td>${escapeHtml(formatDate(errand.created_at))}</td>
-                        <td>${escapeHtml(formatDate(errand.deadline))}</td>
-                        <td>₱${Number(errand.fee).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                        <td>
-                            <span class="status-badge status-${escapeHtml(errand.status)}">
-                                ${escapeHtml(formatStatus(errand.status))}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="button-row">
-                                <a href="{{ url('/client/view-errand') }}/${errand.id}" class="btn-view">
-                                    View
-                                </a>
+                hideTableStates();
 
-                                <button type="button" class="btn-delete">
-                                    Delete
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `).join('');
+                errands.forEach(function(errand) {
+                    const row = errandRowTemplate.content.cloneNode(true);
+
+                    row.querySelector('.errand-id').textContent = errand.id;
+
+                    row.querySelector('.errand-title').textContent =
+                        errand.title;
+
+                    row.querySelector('.errand-category').textContent =
+                        formatCategory(errand.category);
+
+                    row.querySelector('.errand-created-at').textContent =
+                        formatDate(errand.created_at);
+
+                    row.querySelector('.errand-deadline').textContent =
+                        formatDate(errand.deadline);
+
+                    row.querySelector('.errand-fee').textContent =
+                        '₱' + Number(errand.fee).toLocaleString('en-US', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        });
+
+                    const statusBadge =
+                        row.querySelector('.errand-status-badge');
+
+                    statusBadge.textContent =
+                        formatStatus(errand.status);
+
+                    statusBadge.classList.add(
+                        'status-' + errand.status
+                    );
+
+                    const viewButton =
+                        row.querySelector('.btn-view');
+
+                    viewButton.href =
+                        '/client/view-errand/' + errand.id;
+
+                    tableBody.appendChild(row);
+                });
             }
 
-            // Pagination
             function renderPagination(data) {
-                paginationContainer.innerHTML = '';
+                paginationPages.innerHTML = '';
 
                 if (data.last_page <= 1) {
+                    paginationContainer.style.display = 'none';
                     return;
                 }
 
-                const previous = document.createElement('button');
+                paginationContainer.style.display = 'flex';
 
-                previous.textContent = 'Previous';
-                previous.disabled = data.current_page === 1;
+                paginationPrevious.disabled =
+                    data.current_page === 1;
 
-                previous.onclick = () => {
+                paginationNext.disabled =
+                    data.current_page === data.last_page;
+
+                paginationPrevious.onclick = function() {
                     fetchErrands(data.current_page - 1);
                 };
 
-                paginationContainer.appendChild(previous);
-
-                for (let page = 1; page <= data.last_page; page++) {
-                    const button = document.createElement('button');
-
-                    button.textContent = page;
-
-                    if (page === data.current_page) {
-                        button.classList.add('active');
-                    }
-
-                    button.onclick = () => {
-                        fetchErrands(page);
-                    };
-
-                    paginationContainer.appendChild(button);
-                }
-
-                const next = document.createElement('button');
-
-                next.textContent = 'Next';
-                next.disabled = data.current_page === data.last_page;
-
-                next.onclick = () => {
+                paginationNext.onclick = function() {
                     fetchErrands(data.current_page + 1);
                 };
 
-                paginationContainer.appendChild(next);
+                for (let page = 1; page <= data.last_page; page++) {
+                    const button =
+                        paginationPageTemplate.content.cloneNode(true);
+
+                    const pageButton =
+                        button.querySelector('.pagination-page');
+
+                    pageButton.textContent = page;
+
+                    if (page === data.current_page) {
+                        pageButton.classList.add('active');
+                    }
+
+                    pageButton.onclick = function() {
+                        fetchErrands(page);
+                    };
+
+                    paginationPages.appendChild(button);
+                }
             }
 
-            // Formatting
             function formatText(value) {
                 return String(value || '')
                     .replace(/_/g, ' ')
-                    .replace(/\b\w/g, letter => letter.toUpperCase());
+                    .replace(/\b\w/g, function(letter) {
+                        return letter.toUpperCase();
+                    });
             }
 
             function formatCategory(value) {
@@ -375,9 +449,7 @@
             }
 
             function formatDate(date) {
-                if (!date) {
-                    return '-';
-                }
+                if (!date) return '-';
 
                 return new Date(date).toLocaleString('en-US', {
                     year: 'numeric',
@@ -388,17 +460,8 @@
                 });
             }
 
-            function escapeHtml(value) {
-                const div = document.createElement('div');
-                div.textContent = value ?? '';
-                return div.innerHTML;
-            }
-
-            // Search
             function updateClearButton() {
-                if (!clearSearchButton) {
-                    return;
-                }
+                if (!clearSearchButton) return;
 
                 clearSearchButton.style.display =
                     searchInput?.value.trim()
@@ -406,34 +469,32 @@
                         : 'none';
             }
 
-            searchButton?.addEventListener('click', () => {
+            searchButton?.addEventListener('click', function() {
                 fetchErrands(1);
             });
 
             searchInput?.addEventListener('input', updateClearButton);
 
-            searchInput?.addEventListener('keydown', event => {
+            searchInput?.addEventListener('keydown', function(event) {
                 if (event.key === 'Enter') {
                     event.preventDefault();
                     fetchErrands(1);
                 }
             });
 
-            clearSearchButton?.addEventListener('click', () => {
+            clearSearchButton?.addEventListener('click', function() {
                 searchInput.value = '';
                 updateClearButton();
                 fetchErrands(1);
             });
 
-            perPageSelect?.addEventListener('change', () => {
+            perPageSelect?.addEventListener('change', function() {
                 fetchErrands(1);
             });
 
-            // Initial load
             updateClearButton();
             fetchMetrics();
             fetchErrands();
-
         });
     </script>
 @endpush

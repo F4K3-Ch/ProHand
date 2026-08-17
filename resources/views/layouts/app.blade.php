@@ -57,18 +57,12 @@
 
                 localStorage.setItem('user', JSON.stringify(user));
 
-                if (path.startsWith('/admin/') && user.role !== 'admin') {
-                    window.location.href = `/${user.role}/dashboard`;
-                    return;
-                }
-
-                if (path.startsWith('/tasker/') && user.role !== 'tasker') {
-                    window.location.href = `/${user.role}/dashboard`;
-                    return;
-                }
-
-                if (path.startsWith('/client/') && user.role !== 'client') {
-                    window.location.href = `/${user.role}/dashboard`;
+                if (
+                    (path.startsWith('/admin/') && user.role !== 'admin') ||
+                    (path.startsWith('/tasker/') && user.role !== 'tasker') ||
+                    (path.startsWith('/client/') && user.role !== 'client')
+                ) {
+                    window.location.href = '/' + user.role + '/dashboard';
                     return;
                 }
 

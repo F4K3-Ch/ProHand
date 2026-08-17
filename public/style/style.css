@@ -2915,13 +2915,6 @@ select[name="role"] option[value="client"] {
     text-decoration: underline; 
 }
 
-/* Normalizes the form element within flex row */
-.attachment-item form {
-    display: inline-flex;
-    align-items: center;
-    margin: 0;
-}
-
 /* 3. Streamlined Inline Download Button */
 .btn-download {
     background-color: #28a745;

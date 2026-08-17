@@ -25,7 +25,6 @@
                         <label>Errand ID</label>
                         <span id="errand-id">Loading...</span>
                     </div>
-
                     <div class="info-box">
                         <label>Category</label>
                         <span id="errand-category">Loading...</span>
@@ -57,7 +56,6 @@
                         <label>Fee</label>
                         <span id="errand-fee">Loading...</span>
                     </div>
-
                     <div class="info-box">
                         <label>Status</label>
                         <span id="errand-status" class="status-field">Loading...</span>
@@ -69,7 +67,6 @@
                         <label>Created At</label>
                         <span id="errand-created-at">Loading...</span>
                     </div>
-
                     <div class="info-box">
                         <label>Last Updated</label>
                         <span id="errand-updated-at">Loading...</span>
@@ -81,7 +78,6 @@
                         <label>Accepted At</label>
                         <span id="errand-accepted-at">Loading...</span>
                     </div>
-
                     <div class="info-box">
                         <label>In Process At</label>
                         <span id="errand-in-process-at">Loading...</span>
@@ -93,7 +89,6 @@
                         <label>Deadline</label>
                         <span id="errand-deadline">Loading...</span>
                     </div>
-
                     <div class="info-box">
                         <label>Finished At</label>
                         <span id="errand-finished-at">Loading...</span>
@@ -103,12 +98,40 @@
                 <div class="group-info-box">
                     <div class="info-box">
                         <label>Attachment</label>
-                        <div id="errand-attachment">Loading...</div>
+
+                        <div id="errand-attachment">
+                            <div class="attachment-item" style="display: none;">
+                                <a href="#" target="_blank" class="attachment-name">
+                                    <i class="fa-solid fa-file-lines"></i>
+                                </a>
+
+                                <a href="#" download class="btn-download">
+                                    <i class="fa-solid fa-download"></i>
+                                    Download
+                                </a>
+                            </div>
+
+                            <div class="no-attachments">
+                                <p class="no-attachment">None</p>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="info-box" id="payment-proof-box" style="display: none;">
                         <label>Proof Of Payment</label>
-                        <div id="errand-payment-proof"></div>
+
+                        <div id="errand-payment-proof">
+                            <div class="attachment-item" style="display: none;">
+                                <a href="#" target="_blank" class="attachment-name">
+                                    <i class="fa-solid fa-file-lines"></i>
+                                </a>
+
+                                <a href="#" download class="btn-download">
+                                    <i class="fa-solid fa-download"></i>
+                                    Download
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -130,25 +153,19 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', async function () {
+        document.addEventListener('DOMContentLoaded', async function() {
             const token = localStorage.getItem('token');
             const mainElement = document.querySelector('.view-main');
             const errandId = mainElement?.dataset.errandId;
 
-            if (!token || !errandId) {
-                return;
-            }
+            if (!token || !errandId) return;
 
             function formatDate(date) {
-                if (!date) {
-                    return 'Not set';
-                }
+                if (!date) return 'Not set';
 
                 const value = new Date(date);
 
-                if (isNaN(value.getTime())) {
-                    return 'Not set';
-                }
+                if (isNaN(value.getTime())) return 'Not set';
 
                 return value.toLocaleDateString('en-US', {
                     month: 'long',
@@ -160,30 +177,14 @@
                 });
             }
 
-            function formatCategory(category) {
-                if (!category) {
-                    return 'Not set';
-                }
+            function formatText(value) {
+                if (!value) return 'Not set';
 
-                return category
+                return value
                     .replace(/_/g, ' ')
-                    .replace(/\b\w/g, char => char.toUpperCase());
-            }
-
-            function formatStatus(status) {
-                if (!status) {
-                    return 'Not set';
-                }
-
-                return status
-                    .replace(/_/g, ' ')
-                    .replace(/\b\w/g, char => char.toUpperCase());
-            }
-
-            function escapeHtml(value) {
-                const div = document.createElement('div');
-                div.textContent = value ?? '';
-                return div.innerHTML;
+                    .replace(/\b\w/g, function(char) {
+                        return char.toUpperCase();
+                    });
             }
 
             function setText(id, value) {
@@ -194,9 +195,33 @@
                 }
             }
 
+            function setupAttachment(container, file) {
+                const item = container.querySelector('.attachment-item');
+                const view = container.querySelector('.attachment-name');
+                const download = container.querySelector('.btn-download');
+                const none = container.querySelector('.no-attachments');
+
+                if (!item || !view || !download) return;
+
+                const url = "{{ asset('storage') }}/" + file.file_path;
+
+                view.href = url;
+                download.href = url;
+
+                view.appendChild(
+                    document.createTextNode(' ' + file.original_name)
+                );
+
+                item.style.display = 'flex';
+
+                if (none) {
+                    none.style.display = 'none';
+                }
+            }
+
             try {
                 const response = await fetch(
-                    `/api/client/errands/${encodeURIComponent(errandId)}`,
+                    '/api/client/errands/' + errandId,
                     {
                         method: 'GET',
                         headers: {
@@ -220,19 +245,10 @@
 
                 setText('errand-id', errand.id);
                 setText('errand-title', errand.title);
-                setText('errand-category', formatCategory(errand.category));
-                setText(
-                    'errand-description',
-                    errand.description || 'No description'
-                );
-                setText(
-                    'errand-contact',
-                    errand.contact || 'No contact information'
-                );
-                setText(
-                    'errand-location',
-                    errand.location || 'Not set'
-                );
+                setText('errand-category', formatText(errand.category));
+                setText('errand-description', errand.description || 'No description');
+                setText('errand-contact', errand.contact || 'No contact information');
+                setText('errand-location', errand.location || 'Not set');
 
                 setText(
                     'errand-fee',
@@ -242,56 +258,32 @@
                     })
                 );
 
-                setText(
-                    'errand-created-at',
-                    formatDate(errand.created_at)
-                );
-
-                setText(
-                    'errand-deadline',
-                    formatDate(errand.deadline)
-                );
-
-                setText(
-                    'errand-accepted-at',
-                    formatDate(errand.accepted_at)
-                );
-
-                setText(
-                    'errand-in-process-at',
-                    formatDate(errand.in_process_at)
-                );
-
+                setText('errand-created-at', formatDate(errand.created_at));
+                setText('errand-deadline', formatDate(errand.deadline));
+                setText('errand-accepted-at', formatDate(errand.accepted_at));
+                setText('errand-in-process-at', formatDate(errand.in_process_at));
                 setText(
                     'errand-finished-at',
                     formatDate(errand.completed_at || errand.failed_at)
                 );
-
-                setText(
-                    'errand-updated-at',
-                    formatDate(errand.updated_at)
-                );
+                setText('errand-updated-at', formatDate(errand.updated_at));
 
                 const statusElement = document.getElementById('errand-status');
 
                 if (statusElement) {
-                    statusElement.textContent = formatStatus(errand.status);
+                    statusElement.textContent = formatText(errand.status);
 
                     if (errand.status) {
-                        statusElement.classList.add(
-                            'status-' + errand.status
-                        );
+                        statusElement.classList.add('status-' + errand.status);
                     }
                 }
 
-                // Edit and delete buttons
                 const editErrandButton = document.getElementById('edit-errand-btn');
                 const deleteErrandButton = document.getElementById('delete-errand-btn');
 
                 if (errand.status === 'pending') {
                     if (editErrandButton) {
-                        editErrandButton.href = `/client/edit-errand/${errand.id}`;
-
+                        editErrandButton.href = '/client/edit-errand/' + errand.id;
                         editErrandButton.style.display = 'inline-flex';
                     }
 
@@ -300,65 +292,27 @@
                     }
                 }
 
-                // Attachment
-                const attachmentElement = document.getElementById('errand-attachment');
+                const attachmentContainer =
+                    document.getElementById('errand-attachment');
 
                 if (errand.attachment) {
-                    const attachmentUrl =
-                        "{{ asset('storage') }}/" +
-                        errand.attachment.file_path;
-
-                    attachmentElement.innerHTML = `
-                        <div class="attachment-item">
-                            <a href="${attachmentUrl}"
-                            target="_blank"
-                            class="attachment-name">
-                                <i class="fa-solid fa-file-lines"></i>
-                                ${escapeHtml(errand.attachment.original_name)}
-                            </a>
-
-                            <a href="${attachmentUrl}"
-                            download
-                            class="btn-download">
-                                <i class="fa-solid fa-download"></i>
-                                Download
-                            </a>
-                        </div>
-                    `;
-                } else {
-                    attachmentElement.innerHTML = `
-                        <div class="no-attachments">
-                            <p class="no-attachment">None</p>
-                        </div>
-                    `;
+                    setupAttachment(
+                        attachmentContainer,
+                        errand.attachment
+                    );
                 }
 
-                // Payment proof
-                const paymentProofBox = document.getElementById('payment-proof-box');
-                const paymentElement = document.getElementById('errand-payment-proof');
+                const paymentProofBox =
+                    document.getElementById('payment-proof-box');
+
+                const paymentProofContainer =
+                    document.getElementById('errand-payment-proof');
 
                 if (errand.payment_proof) {
-                    const paymentUrl =
-                        "{{ asset('storage') }}/" +
-                        errand.payment_proof.file_path;
-
-                    paymentElement.innerHTML = `
-                        <div class="attachment-item">
-                            <a href="${paymentUrl}"
-                            target="_blank"
-                            class="attachment-name">
-                                <i class="fa-solid fa-file-lines"></i>
-                                ${escapeHtml(errand.payment_proof.original_name)}
-                            </a>
-
-                            <a href="${paymentUrl}"
-                            download
-                            class="btn-download">
-                                <i class="fa-solid fa-download"></i>
-                                Download
-                            </a>
-                        </div>
-                    `;
+                    setupAttachment(
+                        paymentProofContainer,
+                        errand.payment_proof
+                    );
 
                     paymentProofBox.style.display = 'block';
                 }
@@ -380,8 +334,24 @@
                 setText('errand-finished-at', 'Not available');
                 setText('errand-updated-at', 'Not available');
                 setText('errand-status', 'Not available');
-                setText('errand-attachment', 'Not available');
-                setText('errand-payment-proof', 'Not available');
+
+                const attachmentContainer =
+                    document.getElementById('errand-attachment');
+
+                const paymentProofBox =
+                    document.getElementById('payment-proof-box');
+
+                if (attachmentContainer) {
+                    const item = attachmentContainer.querySelector('.attachment-item');
+                    const none = attachmentContainer.querySelector('.no-attachments');
+
+                    if (item) item.style.display = 'none';
+                    if (none) none.style.display = 'none';
+                }
+
+                if (paymentProofBox) {
+                    paymentProofBox.style.display = 'none';
+                }
             }
         });
     </script>
