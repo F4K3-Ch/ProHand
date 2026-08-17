@@ -173,6 +173,7 @@ class ClientController extends Controller
             'deadline' => ['required', 'date'],
             'location' => ['required', 'string', 'max:200'],
             'contact' => ['required', 'string'],
+            'remove_current_file' => ['nullable', 'boolean'],
             'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,gif,docx', 'max:10240'],
         ]);
 
@@ -188,14 +189,23 @@ class ClientController extends Controller
                     'contact' => $validated['contact'],
                 ]);
 
-                if ($request->hasFile('attachment')) {
+                if ($request->boolean('remove_current_file') || $request->hasFile('attachment')) {
                     if ($errand->attachment) {
-                        Storage::disk('public')->delete($errand->attachment->file_path);
+                        Storage::disk('public')->delete(
+                            $errand->attachment->file_path
+                        );
+
                         $errand->attachment->delete();
                     }
+                }
 
+                if ($request->hasFile('attachment')) {
                     $file = $request->file('attachment');
-                    $filePath = $file->store('uploads/attachments', 'public');
+
+                    $filePath = $file->store(
+                        'uploads/attachments',
+                        'public'
+                    );
 
                     ErrandAttachment::create([
                         'errand_id' => $errand->id,

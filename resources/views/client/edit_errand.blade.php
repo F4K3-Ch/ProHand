@@ -15,7 +15,7 @@
         <div class="create-errand-container">
             <h1>Edit Errand</h1>
 
-            <div class="error-success-message">
+            <div class="view-main-error-success-message">
                 <p class="error" id="errorElement" style="display: none;"></p>
             </div>
 
@@ -62,11 +62,17 @@
 
                 <div class="create-errand-input-box">
                     <label>Contact</label>
-                    <textarea name="contact" id="contact" placeholder="Phone, email, social media..." required></textarea>
+                    <textarea
+                        name="contact"
+                        id="contact"
+                        placeholder="Phone, email, social media..."
+                        required
+                    ></textarea>
                 </div>
 
                 <div class="create-errand-input-box">
-                    <label>Current Attachment</label>
+                    <label>Existing Attachment</label>
+
                     <div id="current-attachment">
                         Loading...
                     </div>
@@ -74,13 +80,26 @@
 
                 <div class="create-errand-input-box">
                     <label>Replace Attachment (Optional)</label>
-                    <input type="file" name="attachment" id="attachment" accept=".pdf,.jpg,.jpeg,.png,.gif,.docx">
-                    <small>Only 1 file allowed. Maximum size: 10 MB</small>
+
+                    <input
+                        type="file"
+                        name="attachment"
+                        id="attachment"
+                        accept=".pdf,.jpg,.jpeg,.png,.gif,.docx"
+                    >
+
+                    <small>
+                        Only 1 file allowed. Maximum size: 10 MB
+                    </small>
                 </div>
 
                 <button type="submit" class="btn">
                     Update Errand
-                    <div class="circle-spinner" id="errandSpinner" style="display: none;"></div>
+                    <div
+                        class="circle-spinner"
+                        id="errandSpinner"
+                        style="display: none;"
+                    ></div>
                 </button>
             </form>
         </div>
@@ -88,7 +107,10 @@
 @endsection
 
 @push('styles')
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+    >
 @endpush
 
 @push('scripts')
@@ -138,10 +160,23 @@
             fileInput.addEventListener('change', function () {
                 const maxSize = 10 * 1024 * 1024;
 
-                if (this.files.length > 0 && this.files[0].size > maxSize) {
-                    showError('This file is too large! Please choose a file smaller than 10MB.');
-                    this.value = '';
-                } else {
+                if (this.files.length > 0) {
+                    if (this.files[0].size > maxSize) {
+                        showError(
+                            'This file is too large! Please choose a file smaller than 10MB.'
+                        );
+
+                        this.value = '';
+                        return;
+                    }
+
+                    const removeCheckbox =
+                        document.getElementById('remove_current_file');
+
+                    if (removeCheckbox) {
+                        removeCheckbox.checked = false;
+                    }
+
                     hideError();
                 }
             });
@@ -167,39 +202,73 @@
                 const errand = data.errand;
 
                 if (!errand) {
-                    throw new Error('Errand data was not returned.');
+                    throw new Error(
+                        'Errand data was not returned.'
+                    );
                 }
 
                 if (errand.status !== 'pending') {
-                    showError('Only pending errands can be edited.');
+                    showError(
+                        'Only pending errands can be edited.'
+                    );
+
                     form.style.display = 'none';
                     return;
                 }
 
-                document.getElementById('title').value = errand.title ?? '';
-                document.getElementById('category').value = errand.category ?? '';
-                document.getElementById('description').value = errand.description ?? '';
-                document.getElementById('location').value = errand.location ?? '';
-                document.getElementById('fee').value = errand.fee ?? '';
-                document.getElementById('contact').value = errand.contact ?? '';
+                document.getElementById('title').value =
+                    errand.title ?? '';
+
+                document.getElementById('category').value =
+                    errand.category ?? '';
+
+                document.getElementById('description').value =
+                    errand.description ?? '';
+
+                document.getElementById('location').value =
+                    errand.location ?? '';
+
+                document.getElementById('fee').value =
+                    errand.fee ?? '';
+
+                document.getElementById('contact').value =
+                    errand.contact ?? '';
 
                 if (errand.deadline) {
-                    document.querySelector('#deadline')._flatpickr.setDate(
-                        errand.deadline,
-                        true
-                    );
+                    document
+                        .querySelector('#deadline')
+                        ._flatpickr
+                        .setDate(errand.deadline, true);
                 }
 
                 if (errand.attachment) {
                     const attachmentUrl =
-                        "{{ asset('storage') }}/" + errand.attachment.file_path;
+                        "{{ asset('storage') }}/" +
+                        errand.attachment.file_path;
 
                     currentAttachment.innerHTML = `
-                        <div class="attachment-item">
-                            <a href="${attachmentUrl}" target="_blank" class="attachment-name">
-                                <i class="fa-solid fa-file-lines"></i>
-                                ${escapeHtml(errand.attachment.original_name)}
+                        <div class="edit-attachment-item">
+                            <a
+                                href="${attachmentUrl}"
+                                target="_blank"
+                                class="edit-attachment-name"
+                                title="Preview File"
+                            >
+                                <i class="fa-solid fa-file"></i>
+                                ${escapeHtml(
+                                    errand.attachment.original_name
+                                )}
                             </a>
+
+                            <label class="delete-checkbox">
+                                <input
+                                    type="checkbox"
+                                    name="remove_current_file"
+                                    id="remove_current_file"
+                                    value="1"
+                                >
+                                <span>Remove file</span>
+                            </label>
                         </div>
                     `;
                 } else {
@@ -211,7 +280,10 @@
                 }
 
             } catch (error) {
-                console.error('Failed to load errand:', error);
+                console.error(
+                    'Failed to load errand:',
+                    error
+                );
 
                 showError(
                     error.error ||
@@ -230,6 +302,7 @@
                 spinner.style.display = 'inline-block';
 
                 const formData = new FormData(form);
+
                 formData.append('_method', 'PUT');
 
                 try {
@@ -251,23 +324,33 @@
                         throw data;
                     }
 
-                    sessionStorage.setItem('success_message', data.message);
+                    sessionStorage.setItem(
+                        'success_message',
+                        data.message
+                    );
 
                     window.location.href =
                         `/client/view-errand/${errandId}`;
 
                 } catch (error) {
-                    console.error('Failed to update errand:', error);
+                    console.error(
+                        'Failed to update errand:',
+                        error
+                    );
 
-                    let errorMessage = 'An unexpected error occurred.';
+                    let errorMessage =
+                        'An unexpected error occurred.';
 
                     if (error.error) {
                         errorMessage = error.error;
                     } else if (error.message) {
                         errorMessage = error.message;
                     } else if (error.errors) {
-                        const firstKey = Object.keys(error.errors)[0];
-                        errorMessage = error.errors[firstKey][0];
+                        const firstKey =
+                            Object.keys(error.errors)[0];
+
+                        errorMessage =
+                            error.errors[firstKey][0];
                     }
 
                     showError(errorMessage);
