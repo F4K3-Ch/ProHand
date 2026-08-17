@@ -3274,14 +3274,15 @@ select[name="role"] option[value="client"] {
     font-weight: 600;
 }
 
-.edit-errand-input-box input {
+.edit-errand-input-box input,
+.edit-errand-input-box select {
     background-color: var(--color-card-bg);
     color: var(--color-text);
     border: 1px solid var(--color-input-border);
     width: 100%;
     padding: 6px 8px;
     border-radius: 6px;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     font-weight: 400;  
     transition: all 0.2s ease;
     outline: none;
@@ -3296,7 +3297,7 @@ select[name="role"] option[value="client"] {
     color: var(--color-text);
     border: 1px solid var(--color-input-border);
     width: 100%;
-    min-height: 60px;        /* Adjust height as needed */
+    min-height: 90px;        /* Adjust height as needed */
     padding: 6px 8px;
     border-radius: 6px;
     font-size: 0.9rem;

@@ -12,7 +12,7 @@
     </a>
 
     <main class="view-main" data-errand-id="{{ $id }}">
-        <div class="create-errand-container">
+        <div class="edit-errand-container">
             <h1>Edit Errand</h1>
 
             <div class="view-main-error-success-message">
@@ -20,12 +20,12 @@
             </div>
 
             <form id="edit-errand-form">
-                <div class="create-errand-input-box">
+                <div class="edit-errand-input-box">
                     <label>Title</label>
                     <input type="text" name="title" id="title" required>
                 </div>
 
-                <div class="create-errand-input-box">
+                <div class="edit-errand-input-box">
                     <label>Category</label>
                     <select name="category" id="category" required>
                         <option value="" disabled>Select a category</option>
@@ -40,27 +40,27 @@
                     </select>
                 </div>
 
-                <div class="create-errand-input-box">
+                <div class="edit-errand-input-box">
                     <label>Description</label>
                     <textarea name="description" id="description" required></textarea>
                 </div>
 
-                <div class="create-errand-input-box">
+                <div class="edit-errand-input-box">
                     <label>Location</label>
                     <input type="text" name="location" id="location" required>
                 </div>
 
-                <div class="create-errand-input-box">
+                <div class="edit-errand-input-box">
                     <label>Deadline</label>
                     <input type="text" name="deadline" id="deadline" required>
                 </div>
 
-                <div class="create-errand-input-box">
+                <div class="edit-errand-input-box">
                     <label>Fee (₱)</label>
                     <input type="number" step="0.01" name="fee" id="fee" required>
                 </div>
 
-                <div class="create-errand-input-box">
+                <div class="edit-errand-input-box">
                     <label>Contact</label>
                     <textarea
                         name="contact"
@@ -70,7 +70,7 @@
                     ></textarea>
                 </div>
 
-                <div class="create-errand-input-box">
+                <div class="edit-errand-input-box">
                     <label>Existing Attachment</label>
 
                     <div id="current-attachment">
@@ -78,7 +78,7 @@
                     </div>
                 </div>
 
-                <div class="create-errand-input-box">
+                <div class="edit-errand-input-box">
                     <label>Replace Attachment (Optional)</label>
 
                     <input
