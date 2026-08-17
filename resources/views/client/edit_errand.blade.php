@@ -107,7 +107,7 @@
 @endsection
 
 @push('styles')
-    <link rel="stylesheet"href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 @endpush
 
 @push('scripts')
@@ -279,8 +279,6 @@
                 spinner.style.display = 'inline-block';
 
                 const formData = new FormData(form);
-
-                formData.append('_method', 'PUT');
 
                 try {
                     const response = await fetch(
