@@ -163,7 +163,7 @@
 
             try {
                 const response = await fetch(
-                    '/api/client/errands/' + encodeURIComponent(errandId),
+                    '/api/client/errands/' + errandId,
                     {
                         method: 'GET',
                         headers: {
@@ -244,7 +244,7 @@
 
                 try {
                     const response = await fetch(
-                        '/api/client/errands/' + encodeURIComponent(errandId),
+                        '/api/client/errands/' + errandId,
                         {
                             method: 'POST',
                             headers: {
