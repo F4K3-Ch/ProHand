@@ -1339,7 +1339,6 @@ body {
     box-shadow: var(--shadow-input-focus);
 }
 
-/* Pagination Container & Buttons */
 .pagination-container {
     display: flex;
     align-items: center;
@@ -1352,6 +1351,7 @@ body {
 .pagination-container button {
     background-color: var(--color-bg);
     color: var(--color-text);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     padding: 5px 10px;
     font-size: 0.85rem;
@@ -1360,7 +1360,7 @@ body {
     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-.pagination-container button:hover:not(:disabled) {
+.pagination-container button:hover:not(:disabled):not(.active) {
     background-color: var(--color-btn-bg);
     border-color: var(--color-input-focus-border);
     color: var(--color-btn-text);
@@ -1370,6 +1370,7 @@ body {
     background-color: var(--color-span);
     border-color: var(--color-span);
     color: #ffffff;
+    cursor: default;
 }
 
 .pagination-container button:disabled {
