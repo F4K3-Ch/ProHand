@@ -53,36 +53,41 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const container = document.getElementById('flashMessageContainer');
-            const text = document.getElementById('flashMessageText');
+            const container = document.querySelector('.error-success-message');
+            const sessionErrorMessage = document.getElementById('sessionErrorMessage');
+            const sessionSuccessMessage = document.getElementById('sessionSuccessMessage');
+            const storageErrorMessage = document.getElementById('storageErrorMessage');
+            const storageSuccessMessage = document.getElementById('storageSuccessMessage');
 
-            if (!container || !text) {
+            if (!container) {
                 return;
             }
-
-            const sessionError = container.dataset.error;
-            const sessionSuccess = container.dataset.success;
 
             const storageError = sessionStorage.getItem('error_message');
             const storageSuccess = sessionStorage.getItem('success_message');
 
-            const errorMessage = sessionError || storageError;
-            const successMessage = sessionSuccess || storageSuccess;
-
-            if (successMessage) {
-                text.textContent = successMessage;
-                text.className = 'success';
-                container.style.display = 'block';
-            } else if (errorMessage) {
-                text.textContent = errorMessage;
-                text.className = 'error';
-                container.style.display = 'block';
+            if (storageError) {
+                storageErrorMessage.textContent = storageError;
+                storageErrorMessage.style.display = 'block';
             }
 
-            sessionStorage.removeItem('success_message');
-            sessionStorage.removeItem('error_message');
+            if (storageSuccess) {
+                storageSuccessMessage.textContent = storageSuccess;
+                storageSuccessMessage.style.display = 'block';
+            }
 
-            if (successMessage || errorMessage) {
+            sessionStorage.removeItem('error_message');
+            sessionStorage.removeItem('success_message');
+
+            const hasSessionMessage =
+                sessionErrorMessage || sessionSuccessMessage;
+
+            const hasStorageMessage =
+                storageError || storageSuccess;
+
+            if (hasSessionMessage || hasStorageMessage) {
+                container.style.display = 'block';
+
                 setTimeout(function () {
                     container.style.display = 'none';
                 }, 3000);

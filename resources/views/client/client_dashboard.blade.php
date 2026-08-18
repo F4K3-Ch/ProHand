@@ -35,8 +35,17 @@
         </div>
 
         <div class="dashboard">
-            <div class="error-success-message" id="flashMessageContainer" data-error="{{ session('error') }}" data-success="{{ session('success') }}" style="display:none;">
-                <p id="flashMessageText"></p>
+            <div class="error-success-message">
+                @if(session('error'))
+                    <p id="sessionErrorMessage" class="error">{{ session('error') }}</p>
+                @endif
+
+                @if(session('success'))
+                    <p id="sessionSuccessMessage" class="success">{{ session('success') }}</p>
+                @endif
+
+                <p id="storageErrorMessage" class="error" style="display:none;"></p>
+                <p id="storageSuccessMessage" class="success" style="display:none;"></p>
             </div>
 
             <div class="contents">
