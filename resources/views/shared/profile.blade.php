@@ -67,7 +67,7 @@
 
                     <div class="profile-box">
                         <label>Role</label>
-                        <span id="profile-role" class="role-input-field">Loading...</span>
+                        <span id="profile-role" class="role-field">Loading...</span>
                     </div>
 
                     <div class="profile-box">
