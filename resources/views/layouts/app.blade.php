@@ -52,47 +52,55 @@
     </script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const container = document.querySelector('.error-success-message');
-            const sessionErrorMessage = document.getElementById('sessionErrorMessage');
-            const sessionSuccessMessage = document.getElementById('sessionSuccessMessage');
-            const storageErrorMessage = document.getElementById('storageErrorMessage');
-            const storageSuccessMessage = document.getElementById('storageSuccessMessage');
+        // Session messages
+        const sessionSuccessMessage = document.getElementById('sessionSuccessMessage');
+        const sessionErrorMessage = document.getElementById('sessionErrorMessage');
 
-            if (!container) {
-                return;
-            }
+        if (sessionSuccessMessage || sessionErrorMessage) {
+            setTimeout(() => {
+                if (sessionSuccessMessage) {
+                    sessionSuccessMessage.textContent = '';
+                    sessionSuccessMessage.style.display = 'none';
+                }
 
-            const storageError = sessionStorage.getItem('error_message');
-            const storageSuccess = sessionStorage.getItem('success_message');
+                if (sessionErrorMessage) {
+                    sessionErrorMessage.textContent = '';
+                    sessionErrorMessage.style.display = 'none';
+                }
+            }, 3000);
+        }
 
-            if (storageError) {
-                storageErrorMessage.textContent = storageError;
-                storageErrorMessage.style.display = 'block';
-            }
+        // Flash message from sessionStorage
+        const flashMessage = sessionStorage.getItem('success_message');
+        const flashMessageText = document.getElementById('flashMessageText');
 
-            if (storageSuccess) {
-                storageSuccessMessage.textContent = storageSuccess;
-                storageSuccessMessage.style.display = 'block';
-            }
+        if (flashMessage && flashMessageText) {
+            flashMessageText.textContent = flashMessage;
+            flashMessageText.style.display = 'block';
 
-            sessionStorage.removeItem('error_message');
             sessionStorage.removeItem('success_message');
 
-            const hasSessionMessage =
-                sessionErrorMessage || sessionSuccessMessage;
+            setTimeout(() => {
+                flashMessageText.textContent = '';
+                flashMessageText.style.display = 'none';
+            }, 3000);
+        }
 
-            const hasStorageMessage =
-                storageError || storageSuccess;
+        // Error message from sessionStorage
+        const errorMessage = sessionStorage.getItem('error_message');
+        const errorMessageText = document.getElementById('errorMessageText');
 
-            if (hasSessionMessage || hasStorageMessage) {
-                container.style.display = 'block';
+        if (errorMessage && errorMessageText) {
+            errorMessageText.textContent = errorMessage;
+            errorMessageText.style.display = 'block';
 
-                setTimeout(function () {
-                    container.style.display = 'none';
-                }, 3000);
-            }
-        });
+            sessionStorage.removeItem('error_message');
+
+            setTimeout(() => {
+                errorMessageText.textContent = '';
+                errorMessageText.style.display = 'none';
+            }, 3000);
+        }
     </script>
 
     @stack('scripts')

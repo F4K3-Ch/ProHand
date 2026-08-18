@@ -36,16 +36,16 @@
 
         <div class="dashboard">
             <div class="error-success-message">
-                @if(session('error'))
-                    <p id="sessionErrorMessage" class="error">{{ session('error') }}</p>
-                @endif
-
                 @if(session('success'))
-                    <p id="sessionSuccessMessage" class="success">{{ session('success') }}</p>
+                    <p class="success" id="sessionSuccessMessage">{{ session('success') }}</p>
                 @endif
 
-                <p id="storageErrorMessage" class="error" style="display:none;"></p>
-                <p id="storageSuccessMessage" class="success" style="display:none;"></p>
+                @if(session('error'))
+                    <p class="error" id="sessionErrorMessage">{{ session('error') }}</p>
+                @endif
+
+                <p class="success" id="flashMessageText" style="display: none;"></p>
+                <p class="error" id="errorMessageText" style="display: none;"></p>
             </div>
 
             <div class="contents">
