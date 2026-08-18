@@ -70,19 +70,19 @@
             }, 3000);
         }
 
-        // Flash message from sessionStorage
-        const flashMessage = sessionStorage.getItem('success_message');
-        const flashMessageText = document.getElementById('flashMessageText');
+        // Success message from sessionStorage
+        const successMessage = sessionStorage.getItem('success_message');
+        const successMessageText = document.getElementById('successMessageText');
 
-        if (flashMessage && flashMessageText) {
-            flashMessageText.textContent = flashMessage;
-            flashMessageText.style.display = 'block';
+        if (successMessage && successMessageText) {
+            successMessageText.textContent = successMessage;
+            successMessageText.style.display = 'block';
 
             sessionStorage.removeItem('success_message');
 
             setTimeout(() => {
-                flashMessageText.textContent = '';
-                flashMessageText.style.display = 'none';
+                successMessageText.textContent = '';
+                successMessageText.style.display = 'none';
             }, 3000);
         }
 

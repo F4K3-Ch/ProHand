@@ -44,7 +44,7 @@
                     <p class="error" id="sessionErrorMessage">{{ session('error') }}</p>
                 @endif
 
-                <p class="success" id="flashMessageText" style="display: none;"></p>
+                <p class="success" id="successMessageText" style="display: none;"></p>
                 <p class="error" id="errorMessageText" style="display: none;"></p>
             </div>
 
