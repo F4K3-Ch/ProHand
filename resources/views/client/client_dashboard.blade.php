@@ -41,6 +41,7 @@
         <div class="dashboard">
             <div class="error-success-message">
                 <p class="success" id="flashMessageText" style="display: none;"></p>
+                <p class="error" id="errorMessageText" style="display: none;"></p>
             </div>
 
             <div class="contents">
@@ -222,6 +223,9 @@
             const errandRowTemplate = document.getElementById('errand-row-template');
             const paginationPageTemplate = document.getElementById('pagination-page-template');
 
+            const flashMessageText = document.getElementById('flashMessageText');
+            const errorMessageText = document.getElementById('errorMessageText');
+
             async function apiFetch(url) {
                 const response = await fetch(url, {
                     headers: {
@@ -235,6 +239,70 @@
                 }
 
                 return response.json();
+            }
+
+            function showSuccess(message) {
+                errorMessageText.textContent = '';
+                errorMessageText.style.display = 'none';
+
+                flashMessageText.textContent = message;
+                flashMessageText.style.display = 'block';
+
+                setTimeout(function() {
+                    flashMessageText.textContent = '';
+                    flashMessageText.style.display = 'none';
+                }, 3000);
+            }
+
+            function showError(message) {
+                flashMessageText.textContent = '';
+                flashMessageText.style.display = 'none';
+
+                errorMessageText.textContent = message;
+                errorMessageText.style.display = 'block';
+            }
+
+            async function deleteErrand(errandId) {
+                const confirmed = confirm(
+                    'Are you sure you want to delete this errand?'
+                );
+
+                if (!confirmed) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(
+                        '/api/client/errands/delete/' + errandId,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': 'Bearer ' + token,
+                                'Accept': 'application/json'
+                            }
+                        }
+                    );
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw data;
+                    }
+
+                    showSuccess(data.message);
+
+                    fetchMetrics();
+                    fetchErrands();
+
+                } catch (error) {
+                    console.error('Failed to delete errand:', error);
+
+                    showError(
+                        error.error ||
+                        error.message ||
+                        'Failed to delete errand.'
+                    );
+                }
             }
 
             async function fetchMetrics() {
@@ -382,6 +450,13 @@
 
                     viewButton.href =
                         '/client/view-errand/' + errand.id;
+
+                    const deleteButton =
+                        row.querySelector('.btn-delete');
+
+                    deleteButton.addEventListener('click', function() {
+                        deleteErrand(errand.id);
+                    });
 
                     tableBody.appendChild(row);
                 });

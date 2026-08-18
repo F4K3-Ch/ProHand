@@ -219,6 +219,60 @@
                 }
             }
 
+            async function deleteErrand() {
+                const confirmed = confirm(
+                    'Are you sure you want to delete this errand?'
+                );
+
+                if (!confirmed) return;
+
+                try {
+                    const response = await fetch(
+                        '/api/client/errands/delete/' + errandId,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': 'Bearer ' + token,
+                                'Accept': 'application/json'
+                            }
+                        }
+                    );
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw data;
+                    }
+
+                    sessionStorage.setItem(
+                        'success_message',
+                        data.message
+                    );
+
+                    window.location.href = "{{ route('client.dashboard') }}";
+
+                } catch (error) {
+                    console.error('Failed to delete errand:', error);
+
+                    const flashMessageText =
+                        document.getElementById('flashMessageText');
+
+                    if (flashMessageText) {
+                        flashMessageText.textContent =
+                            error.error ||
+                            error.message ||
+                            'Failed to delete errand.';
+
+                        flashMessageText.className = 'error';
+                        flashMessageText.style.display = 'block';
+
+                        setTimeout(function() {
+                            flashMessageText.style.display = 'none';
+                        }, 3000);
+                    }
+                }
+            }
+
             try {
                 const response = await fetch(
                     '/api/client/errands/' + errandId,
@@ -280,6 +334,10 @@
 
                 const editErrandButton = document.getElementById('edit-errand-btn');
                 const deleteErrandButton = document.getElementById('delete-errand-btn');
+
+                if (deleteErrandButton) {
+                    deleteErrandButton.addEventListener('click', deleteErrand);
+                }
 
                 if (errand.status === 'pending') {
                     if (editErrandButton) {
