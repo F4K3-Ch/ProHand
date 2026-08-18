@@ -1026,6 +1026,8 @@ body {
 
 .error-success-message {
     display: block;
+    margin-top: 5px;
+    margin-bottom: 5px;
 }
 
 .error-success-message p {
@@ -1338,6 +1340,7 @@ body {
     box-shadow: var(--shadow-input-focus);
 }
 
+/* Pagination Container & Buttons */
 .pagination-container {
     display: flex;
     align-items: center;
@@ -1538,69 +1541,64 @@ body {
 .admin-finished-errands-table th:nth-child(1),
 .admin-finished-errands-table td:nth-child(1),
 .admin-errands-table th:nth-child(1),
-.admin-errands-table td:nth-child(1) { width: 7%; }
+.admin-errands-table td:nth-child(1) { width: 10%; }
 
 .admin-finished-errands-table th:nth-child(2),
 .admin-finished-errands-table td:nth-child(2),
 .admin-errands-table th:nth-child(2),
-.admin-errands-table td:nth-child(2) { width: 10%; }
+.admin-errands-table td:nth-child(2) { width: 14%; }
 
 .admin-finished-errands-table th:nth-child(3),
 .admin-finished-errands-table td:nth-child(3),
 .admin-errands-table th:nth-child(3),
-.admin-errands-table td:nth-child(3) { width: 11%; }
+.admin-errands-table td:nth-child(3) { width: 12%; }
 
 .admin-finished-errands-table th:nth-child(4),
 .admin-finished-errands-table td:nth-child(4),
 .admin-errands-table th:nth-child(4),
-.admin-errands-table td:nth-child(4) { width: 11%; }
+.admin-errands-table td:nth-child(4) { width: 14%; }
 
 .admin-finished-errands-table th:nth-child(5),
 .admin-finished-errands-table td:nth-child(5),
 .admin-errands-table th:nth-child(5),
-.admin-errands-table td:nth-child(5) { width: 15%; }
+.admin-errands-table td:nth-child(5) { width: 14%; }
 
 .admin-finished-errands-table th:nth-child(6),
 .admin-finished-errands-table td:nth-child(6),
 .admin-errands-table th:nth-child(6),
-.admin-errands-table td:nth-child(6) { width: 15%; }
+.admin-errands-table td:nth-child(6) { width: 10%; }
 
 .admin-finished-errands-table th:nth-child(7),
 .admin-finished-errands-table td:nth-child(7),
 .admin-errands-table th:nth-child(7),
-.admin-errands-table td:nth-child(7) { width: 7%; }
+.admin-errands-table td:nth-child(7) { width: 14%; }
 
 .admin-finished-errands-table th:nth-child(8),
 .admin-finished-errands-table td:nth-child(8),
 .admin-errands-table th:nth-child(8),
-.admin-errands-table td:nth-child(8) { width: 12%; }
-
-.admin-finished-errands-table th:nth-child(9),
-.admin-finished-errands-table td:nth-child(9),
-.admin-errands-table th:nth-child(9),
-.admin-errands-table td:nth-child(9) { 
+.admin-errands-table td:nth-child(8) { 
     width: 12%; 
     text-align: center; 
 }
 
 /* Taskers Table*/
 .tasker-errands-table th:nth-child(1),
-.tasker-errands-table td:nth-child(1) { width: 7%; }
+.tasker-errands-table td:nth-child(1) { width: 10%; }
 
 .tasker-errands-table th:nth-child(2),
-.tasker-errands-table td:nth-child(2) { width: 10%; }
+.tasker-errands-table td:nth-child(2) { width: 14%; }
 
 .tasker-errands-table th:nth-child(3),
-.tasker-errands-table td:nth-child(3) { width: 15%; }
+.tasker-errands-table td:nth-child(3) { width: 12%; }
 
 .tasker-errands-table th:nth-child(4),
-.tasker-errands-table td:nth-child(4) { width: 17%; }
+.tasker-errands-table td:nth-child(4) { width: 14%; }
 
 .tasker-errands-table th:nth-child(5),
-.tasker-errands-table td:nth-child(5) { width: 17%; }
+.tasker-errands-table td:nth-child(5) { width: 14%; }
 
 .tasker-errands-table th:nth-child(6),
-.tasker-errands-table td:nth-child(6) { width: 8%; }
+.tasker-errands-table td:nth-child(6) { width: 10%; }
 
 .tasker-errands-table th:nth-child(7),
 .tasker-errands-table td:nth-child(7) { width: 14%;}
@@ -1905,19 +1903,19 @@ body {
 }
 
 /* Force override browser native user-agent styles on readonly inputs using attribute selectors */
-.profile-box span.role-input-field.role-admin {
+.profile-box span.role-field.role-admin {
     background-color: rgba(239, 68, 68, 0.15);
     color: #ef4444;
     border-color: rgba(239, 68, 68, 0.3);
 }
 
-.profile-box span.role-input-field.role-tasker {
+.profile-box span.role-field.role-tasker {
     background-color: rgba(59, 130, 246, 0.15);
     color: #3b82f6;
     border-color: rgba(59, 130, 246, 0.3);
 }
 
-.profile-box span.role-input-field.role-client {
+.profile-box span.role-field.role-client {
     background-color: rgba(22, 163, 74, 0.15);
     color: #16a34a;
     border-color: rgba(22, 163, 74, 0.3);
@@ -2356,7 +2354,7 @@ select[name="role"] option[value="client"] {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     text-align: left;
 }
 
@@ -2389,7 +2387,7 @@ select[name="role"] option[value="client"] {
     color: var(--color-text);
     border: 1px solid var(--color-input-border);
     width: 100%;
-    min-height: 70px;        /* Adjust height as needed */
+    min-height: 90px;        /* Adjust height as needed */
     padding: 6px 8px;
     border-radius: 6px;
     font-size: 0.9rem;
@@ -2569,7 +2567,8 @@ select[name="role"] option[value="client"] {
 }
 
 /* Input */
-.info-box input {
+.info-box input,
+.info-box span {
     background-color: var(--color-card-bg);
     color: var(--color-sec-text);
     border: 1px solid var(--color-input-border);
@@ -2584,7 +2583,25 @@ select[name="role"] option[value="client"] {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.view-main-error-succes-message
+
+.errand-details-container .info-box .text-area {
+    background-color: var(--color-card-bg);
+    color: var(--color-sec-text);
+    border: 1px solid var(--color-input-border);
+    width: 100%;
+    height: 100px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 400;
+    line-height: 1.5;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    box-sizing: border-box;
+}
+
 /* Groups Input */
 .group-info-box {
     display: flex;
@@ -2830,88 +2847,40 @@ select[name="role"] option[value="client"] {
 }
 
 /* Force override browser native user-agent styles on readonly inputs using attribute selectors */
-.info-box input.status-input-field.status-pending[readonly] {
+.info-box span.status-field.status-pending {
     background-color: rgba(250, 204, 21, 0.15);  
     color: #facc15;
     border-color: rgba(250, 204, 21, 0.3);
 }
 
-.info-box input.status-input-field.status-pending_payment[readonly] {
+.info-box span.status-field.status-pending_payment {
     background-color: rgba(59, 130, 246, 0.15);  
     color: #3b82f6;     
     border-color: rgba(59, 130, 246, 0.3);
 }
 
-.info-box input.status-input-field.status-in_process[readonly] {
+.info-box span.status-field.status-in_process {
     background-color: rgba(251, 146, 60, 0.15); 
     color: #fb923c;
     border-color: rgba(251, 146, 60, 0.3);
 }
 
-.info-box input.status-input-field.status-completed[readonly] {
+.info-box span.status-field.status-completed {
     background-color: rgba(22, 163, 74, 0.15); 
     color: #16a34a;     
     border-color: rgba(22, 163, 74, 0.3);
 }
 
-.info-box input.status-input-field.status-failed[readonly] {
+.info-box span.status-field.status-failed {
     background-color: rgba(220, 38, 38, 0.15); 
     color: #dc2626;         
     border-color: rgba(220, 38, 38, 0.3);
 }
 
-.attachment-item {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    
-    /* Matches your standard .info-box input style exactly */
-    background-color: var(--color-card-bg);
-    border: 1px solid var(--color-input-border);
-    border-radius: 6px;
-    padding: 6px 8px; /* Uses exact same padding footprint as your text fields */
-    width: 100%;
-    box-sizing: border-box;
-    gap: 10px;
-}
-
-/* 2. File Name Link Text Inside Box */
-.attachment-name {
-    color: var(--color-link);
-    font-size: 0.9rem; /* Matches your input font-size */
-    font-weight: 400; /* Blends naturally with standard input weight */
-    text-decoration: none;
-    
-    /* Inherits your bulletproof ellipsis logic for extra long filenames */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    flex: 1;
-    min-width: 0; 
-}
-
-.attachment-name i {
-    margin-right: 4px;
-    color: #3b82f6; /* Modern interactive blue accent for document visibility */
-}
-
-.attachment-name:hover {
-    text-decoration: underline; 
-}
-
-/* Normalizes the form element within flex row */
-.attachment-item form {
-    display: inline-flex;
-    align-items: center;
-    margin: 0;
-}
-
-/* 3. Streamlined Inline Download Button */
 .btn-download {
     background-color: #28a745;
-    color: #ffffff; /* White text contrast layer */
-    padding: 3px 10px; /* Snug styling that frames neatly inside the 6px 8px border bounds */
+    color: #fff;
+    padding: 3px 10px;
     font-size: 0.8rem;
     font-weight: 500;
     border-radius: 4px;
@@ -2920,8 +2889,8 @@ select[name="role"] option[value="client"] {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    transition: background-color 0.2s ease;
-    flex-shrink: 0; /* Guarantees button doesn't shrink on thin screens */
+    flex-shrink: 0;
+    text-decoration: none;
 }
 
 .btn-download:hover {
@@ -3259,14 +3228,15 @@ select[name="role"] option[value="client"] {
     font-weight: 600;
 }
 
-.edit-errand-input-box input {
+.edit-errand-input-box input,
+.edit-errand-input-box select {
     background-color: var(--color-card-bg);
     color: var(--color-text);
     border: 1px solid var(--color-input-border);
     width: 100%;
     padding: 6px 8px;
     border-radius: 6px;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     font-weight: 400;  
     transition: all 0.2s ease;
     outline: none;
@@ -3281,7 +3251,7 @@ select[name="role"] option[value="client"] {
     color: var(--color-text);
     border: 1px solid var(--color-input-border);
     width: 100%;
-    min-height: 60px;        /* Adjust height as needed */
+    min-height: 90px;        /* Adjust height as needed */
     padding: 6px 8px;
     border-radius: 6px;
     font-size: 0.9rem;
@@ -3342,7 +3312,8 @@ select[name="role"] option[value="client"] {
     background-color: #218838;
 }
 
-.edit-attachment-item {
+.edit-attachment-item,
+.attachment-item {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -3350,33 +3321,56 @@ select[name="role"] option[value="client"] {
     background-color: var(--color-card-bg);
     border: 1px solid var(--color-input-border);
     border-radius: 6px;
-    padding: 6px 8px; /* Perfectly matches your global .info-box input padding */
+    padding: 6px 8px;
     width: 100%;
     box-sizing: border-box;
     gap: 10px;
 }
 
-/* 2. File Name Link Text Controls */
-.edit-attachment-name {
+.edit-attachment-name,
+.attachment-name {
+    display: flex;
+    align-items: center;
     color: var(--color-link);
-    font-size: 0.9rem; /* Matches your input font-size */
-    font-weight: 400; /* Blends naturally with standard input weights */
+    font-size: 0.9rem;
+    font-weight: 400;
     text-decoration: none;
-    
-    /* BULLETPROOF TEXT OVERFLOW CAP: Appends '...' if filename is extra long */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     flex: 1;
     min-width: 0;
+    padding: 0;
+    border: none;
+    background: none;
 }
 
-.edit-attachment-name i {
+.edit-attachment-name i,
+.attachment-name i {
     margin-right: 4px;
-    color: #3b82f6; /* Modern interactive blue accent for icons */
+    color: #3b82f6;
+    flex-shrink: 0;
 }
 
-.edit-attachment-name:hover {
+.edit-attachment-name span,
+.attachment-name span {
+    display: inline;
+    width: auto;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.edit-attachment-name:hover,
+.attachment-name:hover {
     text-decoration: underline;
 }
 
@@ -3656,7 +3650,7 @@ select[name="role"] option[value="client"] {
     }
     
     .dashboard {
-        margin-top: 125px;
+        margin-top: 115px;
     }
 
     .total-cards-container {
@@ -3940,7 +3934,7 @@ select[name="role"] option[value="client"] {
     }
 
     .dashboard {
-        margin-top: 131px;
+        margin-top: 121px;
     }
 
     .total-cards-container {
