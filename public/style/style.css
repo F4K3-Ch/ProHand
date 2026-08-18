@@ -1433,7 +1433,7 @@ body {
 .client-errands-table td,
 .finished-errands-table td {
     color: var(--color-text);
-    padding: 7px 10px;
+    padding: 4.7px 10px;
 }
 
 .users-table td {
