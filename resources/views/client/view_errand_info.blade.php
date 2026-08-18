@@ -18,6 +18,7 @@
 
                 <div class="view-main-error-success-message">
                     <p class="success" id="flashMessageText" style="display: none;"></p>
+                    <p class="error" id="errorMessageText" style="display: none;"></p>
                 </div>
 
                 <div class="group-info-box">
@@ -98,19 +99,17 @@
                 <div class="group-info-box">
                     <div class="info-box">
                         <label>Attachment</label>
-
                         <div id="errand-attachment">
                             <div class="attachment-item" style="display: none;">
-                                <a href="#" target="_blank" class="attachment-name">
-                                    <i class="fa-solid fa-file-lines"></i>
+                                <a href="#" target="_blank" class="attachment-name" title="Preview File">
+                                    <i class="fa-solid fa-file"></i>
+                                    <span class="attachment-filename"></span>
                                 </a>
-
-                                <a href="#" download class="btn-download">
+                                <a href="#" class="btn-download">
                                     <i class="fa-solid fa-download"></i>
                                     Download
                                 </a>
                             </div>
-
                             <div class="no-attachments">
                                 <p class="no-attachment">None</p>
                             </div>
@@ -119,17 +118,19 @@
 
                     <div class="info-box" id="payment-proof-box" style="display: none;">
                         <label>Proof Of Payment</label>
-
                         <div id="errand-payment-proof">
                             <div class="attachment-item" style="display: none;">
-                                <a href="#" target="_blank" class="attachment-name">
-                                    <i class="fa-solid fa-file-lines"></i>
+                                <a href="#" target="_blank" class="attachment-name" title="Preview File">
+                                    <i class="fa-solid fa-file"></i>
+                                    <span class="attachment-filename"></span>
                                 </a>
-
-                                <a href="#" download class="btn-download">
+                                <a href="#" class="btn-download">
                                     <i class="fa-solid fa-download"></i>
                                     Download
                                 </a>
+                            </div>
+                            <div class="no-attachments">
+                                <p class="no-attachment">None</p>
                             </div>
                         </div>
                     </div>
@@ -140,7 +141,6 @@
                         <i class="fa-solid fa-pen"></i>
                         Edit Errand
                     </a>
-
                     <button type="button" id="delete-errand-btn" class="btn-delete" style="display: none;">
                         <i class="fa-solid fa-trash"></i>
                         Delete Errand
@@ -159,6 +159,19 @@
             const errandId = mainElement?.dataset.errandId;
 
             if (!token || !errandId) return;
+
+            const flashMessageText = document.getElementById('flashMessageText');
+            const errorMessageText = document.getElementById('errorMessageText');
+
+            // Display stored error message
+            const storedErrorMessage = sessionStorage.getItem('error_message');
+
+            if (storedErrorMessage && errorMessageText) {
+                errorMessageText.textContent = storedErrorMessage;
+                errorMessageText.className = 'error';
+                errorMessageText.style.display = 'block';
+                sessionStorage.removeItem('error_message');
+            }
 
             function formatDate(date) {
                 if (!date) return 'Not set';
@@ -195,22 +208,95 @@
                 }
             }
 
+            function showError(message) {
+                if (!errorMessageText) return;
+
+                errorMessageText.textContent = message;
+                errorMessageText.className = 'error';
+                errorMessageText.style.display = 'block';
+            }
+
             function setupAttachment(container, file) {
+                if (!container || !file) return;
+
                 const item = container.querySelector('.attachment-item');
                 const view = container.querySelector('.attachment-name');
+                const filename = container.querySelector('.attachment-filename');
                 const download = container.querySelector('.btn-download');
                 const none = container.querySelector('.no-attachments');
 
-                if (!item || !view || !download) return;
+                if (!item || !view || !filename || !download) return;
 
-                const url = "{{ asset('storage') }}/" + file.file_path;
+                const url = '/api/attachments/' + file.id + '/download';
 
-                view.href = url;
-                download.href = url;
+                filename.textContent = file.original_name;
 
-                view.appendChild(
-                    document.createTextNode(' ' + file.original_name)
-                );
+                view.onclick = async function(event) {
+                    event.preventDefault();
+
+                    try {
+                        const response = await fetch(url, {
+                            headers: {
+                                'Authorization': 'Bearer ' + token,
+                                'Accept': '*/*'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            const data = await response.json().catch(() => ({}));
+                            throw new Error(data.error || 'Failed to preview file.');
+                        }
+
+                        const blob = await response.blob();
+                        const blobUrl = URL.createObjectURL(blob);
+
+                        window.open(blobUrl, '_blank');
+
+                        setTimeout(function() {
+                            URL.revokeObjectURL(blobUrl);
+                        }, 60000);
+
+                    } catch (error) {
+                        console.error('Preview failed:', error);
+                        showError(error.message || 'Failed to preview file.');
+                    }
+                };
+
+                download.onclick = async function(event) {
+                    event.preventDefault();
+
+                    try {
+                        const response = await fetch(url, {
+                            headers: {
+                                'Authorization': 'Bearer ' + token,
+                                'Accept': '*/*'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            const data = await response.json().catch(() => ({}));
+                            throw new Error(data.error || 'Failed to download file.');
+                        }
+
+                        const blob = await response.blob();
+                        const blobUrl = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+
+                        link.href = blobUrl;
+                        link.download = file.original_name;
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+
+                        setTimeout(function() {
+                            URL.revokeObjectURL(blobUrl);
+                        }, 1000);
+
+                    } catch (error) {
+                        console.error('Download failed:', error);
+                        showError(error.message || 'Failed to download file.');
+                    }
+                };
 
                 item.style.display = 'flex';
 
@@ -228,7 +314,7 @@
 
                 try {
                     const response = await fetch(
-                        '/api/client/errands/delete/' + errandId,
+                        '/api/client/errands/' + errandId + '/delete',
                         {
                             method: 'POST',
                             headers: {
@@ -246,7 +332,7 @@
 
                     sessionStorage.setItem(
                         'success_message',
-                        data.message
+                        data.message || 'Errand deleted successfully.'
                     );
 
                     window.location.href = "{{ route('client.dashboard') }}";
@@ -254,22 +340,13 @@
                 } catch (error) {
                     console.error('Failed to delete errand:', error);
 
-                    const flashMessageText =
-                        document.getElementById('flashMessageText');
+                    const message =
+                        error.error ||
+                        error.message ||
+                        'Failed to delete errand.';
 
-                    if (flashMessageText) {
-                        flashMessageText.textContent =
-                            error.error ||
-                            error.message ||
-                            'Failed to delete errand.';
-
-                        flashMessageText.className = 'error';
-                        flashMessageText.style.display = 'block';
-
-                        setTimeout(function() {
-                            flashMessageText.style.display = 'none';
-                        }, 3000);
-                    }
+                    sessionStorage.setItem('error_message', message);
+                    showError(message);
                 }
             }
 
@@ -332,16 +409,24 @@
                     }
                 }
 
-                const editErrandButton = document.getElementById('edit-errand-btn');
-                const deleteErrandButton = document.getElementById('delete-errand-btn');
+                const editErrandButton =
+                    document.getElementById('edit-errand-btn');
+
+                const deleteErrandButton =
+                    document.getElementById('delete-errand-btn');
 
                 if (deleteErrandButton) {
-                    deleteErrandButton.addEventListener('click', deleteErrand);
+                    deleteErrandButton.addEventListener(
+                        'click',
+                        deleteErrand
+                    );
                 }
 
                 if (errand.status === 'pending') {
                     if (editErrandButton) {
-                        editErrandButton.href = '/client/edit-errand/' + errand.id;
+                        editErrandButton.href =
+                            '/client/edit-errand/' + errand.id;
+
                         editErrandButton.style.display = 'inline-flex';
                     }
 
@@ -372,11 +457,21 @@
                         errand.payment_proof
                     );
 
-                    paymentProofBox.style.display = 'block';
+                    if (paymentProofBox) {
+                        paymentProofBox.style.display = 'block';
+                    }
                 }
 
             } catch (error) {
                 console.error('Failed to load errand:', error);
+
+                const message =
+                    error.error ||
+                    error.message ||
+                    'Failed to load errand.';
+
+                sessionStorage.setItem('error_message', message);
+                showError(message);
 
                 setText('errand-id', 'Not available');
                 setText('errand-title', 'Unable to load errand.');
@@ -400,11 +495,14 @@
                     document.getElementById('payment-proof-box');
 
                 if (attachmentContainer) {
-                    const item = attachmentContainer.querySelector('.attachment-item');
-                    const none = attachmentContainer.querySelector('.no-attachments');
+                    const item =
+                        attachmentContainer.querySelector('.attachment-item');
+
+                    const none =
+                        attachmentContainer.querySelector('.no-attachments');
 
                     if (item) item.style.display = 'none';
-                    if (none) none.style.display = 'none';
+                    if (none) none.style.display = 'block';
                 }
 
                 if (paymentProofBox) {

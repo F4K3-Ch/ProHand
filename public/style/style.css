@@ -2584,7 +2584,7 @@ select[name="role"] option[value="client"] {
 
 .errand-details-container .info-box .text-area {
     background-color: var(--color-card-bg);
-    color: var(--color-text);
+    color: var(--color-sec-text);
     border: 1px solid var(--color-input-border);
     width: 100%;
     height: 100px;
@@ -2875,51 +2875,10 @@ select[name="role"] option[value="client"] {
     border-color: rgba(220, 38, 38, 0.3);
 }
 
-.attachment-item {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    
-    /* Matches your standard .info-box input style exactly */
-    background-color: var(--color-card-bg);
-    border: 1px solid var(--color-input-border);
-    border-radius: 6px;
-    padding: 6px 8px; /* Uses exact same padding footprint as your text fields */
-    width: 100%;
-    box-sizing: border-box;
-    gap: 10px;
-}
-
-/* 2. File Name Link Text Inside Box */
-.attachment-name {
-    color: var(--color-link);
-    font-size: 0.9rem; /* Matches your input font-size */
-    font-weight: 400; /* Blends naturally with standard input weight */
-    text-decoration: none;
-    
-    /* Inherits your bulletproof ellipsis logic for extra long filenames */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    flex: 1;
-    min-width: 0; 
-}
-
-.attachment-name i {
-    margin-right: 4px;
-    color: #3b82f6; /* Modern interactive blue accent for document visibility */
-}
-
-.attachment-name:hover {
-    text-decoration: underline; 
-}
-
-/* 3. Streamlined Inline Download Button */
 .btn-download {
     background-color: #28a745;
-    color: #ffffff; /* White text contrast layer */
-    padding: 3px 10px; /* Snug styling that frames neatly inside the 6px 8px border bounds */
+    color: #fff;
+    padding: 3px 10px;
     font-size: 0.8rem;
     font-weight: 500;
     border-radius: 4px;
@@ -2928,8 +2887,8 @@ select[name="role"] option[value="client"] {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    transition: background-color 0.2s ease;
-    flex-shrink: 0; /* Guarantees button doesn't shrink on thin screens */
+    flex-shrink: 0;
+    text-decoration: none;
 }
 
 .btn-download:hover {
@@ -3351,7 +3310,8 @@ select[name="role"] option[value="client"] {
     background-color: #218838;
 }
 
-.edit-attachment-item {
+.edit-attachment-item,
+.attachment-item {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -3359,33 +3319,56 @@ select[name="role"] option[value="client"] {
     background-color: var(--color-card-bg);
     border: 1px solid var(--color-input-border);
     border-radius: 6px;
-    padding: 6px 8px; /* Perfectly matches your global .info-box input padding */
+    padding: 6px 8px;
     width: 100%;
     box-sizing: border-box;
     gap: 10px;
 }
 
-/* 2. File Name Link Text Controls */
-.edit-attachment-name {
+.edit-attachment-name,
+.attachment-name {
+    display: flex;
+    align-items: center;
     color: var(--color-link);
-    font-size: 0.9rem; /* Matches your input font-size */
-    font-weight: 400; /* Blends naturally with standard input weights */
+    font-size: 0.9rem;
+    font-weight: 400;
     text-decoration: none;
-    
-    /* BULLETPROOF TEXT OVERFLOW CAP: Appends '...' if filename is extra long */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     flex: 1;
     min-width: 0;
+    padding: 0;
+    border: none;
+    background: none;
 }
 
-.edit-attachment-name i {
+.edit-attachment-name i,
+.attachment-name i {
     margin-right: 4px;
-    color: #3b82f6; /* Modern interactive blue accent for icons */
+    color: #3b82f6;
+    flex-shrink: 0;
 }
 
-.edit-attachment-name:hover {
+.edit-attachment-name span,
+.attachment-name span {
+    display: inline;
+    width: auto;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.edit-attachment-name:hover,
+.attachment-name:hover {
     text-decoration: underline;
 }
 

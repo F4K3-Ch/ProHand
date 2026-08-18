@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\AttachmentController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
@@ -10,6 +11,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/attachments/{id}/download', [AttachmentController::class, 'download']);
 
     Route::middleware('role:admin')
         ->prefix('admin')
@@ -31,6 +33,6 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/active-errands', [ClientController::class, 'activeErrands']);
             Route::get('/errands/{id}', [ClientController::class, 'showErrand']);
             Route::post('/errands/{id}', [ClientController::class, 'updateErrand']);
-            Route::post('/errands/delete/{id}', [ClientController::class, 'deleteErrand']);
+            Route::post('/errands/{id}/delete', [ClientController::class, 'deleteErrand']);
         });
 });
