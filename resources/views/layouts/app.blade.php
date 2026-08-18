@@ -53,7 +53,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-
             const container = document.getElementById('flashMessageContainer');
             const text = document.getElementById('flashMessageText');
 
@@ -61,8 +60,14 @@
                 return;
             }
 
-            const errorMessage = container.dataset.error;
-            const successMessage = container.dataset.success;
+            const sessionError = container.dataset.error;
+            const sessionSuccess = container.dataset.success;
+
+            const storageError = sessionStorage.getItem('error_message');
+            const storageSuccess = sessionStorage.getItem('success_message');
+
+            const errorMessage = sessionError || storageError;
+            const successMessage = sessionSuccess || storageSuccess;
 
             if (successMessage) {
                 text.textContent = successMessage;
@@ -74,7 +79,10 @@
                 container.style.display = 'block';
             }
 
-            if (errorMessage || successMessage) {
+            sessionStorage.removeItem('success_message');
+            sessionStorage.removeItem('error_message');
+
+            if (successMessage || errorMessage) {
                 setTimeout(function () {
                     container.style.display = 'none';
                 }, 3000);

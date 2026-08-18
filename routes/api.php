@@ -16,4 +16,9 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
         '/client/dashboard/active-errands',
         [ClientController::class, 'activeErrands']
     );
+
+    Route::post(
+        '/client/create',
+        [ClientController::class, 'createErrand']
+    );
 });

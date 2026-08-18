@@ -12,7 +12,11 @@
         <ul class="sidebar-links">
             <li><a href="{{ route('client.dashboard') }}" class="{{ request()->routeIs('client.dashboard') ? 'active' : '' }}"><i class="fa-solid fa-house"></i> Dashboard</a></li>
             <li><a href="#"><i class="fa-solid fa-clipboard-check"></i> Finished Errands</a></li>
-            <li><a href="#"><i class="fa-solid fa-circle-plus"></i> Create Errand</a></li>
+            <li>
+                <a href="{{ route('client.create.errand') }}" class="{{ request()->routeIs('client.create.errand') ? 'active' : '' }}">
+                    <i class="fa-solid fa-circle-plus"></i> Create Errand
+                </a>
+            </li>
             <li>
                 <a href="{{ route('profile') }}" class="{{ request()->routeIs('profile') ? 'active' : '' }}">
                     <i class="fa-solid fa-circle-user"></i> My Profile

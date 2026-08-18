@@ -1809,7 +1809,6 @@ body {
 }
 
 .view-main-error-success-message {
-    min-height: 15px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1819,8 +1818,7 @@ body {
 }
 
 .view-main-error-success-message p {
-    margin: 0;
-    font-size: 0.9rem;
+    font-size: 1rem;
     word-wrap: break-word;
     padding: 8px;
     border-radius: 6px;
@@ -2587,7 +2585,7 @@ select[name="role"] option[value="client"] {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
+.view-main-error-succes-message
 /* Groups Input */
 .group-info-box {
     display: flex;

@@ -215,7 +215,10 @@
                 try{
                     const response=await fetch('/api/client/dashboard/active-metrics',{
                         method:'GET',
-                        headers:{'Accept':'application/json','X-API-Key':apiKey},
+                        headers:{
+                            'Accept':'application/json',
+                            'X-API-Key':apiKey
+                        },
                         credentials:'same-origin'
                     });
                     const result=await response.json();

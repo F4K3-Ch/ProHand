@@ -33,6 +33,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/client/dashboard', function () {
             return view('client.client_dashboard');
         })->name('client.dashboard');
+
+        Route::get('/client/create-errand', function () {
+            return view('client.create_errand');
+        })->name('client.create.errand');
     });
 
     // Tasker dashboard
