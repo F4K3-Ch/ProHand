@@ -25,7 +25,7 @@
                 <div class="header-right">
                     <div class="search-wrapper">
                         <div class="search-bar">
-                            <input type="text" id="errandSearch" placeholder="Search errands..." autocomplete="off">
+                            <input type="text" id="errandSearch" placeholder="Search errands...">
                             <button type="button" class="btn-clear" id="clearSearchButton">Clear</button>
                         </div>
                         <button type="button" class="btn-search" id="searchButton">Search</button>
@@ -141,7 +141,11 @@
                         </table>
                     </div>
 
-                    <div id="pagination-container" class="pagination-container"></div>
+                    <div id="pagination-container" class="pagination-container">
+                        <button type="button" id="pagination-previous">Previous</button>
+                        <div id="pagination-pages"></div>
+                        <button type="button" id="pagination-next">Next</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -205,6 +209,7 @@
 
             loadMetrics();
             loadErrands();
+            updateClearButton();
 
             async function loadMetrics(){
                 try{
@@ -262,7 +267,6 @@
                         headers:{'Accept':'application/json','X-API-Key':apiKey},
                         credentials:'same-origin'
                     });
-
                     const result=await response.json();
 
                     if(!response.ok||!result.success){
@@ -309,57 +313,55 @@
                 });
             }
 
-            function displayPagination(pagination) {
-                paginationContainer.innerHTML = '';
+            function displayPagination(pagination){
+                const previousButton=document.getElementById('pagination-previous');
+                const nextButton=document.getElementById('pagination-next');
+                const pagesContainer=document.getElementById('pagination-pages');
 
-                if (!pagination || pagination.last_page <= 1) {
+                pagesContainer.innerHTML='';
+
+                if(!pagination||pagination.last_page<=1){
+                    paginationContainer.style.display='none';
                     return;
                 }
 
-                createPaginationButton(
-                    'Previous',
-                    pagination.current_page - 1,
-                    false,
-                    pagination.current_page === 1
-                );
+                paginationContainer.style.display='flex';
+                previousButton.disabled=pagination.current_page===1;
+                nextButton.disabled=pagination.current_page===pagination.last_page;
 
-                for (let page = 1; page <= pagination.last_page; page++) {
-                    createPaginationButton(
-                        page,
-                        page,
-                        page === pagination.current_page,
-                        false
-                    );
+                for(let page=1;page<=pagination.last_page;page++){
+                    createPaginationButton(page,page===pagination.current_page);
                 }
 
-                createPaginationButton(
-                    'Next',
-                    pagination.current_page + 1,
-                    false,
-                    pagination.current_page === pagination.last_page
-                );
+                previousButton.onclick=function(){
+                    if(pagination.current_page>1){
+                        loadErrands(pagination.current_page-1);
+                    }
+                };
+
+                nextButton.onclick=function(){
+                    if(pagination.current_page<pagination.last_page){
+                        loadErrands(pagination.current_page+1);
+                    }
+                };
             }
 
-            function createPaginationButton(text, page, active = false, disabled = false) {
-                const template = document.getElementById('pagination-button-template');
-                const button = template.content.cloneNode(true);
-                const element = button.querySelector('.pagination-button');
+            function createPaginationButton(page,active){
+                const template=document.getElementById('pagination-button-template');
+                const button=template.content.cloneNode(true);
+                const element=button.querySelector('.pagination-button');
 
-                element.textContent = text;
+                element.textContent=page;
 
-                if (active) {
+                if(active){
                     element.classList.add('active');
-                }
-
-                if (disabled) {
-                    element.disabled = true;
-                } else {
-                    element.addEventListener('click', function () {
+                }else{
+                    element.addEventListener('click',function(){
                         loadErrands(page);
                     });
                 }
 
-                paginationContainer.appendChild(button);
+                document.getElementById('pagination-pages').appendChild(button);
             }
 
             function showLoading(){
@@ -423,6 +425,10 @@
                 });
             }
 
+            function updateClearButton(){
+                clearSearchButton.style.display=searchInput.value.trim()!==''?'inline-block':'none';
+            }
+
             searchButton.addEventListener('click',function(){
                 currentSearch=searchInput.value.trim();
                 currentPage=1;
@@ -437,10 +443,15 @@
                 }
             });
 
+            searchInput.addEventListener('input',function(){
+                updateClearButton();
+            });
+
             clearSearchButton.addEventListener('click',function(){
                 searchInput.value='';
                 currentSearch='';
                 currentPage=1;
+                updateClearButton();
                 loadErrands();
             });
 
