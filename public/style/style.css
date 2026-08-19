@@ -4258,11 +4258,6 @@ select[name="role"] option[value="client"] {
         flex: none !important; /* Breaks rigid horizontal layout weight thresholds */
         min-width: 0;
     }
-    
-    .profile-photo-section .profile-preview-photo {
-        width: 130px; /* Scales down profile image layout footprint gracefully for phone panels */
-        height: 130px;
-    }
 
     .info-bot-btn {
         display: flex;

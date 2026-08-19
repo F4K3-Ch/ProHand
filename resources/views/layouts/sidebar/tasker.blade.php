@@ -10,7 +10,11 @@
         </div>
 
         <ul class="sidebar-links">
-            <li><a href="{{ route('tasker.dashboard') }}" class="{{ request()->routeIs('tasker.dashboard') ? 'active' : '' }}"><i class="fa-solid fa-house"></i> Dashboard</a></li>
+            <li>
+                <a href="{{ route('tasker.dashboard') }}" class="{{ request()->routeIs('tasker.dashboard') ? 'active' : '' }}">
+                    <i class="fa-solid fa-house"></i> Dashboard
+                </a>
+            </li>
             <li><a href="#"><i class="fa-solid fa-clipboard-list"></i> Your Task</a></li>
             <li><a href="#"><i class="fa-solid fa-clipboard-check"></i> Finished Errands</a></li>
             <li>
