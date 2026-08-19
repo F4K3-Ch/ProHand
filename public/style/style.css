@@ -1997,6 +1997,7 @@ body {
     border-radius: 6px;
     transition: transform 0.2s ease;
     object-fit: cover;           /* Crop and maintain aspect ratio */
+    cursor: pointer;
 }
 
 .profile-photo-section img:hover {

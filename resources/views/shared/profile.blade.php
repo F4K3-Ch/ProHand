@@ -132,34 +132,24 @@
             const modalImg = document.getElementById('modalProfileImage');
             const closePhotoBtn = document.getElementById('closePhotoModal');
 
-            if (profilePhoto) {
-                profilePhoto.style.cursor = 'pointer';
-            }
-
             profilePhoto.addEventListener('click', function () {
                 if (profilePhoto.src) {
                     modalImg.src = profilePhoto.src;
                     photoModal.style.display = 'flex';
                     setTimeout(() => photoModal.classList.add('active'), 10);
-                    document.body.style.overflow = 'hidden'; 
+                    document.body.style.overflow = 'hidden';
                 }
             });
 
             function closeModalFunc() {
                 photoModal.classList.remove('active');
-                document.body.style.overflow = '';
+                document.body.style.overflow = ''; 
                 setTimeout(() => {
                     photoModal.style.display = 'none';
                 }, 300); 
             }
 
             closePhotoBtn.addEventListener('click', closeModalFunc);
-
-            photoModal.addEventListener('click', function (e) {
-                if (e.target === photoModal) {
-                    closeModalFunc();
-                }
-            });
 
             document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape' && photoModal.style.display === 'flex') {
