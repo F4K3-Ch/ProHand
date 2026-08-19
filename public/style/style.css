@@ -1984,10 +1984,26 @@ body {
 /* Profile Photo Section */
 .profile-photo-section {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
     margin-bottom: 10px;
+}
+
+.photo-wrapper {
+    border: 3px solid var(--color-border);
+    position: relative;
+    width: 150px;
+    height: 150px;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background-color: var(--color-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
 }
 
 .profile-photo-section .profile-preview-photo {
@@ -2196,34 +2212,6 @@ body {
     font-weight: 600;
     margin-bottom: 3px;
     text-align: center;
-}
-
-.profile-photo-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.photo-wrapper {
-    border: 3px solid var(--color-border);
-    position: relative;
-    width: 150px;
-    height: 150px;
-    border-radius: 6px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    background-color: var(--color-bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.profile-avatar {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
 }
 
 .photo-action-buttons {
