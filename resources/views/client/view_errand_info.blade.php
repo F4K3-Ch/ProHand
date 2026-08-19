@@ -232,6 +232,19 @@
                     paymentItem.querySelector('.btn-download').href = errand.payment_proof.url;
                 }
 
+                // Handle Edit and Delete buttons visibility based on status
+                const editBtn = document.getElementById('edit-errand-btn');
+                const deleteBtn = document.getElementById('delete-errand-btn');
+
+                if (errand.status && errand.status.toLowerCase() === 'pending') {
+                    editBtn.href = '/client/edit-errand/' + errand.id;
+                    editBtn.style.display = 'inline-flex';
+                    deleteBtn.style.display = 'inline-flex';
+                } else {
+                    editBtn.style.display = 'none';
+                    deleteBtn.style.display = 'none';
+                }
+
             } catch (error) {
                 console.error('Errand details error:', error);
                 errorMessage.textContent = error.message || 'Unable to load errand information.';
