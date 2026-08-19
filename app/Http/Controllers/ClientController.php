@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Errand;
 use App\Models\ErrandAttachment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class ClientController extends Controller
 {
@@ -82,9 +84,26 @@ class ClientController extends Controller
             ->latest()
             ->paginate($perPage);
 
+        $formattedErrands = collect($errands->items())->map(function ($errand) {
+            return [
+                'id' => $errand->id,
+                'title' => $errand->title,
+                'category' => Str::title(str_replace('_', ' ', $errand->category)),
+                'created_at' => $errand->created_at 
+                    ? Carbon::parse($errand->created_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                    : '—',
+                'deadline' => $errand->deadline 
+                    ? Carbon::parse($errand->deadline)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                    : '—',
+                'fee' => '₱' . number_format($errand->fee, 2),
+                'status' => Str::title(str_replace('_', ' ', $errand->status)),
+                'status_class' => 'status-badge status-' . $errand->status,
+            ];
+        });
+
         return response()->json([
             'success' => true,
-            'errands' => $errands->items(),
+            'errands' => $formattedErrands,
             'pagination' => [
                 'current_page' => $errands->currentPage(),
                 'last_page' => $errands->lastPage(),

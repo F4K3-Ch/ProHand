@@ -204,17 +204,17 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded',function(){
-            const apiKey="{{ config('services.my_api.api_key') }}";
-            const metricSpinner=document.getElementById('metric-spinner');
-            const tableBody=document.getElementById('errands-table-body');
-            const paginationContainer=document.getElementById('pagination-container');
-            const searchInput=document.getElementById('errandSearch');
-            const searchButton=document.getElementById('searchButton');
-            const clearSearchButton=document.getElementById('clearSearchButton');
-            const perPageSelect=document.getElementById('perPageSelect');
-            let currentPage=1;
-            let currentSearch='';
+        document.addEventListener('DOMContentLoaded', function(){
+            const apiKey = "{{ config('services.my_api.api_key') }}";
+            const metricSpinner = document.getElementById('metric-spinner');
+            const tableBody = document.getElementById('errands-table-body');
+            const paginationContainer = document.getElementById('pagination-container');
+            const searchInput = document.getElementById('errandSearch');
+            const searchButton = document.getElementById('searchButton');
+            const clearSearchButton = document.getElementById('clearSearchButton');
+            const perPageSelect = document.getElementById('perPageSelect');
+            let currentPage = 1;
+            let currentSearch = '';
 
             loadMetrics();
             loadErrands();
@@ -222,153 +222,156 @@
 
             async function loadMetrics(){
                 try{
-                    const response=await fetch('/api/client/dashboard/active-metrics',{
-                        method:'GET',
-                        headers:{
-                            'Accept':'application/json',
-                            'X-API-Key':apiKey
+                    const response = await fetch('/api/client/dashboard/active-metrics',{
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-API-Key': apiKey
                         },
-                        credentials:'same-origin'
+                        credentials: 'same-origin'
                     });
-                    const result=await response.json();
+                    const result = await response.json();
 
-                    if(!response.ok||!result.success){
-                        throw new Error(result.message||'Failed to load dashboard data.');
+                    if(!response.ok || !result.success){
+                        throw new Error(result.message || 'Failed to load dashboard data.');
                     }
 
-                    const metrics=result.metrics;
+                    const metrics = result.metrics;
 
-                    document.getElementById('metric-pending').textContent=metrics.pending;
-                    document.getElementById('metric-pending-payment').textContent=metrics.pending_payment;
-                    document.getElementById('metric-in-process').textContent=metrics.in_process;
-                    document.getElementById('metric-pending-completion').textContent=metrics.pending_completion;
-                    document.getElementById('metric-pending-failure').textContent=metrics.pending_failure;
-                    document.getElementById('metric-dispute').textContent=metrics.dispute;
-                    document.getElementById('metric-total').textContent=metrics.total;
+                    document.getElementById('metric-pending').textContent = metrics.pending;
+                    document.getElementById('metric-pending-payment').textContent = metrics.pending_payment;
+                    document.getElementById('metric-in-process').textContent = metrics.in_process;
+                    document.getElementById('metric-pending-completion').textContent = metrics.pending_completion;
+                    document.getElementById('metric-pending-failure').textContent = metrics.pending_failure;
+                    document.getElementById('metric-dispute').textContent = metrics.dispute;
+                    document.getElementById('metric-total').textContent = metrics.total;
 
-                    showMetricCard('metric-card-pending',metrics.pending);
-                    showMetricCard('metric-card-pending-payment',metrics.pending_payment);
-                    showMetricCard('metric-card-in-process',metrics.in_process);
-                    showMetricCard('metric-card-pending-completion',metrics.pending_completion);
-                    showMetricCard('metric-card-pending-failure',metrics.pending_failure);
-                    showMetricCard('metric-card-dispute',metrics.dispute);
+                    showMetricCard('metric-card-pending', metrics.pending);
+                    showMetricCard('metric-card-pending-payment', metrics.pending_payment);
+                    showMetricCard('metric-card-in-process', metrics.in_process);
+                    showMetricCard('metric-card-pending-completion', metrics.pending_completion);
+                    showMetricCard('metric-card-pending-failure', metrics.pending_failure);
+                    showMetricCard('metric-card-dispute', metrics.dispute);
                 }catch(error){
-                    console.error('Metrics error:',error);
-                    document.getElementById('metric-total').textContent='—';
+                    console.error('Metrics error:', error);
+                    document.getElementById('metric-total').textContent = '—';
                 }finally{
-                    if(metricSpinner)metricSpinner.style.display='none';
+                    if(metricSpinner) metricSpinner.style.display = 'none';
                 }
             }
 
             async function loadErrands(page){
-                if(page)currentPage=page;
+                if(page) currentPage = page;
 
                 showLoading();
 
-                const params=new URLSearchParams();
-                params.append('page',currentPage);
-                params.append('per_page',perPageSelect.value);
+                const params = new URLSearchParams();
+                params.append('page', currentPage);
+                params.append('per_page', perPageSelect.value);
 
-                if(currentSearch!==''){
-                    params.append('search',currentSearch);
+                if(currentSearch !== ''){
+                    params.append('search', currentSearch);
                 }
 
                 try{
-                    const response=await fetch('/api/client/dashboard/active-errands?'+params.toString(),{
-                        method:'GET',
-                        headers:{'Accept':'application/json','X-API-Key':apiKey},
-                        credentials:'same-origin'
+                    const response = await fetch('/api/client/dashboard/active-errands?' + params.toString(),{
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-API-Key': apiKey
+                        },
+                        credentials: 'same-origin'
                     });
-                    const result=await response.json();
+                    const result = await response.json();
 
-                    if(!response.ok||!result.success){
-                        throw new Error(result.message||'Failed to load errands.');
+                    if(!response.ok || !result.success){
+                        throw new Error(result.message || 'Failed to load errands.');
                     }
 
                     displayErrands(result.errands);
                     displayPagination(result.pagination);
                 }catch(error){
-                    console.error('Errands error:',error);
-                    showError(error.message||'Unable to load errands.');
+                    console.error('Errands error:', error);
+                    showError(error.message || 'Unable to load errands.');
                 }
             }
 
             function displayErrands(errands){
-                tableBody.innerHTML='';
+                tableBody.innerHTML = '';
 
-                if(!errands||errands.length===0){
-                    const template=document.getElementById('errand-empty-template');
+                if(!errands || errands.length === 0){
+                    const template = document.getElementById('errand-empty-template');
                     tableBody.appendChild(template.content.cloneNode(true));
-                    paginationContainer.innerHTML='';
+                    paginationContainer.innerHTML = '';
                     return;
                 }
 
-                const template=document.getElementById('errand-row-template');
+                const template = document.getElementById('errand-row-template');
 
                 errands.forEach(function(errand){
-                    const row=template.content.cloneNode(true);
+                    const row = template.content.cloneNode(true);
 
-                    row.querySelector('.errand-id').textContent=errand.id;
-                    row.querySelector('.errand-title').textContent=errand.title;
-                    row.querySelector('.errand-category').textContent=formatCategory(errand.category);
-                    row.querySelector('.errand-created-at').textContent=formatDate(errand.created_at);
-                    row.querySelector('.errand-deadline').textContent=formatDate(errand.deadline);
-                    row.querySelector('.errand-fee').textContent='₱'+Number(errand.fee).toFixed(2);
+                    row.querySelector('.errand-id').textContent = errand.id;
+                    row.querySelector('.errand-title').textContent = errand.title;
+                    row.querySelector('.errand-category').textContent = errand.category;
+                    row.querySelector('.errand-created-at').textContent = errand.created_at;
+                    row.querySelector('.errand-deadline').textContent = errand.deadline;
+                    row.querySelector('.errand-fee').textContent = errand.fee;
 
-                    const status=row.querySelector('.errand-status');
-                    status.textContent=formatStatus(errand.status);
-                    status.classList.add('status-badge','status-'+errand.status);
+                    const status = row.querySelector('.errand-status');
+                    status.textContent = errand.status;
+                    status.className = errand.status_class;
 
-                    row.querySelector('.errand-view-link').href='/client/view-errand/'+encodeURIComponent(errand.id);
+                    row.querySelector('.errand-view-link').href = '/client/view-errand/' + encodeURIComponent(errand.id);
 
                     tableBody.appendChild(row);
                 });
             }
 
             function displayPagination(pagination){
-                const previousButton=document.getElementById('pagination-previous');
-                const nextButton=document.getElementById('pagination-next');
-                const pagesContainer=document.getElementById('pagination-pages');
+                const previousButton = document.getElementById('pagination-previous');
+                const nextButton = document.getElementById('pagination-next');
+                const pagesContainer = document.getElementById('pagination-pages');
 
-                pagesContainer.innerHTML='';
+                pagesContainer.innerHTML = '';
 
-                if(!pagination||pagination.last_page<=1){
-                    paginationContainer.style.display='none';
+                if(!pagination || pagination.last_page <= 1){
+                    paginationContainer.style.display = 'none';
                     return;
                 }
 
-                paginationContainer.style.display='flex';
-                previousButton.disabled=pagination.current_page===1;
-                nextButton.disabled=pagination.current_page===pagination.last_page;
+                paginationContainer.style.display = 'flex';
+                previousButton.disabled = pagination.current_page === 1;
+                nextButton.disabled = pagination.current_page === pagination.last_page;
 
-                for(let page=1;page<=pagination.last_page;page++){
-                    createPaginationButton(page,page===pagination.current_page);
+                for(let page = 1; page <= pagination.last_page; page++){
+                    createPaginationButton(page, page === pagination.current_page);
                 }
 
-                previousButton.onclick=function(){
-                    if(pagination.current_page>1){
-                        loadErrands(pagination.current_page-1);
+                previousButton.onclick = function(){
+                    if(pagination.current_page > 1){
+                        loadErrands(pagination.current_page - 1);
                     }
                 };
 
-                nextButton.onclick=function(){
-                    if(pagination.current_page<pagination.last_page){
-                        loadErrands(pagination.current_page+1);
+                nextButton.onclick = function(){
+                    if(pagination.current_page < pagination.last_page){
+                        loadErrands(pagination.current_page + 1);
                     }
                 };
             }
 
-            function createPaginationButton(page,active){
-                const template=document.getElementById('pagination-button-template');
-                const button=template.content.cloneNode(true);
-                const element=button.querySelector('.pagination-button');
+            function createPaginationButton(page, active){
+                const template = document.getElementById('pagination-button-template');
+                const button = template.content.cloneNode(true);
+                const element = button.querySelector('.pagination-button');
 
-                element.textContent=page;
+                element.textContent = page;
 
                 if(active){
                     element.classList.add('active');
                 }else{
-                    element.addEventListener('click',function(){
+                    element.addEventListener('click', function(){
                         loadErrands(page);
                     });
                 }
@@ -377,98 +380,62 @@
             }
 
             function showLoading(){
-                const template=document.getElementById('errand-loading-template');
-                tableBody.innerHTML='';
+                const template = document.getElementById('errand-loading-template');
+                tableBody.innerHTML = '';
                 tableBody.appendChild(template.content.cloneNode(true));
             }
 
             function showError(message){
-                const template=document.getElementById('errand-error-template');
-                const row=template.content.cloneNode(true);
+                const template = document.getElementById('errand-error-template');
+                const row = template.content.cloneNode(true);
 
-                row.querySelector('#errand-error-text').textContent=message;
+                row.querySelector('#errand-error-text').textContent = message;
 
-                tableBody.innerHTML='';
+                tableBody.innerHTML = '';
                 tableBody.appendChild(row);
-                paginationContainer.innerHTML='';
+                paginationContainer.innerHTML = '';
             }
 
-            function showMetricCard(cardId,value){
-                const card=document.getElementById(cardId);
+            function showMetricCard(cardId, value){
+                const card = document.getElementById(cardId);
 
-                if(card&&value>0){
-                    card.style.display='flex';
+                if(card && value > 0){
+                    card.style.display = 'flex';
                 }
-            }
-
-            function formatStatus(status){
-                return status
-                    .replaceAll('_',' ')
-                    .replace(/\b\w/g,function(letter){
-                        return letter.toUpperCase();
-                    });
-            }
-
-            function formatCategory(category){
-                return category
-                    .replaceAll('_',' ')
-                    .replace(/\b\w/g,function(letter){
-                        return letter.toUpperCase();
-                    });
-            }
-
-            function formatDate(date){
-                if(!date)return'—';
-
-                const parsedDate=new Date(date);
-
-                if(isNaN(parsedDate.getTime())){
-                    return date;
-                }
-
-                return parsedDate.toLocaleString('en-PH',{
-                    timeZone:'Asia/Manila',
-                    year:'numeric',
-                    month:'short',
-                    day:'2-digit',
-                    hour:'2-digit',
-                    minute:'2-digit',
-                    hour12:true
-                });
             }
 
             function updateClearButton(){
-                clearSearchButton.style.display=searchInput.value.trim()!==''?'inline-block':'none';
+                clearSearchButton.style.display = searchInput.value.trim() !== '' ? 'inline-block' : 'none';
             }
 
-            searchButton.addEventListener('click',function(){
-                currentSearch=searchInput.value.trim();
-                currentPage=1;
+            searchButton.addEventListener('click', function(){
+                currentSearch = searchInput.value.trim();
+                currentPage = 1;
                 loadErrands();
             });
 
-            searchInput.addEventListener('keydown',function(event){
-                if(event.key==='Enter'){
-                    currentSearch=searchInput.value.trim();
-                    currentPage=1;
+            searchInput.addEventListener('keydown', function(event){
+                if(event.key === 'Enter'){
+                    currentSearch = searchInput.value.trim();
+                    currentPage = 1;
                     loadErrands();
                 }
             });
 
-            searchInput.addEventListener('input',function(){
+            searchInput.addEventListener('input', function(){
                 updateClearButton();
             });
 
-            clearSearchButton.addEventListener('click',function(){
-                searchInput.value='';
-                currentSearch='';
-                currentPage=1;
+            clearSearchButton.addEventListener('click', function(){
+                searchInput.value = '';
+                currentSearch = '';
+                currentPage = 1;
                 updateClearButton();
                 loadErrands();
             });
 
-            perPageSelect.addEventListener('change',function(){
-                currentPage=1;
+            perPageSelect.addEventListener('change', function(){
+                currentPage = 1;
                 loadErrands();
             });
         });
