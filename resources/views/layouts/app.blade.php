@@ -63,32 +63,6 @@
     </script>
 
     <script>
-        function showDeleteConfirmation(messageText) {
-            return new Promise(function(resolve) {
-                var modal = document.getElementById('deleteModal');
-                var messageEl = document.getElementById('deleteModalMessage');
-                var confirmBtn = document.getElementById('confirmDeleteBtn');
-                var cancelBtn = document.getElementById('cancelDeleteBtn');
-
-                messageEl.textContent = messageText;
-                modal.style.display = 'flex';
-
-                var cleanup = function(result) {
-                    modal.style.display = 'none';
-                    confirmBtn.replaceWith(confirmBtn.cloneNode(true));
-                    cancelBtn.replaceWith(cancelBtn.cloneNode(true));
-                    resolve(result);
-                };
-
-                document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-                    cleanup(true);
-                });
-                document.getElementById('cancelDeleteBtn').addEventListener('click', function() {
-                    cleanup(false);
-                });
-            });
-        }
-
         // Session messages
         const sessionSuccessMessage = document.getElementById('sessionSuccessMessage');
         const sessionErrorMessage = document.getElementById('sessionErrorMessage');
@@ -137,6 +111,32 @@
                 errorMessageText.textContent = '';
                 errorMessageText.style.display = 'none';
             }, 3000);
+        }
+
+        function showDeleteConfirmation(messageText) {
+            return new Promise(function(resolve) {
+                var modal = document.getElementById('deleteModal');
+                var messageEl = document.getElementById('deleteModalMessage');
+                var confirmBtn = document.getElementById('confirmDeleteBtn');
+                var cancelBtn = document.getElementById('cancelDeleteBtn');
+
+                messageEl.textContent = messageText;
+                modal.style.display = 'flex';
+
+                var cleanup = function(result) {
+                    modal.style.display = 'none';
+                    confirmBtn.replaceWith(confirmBtn.cloneNode(true));
+                    cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+                    resolve(result);
+                };
+
+                document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+                    cleanup(true);
+                });
+                document.getElementById('cancelDeleteBtn').addEventListener('click', function() {
+                    cleanup(false);
+                });
+            });
         }
     </script>
 
