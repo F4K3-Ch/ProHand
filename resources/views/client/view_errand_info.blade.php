@@ -248,6 +248,42 @@
                     editBtn.href = '/client/edit-errand/' + errand.id;
                     editBtn.style.display = 'inline-flex';
                     deleteBtn.style.display = 'inline-flex';
+
+                    // Delete button event listener
+                    deleteBtn.addEventListener('click', async function(){
+                        if(!confirm('Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")?')){
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch('/api/client/errands/' + errand.id + '/delete', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-Key': apiKey
+                                },
+                                credentials: 'same-origin'
+                            });
+
+                            const result = await response.json();
+
+                            if(!response.ok || !result.success){
+                                throw new Error(result.message || 'Failed to delete errand.');
+                            }
+
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.href = '/client/dashboard';
+
+                        } catch(error) {
+                            console.error('Delete error:', error);
+                            const errorText = document.getElementById('errorMessageText');
+                            errorText.textContent = error.message;
+                            errorText.style.display = 'block';
+                            setTimeout(() => { errorText.style.display = 'none'; }, 4000);
+                        }
+                    });
+
                 } else {
                     editBtn.style.display = 'none';
                     deleteBtn.style.display = 'none';
