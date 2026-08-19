@@ -114,28 +114,18 @@
         }
 
         function showDeleteConfirmation(messageText) {
-            return new Promise(function(resolve) {
-                var modal = document.getElementById('deleteModal');
-                var messageEl = document.getElementById('deleteModalMessage');
-                var confirmBtn = document.getElementById('confirmDeleteBtn');
-                var cancelBtn = document.getElementById('cancelDeleteBtn');
-
-                messageEl.textContent = messageText;
+            return new Promise((resolve) => {
+                const modal = document.getElementById('deleteModal');
+                document.getElementById('deleteModalMessage').textContent = messageText;
                 modal.style.display = 'flex';
 
-                var cleanup = function(result) {
+                const close = (result) => {
                     modal.style.display = 'none';
-                    confirmBtn.replaceWith(confirmBtn.cloneNode(true));
-                    cancelBtn.replaceWith(cancelBtn.cloneNode(true));
                     resolve(result);
                 };
 
-                document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-                    cleanup(true);
-                });
-                document.getElementById('cancelDeleteBtn').addEventListener('click', function() {
-                    cleanup(false);
-                });
+                document.getElementById('confirmDeleteBtn').onclick = () => close(true);
+                document.getElementById('cancelDeleteBtn').onclick = () => close(false);
             });
         }
     </script>
