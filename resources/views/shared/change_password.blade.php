@@ -26,17 +26,26 @@
 
                 <div class="change-password-box">
                     <label>Enter Current Password</label>
-                    <input type="password" name="current_password" id="current_password" required>
+                    <div class="password-input-wrapper">
+                        <input type="password" name="current_password" id="current_password" required>
+                        <i class="fa-solid fa-eye toggle-password" data-target="current_password"></i>
+                    </div>
                 </div>
 
                 <div class="change-password-box">
                     <label>Enter New Password</label>
-                    <input type="password" name="new_password" id="new_password" required>
+                    <div class="password-input-wrapper">
+                        <input type="password" name="new_password" id="new_password" required>
+                        <i class="fa-solid fa-eye toggle-password" data-target="new_password"></i>
+                    </div>
                 </div>
 
                 <div class="change-password-box">
                     <label>Confirm New Password</label>
-                    <input type="password" name="new_password_confirmation" id="new_password_confirmation" required>
+                    <div class="password-input-wrapper">
+                        <input type="password" name="new_password_confirmation" id="new_password_confirmation" required>
+                        <i class="fa-solid fa-eye toggle-password" data-target="new_password_confirmation"></i>
+                    </div>
                 </div>
 
                 <div class="profile-bot-btn">
@@ -59,6 +68,23 @@
             const successMessage = document.getElementById('successMessageText');
             const btn = document.getElementById('changePasswordBtn');
             const btnSpinner = document.getElementById('btnSpinner');
+
+            document.querySelectorAll('.toggle-password').forEach(icon => {
+                icon.addEventListener('click', function () {
+                    const targetId = this.getAttribute('data-target');
+                    const input = document.getElementById(targetId);
+
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        this.classList.remove('fa-eye');
+                        this.classList.add('fa-eye-slash');
+                    } else if (input.type === 'text') {
+                        input.type = 'password';
+                        this.classList.remove('fa-eye-slash');
+                        this.classList.add('fa-eye');
+                    }
+                });
+            });
 
             form.addEventListener('submit', async function (e) {
                 e.preventDefault();

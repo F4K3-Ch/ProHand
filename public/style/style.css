@@ -2304,7 +2304,7 @@ input[type="file"]#profile_picture {
     border: 1px solid var(--color-border);
     max-width: 400px;
     width: 100%;
-    padding: 20px; /* vertical horizontal */
+    padding: 20px;
     border-radius: 10px;
     text-align: center;
     transition: 0.3s;
@@ -2350,12 +2350,20 @@ input[type="file"]#profile_picture {
     font-weight: 600;
 }
 
+/* Password Input Wrapper with Icon Support */
+.password-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
 .change-password-box input {
     background-color: var(--color-card-bg);
     color: var(--color-text);
     border: 1px solid var(--color-input-border);
     width: 100%;
-    padding: 10px 8px;
+    padding: 10px 40px 10px 8px; /* Extra right padding so text doesn't hide behind the eye icon */
     border-radius: 6px;
     font-size: 0.9rem;
     font-weight: 400;  
@@ -2367,6 +2375,20 @@ input[type="file"]#profile_picture {
     border-color: var(--color-input-focus-border);
     box-shadow: var(--shadow-input-focus);
     outline: none;
+}
+
+/* Toggle Password Eye Icon Styling */
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    cursor: pointer;
+    color: var(--color-text);
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.toggle-password:hover {
+    opacity: 1;
 }
 
 .change-password-container .btn {
@@ -2381,6 +2403,10 @@ input[type="file"]#profile_picture {
     font-weight: 500;
     transition: all 0.1s ease;
     margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .change-password-container .btn:hover {
