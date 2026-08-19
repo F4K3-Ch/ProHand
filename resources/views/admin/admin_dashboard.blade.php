@@ -26,12 +26,7 @@
                 <div class="header-right">
                     <div class="search-wrapper">
                         <div class="search-bar">
-                            <input
-                                type="text"
-                                id="errandSearch"
-                                placeholder="Search errands..."
-                                autocomplete="off"
-                            >
+                            <input type="text" id="errandSearch" placeholder="Search errands...">
                             <button type="button" class="btn-clear" id="clearSearchButton">Clear</button>
                         </div>
                         <button type="button" class="btn-search" id="searchButton">Search</button>
