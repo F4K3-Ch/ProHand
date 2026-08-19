@@ -109,6 +109,15 @@
             </div>
         </div>
     </main>
+
+    <div id="profilePhotoModal" class="profile-modal-overlay" style="display: none;">
+        <button type="button" id="closePhotoModal" class="profile-modal-close" aria-label="Close modal">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="profile-modal-content-wrapper">
+            <img id="modalProfileImage" class="profile-modal-img" alt="Enlarged Profile Picture">
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -119,6 +128,44 @@
             const successMessage = document.getElementById('successMessageText');
             const profilePhoto = document.getElementById('profile-preview-photo');
             const profilePhotoSpinner = document.getElementById('profile-photo-spinner');
+            const photoModal = document.getElementById('profilePhotoModal');
+            const modalImg = document.getElementById('modalProfileImage');
+            const closePhotoBtn = document.getElementById('closePhotoModal');
+
+            if (profilePhoto) {
+                profilePhoto.style.cursor = 'pointer';
+            }
+
+            profilePhoto.addEventListener('click', function () {
+                if (profilePhoto.src) {
+                    modalImg.src = profilePhoto.src;
+                    photoModal.style.display = 'flex';
+                    setTimeout(() => photoModal.classList.add('active'), 10);
+                    document.body.style.overflow = 'hidden'; 
+                }
+            });
+
+            function closeModalFunc() {
+                photoModal.classList.remove('active');
+                document.body.style.overflow = '';
+                setTimeout(() => {
+                    photoModal.style.display = 'none';
+                }, 300); 
+            }
+
+            closePhotoBtn.addEventListener('click', closeModalFunc);
+
+            photoModal.addEventListener('click', function (e) {
+                if (e.target === photoModal) {
+                    closeModalFunc();
+                }
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && photoModal.style.display === 'flex') {
+                    closeModalFunc();
+                }
+            });
 
             try {
                 const response = await fetch('/api/profile/data', {
