@@ -103,85 +103,64 @@
 @endsection
 
 @push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', async function () {
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
 
-        const messageContainer = document.getElementById('error-message');
-        const profilePhoto = document.getElementById('profile-preview-photo');
-        const profilePhotoSpinner = document.getElementById('profile-photo-spinner');
-
-        try {
-            const response = await fetch('/api/profile/data', {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-API-Key': "{{ config('services.my_api.api_key') }}",
-                },
-            });
-
-            const result = await response.json();
-
-            if (!response.ok || !result.success) {
-                throw new Error(
-                    result.message || 'Failed to load profile information.'
-                );
-            }
-
-            const user = result.user;
-
-            document.getElementById('profile-id').textContent =
-                user.id;
-
-            document.getElementById('profile-email').textContent =
-                user.email;
-
-            document.getElementById('profile-last-name').textContent =
-                user.last_name;
-
-            document.getElementById('profile-first-name').textContent =
-                user.first_name;
-
-            document.getElementById('profile-middle-name').textContent =
-                user.middle_name ?? '';
-
-            document.getElementById('profile-contact-number').textContent =
-                user.contact_number;
-
-            document.getElementById('profile-created-at').textContent =
-                user.created_at;
-
-            const roleElement = document.getElementById('profile-role');
-
-            roleElement.textContent =
-                user.role.charAt(0).toUpperCase() + user.role.slice(1);
-
-            roleElement.classList.add(
-                'role-' + user.role.toLowerCase()
-            );
-
+            const messageContainer = document.getElementById('error-message');
             const profilePhoto = document.getElementById('profile-preview-photo');
             const profilePhotoSpinner = document.getElementById('profile-photo-spinner');
 
-            profilePhoto.onload = function () {
-                profilePhotoSpinner.style.display = 'none';
-                profilePhoto.style.display = 'block';
-            };
+            try {
+                const response = await fetch('api/profile/data', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-API-Key': "{{ config('services.my_api.api_key') }}",
+                    },
+                });
 
-            profilePhoto.onerror = function () {
-                profilePhotoSpinner.style.display = 'none';
-                profilePhoto.style.display = 'block';
-            };
+                const result = await response.json();
 
-            profilePhoto.src = user.profile_picture;
+                if (!response.ok || !result.success) {
+                    throw new Error(
+                        result.message || 'Failed to load profile information.'
+                    );
+                }
 
-        } catch (error) {
-            console.error('Profile error:', error);
+                const user = result.user;
 
-            messageContainer.textContent =
-                error.message || 'Unable to load profile information.';
+                document.getElementById('profile-id').textContent = user.id;
+                document.getElementById('profile-email').textContent = user.email;
+                document.getElementById('profile-last-name').textContent = user.last_name;
+                document.getElementById('profile-first-name').textContent = user.first_name;
+                document.getElementById('profile-middle-name').textContent = user.middle_name;
+                document.getElementById('profile-contact-number').textContent = user.contact_number;
+                document.getElementById('profile-created-at').textContent = user.created_at;
 
-            messageContainer.style.display = 'block';
-        }
-    });
-</script>
+                const roleElement = document.getElementById('profile-role');
+                roleElement.textContent = user.formatted_role;
+                roleElement.classList.add(user.role_class);
+
+                profilePhoto.onload = function () {
+                    profilePhotoSpinner.style.display = 'none';
+                    profilePhoto.style.display = 'block';
+                };
+
+                profilePhoto.onerror = function () {
+                    profilePhotoSpinner.style.display = 'none';
+                    profilePhoto.style.display = 'block';
+                };
+
+                profilePhoto.src = user.profile_picture;
+
+            } catch (error) {
+                console.error('Profile error:', error);
+
+                messageContainer.textContent =
+                    error.message || 'Unable to load profile information.';
+
+                messageContainer.style.display = 'block';
+            }
+        });
+    </script>
 @endpush
