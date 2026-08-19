@@ -286,4 +286,40 @@ class ClientController extends Controller
             'errand' => $errand->load('attachment'),
         ]);
     }
+
+    public function destroyErrand(Request $request, $id)
+    {
+        $clientId = $request->user()->id;
+
+        $errand = Errand::with('attachment')
+            ->where('id', $id)
+            ->where('client_id', $clientId)
+            ->first();
+
+        if (!$errand) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Errand not found.'
+            ], 404);
+        }
+
+        if (strtolower($errand->status) !== 'pending') {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Only pending errands can be deleted.'
+            ], 403);
+        }
+
+        if ($errand->attachment) {
+            Storage::disk('public')->delete($errand->attachment->file_path);
+            $errand->attachment()->delete();
+        }
+
+        $errand->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Errand deleted successfully.'
+        ]);
+    }
 }

@@ -172,6 +172,7 @@
             <td>
                 <div class="button-row">
                     <a href="#" class="btn-view errand-view-link">View</a>
+                    <button type="button" class="btn-delete">Delete</button>
                 </div>
             </td>
         </tr>
@@ -323,6 +324,53 @@
                     status.className = errand.status_class;
 
                     row.querySelector('.errand-view-link').href = '/client/view-errand/' + encodeURIComponent(errand.id);
+
+                    const deleteBtn = row.querySelector('.btn-delete');
+                    
+                    if (errand.status.toLowerCase() !== 'pending') {
+                        deleteBtn.style.display = 'none';
+                    } else {
+                        deleteBtn.addEventListener('click', async function(){
+                            if(!confirm('Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")?')){
+                                return;
+                            }
+
+                            try {
+                                const response = await fetch('/api/client/errands/' + errand.id + '/delete', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                        'X-API-Key': apiKey
+                                    },
+                                    credentials: 'same-origin'
+                                });
+
+                                const result = await response.json();
+
+                                const successMessageText = document.getElementById('successMessageText');
+                                if (successMessageText) {
+                                    successMessageText.textContent = result.message;
+                                    successMessageText.style.display = 'block';
+
+                                    setTimeout(() => {
+                                        successMessageText.textContent = '';
+                                        successMessageText.style.display = 'none';
+                                    }, 3000);
+                                }
+
+                                loadMetrics();
+                                loadErrands();
+
+                            } catch(error) {
+                                console.error('Delete error:', error);
+                                const errorText = document.getElementById('errorMessageText');
+                                errorText.textContent = error.message;
+                                errorText.style.display = 'block';
+                                setTimeout(() => { errorText.style.display = 'none'; }, 4000);
+                            }
+                        });
+                    }
 
                     tableBody.appendChild(row);
                 });
