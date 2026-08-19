@@ -212,4 +212,78 @@ class ClientController extends Controller
             'errand' => $formattedErrand
         ]);
     }
+
+    public function editErrand(Request $request, $id)
+    {
+        $clientId = $request->user()->id;
+
+        $errand = Errand::where('id', $id)
+            ->where('client_id', $clientId)
+            ->first();
+
+        if (!$errand) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Errand not found.'
+            ], 404);
+        }
+
+        if (strtolower($errand->status) !== 'pending') {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Only pending errands can be edited.'
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:150'],
+            'category' => ['required', 'in:delivery,moving,cleaning,repair,grocery,laundry,project,other'],
+            'description' => ['required', 'string'],
+            'fee' => ['required', 'numeric', 'min:0'],
+            'deadline' => ['required', 'date'],
+            'location' => ['required', 'string', 'max:200'],
+            'contact' => ['required', 'string'],
+            'remove_current_file' => ['nullable', 'boolean'],
+            'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,gif,docx', 'max:10240'],
+        ]);
+
+        $errand->update([
+            'title' => $validated['title'],
+            'category' => $validated['category'],
+            'description' => $validated['description'],
+            'fee' => $validated['fee'],
+            'deadline' => $validated['deadline'],
+            'location' => $validated['location'],
+            'contact' => $validated['contact'],
+        ]);
+
+        // Handle attachment removal
+        if ($request->filled('remove_current_file') && $errand->attachment) {
+            Storage::disk('public')->delete($errand->attachment->file_path);
+            $errand->attachment()->delete();
+        }
+
+        // Handle new attachment upload / replacement
+        if ($request->hasFile('attachment')) {
+            if ($errand->attachment) {
+                Storage::disk('public')->delete($errand->attachment->file_path);
+                $errand->attachment()->delete();
+            }
+
+            $file = $request->file('attachment');
+            $path = $file->store('uploads/attachments', 'public');
+
+            ErrandAttachment::create([
+                'errand_id' => $errand->id,
+                'file_path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Errand updated successfully.',
+            'errand' => $errand->load('attachment'),
+        ]);
+    }
 }

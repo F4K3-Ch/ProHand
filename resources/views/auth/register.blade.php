@@ -119,6 +119,8 @@
                 return;
             }
 
+            sessionStorage.setItem('success_message', result.message);
+
             const role = result.user.role;
 
             if (role === 'admin') {

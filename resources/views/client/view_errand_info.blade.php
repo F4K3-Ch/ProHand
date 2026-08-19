@@ -17,7 +17,15 @@
                 <h1>Errand Details</h1>
 
                 <div class="view-main-error-success-message">
-                    <p class="success" id="successhMessageText" style="display: none;"></p>
+                    @if(session('success'))
+                        <p class="success" id="sessionSuccessMessage">{{ session('success') }}</p>
+                    @endif
+
+                    @if(session('error'))
+                        <p class="error" id="sessionErrorMessage">{{ session('error') }}</p>
+                    @endif
+
+                    <p class="success" id="successMessageText" style="display: none;"></p>
                     <p class="error" id="errorMessageText" style="display: none;"></p>
                 </div>
 

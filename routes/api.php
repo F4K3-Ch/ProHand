@@ -11,4 +11,5 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
     Route::get('/client/dashboard/active-errands', [ClientController::class, 'activeErrands']);
     Route::post('/client/create', [ClientController::class, 'createErrand']);
     Route::get('/client/errands/{id}', [ClientController::class, 'getErrandDetails']);
+    Route::post('/client/errands/{id}/update', [ClientController::class, 'editErrand']);
 });

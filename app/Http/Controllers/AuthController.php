@@ -43,8 +43,6 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        $request->session()->flash('success', 'Login successful.');
-
         return response()->json([
             'success' => true,
             'message' => 'Login successful.',
@@ -90,8 +88,6 @@ class AuthController extends Controller
         Auth::login($user);
 
         $request->session()->regenerate();
-
-        $request->session()->flash('success', 'Registration successful.');
 
         return response()->json([
             'success' => true,
