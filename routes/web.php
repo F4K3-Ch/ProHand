@@ -32,6 +32,10 @@ Route::middleware('auth')->group(function () {
         return view('shared.edit_profile');
     })->name('profile.edit');
 
+    Route::get('/profile/change-password', function () {
+        return view('shared.change_password');
+    })->name('profile.change-password');
+
     // Client dashboard
     Route::middleware('role:client')->group(function () {
         Route::get('/client/dashboard', function () {

@@ -218,6 +218,13 @@
                     window.location.href = "{{ route('profile.edit') }}";
                 });
             }
+
+            const changePasswordBtn = document.getElementById('btn-change-password');
+            if (changePasswordBtn) {
+                changePasswordBtn.addEventListener('click', function () {
+                    window.location.href = "{{ route('profile.change-password') }}";
+                });
+            }
         });
     </script>
 @endpush
