@@ -113,10 +113,10 @@
             }, 3000);
         }
 
-        function showDeleteConfirmation(messageText) {
+        function showDeleteConfirmation(customMessage) {
             return new Promise((resolve) => {
                 const modal = document.getElementById('deleteModal');
-                document.getElementById('deleteModalMessage').textContent = messageText;
+                document.getElementById('deleteModalMessage').textContent = customMessage;
                 modal.style.display = 'flex';
 
                 const close = (result) => {
