@@ -251,9 +251,12 @@
 
                     // Delete button event listener
                     deleteBtn.addEventListener('click', async function(){
-                        if(!confirm('Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")?')){
-                            return;
-                        }
+                            var customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")?';
+                            var isConfirmed = await showDeleteConfirmation(customMessage);
+                            
+                            if(!isConfirmed){
+                                return;
+                            }
 
                         try {
                             const response = await fetch('/api/client/errands/' + errand.id + '/delete', {

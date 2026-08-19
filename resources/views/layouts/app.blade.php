@@ -18,6 +18,17 @@
 
     @yield('content')
 
+    <div id="deleteModal" class="custom-modal-overlay" style="display: none;">
+        <div class="custom-modal-card">
+            <h3>Confirm Deletion</h3>
+            <p id="deleteModalMessage"></p>
+            <div class="custom-modal-actions">
+                <button type="button" id="cancelDeleteBtn" class="btn-secondary">Cancel</button>
+                <button type="button" id="confirmDeleteBtn" class="btn-delete">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const logoutButton = document.getElementById('logoutButton');
 
@@ -52,6 +63,32 @@
     </script>
 
     <script>
+        function showDeleteConfirmation(messageText) {
+            return new Promise(function(resolve) {
+                var modal = document.getElementById('deleteModal');
+                var messageEl = document.getElementById('deleteModalMessage');
+                var confirmBtn = document.getElementById('confirmDeleteBtn');
+                var cancelBtn = document.getElementById('cancelDeleteBtn');
+
+                messageEl.textContent = messageText;
+                modal.style.display = 'flex';
+
+                var cleanup = function(result) {
+                    modal.style.display = 'none';
+                    confirmBtn.replaceWith(confirmBtn.cloneNode(true));
+                    cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+                    resolve(result);
+                };
+
+                document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+                    cleanup(true);
+                });
+                document.getElementById('cancelDeleteBtn').addEventListener('click', function() {
+                    cleanup(false);
+                });
+            });
+        }
+
         // Session messages
         const sessionSuccessMessage = document.getElementById('sessionSuccessMessage');
         const sessionErrorMessage = document.getElementById('sessionErrorMessage');
