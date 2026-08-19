@@ -37,6 +37,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/client/create-errand', function () {
             return view('client.create_errand');
         })->name('client.create.errand');
+
+        Route::get('/client/view-errand/{id}', function ($id) {
+            return view('client.view_errand_info', ['id' => $id]);
+        })->name('client.view-errand');
     });
 
     // Tasker dashboard

@@ -185,7 +185,7 @@
 
     <template id="errand-error-template">
         <tr>
-            <td class="no-found" colspan="8" id="errand-error-text">Unable to load errands.</td>
+            <td class="no-found" colspan="8" class="errand-error-text">Unable to load errands.</td>
         </tr>
     </template>
 
@@ -389,7 +389,7 @@
                 const template = document.getElementById('errand-error-template');
                 const row = template.content.cloneNode(true);
 
-                row.querySelector('#errand-error-text').textContent = message;
+                row.querySelector('.errand-error-text').textContent = message;
 
                 tableBody.innerHTML = '';
                 tableBody.appendChild(row);

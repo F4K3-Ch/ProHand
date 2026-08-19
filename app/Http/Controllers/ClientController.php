@@ -7,6 +7,7 @@ use App\Models\ErrandAttachment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class ClientController extends Controller
 {
@@ -157,5 +158,58 @@ class ClientController extends Controller
             'message' => 'Errand created successfully.',
             'errand' => $errand->load('attachment'),
         ], 201);
+    }
+
+    public function getErrandDetails($id, Request $request)
+    {
+        $clientId = $request->user()->id;
+
+        $errand = Errand::with(['attachment', 'paymentProof'])
+            ->where('id', $id)
+            ->where('client_id', $clientId)
+            ->first();
+
+        if (!$errand) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Errand not found.'
+            ], 404);
+        }
+
+        $finishedAt = $errand->completed_at ?? $errand->failed_at;
+
+        $formattedErrand = [
+            'id' => $errand->id,
+            'title' => $errand->title,
+            'category' => Str::title(str_replace('_', ' ', $errand->category)),
+            'description' => $errand->description,
+            'location' => $errand->location,
+            'contact' => $errand->contact,
+            'fee' => '₱' . number_format($errand->fee, 2),
+            'status' => Str::title(str_replace('_', ' ', $errand->status)),
+            'status_class' => 'status-field status-' . $errand->status,
+            
+            'created_at' => $errand->created_at?->format('M d, Y h:i A') ?? 'Not Set',
+            'updated_at' => $errand->updated_at?->format('M d, Y h:i A') ?? 'Not Set',
+            'accepted_at' => $errand->accepted_at?->format('M d, Y h:i A') ?? 'Not Set',
+            'in_process_at' => $errand->in_process_at?->format('M d, Y h:i A') ?? 'Not Set',
+            'deadline' => $errand->deadline?->format('M d, Y h:i A') ?? 'Not Set',
+            'finished_at' => $finishedAt?->format('M d, Y h:i A') ?? 'Not Set',
+            
+            'attachment' => $errand->attachment ? [
+                'name' => $errand->attachment->original_name,
+                'url' => Storage::url($errand->attachment->file_path)
+            ] : null,
+            
+            'payment_proof' => $errand->paymentProof ? [
+                'name' => $errand->paymentProof->original_name,
+                'url' => Storage::url($errand->paymentProof->file_path)
+            ] : null,
+        ];
+
+        return response()->json([
+            'success' => true, 
+            'errand' => $formattedErrand
+        ]);
     }
 }

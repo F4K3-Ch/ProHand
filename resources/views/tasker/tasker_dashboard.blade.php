@@ -41,14 +41,17 @@
         </div>
 
         <div class="dashboard">
-            <div
-                class="error-success-message"
-                id="flashMessageContainer"
-                data-error="{{ session('error') }}"
-                data-success="{{ session('success') }}"
-                style="display: none;"
-            >
-                <p id="flashMessageText"></p>
+            <div class="error-success-message">
+                @if(session('success'))
+                    <p class="success" id="sessionSuccessMessage">{{ session('success') }}</p>
+                @endif
+
+                @if(session('error'))
+                    <p class="error" id="sessionErrorMessage">{{ session('error') }}</p>
+                @endif
+
+                <p class="success" id="successMessageText" style="display: none;"></p>
+                <p class="error" id="errorMessageText" style="display: none;"></p>
             </div>
         </div>
     </main>
