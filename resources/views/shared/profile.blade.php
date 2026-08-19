@@ -117,6 +117,7 @@
                         'Accept': 'application/json',
                         'X-API-Key': "{{ config('services.my_api.api_key') }}",
                     },
+                    credentials: 'same-origin',
                 });
 
                 const result = await response.json();
