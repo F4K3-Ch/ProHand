@@ -28,6 +28,10 @@ Route::middleware('auth')->group(function () {
         return view('shared.profile');
     })->name('profile');
 
+    Route::get('/profile/edit', function () {
+        return view('shared.edit_profile');
+    })->name('profile.edit');
+
     // Client dashboard
     Route::middleware('role:client')->group(function () {
         Route::get('/client/dashboard', function () {

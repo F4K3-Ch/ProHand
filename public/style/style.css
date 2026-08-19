@@ -2107,83 +2107,92 @@ body {
 }
 
 /* Edit Profile Info */
+.edit-profile-container {
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 20px;
+    max-width: 500px;
+    width: 100%;
+    margin: 0 auto;
+    box-shadow: var(--shadow-default);
+}
+
+.edit-profile-container h1 {
+    color: var(--color-text);
+    font-size: 1.7rem;
+    font-weight: 600;
+    margin-bottom: 3px;
+    text-align: center;
+}
+
+.profile-photo-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
 .photo-wrapper {
     border: 3px solid var(--color-border);
-    position: relative;          /* Needed for absolutely positioned overlay inside */
-    width: 170px;                /* Fixed width for photo box */
-    height: 170px;               /* Fixed height for photo box */
+    position: relative;
+    width: 150px;
+    height: 150px;
     border-radius: 6px;
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease;
-}
-
-.photo-wrapper:hover {
-    transform: scale(1.03);
+    background-color: var(--color-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .profile-avatar {
-    width: 100%;                 /* Fill the photo wrapper horizontally */
-    height: 100%;                /* Fill the photo wrapper vertically */
-    object-fit: cover;           /* Crop and maintain aspect ratio */
-    display: block;              /* Remove inline spacing */
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
-.photo-overlay {
-    position: absolute;          /* Position over the photo */
-    inset: 0;                    /* Top, right, bottom, left = 0 (fill wrapper) */
-    display: flex;               /* Use flexbox for icon alignment */
-    flex-direction: column;      /* Stack icons vertically */
-    justify-content: center;     /* Center icons vertically */
-    align-items: center;         /* Center icons horizontally */
-    background-color: rgba(0, 0, 0, 0.4); /* Semi-transparent overlay */
-    opacity: 0;                  /* Hidden by default */
-    transition: opacity 0.2s ease;
+.photo-action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
-.photo-wrapper:hover .photo-overlay {
-    opacity: 1;                  /* Show overlay on hover */
+.btn-upload-file,
+.btn-remove-file {
+    background-color: var(--color-btn-bg);
+    color: var(--color-btn-text);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s ease;
+    text-decoration: none;
 }
 
-.photo-edit-icon,
-.photo-remove-icon {
-    background-color: rgba(255, 255, 255, 0.85); /* Light background for icons */
-    border-radius: 50%;          /* Make them circular */
-    width: 35px;                 /* Fixed size */
-    height: 35px;                /* Fixed size */
-    display: flex;               /* Flexbox for icon alignment */
-    justify-content: center;     /* Center icon horizontally */
-    align-items: center;         /* Center icon vertically */
-    color: #333;                 /* Dark icon color */
-    font-size: 16px;             /* Icon size */
-    margin: 5px;                 /* Space around each button */
-    cursor: pointer;             /* Pointer on hover */
-    border: none;                /* Remove default button border */
-    transition: all 0.2s ease; /* Smooth hover effects */
+.btn-upload-file:hover {
+    background-color: var(--color-btn-hover-bg);
 }
 
-.photo-edit-icon:hover {
-    background-color: #3B82F6;
-    color: #ffffff;                 /* White icon on hover */
-    transform: scale(1.1);       /* Slightly enlarge button */
-}
-
-.photo-remove-icon:hover {
+.btn-remove-file {
     background-color: #EF4444;
-    color: #ffffff;                 /* White icon on hover */
-    transform: scale(1.1);       /* Slightly enlarge button */
 }
 
-.photo-form input[type="file"] {
-    display: none;               /* Hide the default file input */
+.btn-remove-file:hover {
+    background-color: #B91C1C;
 }
 
-.upload-btn {
-    display: none;               /* Hidden by default */
-}
-
-.photo-form:has(input[type="file"]:valid) .upload-btn {
-    display: inline-block;       /* Make button visible when a file is selected */
+input[type="file"]#profile_picture {
+    display: none;
 }
 
 .edit-profile-input-box {
@@ -2202,16 +2211,14 @@ body {
 
 .edit-profile-input-box input {
     background-color: var(--color-card-bg);
-    color: var(--color-text);
+    color: var(--color-sec-text);
     border: 1px solid var(--color-input-border);
     width: 100%;
     padding: 6px 8px;
     border-radius: 6px;
     font-size: 0.9rem;
-    font-weight: 400;  
-    transition: all 0.2s ease;
+    font-weight: 400;
     outline: none;
-
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2220,7 +2227,15 @@ body {
 .edit-profile-input-box input:focus {
     border-color: var(--color-input-focus-border);
     box-shadow: var(--shadow-input-focus);
-    outline: none;
+}
+
+.edit-profile-container .btn-edit-profile {
+    background-color: #28a745;
+    transition: all 0.2s ease;
+}
+
+.edit-profile-container .btn-edit-profile:hover {
+    background-color: #218838;
 }
 
 /* Change Password */

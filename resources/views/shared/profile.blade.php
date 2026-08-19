@@ -18,7 +18,16 @@
                 <h1>My Profile</h1>
 
                 <div class="view-main-error-success-message">
-                    <p class="error" id="error-message" style="display: none;"></p>
+                    @if(session('success'))
+                        <p class="success" id="sessionSuccessMessage">{{ session('success') }}</p>
+                    @endif
+
+                    @if(session('error'))
+                        <p class="error" id="sessionErrorMessage">{{ session('error') }}</p>
+                    @endif
+
+                    <p class="success" id="successMessageText" style="display: none;"></p>
+                    <p class="error" id="errorMessageText" style="display: none;"></p>
                 </div>
 
                 <div class="profile-photo-section">
@@ -105,17 +114,18 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
-
-            const messageContainer = document.getElementById('error-message');
+            const apiKey = "{{ config('services.my_api.api_key') }}";
+            const errorMessage = document.getElementById('errorMessageText');
+            const successMessage = document.getElementById('successMessageText');
             const profilePhoto = document.getElementById('profile-preview-photo');
             const profilePhotoSpinner = document.getElementById('profile-photo-spinner');
 
             try {
-                const response = await fetch('api/profile/data', {
+                const response = await fetch('/api/profile/data', {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
-                        'X-API-Key': "{{ config('services.my_api.api_key') }}",
+                        'X-API-Key': apiKey,
                     },
                     credentials: 'same-origin',
                 });
@@ -134,7 +144,7 @@
                 document.getElementById('profile-email').textContent = user.email;
                 document.getElementById('profile-last-name').textContent = user.last_name;
                 document.getElementById('profile-first-name').textContent = user.first_name;
-                document.getElementById('profile-middle-name').textContent = user.middle_name;
+                document.getElementById('profile-middle-name').textContent = user.middle_name || '-';
                 document.getElementById('profile-contact-number').textContent = user.contact_number;
                 document.getElementById('profile-created-at').textContent = user.created_at;
 
@@ -157,10 +167,17 @@
             } catch (error) {
                 console.error('Profile error:', error);
 
-                messageContainer.textContent =
+                errorMessage.textContent =
                     error.message || 'Unable to load profile information.';
 
-                messageContainer.style.display = 'block';
+                errorMessage.style.display = 'block';
+            }
+
+            const editProfileBtn = document.getElementById('btn-edit-profile');
+            if (editProfileBtn) {
+                editProfileBtn.addEventListener('click', function () {
+                    window.location.href = "{{ route('profile.edit') }}";
+                });
             }
         });
     </script>

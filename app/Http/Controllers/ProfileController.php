@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -27,6 +28,61 @@ class ProfileController extends Controller
                 'created_at' => $user->created_at
                     ->timezone('Asia/Manila')
                     ->format('F d, Y h:i A'),
+            ]
+        ]);
+    }
+
+    public function update(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'first_name' => 'required|string|max:50',
+            'middle_name' => 'nullable|string|max:50',
+            'last_name' => 'required|string|max:50',
+            'contact_number' => 'required|string|max:20',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'remove_picture' => 'nullable|boolean',
+        ]);
+
+        $user->first_name = $validated['first_name'];
+        $user->middle_name = $validated['middle_name'] ?? null;
+        $user->last_name = $validated['last_name'];
+        $user->contact_number = $validated['contact_number'];
+
+        // Handle image removal request
+        if ($request->boolean('remove_picture')) {
+            if ($user->profile_picture && $user->profile_picture !== 'uploads/profile_pictures/default.jpg' && Storage::disk('public')->exists($user->profile_picture)) {
+                Storage::disk('public')->delete($user->profile_picture);
+            }
+            $user->profile_picture = 'uploads/profile_pictures/default.jpg';
+        }
+
+        // Handle new profile picture upload
+        if ($request->hasFile('profile_picture')) {
+            // Delete old picture if it exists and is not the default file
+            if ($user->profile_picture && $user->profile_picture !== 'uploads/profile_pictures/default.jpg' && Storage::disk('public')->exists($user->profile_picture)) {
+                Storage::disk('public')->delete($user->profile_picture);
+            }
+
+            $file = $request->file('profile_picture');
+            $path = $file->store('uploads/profile_pictures', 'public');
+            $user->profile_picture = $path;
+        }
+
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile updated successfully!',
+            'user' => [
+                'id' => $user->id,
+                'email' => $user->email,
+                'first_name' => $user->first_name,
+                'middle_name' => $user->middle_name ?? '',
+                'last_name' => $user->last_name,
+                'contact_number' => $user->contact_number,
+                'profile_picture' => asset($user->profile_picture),
             ]
         ]);
     }
