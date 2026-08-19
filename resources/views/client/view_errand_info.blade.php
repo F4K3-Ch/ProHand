@@ -113,7 +113,7 @@
                                     <i class="fa-solid fa-file"></i>
                                     <span class="attachment-filename"></span>
                                 </a>
-                                <a href="#" class="btn-download">
+                                <a href="#" class="btn-download" download>
                                     <i class="fa-solid fa-download"></i>
                                     Download
                                 </a>
@@ -132,7 +132,7 @@
                                     <i class="fa-solid fa-file"></i>
                                     <span class="attachment-filename"></span>
                                 </a>
-                                <a href="#" class="btn-download">
+                                <a href="#" class="btn-download" download>
                                     <i class="fa-solid fa-download"></i>
                                     Download
                                 </a>
@@ -222,7 +222,10 @@
                     noAttachItem.style.display = 'none';
                     attachItem.querySelector('.attachment-filename').textContent = errand.attachment.name;
                     attachItem.querySelector('.attachment-name').href = errand.attachment.url;
-                    attachItem.querySelector('.btn-download').href = errand.attachment.url;
+                    
+                    const downloadBtn = attachItem.querySelector('.btn-download');
+                    downloadBtn.href = errand.attachment.url;
+                    downloadBtn.setAttribute('download', errand.attachment.name);
                 }
 
                 // Handle Payment Proof
@@ -237,7 +240,10 @@
                     noPaymentItem.style.display = 'none';
                     paymentItem.querySelector('.attachment-filename').textContent = errand.payment_proof.name;
                     paymentItem.querySelector('.attachment-name').href = errand.payment_proof.url;
-                    paymentItem.querySelector('.btn-download').href = errand.payment_proof.url;
+                    
+                    const downloadPaymentBtn = paymentItem.querySelector('.btn-download');
+                    downloadPaymentBtn.href = errand.payment_proof.url;
+                    downloadPaymentBtn.setAttribute('download', errand.payment_proof.name);
                 }
 
                 // Handle Edit and Delete buttons visibility based on status
