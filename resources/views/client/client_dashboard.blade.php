@@ -303,7 +303,6 @@
                 if(!errands || errands.length === 0){
                     const template = document.getElementById('errand-empty-template');
                     tableBody.appendChild(template.content.cloneNode(true));
-                    paginationContainer.innerHTML = '';
                     return;
                 }
 
@@ -456,7 +455,8 @@
                 clearSearchButton.style.display = searchInput.value.trim() !== '' ? 'inline-block' : 'none';
             }
 
-            searchButton.addEventListener('click', function(){
+            searchButton.addEventListener('click', function(event){
+                event.preventDefault();
                 currentSearch = searchInput.value.trim();
                 currentPage = 1;
                 loadErrands();
@@ -464,6 +464,7 @@
 
             searchInput.addEventListener('keydown', function(event){
                 if(event.key === 'Enter'){
+                    event.preventDefault();
                     currentSearch = searchInput.value.trim();
                     currentPage = 1;
                     loadErrands();
@@ -474,7 +475,8 @@
                 updateClearButton();
             });
 
-            clearSearchButton.addEventListener('click', function(){
+            clearSearchButton.addEventListener('click', function(event){
+                event.preventDefault(); 
                 searchInput.value = '';
                 currentSearch = '';
                 currentPage = 1;
