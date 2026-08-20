@@ -63,9 +63,10 @@
     </script>
 
     <script>
+        // Shared API access credentials used by all API requests
         const apiKey = "{{ config('services.my_api.api_key') }}";
         const origin = "{{ config('services.my_api.origin') }}";
-        
+
         // Session messages
         const sessionSuccessMessage = document.getElementById('sessionSuccessMessage');
         const sessionErrorMessage = document.getElementById('sessionErrorMessage');
