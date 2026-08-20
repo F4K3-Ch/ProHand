@@ -37,7 +37,7 @@
                 this.disabled = true;
 
                 try {
-                    const response = await fetch("{{ url('/logout') }}", {
+                    const response = await fetch("{{ route('logout') }}", {
                         method: 'POST',
                         headers: {
                             'Accept': 'application/json',

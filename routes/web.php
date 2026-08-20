@@ -20,9 +20,7 @@ Route::post('/register', [AuthController::class, 'register']);
 
 Route::middleware('auth')->group(function () {
 
-    Route::get('/me', [AuthController::class, 'me']);
-
-    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::get('/profile', function () {
         return view('shared.profile');
