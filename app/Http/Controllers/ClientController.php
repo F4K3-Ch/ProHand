@@ -160,7 +160,7 @@ class ClientController extends Controller
         ], 201);
     }
 
-public function getErrandDetails($id, Request $request)
+    public function getErrandDetails($id, Request $request)
     {
         $clientId = $request->user()->id;
 
@@ -224,7 +224,7 @@ public function getErrandDetails($id, Request $request)
             'errand' => $formattedErrand
         ]);
     }
-    
+
     public function editErrand(Request $request, $id)
     {
         $clientId = $request->user()->id;
