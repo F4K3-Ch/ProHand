@@ -97,7 +97,6 @@
             minDate: 'today'
         });
 
-        const apiKey="{{ config('services.my_api.api_key') }}";
         const form = document.getElementById('create-errand-form');
         const fileInput = document.getElementById('attachment');
         const errorElement = document.getElementById('errorElement');
@@ -133,8 +132,9 @@
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
-                        'X-API-Key':apiKey,
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                        'X-API-KEY': apiKey,
+                        'X-MY-ORIGIN' : origin
                     },
                     credentials: 'same-origin',
                     body: formData

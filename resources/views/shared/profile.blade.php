@@ -125,7 +125,6 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
-            const apiKey = "{{ config('services.my_api.api_key') }}";
             const errorMessage = document.getElementById('errorMessageText');
             const successMessage = document.getElementById('successMessageText');
             const profilePhoto = document.getElementById('profile-preview-photo');
@@ -164,7 +163,8 @@
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
-                        'X-API-Key': apiKey,
+                        'X-API-KEY': apiKey,
+                        'X-MY-ORIGIN' : origin
                     },
                     credentials: 'same-origin',
                 });

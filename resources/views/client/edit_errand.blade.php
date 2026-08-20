@@ -112,7 +112,6 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
-            const apiKey = "{{ config('services.my_api.api_key') }}";
             const mainContainer = document.querySelector('.view-main');
             const errandId = mainContainer ? mainContainer.getAttribute('data-errand-id') : null;
             
@@ -141,7 +140,8 @@
                     method: 'GET',
                     headers: { 
                         'Accept': 'application/json',
-                        'X-API-Key': apiKey 
+                        'X-API-KEY': apiKey,
+                        'X-MY-ORIGIN' : origin
                     },
                     credentials: 'same-origin'
                 });
@@ -211,8 +211,9 @@
                         method: 'POST',
                         headers: {
                             'Accept': 'application/json',
-                            'X-API-Key': apiKey,
-                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                            'X-API-KEY': apiKey,
+                            'X-MY-ORIGIN' : origin
                         },
                         body: formData,
                         credentials: 'same-origin'

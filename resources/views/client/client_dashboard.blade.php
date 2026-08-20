@@ -206,7 +206,6 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function(){
-            const apiKey = "{{ config('services.my_api.api_key') }}";
             const metricSpinner = document.getElementById('metric-spinner');
             const tableBody = document.getElementById('errands-table-body');
             const paginationContainer = document.getElementById('pagination-container');
@@ -227,7 +226,8 @@
                         method: 'GET',
                         headers: {
                             'Accept': 'application/json',
-                            'X-API-Key': apiKey
+                            'X-API-KEY': apiKey,
+                            'X-MY-ORIGIN' : origin
                         },
                         credentials: 'same-origin'
                     });
@@ -279,7 +279,8 @@
                         method: 'GET',
                         headers: {
                             'Accept': 'application/json',
-                            'X-API-Key': apiKey
+                            'X-API-KEY': apiKey,
+                            'X-MY-ORIGIN' : origin
                         },
                         credentials: 'same-origin'
                     });
@@ -343,7 +344,8 @@
                                     headers: {
                                         'Accept': 'application/json',
                                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                                        'X-API-Key': apiKey
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN' : origin
                                     },
                                     credentials: 'same-origin'
                                 });

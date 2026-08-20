@@ -9,23 +9,45 @@ use App\Models\AccessToken;
 
 class AccessMiddleware
 {
+    /**
+     * Handle an incoming request.
+     *
+     * @param  Closure(Request): (Response)  $next
+     */
     public function handle(Request $request, Closure $next): Response
     {
-        $apiKey = $request->header('X-API-Key');
+        $apiKey = $request->header('X-API-KEY');
+        $origin = $request->header('X-MY-ORIGIN');
 
         if (empty($apiKey)) {
             return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized.'
+                'message' => 'Unauthorized API KEY.'
             ], 401);
         }
 
-        $expectedApiKey = config('services.my_api.api_key');
-
-        if (!hash_equals($expectedApiKey, $apiKey)) {
+        if (empty($origin)) {
             return response()->json([
-                'success' => false,
-                'message' => 'Forbidden.'
+                'message' => 'Unauthorized Origin.'
+            ], 401);
+        }
+
+        $access = AccessToken::find(1);
+
+        if (!$access) {
+            return response()->json([
+                'message' => 'Server error: Access Token not found'
+            ], 500);
+        }
+
+        if ($apiKey != $access->token) {
+            return response()->json([
+                'message' => 'Forbidden API KEY.'
+            ], 403);
+        }
+
+        if ($origin != $access->origin) {
+            return response()->json([
+                'message' => 'Forbidden Origin.'
             ], 403);
         }
 

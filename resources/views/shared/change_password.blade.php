@@ -62,7 +62,6 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const apiKey = "{{ config('services.my_api.api_key') }}";
             const form = document.getElementById('changePasswordForm');
             const errorMessage = document.getElementById('errorMessageText');
             const successMessage = document.getElementById('successMessageText');
@@ -113,7 +112,8 @@
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                            'X-API-Key': apiKey,
+                            'X-API-KEY': apiKey,
+                            'X-MY-ORIGIN' : origin
                         },
                         credentials: 'same-origin',
                         body: JSON.stringify({

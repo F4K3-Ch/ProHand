@@ -89,7 +89,6 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
-            const apiKey = "{{ config('services.my_api.api_key') }}";
             const errorMessage = document.getElementById('error-message');
             const successMessage = document.getElementById('success-message');
             const profilePhoto = document.getElementById('profile-preview-photo');
@@ -106,7 +105,8 @@
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
-                        'X-API-Key': apiKey,
+                        'X-API-KEY': apiKey,
+                        'X-MY-ORIGIN' : origin
                     },
                     credentials: 'same-origin',
                 });
@@ -192,7 +192,8 @@
                         headers: {
                             'Accept': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                            'X-API-Key': apiKey,
+                            'X-API-KEY': apiKey,
+                            'X-MY-ORIGIN' : origin
                         },
                         body: formData,
                         credentials: 'same-origin'
