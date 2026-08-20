@@ -160,7 +160,7 @@ class ClientController extends Controller
         ], 201);
     }
 
-    public function getErrandDetails($id, Request $request)
+public function getErrandDetails($id, Request $request)
     {
         $clientId = $request->user()->id;
 
@@ -189,12 +189,24 @@ class ClientController extends Controller
             'status' => Str::title(str_replace('_', ' ', $errand->status)),
             'status_class' => 'status-field status-' . $errand->status,
             
-            'created_at' => $errand->created_at?->format('M d, Y h:i A') ?? 'Not Set',
-            'updated_at' => $errand->updated_at?->format('M d, Y h:i A') ?? 'Not Set',
-            'accepted_at' => $errand->accepted_at?->format('M d, Y h:i A') ?? 'Not Set',
-            'in_process_at' => $errand->in_process_at?->format('M d, Y h:i A') ?? 'Not Set',
-            'deadline' => $errand->deadline?->format('M d, Y h:i A') ?? 'Not Set',
-            'finished_at' => $finishedAt?->format('M d, Y h:i A') ?? 'Not Set',
+            'created_at' => $errand->created_at 
+                ? Carbon::parse($errand->created_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                : 'Not Set',
+            'updated_at' => $errand->updated_at 
+                ? Carbon::parse($errand->updated_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                : 'Not Set',
+            'accepted_at' => $errand->accepted_at 
+                ? Carbon::parse($errand->accepted_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                : 'Not Set',
+            'in_process_at' => $errand->in_process_at 
+                ? Carbon::parse($errand->in_process_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                : 'Not Set',
+            'deadline' => $errand->deadline 
+                ? Carbon::parse($errand->deadline)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                : 'Not Set',
+            'finished_at' => $finishedAt 
+                ? Carbon::parse($finishedAt)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                : 'Not Set',
             
             'attachment' => $errand->attachment ? [
                 'name' => $errand->attachment->original_name,
@@ -212,7 +224,7 @@ class ClientController extends Controller
             'errand' => $formattedErrand
         ]);
     }
-
+    
     public function editErrand(Request $request, $id)
     {
         $clientId = $request->user()->id;

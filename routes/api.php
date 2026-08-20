@@ -9,10 +9,12 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
     Route::post('/profile/update', [ProfileController::class, 'update']);
     Route::post('/profile/update-password', [ProfileController::class, 'updatePassword']);
 
-    Route::get('/client/dashboard/active-metrics', [ClientController::class, 'activeMetrics']);
-    Route::get('/client/dashboard/active-errands', [ClientController::class, 'activeErrands']);
-    Route::post('/client/create', [ClientController::class, 'createErrand']);
-    Route::get('/client/errands/{id}', [ClientController::class, 'getErrandDetails']);
-    Route::post('/client/errands/{id}/update', [ClientController::class, 'editErrand']);
-    Route::post('/client/errands/{id}/delete', [ClientController::class, 'destroyErrand']);
+    Route::middleware('role:client')->group(function () {
+        Route::get('/client/dashboard/active-metrics', [ClientController::class, 'activeMetrics']);
+        Route::get('/client/dashboard/active-errands', [ClientController::class, 'activeErrands']);
+        Route::post('/client/create', [ClientController::class, 'createErrand']);
+        Route::get('/client/errands/{id}', [ClientController::class, 'getErrandDetails']);
+        Route::post('/client/errands/{id}/update', [ClientController::class, 'editErrand']);
+        Route::post('/client/errands/{id}/delete', [ClientController::class, 'destroyErrand']);
+    });
 });
