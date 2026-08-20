@@ -27,6 +27,7 @@
                 <button type="button" id="logoutButton" class="logout-button">
                     <i class="fa-solid fa-right-from-bracket"></i> 
                     Logout
+                    <div class="circle-spinner" id="logoutSpinner" style="display:none;"></div>
                 </button>
             </li>
         </ul>

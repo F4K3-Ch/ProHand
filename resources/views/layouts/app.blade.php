@@ -34,7 +34,10 @@
 
         if (logoutButton) {
             logoutButton.addEventListener('click', async function () {
+                const logoutSpinner = document.getElementById('logoutSpinner');
+
                 this.disabled = true;
+                logoutSpinner.style.display = 'inline-block';
 
                 try {
                     const response = await fetch("{{ route('logout') }}", {
@@ -56,7 +59,9 @@
 
                 } catch (error) {
                     console.error(error);
+
                     this.disabled = false;
+                    logoutSpinner.style.display = 'none';
                 }
             });
         }
