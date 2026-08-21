@@ -208,7 +208,6 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function(){
-            const metricSpinner = document.getElementById('metric-spinner');
             const tableBody = document.getElementById('errands-table-body');
             const paginationContainer = document.getElementById('pagination-container');
             const searchInput = document.getElementById('errandSearch');
@@ -257,9 +256,13 @@
                     showMetricCard('metric-card-dispute', metrics.dispute);
                 }catch(error){
                     console.error('Metrics error:', error);
-                    document.getElementById('metric-total').textContent = '—';
-                }finally{
-                    if(metricSpinner) metricSpinner.style.display = 'none';
+
+                    const errorText = document.getElementById('errorMessageText');
+                    if(errorText) {
+                        errorText.textContent = error.message;
+                        errorText.style.display = 'block';
+                        setTimeout(() => { errorText.style.display = 'none'; }, 5000);
+                    }
                 }
             }
 
@@ -296,6 +299,14 @@
                     displayPagination(result.pagination);
                 }catch(error){
                     console.error('Errands error:', error);
+
+                    const errorText = document.getElementById('errorMessageText');
+                    if(errorText) {
+                        errorText.textContent = error.message;
+                        errorText.style.display = 'block';
+                        setTimeout(() => { errorText.style.display = 'none'; }, 5000);
+                    }
+
                     showError(error.message || 'Unable to load errands.');
                 }
             }

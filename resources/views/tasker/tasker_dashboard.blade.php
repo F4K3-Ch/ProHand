@@ -160,7 +160,6 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function(){
-            const metricSpinner = document.getElementById('metric-spinner');
             const tableBody = document.getElementById('errands-table-body');
             const paginationContainer = document.getElementById('pagination-container');
             const searchInput = document.getElementById('errandSearch');
@@ -180,8 +179,8 @@
                         method: 'GET',
                         headers: {
                             'Accept': 'application/json',
-                            'X-API-KEY': typeof apiKey !== 'undefined' ? apiKey : '',
-                            'X-MY-ORIGIN' : typeof origin !== 'undefined' ? origin : ''
+                            'X-API-KEY': apiKey,
+                            'X-MY-ORIGIN' : origin
                         },
                         credentials: 'same-origin'
                     });
@@ -192,14 +191,17 @@
                     }
 
                     const metrics = result.metrics;
-
                     document.getElementById('metric-pending').textContent = metrics.pending;
 
                 }catch(error){
                     console.error('Metrics error:', error);
-                    document.getElementById('metric-pending').textContent = '—';
-                }finally{
-                    if(metricSpinner) metricSpinner.style.display = 'none';
+
+                    const errorText = document.getElementById('errorMessageText');
+                    if(errorText) {
+                        errorText.textContent = error.message;
+                        errorText.style.display = 'block';
+                        setTimeout(() => { errorText.style.display = 'none'; }, 5000);
+                    }
                 }
             }
 
@@ -221,8 +223,8 @@
                         method: 'GET',
                         headers: {
                             'Accept': 'application/json',
-                            'X-API-KEY': typeof apiKey !== 'undefined' ? apiKey : '',
-                            'X-MY-ORIGIN' : typeof origin !== 'undefined' ? origin : ''
+                            'X-API-KEY': apiKey,
+                            'X-MY-ORIGIN' : origin
                         },
                         credentials: 'same-origin'
                     });
@@ -236,6 +238,14 @@
                     displayPagination(result.pagination);
                 }catch(error){
                     console.error('Errands error:', error);
+
+                    const errorText = document.getElementById('errorMessageText');
+                    if(errorText) {
+                        errorText.textContent = error.message;
+                        errorText.style.display = 'block';
+                        setTimeout(() => { errorText.style.display = 'none'; }, 5000);
+                    }
+
                     showError(error.message || 'Unable to load errands.');
                 }
             }
@@ -283,8 +293,8 @@
                                 headers: {
                                     'Accept': 'application/json',
                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                                    'X-API-KEY': typeof apiKey !== 'undefined' ? apiKey : '',
-                                    'X-MY-ORIGIN' : typeof origin !== 'undefined' ? origin : ''
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN' : origin
                                 },
                                 credentials: 'same-origin'
                             });
