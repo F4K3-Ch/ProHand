@@ -17,11 +17,13 @@
                             <h1>Pro<span>Hand</span></h1>
                             <h2>Dashboard</h2>
                         </div>
+
                         <label for="sidebar-toggle-check" class="sidebar-toggle-btn" aria-label="Toggle Navigation Menu">
                             <i class="fa-solid fa-bars"></i>
                         </label>
                     </div>
                 </div>
+                
                 <div class="header-right">
                     <div class="search-wrapper">
                         <div class="search-bar">

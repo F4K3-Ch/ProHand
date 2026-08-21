@@ -23,6 +23,7 @@
                         </label>
                     </div>
                 </div>
+                
                 <div class="header-right">
                     <div class="search-wrapper">
                         <div class="search-bar">
