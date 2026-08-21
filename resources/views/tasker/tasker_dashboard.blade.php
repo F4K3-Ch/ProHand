@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Tasker Dashboard')
+@section('title', 'Tasker Dashboard - Prohand')
 
 @section('sidebar')
     @include('layouts.sidebar.tasker')

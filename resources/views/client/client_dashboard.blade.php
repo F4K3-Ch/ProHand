@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Client Dashboard')
+@section('title', 'Client Dashboard - ProHand')
 
 @section('sidebar')
     @include('layouts.sidebar.client')
