@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title','Client Dashboard')
+@section('title', 'Client Dashboard')
 
 @section('sidebar')
     @include('layouts.sidebar.client')
@@ -102,7 +102,7 @@
                             <p id="metric-dispute"></p>
                         </div>
 
-                        <div class="total-card bg-total">
+                        <div class="total-card bg-total" id="metric-card-total">
                             <div class="card-header">
                                 <span class="status-circle circle-total"></span>
                                 <h3>Total Active Errands</h3>
@@ -200,6 +200,10 @@
         </tr>
     </template>
 
+    <template id="pagination-spinner-template">
+        <span class="circle-spinner" style="width:15px;height:15px;border-width:2px;display:inline-block;"></span>
+    </template>
+
     <template id="pagination-button-template">
         <button type="button" class="pagination-button"></button>
     </template>
@@ -214,6 +218,8 @@
             const searchButton = document.getElementById('searchButton');
             const clearSearchButton = document.getElementById('clearSearchButton');
             const perPageSelect = document.getElementById('perPageSelect');
+            const errorText = document.getElementById('errorMessageText');
+
             let currentPage = 1;
             let currentSearch = '';
 
@@ -221,9 +227,16 @@
             loadErrands();
             updateClearButton();
 
+            function displayGlobalError(message){
+                if(!errorText) return;
+                errorText.textContent = message;
+                errorText.style.display = 'block';
+                setTimeout(() => { errorText.style.display = 'none'; }, 5000);
+            }
+
             async function loadMetrics(){
                 try{
-                    const response = await fetch('/api/client/dashboard/active-metrics',{
+                    const response = await fetch('/api/client/dashboard/active-metrics', {
                         method: 'GET',
                         headers: {
                             'Accept': 'application/json',
@@ -254,14 +267,17 @@
                     showMetricCard('metric-card-pending-completion', metrics.pending_completion);
                     showMetricCard('metric-card-pending-failure', metrics.pending_failure);
                     showMetricCard('metric-card-dispute', metrics.dispute);
+                    
+                    const totalCard = document.getElementById('metric-card-total');
+                    if(totalCard) totalCard.style.display = 'flex';
+
                 }catch(error){
                     console.error('Metrics error:', error);
+                    displayGlobalError(error.message);
 
-                    const errorText = document.getElementById('errorMessageText');
-                    if(errorText) {
-                        errorText.textContent = error.message;
-                        errorText.style.display = 'block';
-                        setTimeout(() => { errorText.style.display = 'none'; }, 5000);
+                    const metricTotalElement = document.getElementById('metric-total');
+                    if(metricTotalElement) {
+                        metricTotalElement.innerHTML = '<span style="font-size: 0.8rem; color: #dc3545;">Unavailable</span>';
                     }
                 }
             }
@@ -271,16 +287,17 @@
 
                 showLoading();
 
-                const params = new URLSearchParams();
-                params.append('page', currentPage);
-                params.append('per_page', perPageSelect.value);
+                const params = new URLSearchParams({
+                    page: currentPage,
+                    per_page: perPageSelect.value
+                });
 
                 if(currentSearch !== ''){
                     params.append('search', currentSearch);
                 }
 
                 try{
-                    const response = await fetch('/api/client/dashboard/active-errands?' + params.toString(),{
+                    const response = await fetch('/api/client/dashboard/active-errands?' + params.toString(), {
                         method: 'GET',
                         headers: {
                             'Accept': 'application/json',
@@ -299,14 +316,7 @@
                     displayPagination(result.pagination);
                 }catch(error){
                     console.error('Errands error:', error);
-
-                    const errorText = document.getElementById('errorMessageText');
-                    if(errorText) {
-                        errorText.textContent = error.message;
-                        errorText.style.display = 'block';
-                        setTimeout(() => { errorText.style.display = 'none'; }, 5000);
-                    }
-
+                    displayGlobalError(error.message);
                     showError(error.message || 'Unable to load errands.');
                 }
             }
@@ -315,8 +325,7 @@
                 tableBody.innerHTML = '';
 
                 if(!errands || errands.length === 0){
-                    const template = document.getElementById('errand-empty-template');
-                    tableBody.appendChild(template.content.cloneNode(true));
+                    tableBody.appendChild(document.getElementById('errand-empty-template').content.cloneNode(true));
                     return;
                 }
 
@@ -344,8 +353,8 @@
                         deleteBtn.style.display = 'none';
                     } else {
                         deleteBtn.addEventListener('click', async function(){
-                            var customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")?';
-                            var isConfirmed = await showDeleteConfirmation(customMessage);
+                            const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")?';
+                            const isConfirmed = await showDeleteConfirmation(customMessage);
                             
                             if(!isConfirmed){
                                 return;
@@ -365,9 +374,13 @@
 
                                 const result = await response.json();
 
+                                if(!response.ok || !result.success){
+                                    throw new Error(result.message || 'Failed to delete errand.');
+                                }
+
                                 const successMessageText = document.getElementById('successMessageText');
                                 if (successMessageText) {
-                                    successMessageText.textContent = result.message;
+                                    successMessageText.textContent = result.message || 'Errand deleted successfully!';
                                     successMessageText.style.display = 'block';
 
                                     setTimeout(() => {
@@ -381,10 +394,7 @@
 
                             } catch(error) {
                                 console.error('Delete error:', error);
-                                const errorText = document.getElementById('errorMessageText');
-                                errorText.textContent = error.message;
-                                errorText.style.display = 'block';
-                                setTimeout(() => { errorText.style.display = 'none'; }, 4000);
+                                displayGlobalError(error.message);
                             }
                         });
                     }
@@ -413,16 +423,12 @@
                     createPaginationButton(page, page === pagination.current_page);
                 }
 
-                previousButton.onclick = function(){
-                    if(pagination.current_page > 1){
-                        loadErrands(pagination.current_page - 1);
-                    }
+                previousButton.onclick = () => {
+                    if(pagination.current_page > 1) loadErrands(pagination.current_page - 1);
                 };
 
-                nextButton.onclick = function(){
-                    if(pagination.current_page < pagination.last_page){
-                        loadErrands(pagination.current_page + 1);
-                    }
+                nextButton.onclick = () => {
+                    if(pagination.current_page < pagination.last_page) loadErrands(pagination.current_page + 1);
                 };
             }
 
@@ -436,34 +442,40 @@
                 if(active){
                     element.classList.add('active');
                 }else{
-                    element.addEventListener('click', function(){
-                        loadErrands(page);
-                    });
+                    element.addEventListener('click', () => loadErrands(page));
                 }
 
                 document.getElementById('pagination-pages').appendChild(button);
             }
 
             function showLoading(){
-                const template = document.getElementById('errand-loading-template');
                 tableBody.innerHTML = '';
-                tableBody.appendChild(template.content.cloneNode(true));
+                tableBody.appendChild(document.getElementById('errand-loading-template').content.cloneNode(true));
+                
+                const pagesContainer = document.getElementById('pagination-pages');
+                pagesContainer.innerHTML = '';
+                const spinnerTemplate = document.getElementById('pagination-spinner-template');
+                if (spinnerTemplate) {
+                    pagesContainer.appendChild(spinnerTemplate.content.cloneNode(true));
+                }
+                paginationContainer.style.display = 'flex';
             }
 
             function showError(message){
                 const template = document.getElementById('errand-error-template');
                 const row = template.content.cloneNode(true);
 
-                row.querySelector('.errand-error-text').textContent = message;
+                const errorCell = row.querySelector('.errand-error-text');
+                if(errorCell) errorCell.textContent = message;
 
                 tableBody.innerHTML = '';
                 tableBody.appendChild(row);
-                paginationContainer.innerHTML = '';
+                
+                document.getElementById('pagination-pages').innerHTML = '<span style="font-size: 0.9rem; color: #dc3545;">Unavailable</span>';
             }
 
             function showMetricCard(cardId, value){
                 const card = document.getElementById(cardId);
-
                 if(card && value > 0){
                     card.style.display = 'flex';
                 }
@@ -473,14 +485,14 @@
                 clearSearchButton.style.display = searchInput.value.trim() !== '' ? 'inline-block' : 'none';
             }
 
-            searchButton.addEventListener('click', function(event){
+            searchButton.addEventListener('click', (event) => {
                 event.preventDefault();
                 currentSearch = searchInput.value.trim();
                 currentPage = 1;
                 loadErrands();
             });
 
-            searchInput.addEventListener('keydown', function(event){
+            searchInput.addEventListener('keydown', (event) => {
                 if(event.key === 'Enter'){
                     event.preventDefault();
                     currentSearch = searchInput.value.trim();
@@ -489,11 +501,9 @@
                 }
             });
 
-            searchInput.addEventListener('input', function(){
-                updateClearButton();
-            });
+            searchInput.addEventListener('input', updateClearButton);
 
-            clearSearchButton.addEventListener('click', function(event){
+            clearSearchButton.addEventListener('click', (event) => {
                 event.preventDefault(); 
                 searchInput.value = '';
                 currentSearch = '';
@@ -502,7 +512,7 @@
                 loadErrands();
             });
 
-            perPageSelect.addEventListener('change', function(){
+            perPageSelect.addEventListener('change', () => {
                 currentPage = 1;
                 loadErrands();
             });
