@@ -34,6 +34,10 @@ Route::middleware('auth')->group(function () {
         return view('shared.change_password');
     })->name('profile.change-password');
 
+    Route::get('/notifications', function () {
+        return view('shared.notifications');
+    })->name('notifications');
+
     // Client dashboard
     Route::middleware('role:client')->group(function () {
         Route::get('/client/dashboard', function () {

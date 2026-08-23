@@ -3611,7 +3611,7 @@ select[name="role"] option[value="client"] {
 
 /* Notification */
 .notifications {
-    margin-top: 77px;
+    margin-top: 67px;
     display: flex;
     flex-direction: column;
     justify-content: flex-start; 
@@ -3888,7 +3888,7 @@ select[name="role"] option[value="client"] {
 
     /* Notifications */
     .notifications {
-        margin-top: 125px; /* Safely lowers the notifications container below the stacked mobile header wrapper */
+        margin-top: 115px;
     }
 
     .notification-card {
@@ -4166,7 +4166,7 @@ select[name="role"] option[value="client"] {
 
     /* Notifications */
     .notifications {
-        margin-top: 131px; /* Ensures full viewport clearance on tight smartphone screens */
+        margin-top: 121px; /* Ensures full viewport clearance on tight smartphone screens */
     }
 
     .notif-contents-header {

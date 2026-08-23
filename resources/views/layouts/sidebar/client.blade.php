@@ -26,7 +26,11 @@
                     <i class="fa-solid fa-circle-user"></i> My Profile
                 </a>
             </li>
-            <li><a href="#" class="notif-link"><i class="fa-solid fa-bell"></i> Notifications</a></li>
+            <li>
+                <a href="{{ route('notifications') }}" class="{{ request()->routeIs('notifications') ? 'active' : '' }}">
+                    <i class="fa-solid fa-bell"></i> Notifications
+                </a>
+            </li>
             <li>
                 <button type="button" id="logoutButton" class="logout-button">
                     <i class="fa-solid fa-right-from-bracket"></i> 

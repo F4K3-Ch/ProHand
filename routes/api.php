@@ -4,11 +4,13 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\TaskerController;
+use App\Http\Controllers\NotificationController;
 
 Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
     Route::get('/profile/data', [ProfileController::class, 'data']);
     Route::post('/profile/update', [ProfileController::class, 'update']);
     Route::post('/profile/update-password', [ProfileController::class, 'updatePassword']);
+    Route::get('/notifications', [NotificationController::class, 'index']);
 
     Route::middleware('role:client')->group(function () {
         Route::get('/client/dashboard/active-metrics', [ClientController::class, 'activeMetrics']);
