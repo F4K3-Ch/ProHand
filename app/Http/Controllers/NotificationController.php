@@ -46,4 +46,16 @@ class NotificationController extends Controller
             'notifications' => $formattedNotifications,
         ]);
     }
+
+    public function unreadCount(Request $request)
+    {
+        $count = Notification::where('user_id', $request->user()->id)
+            ->where('is_read', false)
+            ->count();
+
+        return response()->json([
+            'success' => true,
+            'unread_count' => $count,
+        ]);
+    }
 }

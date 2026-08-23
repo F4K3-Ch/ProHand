@@ -10,7 +10,9 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
     Route::get('/profile/data', [ProfileController::class, 'data']);
     Route::post('/profile/update', [ProfileController::class, 'update']);
     Route::post('/profile/update-password', [ProfileController::class, 'updatePassword']);
+    
     Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
 
     Route::middleware('role:client')->group(function () {
         Route::get('/client/dashboard/active-metrics', [ClientController::class, 'activeMetrics']);

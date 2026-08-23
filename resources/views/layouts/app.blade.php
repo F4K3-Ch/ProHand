@@ -72,6 +72,53 @@
         const apiKey = "{{ config('services.my_api.api_key') }}";
         const origin = "{{ config('services.my_api.origin') }}";
 
+        // Notification badge
+        async function loadNotificationBadge() {
+            const notificationBadge = document.getElementById('notificationBadge');
+
+            if (!notificationBadge) return;
+
+            try {
+                const response = await fetch('/api/notifications/unread-count', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-API-KEY': apiKey,
+                        'X-MY-ORIGIN': origin
+                    },
+                    credentials: 'same-origin'
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(
+                        result.message || 'Failed to load notification count.'
+                    );
+                }
+
+                const unreadCount = Number(result.unread_count || 0);
+
+                if (unreadCount > 0) {
+                    notificationBadge.textContent =
+                        unreadCount > 99 ? '99+' : unreadCount;
+
+                    notificationBadge.style.display = 'inline-flex';
+                } else {
+                    notificationBadge.textContent = '';
+                    notificationBadge.style.display = 'none';
+                }
+
+            } catch (error) {
+                console.error('Notification badge error:', error);
+
+                notificationBadge.textContent = '';
+                notificationBadge.style.display = 'none';
+            }
+        }
+
+        loadNotificationBadge();
+
         // Session messages
         const sessionSuccessMessage = document.getElementById('sessionSuccessMessage');
         const sessionErrorMessage = document.getElementById('sessionErrorMessage');

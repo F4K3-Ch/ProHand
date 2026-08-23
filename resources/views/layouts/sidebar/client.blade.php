@@ -27,8 +27,10 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('notifications') }}" class="{{ request()->routeIs('notifications') ? 'active' : '' }}">
-                    <i class="fa-solid fa-bell"></i> Notifications
+                <a href="{{ route('notifications') }}" class="notif-link {{ request()->routeIs('notifications') ? 'active' : '' }}">
+                    <i class="fa-solid fa-bell"></i>
+                    Notifications
+                    <span id="notificationBadge" class="notif-badge" style="display: none;"></span>
                 </a>
             </li>
             <li>
