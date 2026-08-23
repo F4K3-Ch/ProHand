@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Models\Notification;
 use App\Models\Errand;
 use App\Models\ErrandAttachment;
 use Illuminate\Http\Request;
@@ -84,6 +86,74 @@ class TaskerController extends Controller
                 'from' => $errands->firstItem(),
                 'to' => $errands->lastItem(),
             ],
+        ]);
+    }
+
+    public function acceptErrand(Request $request, $id)
+    {
+        $tasker = $request->user();
+
+        $errand = Errand::where('id', $id)->where('status', 'pending')->first();
+
+        if (!$errand) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errand not found or is no longer available.',
+            ], 404);
+        }
+
+        $errand->status = 'pending_payment';
+        $errand->tasker_id = $tasker->id;
+        $errand->accepted_at = Carbon::now();
+        $errand->save();
+
+        $errand_id = $errand->id;
+        $errand_title = $errand->title;
+        
+        $client_id = $errand->client_id;
+        $client = User::find($client_id);
+        $client_full_name = $client ? trim("{$client->first_name} {$client->last_name}") : 'Client';
+        
+        $tasker_id = $tasker->id;
+        $tasker_full_name = trim("{$tasker->first_name} {$tasker->last_name}");
+
+        if (!empty($errand->payment_receipt_path)) {
+            $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Your uploaded proof of payment is under review.";
+        } else {
+            $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Please settle your payment upload to begin the task.";
+        }
+
+        $admin_msg = "Errand Accepted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Awaiting payment verification step.";
+
+        $notif_type = "errand";
+
+        $client_link = route('client.view-errand', ['id' => $errand_id]);
+        $admin_link = route('admin.dashboard');
+
+        if ($client_id) {
+            Notification::create([
+                'user_id' => $client_id,
+                'type' => $notif_type,
+                'message' => $client_msg,
+                'link' => $client_link,
+                'is_read' => false,
+            ]);
+        }
+
+        $admins = User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id' => $admin->id,
+                'type' => $notif_type,
+                'message' => $admin_msg,
+                'link' => $admin_link,
+                'is_read' => false,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Errand accepted successfully!',
         ]);
     }
 }

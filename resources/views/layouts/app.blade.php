@@ -74,9 +74,11 @@
 
         // Notification badge
         async function loadNotificationBadge() {
-            const notificationBadge = document.getElementById('notificationBadge');
+            const badge = document.getElementById('notificationBadge');
 
-            if (!notificationBadge) return;
+            if (!badge) {
+                return;
+            }
 
             try {
                 const response = await fetch('/api/notifications/unread-count', {
@@ -97,27 +99,26 @@
                     );
                 }
 
-                const unreadCount = Number(result.unread_count || 0);
+                const count = Number(result.count) || 0;
 
-                if (unreadCount > 0) {
-                    notificationBadge.textContent =
-                        unreadCount > 99 ? '99+' : unreadCount;
-
-                    notificationBadge.style.display = 'inline-flex';
+                if (count > 0) {
+                    badge.textContent = count > 99 ? '99+' : count;
+                    badge.style.display = 'flex';
                 } else {
-                    notificationBadge.textContent = '';
-                    notificationBadge.style.display = 'none';
+                    badge.textContent = '';
+                    badge.style.display = 'none';
                 }
 
             } catch (error) {
                 console.error('Notification badge error:', error);
-
-                notificationBadge.textContent = '';
-                notificationBadge.style.display = 'none';
             }
         }
 
+        // Initial check
         loadNotificationBadge();
+
+        // Check for new notifications every 5 seconds
+        setInterval(loadNotificationBadge, 5000);
 
         // Session messages
         const sessionSuccessMessage = document.getElementById('sessionSuccessMessage');

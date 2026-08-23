@@ -13,6 +13,7 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
     
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
 
     Route::middleware('role:client')->group(function () {
         Route::get('/client/dashboard/active-metrics', [ClientController::class, 'activeMetrics']);
@@ -26,5 +27,6 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
     Route::middleware('role:tasker')->group(function () {
         Route::get('/tasker/dashboard/pending-metrics', [TaskerController::class, 'pendingMetrics']);
         Route::get('/tasker/dashboard/pending-errands', [TaskerController::class, 'pendingErrands']);
+        Route::post('/tasker/errands/{id}/accept', [TaskerController::class, 'acceptErrand']);
     });
 });
