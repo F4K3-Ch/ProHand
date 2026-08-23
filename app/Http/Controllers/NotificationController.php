@@ -33,10 +33,8 @@ class NotificationController extends Controller
                 'message' => $notification->message,
                 'link' => $notification->link,
                 'is_read' => $notification->is_read,
-                'created_at' => $notification->created_at
-                    ? Carbon::parse($notification->created_at)
-                        ->timezone('Asia/Manila')
-                        ->format('M d, Y h:i A')
+                'created_at' => $notification->created_at 
+                    ? Carbon::parse($notification->created_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
                     : '—',
             ];
         });

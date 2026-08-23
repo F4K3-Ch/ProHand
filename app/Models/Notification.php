@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Notification extends Model
 {
+    protected $table = 'notifications';
+    public $timestamps = true;
+
     protected $fillable = [
         'user_id',
         'type',
@@ -14,7 +17,7 @@ class Notification extends Model
         'is_read',
     ];
 
-    public $timestamps = false;
+    const UPDATED_AT = null;
 
     protected $casts = [
         'is_read' => 'boolean',
