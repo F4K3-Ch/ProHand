@@ -13,7 +13,7 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
     
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
-    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+    Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead']);
 
     Route::middleware('role:client')->group(function () {
         Route::get('/client/dashboard/active-metrics', [ClientController::class, 'activeMetrics']);

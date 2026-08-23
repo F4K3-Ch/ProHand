@@ -129,6 +129,7 @@
             let currentSearch = '';
 
             loadNotifications();
+            markNotificationsAsRead();
             updateClearButton();
 
             async function loadNotifications(){
@@ -166,6 +167,28 @@
 
                     displayGlobalError(error.message);
                     showError(error.message || 'Unable to load notifications.');
+                }
+            }
+
+            async function markNotificationsAsRead() {
+                try {
+                    await fetch('/api/notifications/mark-as-read', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'X-API-KEY': apiKey,
+                            'X-MY-ORIGIN': origin
+                        },
+                        credentials: 'same-origin'
+                    });
+
+                    const badge = document.getElementById('notificationBadge');
+                    if (badge) {
+                        badge.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Failed to mark notifications as read:', error);
                 }
             }
 
@@ -226,6 +249,7 @@
                     notificationsList.appendChild(card);
                 });
             }
+
             function showLoading(){
                 notificationsList.innerHTML = '';
 

@@ -72,13 +72,10 @@
         const apiKey = "{{ config('services.my_api.api_key') }}";
         const origin = "{{ config('services.my_api.origin') }}";
 
-        // Notification badge
-        async function loadNotificationBadge() {
+        // Global unread notification badge fetcher
+        document.addEventListener('DOMContentLoaded', async function () {
             const badge = document.getElementById('notificationBadge');
-
-            if (!badge) {
-                return;
-            }
+            if (!badge) return;
 
             try {
                 const response = await fetch('/api/notifications/unread-count', {
@@ -92,33 +89,16 @@
                 });
 
                 const result = await response.json();
-
-                if (!response.ok || !result.success) {
-                    throw new Error(
-                        result.message || 'Failed to load notification count.'
-                    );
-                }
-
-                const count = Number(result.count) || 0;
-
-                if (count > 0) {
-                    badge.textContent = count > 99 ? '99+' : count;
+                if (result.success && result.count > 0) {
+                    badge.textContent = result.count > 99 ? '99+' : result.count;
                     badge.style.display = 'flex';
                 } else {
-                    badge.textContent = '';
                     badge.style.display = 'none';
                 }
-
             } catch (error) {
-                console.error('Notification badge error:', error);
+                console.error('Failed to load unread notification count:', error);
             }
-        }
-
-        // Initial check
-        loadNotificationBadge();
-
-        // Check for new notifications every 5 seconds
-        setInterval(loadNotificationBadge, 5000);
+        });
 
         // Session messages
         const sessionSuccessMessage = document.getElementById('sessionSuccessMessage');
