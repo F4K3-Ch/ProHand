@@ -46,32 +46,23 @@ class ProfileController extends Controller
             'remove_picture' => 'nullable|boolean',
         ]);
 
-        $user->first_name = $validated['first_name'];
-        $user->middle_name = $validated['middle_name'] ?? null;
-        $user->last_name = $validated['last_name'];
-        $user->contact_number = $validated['contact_number'];
-
-        // Handle image removal request
         if ($request->boolean('remove_picture')) {
             if ($user->profile_picture && $user->profile_picture !== 'uploads/profile_pictures/default.jpg' && Storage::disk('public')->exists($user->profile_picture)) {
                 Storage::disk('public')->delete($user->profile_picture);
             }
-            $user->profile_picture = 'uploads/profile_pictures/default.jpg';
+            $validated['profile_picture'] = 'uploads/profile_pictures/default.jpg';
         }
 
-        // Handle new profile picture upload
         if ($request->hasFile('profile_picture')) {
-            // Delete old picture if it exists and is not the default file
             if ($user->profile_picture && $user->profile_picture !== 'uploads/profile_pictures/default.jpg' && Storage::disk('public')->exists($user->profile_picture)) {
                 Storage::disk('public')->delete($user->profile_picture);
             }
 
             $file = $request->file('profile_picture');
-            $path = $file->store('uploads/profile_pictures', 'public');
-            $user->profile_picture = $path;
+            $validated['profile_picture'] = $file->store('uploads/profile_pictures', 'public');
         }
 
-        $user->save();
+        $user->update($validated);
 
         return response()->json([
             'success' => true,
