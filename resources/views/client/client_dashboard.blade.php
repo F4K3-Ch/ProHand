@@ -188,7 +188,7 @@
 
     <template id="errand-error-template">
         <tr>
-            <td class="no-found" colspan="8" class="errand-error-text">Unable to load errands.</td>
+            <td class="no-found errand-error-text" colspan="8">Unable to load errands.</td>
         </tr>
     </template>
 
