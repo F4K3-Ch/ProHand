@@ -223,7 +223,7 @@
                 // Handle Payment Proof
                 const paymentBox = document.getElementById('payment-proof-box');
                 if (errand.payment_proof) {
-                    paymentBox.style.display = 'block';
+                    paymentBox.style.display = 'flex';
                     const paymentContainer = document.getElementById('errand-payment-proof');
                     const paymentItem = paymentContainer.querySelector('.attachment-item');
                     const noPaymentItem = paymentContainer.querySelector('.no-attachments');
