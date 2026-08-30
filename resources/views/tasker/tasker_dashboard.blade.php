@@ -95,11 +95,7 @@
                                 </tr>
                             </thead>
                             <tbody id="errands-table-body">
-                                <tr>
-                                    <td class="no-found" colspan="8">
-                                        <span class="circle-spinner" style="width:20px;height:20px;border-width:2px;"></span>
-                                    </td>
-                                </tr>
+
                             </tbody>
                         </table>
                     </div>
@@ -152,10 +148,6 @@
         </tr>
     </template>
 
-    <template id="pagination-spinner-template">
-        <span class="circle-spinner" style="width:15px;height:15px;border-width:2px;display:inline-block;"></span>
-    </template>
-
     <template id="pagination-button-template">
         <button type="button" class="pagination-button"></button>
     </template>
@@ -166,6 +158,7 @@
         document.addEventListener('DOMContentLoaded', function(){
             const tableBody = document.getElementById('errands-table-body');
             const paginationContainer = document.getElementById('pagination-container');
+            const pagesContainer = document.getElementById('pagination-pages');
             const searchInput = document.getElementById('errandSearch');
             const searchButton = document.getElementById('searchButton');
             const clearSearchButton = document.getElementById('clearSearchButton');
@@ -177,13 +170,18 @@
 
             loadMetrics();
             loadErrands();
-            updateClearButton();
+            updateClearButtonState();
 
             function displayGlobalError(message){
                 if(!errorText) return;
                 errorText.textContent = message;
                 errorText.style.display = 'block';
                 setTimeout(() => { errorText.style.display = 'none'; }, 5000);
+            }
+
+            function showLoading(){
+                tableBody.innerHTML = '';
+                tableBody.appendChild(document.getElementById('errand-loading-template').content.cloneNode(true));
             }
 
             async function loadMetrics(){
@@ -207,11 +205,6 @@
                 }catch(error){
                     console.error('Metrics error:', error);
                     displayGlobalError(error.message);
-                    
-                    const metricPendingElement = document.getElementById('metric-pending');
-                    if(metricPendingElement) {
-                        metricPendingElement.innerHTML = '<span style="font-size: 0.8rem; color: #dc3545;">Unavailable</span>';
-                    }
                 }
             }
 
@@ -242,7 +235,7 @@
                     const result = await response.json();
 
                     if(!response.ok || !result.success){
-                        throw new Error(result.message || 'Failed to load pending errands.');
+                        throw new Error(result.message || 'Failed to load errands.');
                     }
 
                     displayErrands(result.errands);
@@ -250,7 +243,8 @@
                 }catch(error){
                     console.error('Errands error:', error);
                     displayGlobalError(error.message);
-                    showError(error.message || 'Unable to load errands.');
+                    tableBody.innerHTML = '';
+                    tableBody.appendChild(document.getElementById('errand-error-template').content.cloneNode(true));
                 }
             }
 
@@ -332,7 +326,6 @@
             function displayPagination(pagination){
                 const previousButton = document.getElementById('pagination-previous');
                 const nextButton = document.getElementById('pagination-next');
-                const pagesContainer = document.getElementById('pagination-pages');
 
                 pagesContainer.innerHTML = '';
 
@@ -371,70 +364,44 @@
                     element.addEventListener('click', () => loadErrands(page));
                 }
 
-                document.getElementById('pagination-pages').appendChild(button);
+                pagesContainer.appendChild(button);
             }
 
-            function showLoading(){
-                tableBody.innerHTML = '';
-                tableBody.appendChild(document.getElementById('errand-loading-template').content.cloneNode(true));
-                
-                const pagesContainer = document.getElementById('pagination-pages');
-                pagesContainer.innerHTML = '';
-                const spinnerTemplate = document.getElementById('pagination-spinner-template');
-                if (spinnerTemplate) {
-                    pagesContainer.appendChild(spinnerTemplate.content.cloneNode(true));
-                }
-                paginationContainer.style.display = 'flex';
-            }
-
-            function showError(message){
-                const template = document.getElementById('errand-error-template');
-                const row = template.content.cloneNode(true);
-
-                const errorCell = row.querySelector('.errand-error-text');
-                if(errorCell) errorCell.textContent = message;
-
-                tableBody.innerHTML = '';
-                tableBody.appendChild(row);
-                
-                document.getElementById('pagination-pages').innerHTML = '<span style="font-size: 0.9rem; color: #dc3545;">Unavailable</span>';
-            }
-
-            function updateClearButton(){
-                clearSearchButton.style.display = searchInput.value.trim() !== '' ? 'inline-block' : 'none';
-            }
-
-            searchButton.addEventListener('click', (event) => {
-                event.preventDefault();
+            // Event Listeners for search & controls
+            searchButton.addEventListener('click', function() {
                 currentSearch = searchInput.value.trim();
                 currentPage = 1;
                 loadErrands();
+                updateClearButtonState();
             });
 
-            searchInput.addEventListener('keydown', (event) => {
-                if(event.key === 'Enter'){
-                    event.preventDefault();
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
                     currentSearch = searchInput.value.trim();
                     currentPage = 1;
                     loadErrands();
+                    updateClearButtonState();
                 }
             });
 
-            searchInput.addEventListener('input', updateClearButton);
-
-            clearSearchButton.addEventListener('click', (event) => {
-                event.preventDefault(); 
+            clearSearchButton.addEventListener('click', function() {
                 searchInput.value = '';
                 currentSearch = '';
                 currentPage = 1;
-                updateClearButton();
                 loadErrands();
+                updateClearButtonState();
             });
 
-            perPageSelect.addEventListener('change', () => {
+            perPageSelect.addEventListener('change', function() {
                 currentPage = 1;
                 loadErrands();
             });
+
+            function updateClearButtonState() {
+                if(clearSearchButton) {
+                    clearSearchButton.style.display = searchInput.value ? 'inline-block' : 'none';
+                }
+            }
         });
     </script>
 @endpush
