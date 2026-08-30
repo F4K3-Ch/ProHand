@@ -142,11 +142,7 @@
                                 </tr>
                             </thead>
                             <tbody id="errands-table-body">
-                                <tr>
-                                    <td class="no-found" colspan="8">
-                                        <span class="circle-spinner" style="width:20px;height:20px;border-width:2px;"></span>
-                                    </td>
-                                </tr>
+
                             </tbody>
                         </table>
                     </div>
@@ -191,6 +187,14 @@
         </tr>
     </template>
 
+    <template id="errand-loading-template">
+        <tr>
+            <td class="no-found" colspan="8">
+                <span class="circle-spinner" style="width:20px;height:20px;border-width:2px;"></span>
+            </td>
+        </tr>
+    </template>
+
     <template id="pagination-button-template">
         <button type="button" class="pagination-button"></button>
     </template>
@@ -201,6 +205,7 @@
         document.addEventListener('DOMContentLoaded', function(){
             const tableBody = document.getElementById('errands-table-body');
             const paginationContainer = document.getElementById('pagination-container');
+            const pagesContainer = document.getElementById('pagination-pages');
             const searchInput = document.getElementById('errandSearch');
             const searchButton = document.getElementById('searchButton');
             const clearSearchButton = document.getElementById('clearSearchButton');
@@ -212,13 +217,18 @@
 
             loadMetrics();
             loadErrands();
-            updateClearButton();
+            updateClearButtonState();
 
             function displayGlobalError(message){
                 if(!errorText) return;
                 errorText.textContent = message;
                 errorText.style.display = 'block';
                 setTimeout(() => { errorText.style.display = 'none'; }, 5000);
+            }
+
+            function showLoading(){
+                tableBody.innerHTML = '';
+                tableBody.appendChild(document.getElementById('errand-loading-template').content.cloneNode(true));
             }
 
             async function loadMetrics(){
@@ -308,6 +318,8 @@
                 }catch(error){
                     console.error('Errands error:', error);
                     displayGlobalError(error.message);
+                    tableBody.innerHTML = '';
+                    tableBody.appendChild(document.getElementById('errand-error-template').content.cloneNode(true));
                 }
             }
 
@@ -337,8 +349,6 @@
 
                     row.querySelector('.errand-view-link').href = '/admin/view-errand/' + encodeURIComponent(errand.id);
 
-                    const actionSlot = row.querySelector('.action-slot');
-
                     tableBody.appendChild(row);
                 });
             }
@@ -346,7 +356,6 @@
             function displayPagination(pagination){
                 const previousButton = document.getElementById('pagination-previous');
                 const nextButton = document.getElementById('pagination-next');
-                const pagesContainer = document.getElementById('pagination-pages');
 
                 pagesContainer.innerHTML = '';
 
@@ -385,9 +394,43 @@
                     element.addEventListener('click', () => loadErrands(page));
                 }
 
-                document.getElementById('pagination-pages').appendChild(button);
-                const pagesContainer = document.getElementById('pagination-pages');
-                pagesContainer.innerHTML = '';
+                pagesContainer.appendChild(button);
+            }
+
+            // Event Listeners for search & controls
+            searchButton.addEventListener('click', function() {
+                currentSearch = searchInput.value.trim();
+                currentPage = 1;
+                loadErrands();
+                updateClearButtonState();
+            });
+
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    currentSearch = searchInput.value.trim();
+                    currentPage = 1;
+                    loadErrands();
+                    updateClearButtonState();
+                }
+            });
+
+            clearSearchButton.addEventListener('click', function() {
+                searchInput.value = '';
+                currentSearch = '';
+                currentPage = 1;
+                loadErrands();
+                updateClearButtonState();
+            });
+
+            perPageSelect.addEventListener('change', function() {
+                currentPage = 1;
+                loadErrands();
+            });
+
+            function updateClearButtonState() {
+                if(clearSearchButton) {
+                    clearSearchButton.style.display = searchInput.value ? 'inline-block' : 'none';
+                }
             }
         });
     </script>
