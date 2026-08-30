@@ -261,12 +261,21 @@
                     document.getElementById('metric-dispute').textContent = metrics.dispute;
                     document.getElementById('metric-total').textContent = metrics.total;
 
-                    showMetricCard('metric-card-pending', metrics.pending);
-                    showMetricCard('metric-card-pending-payment', metrics.pending_payment);
-                    showMetricCard('metric-card-in-process', metrics.in_process);
-                    showMetricCard('metric-card-pending-completion', metrics.pending_completion);
-                    showMetricCard('metric-card-pending-failure', metrics.pending_failure);
-                    showMetricCard('metric-card-dispute', metrics.dispute);
+                    const cardToggles = {
+                        'metric-card-pending': metrics.pending,
+                        'metric-card-pending-payment': metrics.pending_payment,
+                        'metric-card-in-process': metrics.in_process,
+                        'metric-card-pending-completion': metrics.pending_completion,
+                        'metric-card-pending-failure': metrics.pending_failure,
+                        'metric-card-dispute': metrics.dispute
+                    };
+
+                    Object.entries(cardToggles).forEach(([cardId, val]) => {
+                        const card = document.getElementById(cardId);
+                        if (card) {
+                            card.style.display = val > 0 ? 'flex' : 'none';
+                        }
+                    });
                     
                     const totalCard = document.getElementById('metric-card-total');
                     if(totalCard) totalCard.style.display = 'flex';
@@ -501,13 +510,6 @@
                 tableBody.appendChild(row);
                 
                 document.getElementById('pagination-pages').innerHTML = '<span style="font-size: 0.9rem; color: #dc3545;">Unavailable</span>';
-            }
-
-            function showMetricCard(cardId, value){
-                const card = document.getElementById(cardId);
-                if(card && value > 0){
-                    card.style.display = 'flex';
-                }
             }
 
             function updateClearButton(){

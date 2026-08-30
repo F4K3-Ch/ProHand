@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Errand;
-use App\Models\ErrandAttachment;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Errand;
+use App\Models\ErrandAttachment;
+use Illuminate\Http\Request;
 
 class ClientController extends Controller
 {
@@ -27,12 +27,7 @@ class ClientController extends Controller
         $pendingFailure = $metrics['pending_failure'] ?? 0;
         $dispute = $metrics['dispute'] ?? 0;
 
-        $total = $pending
-            + $pendingPayment
-            + $inProcess
-            + $pendingCompletion
-            + $pendingFailure
-            + $dispute;
+        $total = $metrics->sum();
 
         return response()->json([
             'success' => true,

@@ -1,10 +1,11 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ClientController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\TaskerController;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\NotificationController;
+use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
     Route::get('/profile/data', [ProfileController::class, 'data']);
@@ -28,5 +29,10 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
         Route::get('/tasker/dashboard/pending-metrics', [TaskerController::class, 'pendingMetrics']);
         Route::get('/tasker/dashboard/pending-errands', [TaskerController::class, 'pendingErrands']);
         Route::post('/tasker/errands/{id}/accept', [TaskerController::class, 'acceptErrand']);
+    });
+
+    Route::middleware('role:admin')->group(function() {
+        Route::get('/admin/dashboard/active-metrics', [AdminController::class, 'allActiveMetrics']);
+        Route::get('/admin/dashboard/active-errands', [AdminController::class, 'allActiveErrands']);
     });
 });
