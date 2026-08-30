@@ -174,7 +174,7 @@
             <td>
                 <div class="button-row">
                     <a href="#" class="btn-view errand-view-link">View</a>
-                    <button type="button" class="btn-delete">Delete</button>
+                    <span class="action-slot"></span>
                 </div>
             </td>
         </tr>
@@ -347,18 +347,16 @@
 
                     row.querySelector('.errand-view-link').href = '/client/view-errand/' + encodeURIComponent(errand.id);
 
-                    const deleteBtn = row.querySelector('.btn-delete');
-                    
-                    if (errand.status.toLowerCase() !== 'pending') {
-                        deleteBtn.style.display = 'none';
-                    } else {
-                        deleteBtn.addEventListener('click', async function(){
-                            const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")?';
+                    const actionSlot = row.querySelector('.action-slot');
+
+                    if (errand.raw_status === 'pending') {
+                        actionSlot.innerHTML = '<button type="button" class="btn-delete">Delete</button>';
+                        
+                        actionSlot.querySelector('.btn-delete').addEventListener('click', async function(){
+                            const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
                             const isConfirmed = await showDeleteConfirmation(customMessage);
                             
-                            if(!isConfirmed){
-                                return;
-                            }
+                            if(!isConfirmed) return;
 
                             try {
                                 const response = await fetch('/api/client/errands/' + errand.id + '/delete', {
@@ -397,6 +395,30 @@
                                 displayGlobalError(error.message);
                             }
                         });
+
+                    } else if (errand.raw_status === 'pending_payment') {
+                        actionSlot.innerHTML = '<button type="button" class="btn-cancel cancel-accepted">Cancel</button>';
+                        
+                        actionSlot.querySelector('.btn-cancel').addEventListener('click', async function(){
+                            const customMessage = 'Are you sure you want to cancel this errand? It will return to "Pending" status, and any submitted proof of payment will be preserved for review.';
+                            if(!confirm(customMessage)) return;
+                            
+                            // Add your cancel pending payment AJAX call implementation here
+                        });
+
+                    } else if (errand.raw_status === 'in_process') {
+                        if (Number(errand.cancel_requested_by_client) === 0) {
+                            actionSlot.innerHTML = '<button type="button" class="btn-cancel cancel-request">Cancel</button>';
+                            
+                            actionSlot.querySelector('.btn-cancel').addEventListener('click', async function(){
+                                const customMessage = 'Are you sure you want to send a cancellation request to the Admin? It will return to "Pending" status and this action cannot be undone until processed.';
+                                if(!confirm(customMessage)) return;
+
+                                // Add your client cancel request AJAX call implementation here
+                            });
+                        } else {
+                            actionSlot.innerHTML = '<button type="button" disabled class="btn-cancel-disabled">Cancel</button>';
+                        }
                     }
 
                     tableBody.appendChild(row);

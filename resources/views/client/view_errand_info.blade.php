@@ -145,14 +145,7 @@
                 </div>
 
                 <div class="info-bot-btn">
-                    <a href="#" id="edit-errand-btn" class="btn-edit-errand" style="display: none;">
-                        <i class="fa-solid fa-pen"></i>
-                        Edit Errand
-                    </a>
-                    <button type="button" id="delete-errand-btn" class="btn-delete" style="display: none;">
-                        <i class="fa-solid fa-trash"></i>
-                        Delete Errand
-                    </button>
+
                 </div>
             </div>
         </div>
@@ -164,7 +157,6 @@
         document.addEventListener('DOMContentLoaded', async function () {
             const mainContainer = document.querySelector('.view-main');
             const errandId = mainContainer ? mainContainer.getAttribute('data-errand-id') : null;
-            
             const errorMessage = document.getElementById('errorMessageText');
 
             if (!errandId) {
@@ -246,23 +238,19 @@
                     downloadPaymentBtn.setAttribute('download', errand.payment_proof.name);
                 }
 
-                // Handle Edit and Delete buttons visibility based on status
-                const editBtn = document.getElementById('edit-errand-btn');
-                const deleteBtn = document.getElementById('delete-errand-btn');
+                // Handle Dynamic Actions / Badges Container
+                const actionSlot = document.querySelector('.info-bot-btn');
+                actionSlot.innerHTML = '';
 
-                if (errand.status && errand.status.toLowerCase() === 'pending') {
-                    editBtn.href = '/client/edit-errand/' + errand.id;
-                    editBtn.style.display = 'inline-flex';
-                    deleteBtn.style.display = 'inline-flex';
+                if (errand.raw_status === 'pending') {
+                    actionSlot.innerHTML = '<a href="/client/edit-errand/' + errand.id + '" id="edit-errand-btn" class="btn-edit-errand"><i class="fa-solid fa-pen"></i> Edit Errand</a>' +
+                        '<button type="button" id="delete-errand-btn" class="btn-delete"><i class="fa-solid fa-trash"></i> Delete Errand</button>';
 
-                    // Delete button event listener
-                    deleteBtn.addEventListener('click', async function(){
-                            var customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")?';
-                            var isConfirmed = await showDeleteConfirmation(customMessage);
-                            
-                            if(!isConfirmed){
-                                return;
-                            }
+                    actionSlot.querySelector('#delete-errand-btn').addEventListener('click', async function(){
+                        const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")?';
+                        const isConfirmed = await showDeleteConfirmation(customMessage);
+                        
+                        if(!isConfirmed) return;
 
                         try {
                             const response = await fetch('/api/client/errands/' + errand.id + '/delete', {
@@ -277,10 +265,7 @@
                             });
 
                             const result = await response.json();
-
-                            if(!response.ok || !result.success){
-                                throw new Error(result.message || 'Failed to delete errand.');
-                            }
+                            if(!response.ok || !result.success) throw new Error(result.message || 'Failed to delete errand.');
 
                             sessionStorage.setItem('success_message', result.message);
                             window.location.href = '/client/dashboard';
@@ -294,9 +279,31 @@
                         }
                     });
 
-                } else {
-                    editBtn.style.display = 'none';
-                    deleteBtn.style.display = 'none';
+                } else if (errand.raw_status === 'pending_payment') {
+                    actionSlot.innerHTML = '<button disabled class="btn-edit-errand-disabled"><i class="fa-regular fa-pen-to-square"></i>Edit</button>' +
+                        '<button type="button" class="btn-cancel cancel-accepted"><i class="fa-solid fa-ban"></i>Cancel</button>';
+                    
+                    actionSlot.querySelector('.cancel-accepted').addEventListener('click', async function(){
+                        const customMessage = 'Are you sure you want to cancel this errand? It will return to "Pending" status, and any submitted proof of payment will be preserved for review.';
+                        if(!confirm(customMessage)) return;
+                        
+                        // Add your cancel pending payment AJAX call implementation here
+                    });
+
+                } else if (errand.raw_status === 'in_process') {
+                    if (Number(errand.cancel_requested_by_client) === 0) {
+                        actionSlot.innerHTML = '<span class="descriptive-status-badge"><i class="fa-solid fa-spinner fa-spin"></i>Tasker is performing errand...</span>' +
+                            '<button type="button" class="btn-cancel cancel-request"><i class="fa-solid fa-hand-holding-hand"></i>Request Cancel</button>';
+                        
+                        actionSlot.querySelector('.cancel-request').addEventListener('click', async function(){
+                            const customMessage = 'Are you sure you want to send a cancellation request to the Admin? It will return to "Pending" status and this action cannot be undone until processed.';
+                            if(!confirm(customMessage)) return;
+
+                            // Add your client cancel request AJAX call implementation here
+                        });
+                    } else {
+                        actionSlot.innerHTML = '<span class="descriptive-status-badge"><i class="fa-solid fa-spinner fa-spin"></i>Pending Admin Cancel...</span>';
+                    }
                 }
 
             } catch (error) {

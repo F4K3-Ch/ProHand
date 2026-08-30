@@ -98,6 +98,8 @@ class ClientController extends Controller
                     : '—',
                 'fee' => '₱' . number_format($errand->fee, 2),
                 'status' => Str::title(str_replace('_', ' ', $errand->status)),
+                'raw_status' => $errand->status,
+                'cancel_requested_by_client' => $errand->cancel_requested_by_client,
                 'status_class' => 'status-badge status-' . $errand->status,
             ];
         });
@@ -187,6 +189,8 @@ class ClientController extends Controller
             'contact' => $errand->contact,
             'fee' => '₱' . number_format($errand->fee, 2),
             'status' => Str::title(str_replace('_', ' ', $errand->status)),
+            'raw_status' => $errand->status,
+            'cancel_requested_by_client' => $errand->cancel_requested_by_client,
             'status_class' => 'status-field status-' . $errand->status,
             
             'created_at' => $errand->created_at 

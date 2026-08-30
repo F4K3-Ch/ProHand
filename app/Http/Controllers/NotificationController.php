@@ -64,8 +64,7 @@ class NotificationController extends Controller
             ->update(['is_read' => true]);
 
         return response()->json([
-            'success' => true,
-            'message' => 'Notifications marked as read.',
+            'success' => true
         ]);
     }
 }
