@@ -353,8 +353,9 @@
                         actionSlot.innerHTML = '<button type="button" class="btn-delete">Delete</button>';
                         
                         actionSlot.querySelector('.btn-delete').addEventListener('click', async function(){
+                            const customTitle = 'Confirm Deletion';
                             const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
-                            const isConfirmed = await showDeleteConfirmation(customMessage);
+                            const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
                             
                             if(!isConfirmed) return;
 
@@ -400,8 +401,11 @@
                         actionSlot.innerHTML = '<button type="button" class="btn-cancel cancel-accepted">Cancel</button>';
                         
                         actionSlot.querySelector('.btn-cancel').addEventListener('click', async function(){
+                            const customTitle = 'Confirm Cancellation';
                             const customMessage = 'Are you sure you want to cancel this errand? It will return to "Pending" status, and any submitted proof of payment will be preserved for review.';
-                            if(!confirm(customMessage)) return;
+                            const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
+                            
+                            if(!isConfirmed) return;
                             
                             // Add your cancel pending payment AJAX call implementation here
                         });
@@ -411,8 +415,11 @@
                             actionSlot.innerHTML = '<button type="button" class="btn-cancel cancel-request">Cancel</button>';
                             
                             actionSlot.querySelector('.btn-cancel').addEventListener('click', async function(){
+                                const customTitle = 'Confirm Cancellation Request';
                                 const customMessage = 'Are you sure you want to send a cancellation request to the Admin? It will return to "Pending" status and this action cannot be undone until processed.';
-                                if(!confirm(customMessage)) return;
+                                const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
+                                
+                                if(!isConfirmed) return;
 
                                 // Add your client cancel request AJAX call implementation here
                             });

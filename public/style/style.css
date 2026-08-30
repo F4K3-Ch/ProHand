@@ -299,13 +299,22 @@
     background-color: var(--color-btn-hover-bg);
 }
 
-.custom-modal-actions .btn-delete {
+.custom-modal-actions .btn-confirm-negative {
     background-color: #EF4444;
     color: #ffffff;
 }
 
-.custom-modal-actions .btn-delete:hover {
+.custom-modal-actions .btn-confirm-negative:hover {
     background-color: #B91C1C;
+}
+
+.custom-modal-actions .btn-confirm-positive {
+    background-color: #28a745;
+    color: #ffffff;
+}
+
+.custom-modal-actions .btn-confirm-positive:hover {
+    background-color: #218838;
 }
 
 @keyframes modalScaleIn {

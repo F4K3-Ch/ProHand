@@ -281,9 +281,11 @@
                     row.querySelector('.errand-view-link').href = '/tasker/view-errand/' + encodeURIComponent(errand.id);
 
                     row.querySelector('.btn-accept').addEventListener('click', async function(){
-                        if(!confirm(`Are you sure you want to accept errand #${errand.id} ("${errand.title}")?`)){
-                            return;
-                        }
+                        const customTitle = 'Confirm Acceptance';
+                        const customMessage = 'Are you sure you want to accept errand #' + errand.id + ' ("' + errand.title + '")?';
+                        const isConfirmed = await showPositiveConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
 
                         try {
                             const response = await fetch('/api/tasker/errands/' + errand.id + '/accept', {
