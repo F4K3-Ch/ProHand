@@ -349,6 +349,34 @@
 
                     row.querySelector('.errand-view-link').href = '/admin/view-errand/' + encodeURIComponent(errand.id);
 
+                    const actionSlot = row.querySelector('.action-slot');
+
+                    if (errand.raw_status === 'pending') {
+                        actionSlot.innerHTML = '<button type="button" class="btn-delete">Delete</button>';
+                        
+                        actionSlot.querySelector('.btn-delete').addEventListener('click', async function(){
+                            const customTitle = 'Confirm Deletion';
+                            const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
+                            const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
+                            
+                            if(!isConfirmed) return;
+
+                            // Add your cancel pending payment AJAX call implementation here
+                        });
+                    } else if (errand.raw_status === 'pending_payment' || errand.raw_status === 'in_process') {
+                        actionSlot.innerHTML = '<button type="button" class="btn-cancel cancel-accepted">Cancel</button>';
+                        
+                        actionSlot.querySelector('.btn-cancel').addEventListener('click', async function(){
+                            const customTitle = 'Confirm Cancellation';
+                            const customMessage = 'Force-cancel this active errand? The errand status will be reset back to "Pending" status and the platform will hold the funds for manual payout adjustments.'
+                            const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
+                            
+                            if(!isConfirmed) return;
+                            
+                            // Add your cancel pending payment AJAX call implementation here
+                        });
+                    }
+
                     tableBody.appendChild(row);
                 });
             }
