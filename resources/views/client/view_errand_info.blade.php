@@ -129,6 +129,56 @@
 
                 </div>
             </div>
+
+            <div class="users-container" id="users-container" style="display: none;">
+                <div class="user-details-container">
+                    <h1>Accepted By</h1>
+
+                    <div class="user-header-row">
+                        <div class="profile-photo-section">
+                            <div class="photo-wrapper">
+                                <img
+                                    id="tasker-profile-photo"
+                                    class="profile-preview-photo"
+                                    src=""
+                                    alt="Profile Picture"
+                                    style="display: none;"
+                                >
+
+                                <div
+                                    id="profile-photo-spinner"
+                                    class="circle-spinner"
+                                    style="width: 110px; height: 110px; border-width: 4px;"
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="group-info-box">
+                        <div class="info-box">
+                            <label>User ID</label>
+                            <span id="tasker-id">Loading...</span>
+                        </div>
+
+                        <div class="info-box">
+                            <label>Email</label>
+                            <span id="tasker-email">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="group-info-box">
+                        <div class="info-box">
+                            <label>Name</label>
+                            <span id="tasker-name">Loading...</span>
+                        </div>
+
+                        <div class="info-box">
+                            <label>Contact Number</label>
+                            <span id="tasker-contact-number">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 @endsection
@@ -184,6 +234,35 @@
                 document.getElementById('errand-in-progress-at').textContent = errand.in_progress_at;
                 document.getElementById('errand-deadline').textContent = errand.deadline;
                 document.getElementById('errand-finished-at').textContent = errand.finished_at;
+
+                // Handle Tasker Section Visibility & Data
+                const usersContainer = document.getElementById('users-container');
+                const profilePhoto = document.getElementById('tasker-profile-photo');
+                const photoSpinner = document.getElementById('profile-photo-spinner');
+
+                if (errand.tasker) {
+                    usersContainer.style.display = 'flex';
+                    
+                    document.getElementById('tasker-id').textContent = errand.tasker.id;
+                    document.getElementById('tasker-email').textContent = errand.tasker.email;
+                    document.getElementById('tasker-name').textContent = errand.tasker.name;
+                    document.getElementById('tasker-contact-number').textContent = errand.tasker.contact_number;
+
+                    if (errand.tasker.profile_picture) {
+                        profilePhoto.src = errand.tasker.profile_picture;
+                        profilePhoto.onload = function() {
+                            photoSpinner.style.display = 'none';
+                            profilePhoto.style.display = 'flex';
+                        };
+                        profilePhoto.onerror = function() {
+                            photoSpinner.style.display = 'none';
+                        };
+                    } else {
+                        photoSpinner.style.display = 'none';
+                    }
+                } else {
+                    usersContainer.style.display = 'none';
+                }
 
                 // Handle Attachments
                 const attachContainer = document.getElementById('errand-attachment');

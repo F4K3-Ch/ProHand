@@ -135,20 +135,22 @@
                     <h1>Created By</h1>
 
                     <div class="user-header-row">
-                        <div class="user-profile-photo">
-                            <img
-                                id="client-profile-photo"
-                                class="profile-preview-photo"
-                                src=""
-                                alt="Profile Picture"
-                                style="display: none;"
-                            >
+                        <div class="profile-photo-section">
+                            <div class="photo-wrapper">
+                                <img
+                                    id="client-profile-photo"
+                                    class="profile-preview-photo"
+                                    src=""
+                                    alt="Profile Picture"
+                                    style="display: none;"
+                                >
 
-                            <div
-                                id="profile-photo-spinner"
-                                class="circle-spinner"
-                                style="width: 110px; height: 110px; border-width: 4px;"
-                            ></div>
+                                <div
+                                    id="profile-photo-spinner"
+                                    class="circle-spinner"
+                                    style="width: 110px; height: 110px; border-width: 4px;"
+                                ></div>
+                            </div>
                         </div>
 
                         <div class="user-cancellation-alert-box">
@@ -197,20 +199,22 @@
                     <h1>Accepted By</h1>
 
                     <div class="user-header-row">
-                        <div class="user-profile-photo">
-                            <img
-                                id="tasker-profile-photo"
-                                class="profile-preview-photo"
-                                src=""
-                                alt="Profile Picture"
-                                style="display: none;"
-                            >
+                        <div class="profile-photo-section">
+                            <div class="photo-wrapper">
+                                <img
+                                    id="tasker-profile-photo"
+                                    class="profile-preview-photo"
+                                    src=""
+                                    alt="Profile Picture"
+                                    style="display: none;"
+                                >
 
-                            <div
-                                id="profile-photo-spinner"
-                                class="circle-spinner"
-                                style="width: 110px; height: 110px; border-width: 4px;"
-                            ></div>
+                                <div
+                                    id="profile-photo-spinner"
+                                    class="circle-spinner"
+                                    style="width: 110px; height: 110px; border-width: 4px;"
+                                ></div>
+                            </div>
                         </div>
 
                         <div class="user-cancellation-alert-box">

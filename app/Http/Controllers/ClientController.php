@@ -158,7 +158,7 @@ class ClientController extends Controller
     {
         $clientId = $request->user()->id;
 
-        $errand = Errand::with(['attachment'])
+        $errand = Errand::with(['attachment', 'tasker'])
             ->where('id', $id)
             ->where('client_id', $clientId)
             ->first();
@@ -207,6 +207,16 @@ class ClientController extends Controller
             'attachment' => $errand->attachment ? [
                 'name' => $errand->attachment->original_name,
                 'url' => Storage::url($errand->attachment->file_path)
+            ] : null,
+
+            'tasker' => $errand->tasker ? [
+                'id' => $errand->tasker->id,
+                'name' => trim("{$errand->tasker->first_name} {$errand->tasker->middle_name} {$errand->tasker->last_name}"),
+                'email' => $errand->tasker->email,
+                'contact_number' => $errand->tasker->contact_number,
+                'profile_picture' => $errand->tasker->profile_picture 
+                    ? Storage::url($errand->tasker->profile_picture) 
+                    : asset('storage/uploads/profile_pictures/default.jpg')
             ] : null,
         ];
 

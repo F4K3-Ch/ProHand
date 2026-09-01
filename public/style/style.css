@@ -2705,15 +2705,13 @@ select[name="role"] option[value="client"] {
 /* Info Container */
 .info-container {
     display: flex;
-    flex-wrap: wrap;
     flex-direction: row;
     justify-content: center;
-    align-items: stretch; 
+    align-items: flex-start;
     gap: 10px;
     max-width: 1110px;
     width: 100%;
 }
-
 .errand-details-container,
 .users-container,
 .tasker-details-container,
@@ -4247,6 +4245,18 @@ select[name="role"] option[value="client"] {
         position: fixed;
         top: 12px;
         left: 14px; /* Glues the back action to the phone screen frame margin */
+    }
+
+    .info-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .errand-details-container,
+    .users-container,
+    .tasker-details-container,
+    .client-details-container {
+        max-width: 100%;
     }
 
     .profile-info-container {
