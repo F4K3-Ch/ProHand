@@ -123,25 +123,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="info-box" id="payment-proof-box" style="display: none;">
-                        <label>Proof Of Payment</label>
-                        <div id="errand-payment-proof">
-                            <div class="attachment-item" style="display: none;">
-                                <a href="#" target="_blank" class="attachment-name" title="Preview File">
-                                    <i class="fa-solid fa-file"></i>
-                                    <span class="attachment-filename"></span>
-                                </a>
-                                <a href="#" class="btn-download" download>
-                                    <i class="fa-solid fa-download"></i>
-                                    Download
-                                </a>
-                            </div>
-                            <div class="no-attachments">
-                                <p class="no-attachment">None</p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="info-bot-btn">
