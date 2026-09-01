@@ -246,7 +246,7 @@
                     document.getElementById('metric-pending').textContent = metrics.pending;
                     document.getElementById('metric-accepted').textContent = metrics.accepted;
                     document.getElementById('metric-in-progress').textContent = metrics.in_progress;
-                    document.getElementById('metric-pending-completion').textContent = metrics.pending_completion;
+                    document.getElementById('metric-awaiting-confirmation').textContent = metrics.awaiting_confirmation;
                     document.getElementById('metric-dispute').textContent = metrics.dispute;
                     document.getElementById('metric-total').textContent = metrics.total;
 
@@ -254,7 +254,7 @@
                         'metric-card-pending': metrics.pending,
                         'metric-card-accepted': metrics.accepted,
                         'metric-card-in-progress': metrics.in_progress,
-                        'metric-card-pending-completion': metrics.pending_completion,
+                        'metric-card-awaiting-confirmation': metrics.awaiting_confirmation,
                         'metric-card-dispute': metrics.dispute
                     };
 
@@ -469,7 +469,6 @@
                 pagesContainer.appendChild(button);
             }
 
-            // Event Listeners for search & controls
             searchButton.addEventListener('click', function() {
                 currentSearch = searchInput.value.trim();
                 currentPage = 1;

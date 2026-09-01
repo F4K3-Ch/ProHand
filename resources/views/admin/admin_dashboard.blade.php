@@ -62,39 +62,31 @@
                             <p id="metric-pending"></p>
                         </div>
 
-                        <div class="total-card bg-accepted" id="metric-card-pending-payment" style="display:none;">
+                        <div class="total-card bg-accepted" id="metric-card-accepted" style="display:none;">
                             <div class="card-header">
                                 <span class="status-circle circle-accepted"></span>
-                                <h3>Pending Payment</h3>
+                                <h3>Accepted</h3>
                             </div>
-                            <p id="metric-pending-payment"></p>
+                            <p id="metric-accepted"></p>
                         </div>
 
-                        <div class="total-card bg-process" id="metric-card-in-process" style="display:none;">
+                        <div class="total-card bg-progress" id="metric-card-in-progress" style="display:none;">
                             <div class="card-header">
-                                <span class="status-circle circle-process"></span>
-                                <h3>In Process</h3>
+                                <span class="status-circle circle-progress"></span>
+                                <h3>In Progress</h3>
                             </div>
-                            <p id="metric-in-process"></p>
+                            <p id="metric-in-progress"></p>
                         </div>
 
-                        <div class="total-card bg-completed" id="metric-card-pending-completion" style="display:none;">
+                        <div class="total-card bg-awaiting-confirmation" id="metric-card-awaiting-confirmation" style="display:none;">
                             <div class="card-header">
-                                <span class="status-circle circle-complete"></span>
-                                <h3>Pending Completion</h3>
+                                <span class="status-circle circle-awaiting-confirmation"></span>
+                                <h3>Awaiting Confirmation</h3>
                             </div>
-                            <p id="metric-pending-completion"></p>
+                            <p id="metric-awaiting-confirmation"></p>
                         </div>
 
-                        <div class="total-card bg-failed" id="metric-card-pending-failure" style="display:none;">
-                            <div class="card-header">
-                                <span class="status-circle circle-failed"></span>
-                                <h3>Pending Failure</h3>
-                            </div>
-                            <p id="metric-pending-failure"></p>
-                        </div>
-
-                        <div class="total-card bg-failed" id="metric-card-dispute" style="display:none;">
+                        <div class="total-card bg-dispute" id="metric-card-dispute" style="display:none;">
                             <div class="card-header">
                                 <span class="status-circle circle-failed"></span>
                                 <h3>Dispute</h3>
@@ -252,19 +244,17 @@
                     const metrics = result.metrics;
 
                     document.getElementById('metric-pending').textContent = metrics.pending;
-                    document.getElementById('metric-pending-payment').textContent = metrics.pending_payment;
-                    document.getElementById('metric-in-process').textContent = metrics.in_process;
-                    document.getElementById('metric-pending-completion').textContent = metrics.pending_completion;
-                    document.getElementById('metric-pending-failure').textContent = metrics.pending_failure;
+                    document.getElementById('metric-accepted').textContent = metrics.accepted;
+                    document.getElementById('metric-in-progress').textContent = metrics.in_progress;
+                    document.getElementById('metric-awaiting-confirmation').textContent = metrics.awaiting_confirmation;
                     document.getElementById('metric-dispute').textContent = metrics.dispute;
                     document.getElementById('metric-total').textContent = metrics.total;
 
                     const cardToggles = {
                         'metric-card-pending': metrics.pending,
-                        'metric-card-pending-payment': metrics.pending_payment,
-                        'metric-card-in-process': metrics.in_process,
-                        'metric-card-pending-completion': metrics.pending_completion,
-                        'metric-card-pending-failure': metrics.pending_failure,
+                        'metric-card-accepted': metrics.accepted,
+                        'metric-card-in-progress': metrics.in_progress,
+                        'metric-card-awaiting-confirmation': metrics.awaiting_confirmation,
                         'metric-card-dispute': metrics.dispute
                     };
 
@@ -352,7 +342,7 @@
 
                     const actionSlot = row.querySelector('.action-slot');
 
-                    if (errand.raw_status === 'pending') {
+                    if (errand.raw_status === 'pending' || errand.raw_status === 'accepted') {
                         actionSlot.innerHTML = '<button type="button" class="btn-delete">Delete</button>';
                         
                         actionSlot.querySelector('.btn-delete').addEventListener('click', async function(){
@@ -364,12 +354,12 @@
 
                             // Add your cancel pending payment AJAX call implementation here
                         });
-                    } else if (errand.raw_status === 'pending_payment' || errand.raw_status === 'in_process') {
+                    } else if (errand.raw_status === 'in_progress') {
                         actionSlot.innerHTML = '<button type="button" class="btn-cancel cancel-accepted">Cancel</button>';
                         
                         actionSlot.querySelector('.btn-cancel').addEventListener('click', async function(){
                             const customTitle = 'Confirm Cancellation';
-                            const customMessage = 'Force-cancel this active errand? The errand status will be reset back to "Pending" status and the platform will hold the funds for manual payout adjustments.'
+                            const customMessage = 'Force-cancel this active errand? The errand status will be reset back to "Pending" status and the platform will hold the funds for manual payout adjustments.';
                             const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
                             
                             if(!isConfirmed) return;

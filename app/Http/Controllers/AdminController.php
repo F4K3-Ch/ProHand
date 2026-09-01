@@ -18,10 +18,9 @@ class AdminController extends Controller
             ->pluck('total', 'status');
 
         $pending = $metrics['pending'] ?? 0;
-        $pendingPayment = $metrics['pending_payment'] ?? 0;
-        $inProcess = $metrics['in_process'] ?? 0;
-        $pendingCompletion = $metrics['pending_completion'] ?? 0;
-        $pendingFailure = $metrics['pending_failure'] ?? 0;
+        $accepted = $metrics['accepted'] ?? 0;
+        $inProgress = $metrics['in_progress'] ?? 0;
+        $awaitingConfirmation = $metrics['awaiting_confirmation'] ?? 0;
         $dispute = $metrics['dispute'] ?? 0;
 
         $total = $metrics->sum();
@@ -30,10 +29,9 @@ class AdminController extends Controller
             'success' => true,
             'metrics' => [
                 'pending' => $pending,
-                'pending_payment' => $pendingPayment,
-                'in_process' => $inProcess,
-                'pending_completion' => $pendingCompletion,
-                'pending_failure' => $pendingFailure,
+                'accepted' => $accepted,
+                'in_progress' => $inProgress,
+                'awaiting_confirmation' => $awaitingConfirmation,
                 'dispute' => $dispute,
                 'total' => $total,
             ],
