@@ -112,13 +112,12 @@ class TaskerController extends Controller
         
         $client_id = $errand->client_id;
         $client = User::find($client_id);
-        $client_full_name = $client ? trim("{$client->first_name} {$client->last_name}") : 'Client';
-        
+        $client_full_name = $client ? trim("{$client->first_name} " . ($client->middle_name ? "{$client->middle_name} " : "") . "{$client->last_name}") : 'Client';
+
         $tasker_id = $tasker->id;
-        $tasker_full_name = trim("{$tasker->first_name} {$tasker->last_name}");
+        $tasker_full_name = trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}");
 
         $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
-
         $admin_msg = "Errand Accepted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
 
         $notif_type = "errand";
