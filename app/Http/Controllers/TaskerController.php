@@ -102,7 +102,7 @@ class TaskerController extends Controller
             ], 404);
         }
 
-        $errand->status = 'pending_payment';
+        $errand->status = 'accepted';
         $errand->tasker_id = $tasker->id;
         $errand->accepted_at = Carbon::now();
         $errand->save();
@@ -117,18 +117,14 @@ class TaskerController extends Controller
         $tasker_id = $tasker->id;
         $tasker_full_name = trim("{$tasker->first_name} {$tasker->last_name}");
 
-        if (!empty($errand->payment_receipt_path)) {
-            $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Your uploaded proof of payment is under review.";
-        } else {
-            $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Please settle your payment upload to begin the task.";
-        }
+        $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
 
-        $admin_msg = "Errand Accepted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Awaiting payment verification step.";
+        $admin_msg = "Errand Accepted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
 
         $notif_type = "errand";
 
         $client_link = route('client.view-errand', ['id' => $errand_id]);
-        $admin_link = route('admin.dashboard');
+        $admin_link = route('admin.view-errand', ['id' => $errand_id]);
 
         if ($client_id) {
             Notification::create([

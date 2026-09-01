@@ -32,13 +32,13 @@ CREATE TABLE IF NOT EXISTS errands (
     deadline DATETIME NOT NULL,
     location VARCHAR(200) NOT NULL,
     contact TEXT NOT NULL,
-    status ENUM('pending','pending_payment','in_process', 'pending_completion', 'pending_failure', 'dispute') DEFAULT 'pending',
+    status ENUM('pending', 'accepted', 'in_progress', 'awaiting_confirmation', 'dispute') DEFAULT 'pending',
     cancel_requested_by_tasker TINYINT(1) DEFAULT 0 COMMENT '0 = normal, 1 = tasker wants to cancel',
     cancel_requested_by_client TINYINT(1) DEFAULT 0 COMMENT '0 = normal, 1 = client wants to cancel',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     accepted_at TIMESTAMP NULL DEFAULT NULL,      -- when tasker accepts the errand
-    in_process_at TIMESTAMP NULL DEFAULT NULL,    -- when errand moves to in_process
+    in_progress_at TIMESTAMP NULL DEFAULT NULL,    -- when errand moves to in_process
     completed_at TIMESTAMP NULL DEFAULT NULL,     -- when errand is completed
     failed_at TIMESTAMP NULL DEFAULT NULL,        -- when errand failed
 
@@ -54,18 +54,6 @@ CREATE TABLE IF NOT EXISTS errand_attachments (
     errand_id INT NOT NULL,
     file_path VARCHAR(255), -- e.g., uploads/attachments/file1.jpg
     original_name VARCHAR(255),
-    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (errand_id) REFERENCES errands(id) ON DELETE CASCADE
-);
-
--- ==========================
--- PAYMENT PROOFS TABLE
--- ==========================
-CREATE TABLE IF NOT EXISTS payment_proofs (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    errand_id INT NOT NULL,
-    file_path VARCHAR(255) NOT NULL, -- e.g., uploads/payments/proof1.jpg
-    original_name VARCHAR(255) NOT NULL,
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (errand_id) REFERENCES errands(id) ON DELETE CASCADE
 );
@@ -117,7 +105,7 @@ CREATE TABLE IF NOT EXISTS history (
 
     created_at DATETIME,
     accepted_at DATETIME,
-    in_process_at DATETIME,
+    in_progress_at DATETIME,
     completed_at DATETIME,
     failed_at DATETIME,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -138,16 +126,4 @@ CREATE TABLE IF NOT EXISTS history_attachments (
     original_name VARCHAR(255),
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (history_errand_id) REFERENCES history(id) ON DELETE CASCADE
-);
-
--- ==========================
--- HISTORY PAYMENT PROOFS TABLE
--- ==========================
-CREATE TABLE IF NOT EXISTS history_payment_proofs (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    history_errand_id INT NOT NULL,     -- references history_errands.id 
-    file_path VARCHAR(255) NOT NULL,    -- e.g., uploads/history/payments/proof1.jpg
-    original_name VARCHAR(255) NOT NULL,
-    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (history_errand_id) REFERENCES history_errands(id) ON DELETE CASCADE
 );

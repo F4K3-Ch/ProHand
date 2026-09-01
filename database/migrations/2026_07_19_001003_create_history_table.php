@@ -41,7 +41,7 @@ return new class extends Migration
 
             $table->dateTime('created_at')->nullable();
             $table->dateTime('accepted_at')->nullable();
-            $table->dateTime('in_process_at')->nullable();
+            $table->timestamp('in_progress_at')->nullable();
             $table->dateTime('completed_at')->nullable();
             $table->dateTime('failed_at')->nullable();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();

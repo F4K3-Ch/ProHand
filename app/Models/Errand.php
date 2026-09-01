@@ -30,7 +30,7 @@ class Errand extends Model
         'created_at',
         'updated_at',
         'accepted_at',
-        'in_process_at',
+        'in_progress_at',
         'completed_at',
         'failed_at'
     ];
@@ -40,7 +40,7 @@ class Errand extends Model
         'created_at'    => 'datetime',
         'updated_at'    => 'datetime',
         'accepted_at'   => 'datetime',
-        'in_process_at' => 'datetime',
+        'in_progress_at' => 'datetime',
         'completed_at'  => 'datetime',
         'failed_at'     => 'datetime',
 
@@ -51,11 +51,6 @@ class Errand extends Model
     public function attachment(): HasOne 
     {
         return $this->hasOne(ErrandAttachment::class, 'errand_id');
-    }
-
-    public function paymentProof(): HasOne 
-    {
-        return $this->hasOne(PaymentProof::class, 'errand_id');
     }
 
     public function client(): BelongsTo 

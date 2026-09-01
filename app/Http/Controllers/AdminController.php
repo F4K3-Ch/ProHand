@@ -99,4 +99,9 @@ class AdminController extends Controller
             ],
         ]);
     }
+
+    public function getErrandDetails ($id, Request $request) 
+    {
+        
+    }
 }

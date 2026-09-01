@@ -36,7 +36,7 @@ class History extends Model
         'tasker_profile_picture',
         'created_at',
         'accepted_at',
-        'in_process_at',
+        'in_progress_at',
         'completed_at',
         'failed_at',
         'tasker_deleted',
@@ -47,7 +47,7 @@ class History extends Model
         'deadline'       => 'datetime',
         'created_at'     => 'datetime',
         'accepted_at'    => 'datetime',
-        'in_process_at'  => 'datetime',
+        'in_progress_at'  => 'datetime',
         'completed_at'   => 'datetime',
         'failed_at'      => 'datetime',
         'fee'            => 'decimal:2',
@@ -58,10 +58,5 @@ class History extends Model
     public function attachment(): HasOne 
     {
         return $this->hasOne(HistoryAttachment::class, 'history_errand_id');
-    }
-
-    public function paymentProof(): HasOne 
-    {
-        return $this->hasOne(HistoryPaymentProof::class, 'history_errand_id');
     }
 }

@@ -88,8 +88,8 @@
                         <span id="errand-accepted-at">Loading...</span>
                     </div>
                     <div class="info-box">
-                        <label>In Process At</label>
-                        <span id="errand-in-process-at">Loading...</span>
+                        <label>In Progress At</label> 
+                        <span id="errand-in-progress-at">Loading...</span>
                     </div>
                 </div>
 
@@ -108,25 +108,6 @@
                     <div class="info-box">
                         <label>Attachment</label>
                         <div id="errand-attachment">
-                            <div class="attachment-item" style="display: none;">
-                                <a href="#" target="_blank" class="attachment-name" title="Preview File">
-                                    <i class="fa-solid fa-file"></i>
-                                    <span class="attachment-filename"></span>
-                                </a>
-                                <a href="#" class="btn-download" download>
-                                    <i class="fa-solid fa-download"></i>
-                                    Download
-                                </a>
-                            </div>
-                            <div class="no-attachments">
-                                <p class="no-attachment">None</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="info-box" id="payment-proof-box" style="display: none;">
-                        <label>Proof Of Payment</label>
-                        <div id="errand-payment-proof">
                             <div class="attachment-item" style="display: none;">
                                 <a href="#" target="_blank" class="attachment-name" title="Preview File">
                                     <i class="fa-solid fa-file"></i>
@@ -200,7 +181,7 @@
                 document.getElementById('errand-created-at').textContent = errand.created_at;
                 document.getElementById('errand-updated-at').textContent = errand.updated_at;
                 document.getElementById('errand-accepted-at').textContent = errand.accepted_at;
-                document.getElementById('errand-in-process-at').textContent = errand.in_process_at;
+                document.getElementById('errand-in-progress-at').textContent = errand.in_progress_at;
                 document.getElementById('errand-deadline').textContent = errand.deadline;
                 document.getElementById('errand-finished-at').textContent = errand.finished_at;
 
@@ -218,24 +199,6 @@
                     const downloadBtn = attachItem.querySelector('.btn-download');
                     downloadBtn.href = errand.attachment.url;
                     downloadBtn.setAttribute('download', errand.attachment.name);
-                }
-
-                // Handle Payment Proof
-                const paymentBox = document.getElementById('payment-proof-box');
-                if (errand.payment_proof) {
-                    paymentBox.style.display = 'flex';
-                    const paymentContainer = document.getElementById('errand-payment-proof');
-                    const paymentItem = paymentContainer.querySelector('.attachment-item');
-                    const noPaymentItem = paymentContainer.querySelector('.no-attachments');
-                    
-                    paymentItem.style.display = 'flex';
-                    noPaymentItem.style.display = 'none';
-                    paymentItem.querySelector('.attachment-filename').textContent = errand.payment_proof.name;
-                    paymentItem.querySelector('.attachment-name').href = errand.payment_proof.url;
-                    
-                    const downloadPaymentBtn = paymentItem.querySelector('.btn-download');
-                    downloadPaymentBtn.href = errand.payment_proof.url;
-                    downloadPaymentBtn.setAttribute('download', errand.payment_proof.name);
                 }
 
                 // Handle Dynamic Actions / Badges Container
@@ -280,13 +243,13 @@
                         }
                     });
 
-                } else if (errand.raw_status === 'pending_payment') {
+                } else if (errand.raw_status === 'accepted') {
                     actionSlot.innerHTML = '<button disabled class="btn-edit-errand-disabled"><i class="fa-regular fa-pen-to-square"></i>Edit</button>' +
                         '<button type="button" class="btn-cancel cancel-accepted"><i class="fa-solid fa-ban"></i>Cancel</button>';
                     
                     actionSlot.querySelector('.cancel-accepted').addEventListener('click', async function(){
                         const customTitle = 'Confirm Cancellation';
-                        const customMessage = 'Are you sure you want to cancel this errand? It will return to "Pending" status, and any submitted proof of payment will be preserved for review.';
+                        const customMessage = 'Are you sure you want to cancel this errand? It will return to "Pending" status.';
                         const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
                         
                         if(!isConfirmed) return;
@@ -294,7 +257,7 @@
                         // Add your cancel pending payment AJAX call implementation here
                     });
 
-                } else if (errand.raw_status === 'in_process') {
+                } else if (errand.raw_status === 'in_progress') {
                     if (Number(errand.cancel_requested_by_client) === 0) {
                         actionSlot.innerHTML = '<span class="descriptive-status-badge"><i class="fa-solid fa-spinner fa-spin"></i>Tasker is performing errand...</span>' +
                             '<button type="button" class="btn-cancel cancel-request"><i class="fa-solid fa-hand-holding-hand"></i>Request Cancel</button>';

@@ -2728,9 +2728,18 @@ select[name="role"] option[value="client"] {
 
 /* User Profile Photo */
 .user-profile-photo {
+    border: 3px solid var(--color-border);
+    position: relative;
+    width: 150px;
+    height: 150px;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background-color: var(--color-bg);
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
     flex-wrap: wrap;
     margin-bottom: 10px;
 }

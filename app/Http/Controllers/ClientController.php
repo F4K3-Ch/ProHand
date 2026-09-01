@@ -21,10 +21,9 @@ class ClientController extends Controller
             ->pluck('total', 'status');
 
         $pending = $metrics['pending'] ?? 0;
-        $pendingPayment = $metrics['pending_payment'] ?? 0;
-        $inProcess = $metrics['in_process'] ?? 0;
-        $pendingCompletion = $metrics['pending_completion'] ?? 0;
-        $pendingFailure = $metrics['pending_failure'] ?? 0;
+        $accepted = $metrics['accepted'] ?? 0;
+        $inProgress = $metrics['in_progress'] ?? 0;
+        $awaitingConfirmation = $metrics['awaiting_confirmation'] ?? 0;
         $dispute = $metrics['dispute'] ?? 0;
 
         $total = $metrics->sum();
@@ -33,10 +32,9 @@ class ClientController extends Controller
             'success' => true,
             'metrics' => [
                 'pending' => $pending,
-                'pending_payment' => $pendingPayment,
-                'in_process' => $inProcess,
-                'pending_completion' => $pendingCompletion,
-                'pending_failure' => $pendingFailure,
+                'accepted' => $accepted,
+                'in_progress' => $inProgress,
+                'awaiting_confirmation' => $awaitingConfirmation,
                 'dispute' => $dispute,
                 'total' => $total,
             ],
@@ -59,10 +57,9 @@ class ClientController extends Controller
         $query = Errand::where('client_id', $clientId)
             ->whereIn('status', [
                 'pending',
-                'pending_payment',
-                'in_process',
-                'pending_completion',
-                'pending_failure',
+                'accepted',
+                'in_progress',
+                'awaiting_confirmation',
                 'dispute',
             ]);
 
@@ -161,7 +158,7 @@ class ClientController extends Controller
     {
         $clientId = $request->user()->id;
 
-        $errand = Errand::with(['attachment', 'paymentProof'])
+        $errand = Errand::with(['attachment'])
             ->where('id', $id)
             ->where('client_id', $clientId)
             ->first();
@@ -197,8 +194,8 @@ class ClientController extends Controller
             'accepted_at' => $errand->accepted_at 
                 ? Carbon::parse($errand->accepted_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
                 : 'Not Set',
-            'in_process_at' => $errand->in_process_at 
-                ? Carbon::parse($errand->in_process_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+            'in_progress_at' => $errand->in_progress_at 
+                ? Carbon::parse($errand->in_progress_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
                 : 'Not Set',
             'deadline' => $errand->deadline 
                 ? Carbon::parse($errand->deadline)->timezone('Asia/Manila')->format('M d, Y h:i A') 
@@ -210,11 +207,6 @@ class ClientController extends Controller
             'attachment' => $errand->attachment ? [
                 'name' => $errand->attachment->original_name,
                 'url' => Storage::url($errand->attachment->file_path)
-            ] : null,
-            
-            'payment_proof' => $errand->paymentProof ? [
-                'name' => $errand->paymentProof->original_name,
-                'url' => Storage::url($errand->paymentProof->file_path)
             ] : null,
         ];
 
