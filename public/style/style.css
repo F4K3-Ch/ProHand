@@ -1312,6 +1312,18 @@ body {
     border-color: rgba(251, 146, 60, 0.3);
 }
 
+.info-box span.status-field.status-awaiting_confirmation {
+    background-color: rgba(147, 51, 234, 0.15); 
+    color: #9333ea;                             
+    border-color: rgba(147, 51, 234, 0.3);
+}
+
+.info-box span.status-field.status-dispute {
+    background-color: rgba(239, 68, 68, 0.15); 
+    color: #ef4444;                             
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
 .info-box span.status-field.status-completed {
     background-color: rgba(22, 163, 74, 0.15); 
     color: #16a34a;     

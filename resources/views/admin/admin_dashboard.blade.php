@@ -70,7 +70,7 @@
                             <p id="metric-accepted"></p>
                         </div>
 
-                        <div class="total-card bg-progress" id="metric-card-in-progress" style="display:none;">
+                        <div class="total-card bg-in-progress" id="metric-card-in-progress" style="display:none;">
                             <div class="card-header">
                                 <span class="status-circle circle-progress"></span>
                                 <h3>In Progress</h3>
@@ -88,7 +88,7 @@
 
                         <div class="total-card bg-dispute" id="metric-card-dispute" style="display:none;">
                             <div class="card-header">
-                                <span class="status-circle circle-failed"></span>
+                                <span class="status-circle circle-dispute"></span>
                                 <h3>Dispute</h3>
                             </div>
                             <p id="metric-dispute"></p>
