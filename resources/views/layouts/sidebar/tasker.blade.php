@@ -17,7 +17,7 @@
             </li>
             <li>
                 <a href="{{ route('tasker.your_task') }}" class="{{ request()->routeIs('tasker.your_task') ? 'active' : '' }}">
-                    <i class="fa-solid fa-clipboard-check"></i> Your Task
+                    <i class="fa-solid fa-clipboard-list"></i> Your Task
                 </a>
             </li>
             <li><a href="#"><i class="fa-solid fa-clipboard-check"></i> Finished Errands</a></li>

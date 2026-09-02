@@ -27,7 +27,7 @@
                 <div class="header-right">
                     <div class="search-wrapper">
                         <div class="search-bar">
-                            <input type="text" id="errandSearch" placeholder="Search errands...">
+                            <input type="text" id="errandSearch" placeholder="Search your tasks errands...">
                             <button type="button" class="btn-clear" id="clearSearchButton">Clear</button>
                         </div>
                         <button type="button" class="btn-search" id="searchButton">Search</button>
@@ -184,3 +184,236 @@
         <button type="button" class="pagination-button"></button>
     </template>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function(){
+            const tableBody = document.getElementById('errands-table-body');
+            const paginationContainer = document.getElementById('pagination-container');
+            const pagesContainer = document.getElementById('pagination-pages');
+            const searchInput = document.getElementById('errandSearch');
+            const searchButton = document.getElementById('searchButton');
+            const clearSearchButton = document.getElementById('clearSearchButton');
+            const perPageSelect = document.getElementById('perPageSelect');
+            const errorText = document.getElementById('errorMessageText');
+
+            let currentPage = 1;
+            let currentSearch = '';
+
+            loadMetrics();
+            loadErrands();
+            updateClearButtonState();
+
+            function displayGlobalError(message){
+                if(!errorText) return;
+                errorText.textContent = message;
+                errorText.style.display = 'block';
+                setTimeout(() => { errorText.style.display = 'none'; }, 5000);
+            }
+
+            function showLoading(){
+                tableBody.innerHTML = '';
+                tableBody.appendChild(document.getElementById('errand-loading-template').content.cloneNode(true));
+            }
+
+            async function loadMetrics(){
+                try{
+                    const response = await fetch('/api/tasker/your-task/accepted-metrics', {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-API-KEY': apiKey,
+                            'X-MY-ORIGIN' : origin
+                        },
+                        credentials: 'same-origin'
+                    });
+                    const result = await response.json();
+
+                    if(!response.ok || !result.success){
+                        throw new Error(result.message || 'Failed to load dashboard data.');
+                    }
+
+                    const metrics = result.metrics;
+
+                    document.getElementById('metric-accepted').textContent = metrics.accepted;
+                    document.getElementById('metric-in-progress').textContent = metrics.in_progress;
+                    document.getElementById('metric-awaiting-confirmation').textContent = metrics.awaiting_confirmation;
+                    document.getElementById('metric-dispute').textContent = metrics.dispute;
+                    document.getElementById('metric-total').textContent = metrics.total;
+
+                    const cardToggles = {
+                        'metric-card-accepted': metrics.accepted,
+                        'metric-card-in-progress': metrics.in_progress,
+                        'metric-card-awaiting-confirmation': metrics.awaiting_confirmation,
+                        'metric-card-dispute': metrics.dispute
+                    };
+
+                    Object.entries(cardToggles).forEach(([cardId, val]) => {
+                        const card = document.getElementById(cardId);
+                        if (card) {
+                            card.style.display = val > 0 ? 'flex' : 'none';
+                        }
+                    });
+                    
+                    const totalCard = document.getElementById('metric-card-total');
+                    if(totalCard) totalCard.style.display = 'flex';
+
+                }catch(error){
+                    console.error('Metrics error:', error);
+                    displayGlobalError(error.message);
+                }
+            }
+
+            async function loadErrands(page){
+                if(page) currentPage = page;
+
+                showLoading();
+
+                const params = new URLSearchParams({
+                    page: currentPage,
+                    per_page: perPageSelect.value
+                });
+
+                if(currentSearch !== ''){
+                    params.append('search', currentSearch);
+                }
+
+                try{
+                    const response = await fetch('/api/tasker/your-task/accepted-errands?' + params.toString(), {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-API-KEY': apiKey,
+                            'X-MY-ORIGIN' : origin
+                        },
+                        credentials: 'same-origin'
+                    });
+                    const result = await response.json();
+
+                    if(!response.ok || !result.success){
+                        throw new Error(result.message || 'Failed to load errands.');
+                    }
+
+                    displayErrands(result.errands);
+                    displayPagination(result.pagination);
+                }catch(error){
+                    console.error('Errands error:', error);
+                    displayGlobalError(error.message);
+                    tableBody.innerHTML = '';
+                    tableBody.appendChild(document.getElementById('errand-error-template').content.cloneNode(true));
+                }
+            }
+
+            function displayErrands(errands){
+                tableBody.innerHTML = '';
+
+                if(!errands || errands.length === 0){
+                    tableBody.appendChild(document.getElementById('errand-empty-template').content.cloneNode(true));
+                    return;
+                }
+
+                const template = document.getElementById('errand-row-template');
+
+                errands.forEach(function(errand){
+                    const row = template.content.cloneNode(true);
+
+                    row.querySelector('.errand-id').textContent = errand.id;
+                    row.querySelector('.errand-title').textContent = errand.title;
+                    row.querySelector('.errand-category').textContent = errand.category;
+                    row.querySelector('.errand-created-at').textContent = errand.created_at;
+                    row.querySelector('.errand-deadline').textContent = errand.deadline;
+                    row.querySelector('.errand-fee').textContent = errand.fee;
+
+                    const status = row.querySelector('.errand-status');
+                    status.textContent = errand.status;
+                    status.className = errand.status_class;
+
+                    row.querySelector('.errand-view-link').href = '/tasker/view-errand/' + encodeURIComponent(errand.id);
+
+                    const actionSlot = row.querySelector('.action-slot');
+
+                    tableBody.appendChild(row);
+                });
+            }
+
+            function displayPagination(pagination){
+                const previousButton = document.getElementById('pagination-previous');
+                const nextButton = document.getElementById('pagination-next');
+
+                pagesContainer.innerHTML = '';
+
+                if(!pagination || pagination.last_page <= 1){
+                    paginationContainer.style.display = 'none';
+                    return;
+                }
+
+                paginationContainer.style.display = 'flex';
+                previousButton.disabled = pagination.current_page === 1;
+                nextButton.disabled = pagination.current_page === pagination.last_page;
+
+                for(let page = 1; page <= pagination.last_page; page++){
+                    createPaginationButton(page, page === pagination.current_page);
+                }
+
+                previousButton.onclick = () => {
+                    if(pagination.current_page > 1) loadErrands(pagination.current_page - 1);
+                };
+
+                nextButton.onclick = () => {
+                    if(pagination.current_page < pagination.last_page) loadErrands(pagination.current_page + 1);
+                };
+            }
+
+            function createPaginationButton(page, active){
+                const template = document.getElementById('pagination-button-template');
+                const button = template.content.cloneNode(true);
+                const element = button.querySelector('.pagination-button');
+
+                element.textContent = page;
+
+                if(active){
+                    element.classList.add('active');
+                }else{
+                    element.addEventListener('click', () => loadErrands(page));
+                }
+
+                pagesContainer.appendChild(button);
+            }
+
+            searchButton.addEventListener('click', function() {
+                currentSearch = searchInput.value.trim();
+                currentPage = 1;
+                loadErrands();
+                updateClearButtonState();
+            });
+
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    currentSearch = searchInput.value.trim();
+                    currentPage = 1;
+                    loadErrands();
+                    updateClearButtonState();
+                }
+            });
+
+            clearSearchButton.addEventListener('click', function() {
+                searchInput.value = '';
+                currentSearch = '';
+                currentPage = 1;
+                loadErrands();
+                updateClearButtonState();
+            });
+
+            perPageSelect.addEventListener('change', function() {
+                currentPage = 1;
+                loadErrands();
+            });
+
+            function updateClearButtonState() {
+                if(clearSearchButton) {
+                    clearSearchButton.style.display = searchInput.value ? 'inline-block' : 'none';
+                }
+            }
+        });
+    </script>
+@endpush

@@ -88,6 +88,102 @@ class TaskerController extends Controller
         ]);
     }
 
+    public function acceptedMetrics(Request $request)
+    {
+        $tasker = $request->user();
+
+        $metrics = Errand::selectRaw('status, COUNT(*) as total')
+            ->where('tasker_id', $tasker->id)
+            ->whereIn('status', ['accepted', 'in_progress', 'awaiting_confirmation', 'dispute'])
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $accepted = $metrics['accepted'] ?? 0;
+        $inProgress = $metrics['in_progress'] ?? 0;
+        $awaitingConfirmation = $metrics['awaiting_confirmation'] ?? 0;
+        $dispute = $metrics['dispute'] ?? 0;
+
+        $total = $metrics->sum();
+
+        return response()->json([
+            'success' => true,
+            'metrics' => [
+                'accepted' => $accepted,
+                'in_progress' => $inProgress,
+                'awaiting_confirmation' => $awaitingConfirmation,
+                'dispute' => $dispute,
+                'total' => $total,
+            ],
+        ]);
+    }
+
+    public function acceptedErrands(Request $request)
+    {
+        $taskerId = $request->user()->id;
+
+        $search = $request->query('search');
+        $perPage = (int) $request->query('per_page', 10);
+
+        $allowedPerPage = [5, 10, 25, 50];
+
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 10;
+        }
+
+        $query = Errand::where('tasker_id', $taskerId)
+            ->whereIn('status', [
+                'accepted',
+                'in_progress',
+                'awaiting_confirmation',
+                'dispute',
+            ]);
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', "%{$search}%")
+                    ->orWhere('title', 'like', "%{$search}%")
+                    ->orWhere('category', 'like', "%{$search}%")
+                    ->orWhere('location', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%");
+            });
+        }
+
+        $errands = $query
+            ->latest()
+            ->paginate($perPage);
+
+        $formattedErrands = collect($errands->items())->map(function ($errand) {
+            return [
+                'id' => $errand->id,
+                'title' => $errand->title,
+                'category' => Str::title(str_replace('_', ' ', $errand->category)),
+                'created_at' => $errand->created_at 
+                    ? Carbon::parse($errand->created_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                    : '—',
+                'deadline' => $errand->deadline 
+                    ? Carbon::parse($errand->deadline)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                    : '—',
+                'fee' => '₱' . number_format($errand->fee, 2),
+                'status' => Str::title(str_replace('_', ' ', $errand->status)),
+                'raw_status' => $errand->status,
+                'status_class' => 'status-badge status-' . $errand->status,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'errands' => $formattedErrands,
+            'pagination' => [
+                'current_page' => $errands->currentPage(),
+                'last_page' => $errands->lastPage(),
+                'per_page' => $errands->perPage(),
+                'total' => $errands->total(),
+                'from' => $errands->firstItem(),
+                'to' => $errands->lastItem(),
+            ],
+        ]);
+    }
+
     public function acceptErrand(Request $request, $id)
     {
         $tasker = $request->user();
