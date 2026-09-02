@@ -184,69 +184,6 @@ class TaskerController extends Controller
         ]);
     }
 
-    public function acceptErrand(Request $request, $id)
-    {
-        $tasker = $request->user();
-
-        $errand = Errand::where('id', $id)->where('status', 'pending')->first();
-
-        if (!$errand) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Errand not found or is no longer available.',
-            ], 404);
-        }
-
-        $errand->status = 'accepted';
-        $errand->tasker_id = $tasker->id;
-        $errand->accepted_at = Carbon::now();
-        $errand->save();
-
-        $errand_id = $errand->id;
-        $errand_title = $errand->title;
-        
-        $client_id = $errand->client_id;
-        $client = User::find($client_id);
-        $client_full_name = $client ? trim("{$client->first_name} " . ($client->middle_name ? "{$client->middle_name} " : "") . "{$client->last_name}") : 'Client';
-
-        $tasker_id = $tasker->id;
-        $tasker_full_name = trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}");
-
-        $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
-        $admin_msg = "Errand Accepted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
-
-        $notif_type = "errand";
-
-        $client_link = route('client.view-errand', ['id' => $errand_id]);
-        $admin_link = route('admin.view-errand', ['id' => $errand_id]);
-
-        if ($client_id) {
-            Notification::create([
-                'user_id' => $client_id,
-                'type' => $notif_type,
-                'message' => $client_msg,
-                'link' => $client_link,
-                'is_read' => false,
-            ]);
-        }
-
-        $admins = User::where('role', 'admin')->get();
-        foreach ($admins as $admin) {
-            Notification::create([
-                'user_id' => $admin->id,
-                'type' => $notif_type,
-                'message' => $admin_msg,
-                'link' => $admin_link,
-                'is_read' => false,
-            ]);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Errand accepted successfully!',
-        ]);
-    }
-
     public function getErrandDetails($id, Request $request)
     {
         $taskerId = $request->user()->id;
@@ -319,6 +256,136 @@ class TaskerController extends Controller
         return response()->json([
             'success' => true, 
             'errand' => $formattedErrand
+        ]);
+    }
+
+    public function acceptErrand(Request $request, $id)
+    {
+        $tasker = $request->user();
+
+        $errand = Errand::where('id', $id)
+            ->where('status', 'pending')
+            ->first();
+
+        if (!$errand) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errand not found or is no longer available.',
+            ], 404);
+        }
+
+        $errand->status = 'accepted';
+        $errand->tasker_id = $tasker->id;
+        $errand->accepted_at = Carbon::now();
+        $errand->save();
+
+        $errand_id = $errand->id;
+        $errand_title = $errand->title;
+        
+        $client_id = $errand->client_id;
+        $client = User::find($client_id);
+        $client_full_name = $client ? trim("{$client->first_name} " . ($client->middle_name ? "{$client->middle_name} " : "") . "{$client->last_name}") : 'Client';
+
+        $tasker_id = $tasker->id;
+        $tasker_full_name = trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}");
+
+        $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+        $admin_msg = "Errand Accepted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+
+        $notif_type = "errand";
+
+        $client_link = route('client.view-errand', ['id' => $errand_id]);
+        $admin_link = route('admin.view-errand', ['id' => $errand_id]);
+
+        if ($client_id) {
+            Notification::create([
+                'user_id' => $client_id,
+                'type' => $notif_type,
+                'message' => $client_msg,
+                'link' => $client_link,
+                'is_read' => false,
+            ]);
+        }
+
+        $admins = User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id' => $admin->id,
+                'type' => $notif_type,
+                'message' => $admin_msg,
+                'link' => $admin_link,
+                'is_read' => false,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Errand accepted successfully!',
+        ]);
+    }
+
+    public function startErrand(Request $request, $id)
+    {
+        $tasker = $request->user();
+
+        $errand = Errand::where('id', $id)
+            ->where('status', 'accepted')
+            ->where('tasker_id', $tasker->id)
+            ->first();
+
+        if (!$errand) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errand not found, not in accepted status, or not assigned to you.',
+            ], 404);
+        }
+
+        $errand->status = 'in_progress';
+        $errand->in_progress_at = Carbon::now();
+        $errand->save();
+
+        $errand_id = $errand->id;
+        $errand_title = $errand->title;
+        
+        $client_id = $errand->client_id;
+        $client = User::find($client_id);
+        $client_full_name = $client ? trim("{$client->first_name} " . ($client->middle_name ? "{$client->middle_name} " : "") . "{$client->last_name}") : 'Client';
+
+        $tasker_id = $tasker->id;
+        $tasker_full_name = trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}");
+
+        $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) has been started by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+        $admin_msg = "Errand In Progress | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Started by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+
+        $notif_type = "errand";
+
+        $client_link = route('client.view-errand', ['id' => $errand_id]);
+        $admin_link = route('admin.view-errand', ['id' => $errand_id]);
+
+        if ($client_id) {
+            Notification::create([
+                'user_id' => $client_id,
+                'type' => $notif_type,
+                'message' => $client_msg,
+                'link' => $client_link,
+                'is_read' => false,
+            ]);
+        }
+
+        $admins = User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id' => $admin->id,
+                'type' => $notif_type,
+                'message' => $admin_msg,
+                'link' => $admin_link,
+                'is_read' => false,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Errand started successfully!',
         ]);
     }
 }

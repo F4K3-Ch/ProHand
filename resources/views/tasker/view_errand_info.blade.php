@@ -130,7 +130,7 @@
                 </div>
             </div>
 
-            <div class="users-container" id="users-container" style="display: none;">
+            <div class="users-container" id="users-container">
                 <div class="user-details-container">
                     <h1>Posted By</h1>
 
@@ -236,28 +236,24 @@
                 const profilePhoto = document.getElementById('client-profile-photo');
                 const photoSpinner = document.getElementById('profile-photo-spinner');
 
-                if (errand.client) {
-                    usersContainer.style.display = 'flex';
-                    
-                    document.getElementById('client-id').textContent = errand.client.id;
-                    document.getElementById('client-email').textContent = errand.client.email;
-                    document.getElementById('client-name').textContent = errand.client.name;
-                    document.getElementById('client-contact-number').textContent = errand.client.contact_number;
+                usersContainer.style.display = 'flex';
+                
+                document.getElementById('client-id').textContent = errand.client.id;
+                document.getElementById('client-email').textContent = errand.client.email;
+                document.getElementById('client-name').textContent = errand.client.name;
+                document.getElementById('client-contact-number').textContent = errand.client.contact_number;
 
-                    if (errand.client.profile_picture) {
-                        profilePhoto.src = errand.client.profile_picture;
-                        profilePhoto.onload = function() {
-                            photoSpinner.style.display = 'none';
-                            profilePhoto.style.display = 'flex';
-                        };
-                        profilePhoto.onerror = function() {
-                            photoSpinner.style.display = 'none';
-                        };
-                    } else {
+                if (errand.client.profile_picture) {
+                    profilePhoto.src = errand.client.profile_picture;
+                    profilePhoto.onload = function() {
                         photoSpinner.style.display = 'none';
-                    }
+                        profilePhoto.style.display = 'flex';
+                    };
+                    profilePhoto.onerror = function() {
+                        photoSpinner.style.display = 'none';
+                    };
                 } else {
-                    usersContainer.style.display = 'none';
+                    photoSpinner.style.display = 'none';
                 }
 
                 // Handle Attachments
@@ -313,7 +309,7 @@
 
                                 sessionStorage.setItem('success_message', result.message || 'Errand accepted successfully!');
                                 window.location.href = '{{ route("tasker.your_task") }}';
-                                
+
                             } catch (error) {
                                 console.error('Accept errand error:', error);
                                 const errorText = document.getElementById('errorMessageText');
@@ -323,6 +319,45 @@
                             }
                         });
                     }
+                } else if (errand.raw_status === 'accepted') {
+                    actionSlot.innerHTML = '<button type="button" id="startErrandBtn" class="btn-start-errand">Start Errand</button>';
+                        
+                        const startErrandBtn = actionSlot.querySelector('#startErrandBtn');
+                        if (startErrandBtn) {
+                            startErrandBtn.addEventListener('click', async function(){
+                                const customTitle = 'Start Errand';
+                                const customMessage = 'Are you ready to begin working on errand #' + errand.id + ' ("' + errand.title + '")?';
+                                const isConfirmed = await showPositiveConfirmation(customTitle, customMessage);
+                                
+                                if(!isConfirmed) return;
+
+                                try {
+                                    const response = await fetch('/api/tasker/errands/' + errand.id + '/start', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Accept': 'application/json',
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                            'X-API-KEY': apiKey,
+                                            'X-MY-ORIGIN' : origin
+                                        },
+                                        credentials: 'same-origin'
+                                    });
+
+                                    const result = await response.json();
+                                    if (!response.ok || !result.success) throw new Error(result.message || 'Failed to start errand.');
+
+                                    sessionStorage.setItem('success_message', result.message || 'Errand started successfully!');
+                                    window.location.reload();
+
+                                } catch(error) {
+                                    console.error('Start errand error:', error);
+                                    const errorText = document.getElementById('errorMessageText');
+                                    errorText.textContent = error.message;
+                                    errorText.style.display = 'block';
+                                    setTimeout(() => { errorText.style.display = 'none'; }, 4000);
+                                }
+                            });
+                        }
                 }
 
             } catch (error) {

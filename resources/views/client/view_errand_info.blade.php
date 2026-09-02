@@ -320,7 +320,6 @@
                             }
                         });
                     }
-
                 } else if (errand.raw_status === 'accepted') {
                     actionSlot.innerHTML = '<button disabled class="btn-edit-errand-disabled"><i class="fa-regular fa-pen-to-square"></i>Edit</button>' +
                         '<button type="button" id="cancelAcceptedBtn" class="btn-cancel"><i class="fa-solid fa-ban"></i>Cancel</button>';
@@ -337,7 +336,6 @@
                             // Add your cancel pending payment AJAX call implementation here
                         });
                     }
-
                 } else if (errand.raw_status === 'in_progress') {
                     if (Number(errand.cancel_requested_by_client) === 0) {
                         actionSlot.innerHTML = '<span class="descriptive-status-badge"><i class="fa-solid fa-spinner fa-spin"></i>Tasker is performing errand...</span>' +

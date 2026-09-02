@@ -32,6 +32,7 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
         Route::get('/tasker/your-task/accepted-errands', [TaskerController::class, 'acceptedErrands']);
         Route::get('/tasker/errands/{id}', [TaskerController::class, 'getErrandDetails']);
         Route::post('/tasker/errands/{id}/accept', [TaskerController::class, 'acceptErrand']);
+        Route::post('/tasker/errands/{id}/start', [TaskerController::class, 'startErrand']);
     });
 
     Route::middleware('role:admin')->group(function() {
