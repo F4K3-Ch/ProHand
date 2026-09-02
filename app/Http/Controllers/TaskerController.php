@@ -166,6 +166,7 @@ class TaskerController extends Controller
                 'fee' => '₱' . number_format($errand->fee, 2),
                 'status' => Str::title(str_replace('_', ' ', $errand->status)),
                 'raw_status' => $errand->status,
+                'cancel_requested_by_tasker' => $errand->cancel_requested_by_tasker,
                 'status_class' => 'status-badge status-' . $errand->status,
             ];
         });
@@ -294,8 +295,8 @@ class TaskerController extends Controller
 
         $notif_type = "errand";
 
-        $client_link = route('client.view-errand', ['id' => $errand_id]);
-        $admin_link = route('admin.view-errand', ['id' => $errand_id]);
+        $client_link = route('client.view-errand', ['id' => $errand_id]) . '?from=notifications';
+        $admin_link = route('admin.view-errand', ['id' => $errand_id]) . '?from=notifications';
 
         if ($client_id) {
             Notification::create([
@@ -359,8 +360,8 @@ class TaskerController extends Controller
 
         $notif_type = "errand";
 
-        $client_link = route('client.view-errand', ['id' => $errand_id]);
-        $admin_link = route('admin.view-errand', ['id' => $errand_id]);
+        $client_link = route('client.view-errand', ['id' => $errand_id]) . '?from=notifications';
+        $admin_link = route('admin.view-errand', ['id' => $errand_id]) . '?from=notifications';
 
         if ($client_id) {
             Notification::create([

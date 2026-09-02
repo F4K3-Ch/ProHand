@@ -18,24 +18,13 @@
 
     @yield('content')
 
-    <div id="negativeModal" class="custom-modal-overlay" style="display: none;">
+    <div id="confirmationModal" class="custom-modal-overlay" style="display:none;">
         <div class="custom-modal-card">
-            <h3 id="negativeModalTitle"></h3>
-            <p id="negativeModalMessage"></p>
+            <h3 id="confirmationModalTitle"></h3>
+            <p id="confirmationModalMessage"></p>
             <div class="custom-modal-actions">
-                <button type="button" id="cancelNegativeBtn" class="btn-secondary">Cancel</button>
-                <button type="button" id="confirmNegativeBtn" class="btn-confirm-negative">Confirm</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="positiveModal" class="custom-modal-overlay" style="display: none;">
-        <div class="custom-modal-card">
-            <h3 id="positiveModalTitle"></h3>
-            <p id="positiveModalMessage"></p>
-            <div class="custom-modal-actions">
-                <button type="button" id="cancelPositiveBtn" class="btn-secondary">Cancel</button>
-                <button type="button" id="confirmPositiveBtn" class="btn-confirm-positive">Confirm</button>
+                <button type="button" id="cancelConfirmationBtn" class="btn-secondary">Cancel</button>
+                <button type="button" id="confirmConfirmationBtn" class="btn-confirm">Confirm</button>
             </div>
         </div>
     </div>
@@ -161,11 +150,13 @@
             }, 3000);
         }
 
-        function showNegativeConfirmation(customTitle, customMessage) {
+        function showConfirmation(customTitle, customMessage) {
             return new Promise((resolve) => {
-                const modal = document.getElementById('negativeModal');
-                document.getElementById('negativeModalTitle').textContent = customTitle;
-                document.getElementById('negativeModalMessage').textContent = customMessage;
+                const modal = document.getElementById('confirmationModal');
+
+                document.getElementById('confirmationModalTitle').textContent = customTitle;
+                document.getElementById('confirmationModalMessage').textContent = customMessage;
+
                 modal.style.display = 'flex';
 
                 const close = (result) => {
@@ -173,25 +164,8 @@
                     resolve(result);
                 };
 
-                document.getElementById('confirmNegativeBtn').onclick = () => close(true);
-                document.getElementById('cancelNegativeBtn').onclick = () => close(false);
-            });
-        }
-
-        function showPositiveConfirmation(customTitle, customMessage) {
-            return new Promise((resolve) => {
-                const modal = document.getElementById('positiveModal');
-                document.getElementById('positiveModalTitle').textContent = customTitle;
-                document.getElementById('positiveModalMessage').textContent = customMessage;
-                modal.style.display = 'flex';
-
-                const close = (result) => {
-                    modal.style.display = 'none';
-                    resolve(result);
-                };
-
-                document.getElementById('confirmPositiveBtn').onclick = () => close(true);
-                document.getElementById('cancelPositiveBtn').onclick = () => close(false);
+                document.getElementById('confirmConfirmationBtn').onclick = () => close(true);
+                document.getElementById('cancelConfirmationBtn').onclick = () => close(false);
             });
         }
     </script>

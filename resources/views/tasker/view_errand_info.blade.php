@@ -7,7 +7,7 @@
 @endsection
 
 @section('content')
-    <a href="{{ route('tasker.dashboard') }}" class="btn-back">
+    <a href="{{ route(request('from', 'tasker.dashboard')) }}" class="btn-back">
         <i class="fa-solid fa-arrow-left"></i> Back
     </a>
 
@@ -284,7 +284,7 @@
                     acceptBtn.addEventListener('click', async function () {
                         const customTitle = 'Confirm Acceptance';
                         const customMessage = 'Are you sure you want to accept errand #' + errand.id + ' ("' + errand.title + '")?';
-                        const isConfirmed = await showPositiveConfirmation(customTitle, customMessage);
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
                         
                         if (!isConfirmed) return;
 
@@ -326,7 +326,7 @@
                     startErrandBtn.addEventListener('click', async function(){
                         const customTitle = 'Start Errand';
                         const customMessage = 'Are you ready to begin working on errand #' + errand.id + ' ("' + errand.title + '")?';
-                        const isConfirmed = await showPositiveConfirmation(customTitle, customMessage);
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
                         
                         if(!isConfirmed) return;
 
@@ -361,7 +361,7 @@
             } catch (error) {
                 console.error('Errand details error:', error);
                 errorMessage.textContent = error.message || 'Unable to load errand information.';
-                errorMessage.style.display = 'block';
+                errorMessage.style.display = 'flex';
             }
         });
     </script>

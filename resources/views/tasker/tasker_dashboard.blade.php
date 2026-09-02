@@ -272,12 +272,14 @@
                     status.textContent = errand.status;
                     status.className = errand.status_class;
 
-                    row.querySelector('.errand-view-link').href = '/tasker/view-errand/' + encodeURIComponent(errand.id);
+                    row.querySelector('.errand-view-link').href =
+                        '/tasker/view-errand/' + encodeURIComponent(errand.id) +
+                        '?from=tasker.dashboard';
 
                     row.querySelector('.btn-accept').addEventListener('click', async function(){
                         const customTitle = 'Confirm Acceptance';
                         const customMessage = 'Are you sure you want to accept errand #' + errand.id + ' ("' + errand.title + '")?';
-                        const isConfirmed = await showPositiveConfirmation(customTitle, customMessage);
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
                         
                         if(!isConfirmed) return;
 

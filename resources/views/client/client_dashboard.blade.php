@@ -341,7 +341,9 @@
                     status.textContent = errand.status;
                     status.className = errand.status_class;
 
-                    row.querySelector('.errand-view-link').href = '/client/view-errand/' + encodeURIComponent(errand.id);
+                    row.querySelector('.errand-view-link').href =
+                        '/client/view-errand/' + encodeURIComponent(errand.id) +
+                        '?from=client.dashboard';
 
                     const deleteBtn = row.querySelector('.action-btn-delete');
                     const cancelAcceptedBtn = row.querySelector('.action-btn-cancel-accepted');
@@ -354,7 +356,7 @@
                         deleteBtn.addEventListener('click', async function(){
                             const customTitle = 'Confirm Deletion';
                             const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
-                            const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
+                            const isConfirmed = await showConfirmation(customTitle, customMessage);
                             
                             if(!isConfirmed) return;
 
@@ -402,7 +404,7 @@
                         cancelAcceptedBtn.addEventListener('click', async function(){
                             const customTitle = 'Confirm Cancellation';
                             const customMessage = 'Are you sure you want to cancel this errand? It will return to "Pending" status.';
-                            const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
+                            const isConfirmed = await showConfirmation(customTitle, customMessage);
                             
                             if(!isConfirmed) return;
                             
@@ -416,7 +418,7 @@
                             cancelRequestBtn.addEventListener('click', async function(){
                                 const customTitle = 'Confirm Cancellation Request';
                                 const customMessage = 'Are you sure you want to send a cancellation request to the Admin? It will return to "Pending" status and this action cannot be undone until processed.';
-                                const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
+                                const isConfirmed = await showConfirmation(customTitle, customMessage);
                                 
                                 if(!isConfirmed) return;
 

@@ -11,8 +11,10 @@
 
         <ul class="sidebar-links">
             <li>
-                <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                    <i class="fa-solid fa-house"></i> Dashboard
+                <a href="{{ route('admin.dashboard') }}"
+                class="{{ request()->routeIs('admin.dashboard') || request()->query('from') === 'admin.dashboard' ? 'active' : '' }}">
+                    <i class="fa-solid fa-house"></i>
+                    Dashboard
                 </a>
             </li>
             <li><a href="#"><i class="fa-solid fa-clipboard-check"></i> Finished Errands</a></li>
@@ -23,7 +25,8 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('notifications') }}" class="notif-link {{ request()->routeIs('notifications') ? 'active' : '' }}">
+                <a href="{{ route('notifications') }}"
+                class="notif-link {{ request()->routeIs('notifications') || request()->query('from') === 'notifications' ? 'active' : '' }}">
                     <i class="fa-solid fa-bell"></i>
                     Notifications
                     <span id="notificationBadge" class="notif-badge" style="display: none;"></span>

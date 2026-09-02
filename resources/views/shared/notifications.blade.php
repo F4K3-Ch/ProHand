@@ -218,27 +218,16 @@
 
                 notifications.forEach(function(notification){
                     const card = template.content.cloneNode(true);
+                    const typeElement = card.querySelector('.notification-type');
+                    const messageElement = card.querySelector('.notification-message');
+                    const dateElement = card.querySelector('.notification-date');
+                    const viewLink = card.querySelector('.view-link');
 
-                    const typeElement =
-                        card.querySelector('.notification-type');
+                    typeElement.textContent = notification.type;
 
-                    const messageElement =
-                        card.querySelector('.notification-message');
+                    messageElement.textContent = notification.message;
 
-                    const dateElement =
-                        card.querySelector('.notification-date');
-
-                    const viewLink =
-                        card.querySelector('.view-link');
-
-                    typeElement.textContent =
-                        notification.type;
-
-                    messageElement.textContent =
-                        notification.message;
-
-                    dateElement.textContent =
-                        notification.created_at;
+                    dateElement.textContent = notification.created_at;
 
                     if(notification.link){
                         viewLink.href = notification.link;
@@ -261,15 +250,9 @@
 
             function showError(message){
                 notificationsList.innerHTML = '';
-
-                const template =
-                    document.getElementById('notification-error-template');
-
-                const card =
-                    template.content.cloneNode(true);
-
-                const errorMessage =
-                    card.querySelector('.notification-error-text');
+                const template = document.getElementById('notification-error-template');
+                const card = template.content.cloneNode(true);
+                const errorMessage = card.querySelector('.notification-error-text');
 
                 if(errorMessage){
                     errorMessage.textContent = message;

@@ -226,7 +226,7 @@
                     }
 
                     sessionStorage.setItem('success_message', data.message);
-                    window.location.href = '/client/view-errand/' + errandId;
+                    window.location.href = '/client/view-errand/' + errandId + '?from=client.dashboard';
 
                 } catch (err) {
                     let errorMessage = 'An unexpected error occurred.';

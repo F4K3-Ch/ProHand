@@ -7,7 +7,7 @@
 @endsection
 
 @section('content')
-    <a href="{{ route('client.dashboard') }}" class="btn-back">
+    <a href="{{ route(request('from', 'client.dashboard')) }}" class="btn-back">
         <i class="fa-solid fa-arrow-left"></i> Back
     </a>
 
@@ -297,14 +297,16 @@
                     const editBtn = document.getElementById('editErrandBtn');
                     const deleteBtn = document.getElementById('deleteErrandBtn');
 
-                    editBtn.href = '/client/edit-errand/' + errand.id;
+                    editBtn.href =
+                        '/client/edit-errand/' + encodeURIComponent(errand.id) +
+                        '?from=client.dashboard';
                     editBtn.style.display = 'flex';
                     deleteBtn.style.display = 'flex';
 
                     deleteBtn.addEventListener('click', async function() {
                         const customTitle = 'Confirm Deletion';
                         const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
-                        const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
                         
                         if(!isConfirmed) return;
 
@@ -343,7 +345,7 @@
                     cancelAcceptedBtn.addEventListener('click', async function() {
                         const customTitle = 'Confirm Cancellation';
                         const customMessage = 'Are you sure you want to cancel this errand? It will return to "Pending" status.';
-                        const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
                         
                         if(!isConfirmed) return;
                         // Add your cancel pending payment AJAX call implementation here
@@ -358,7 +360,7 @@
                         cancelRequestBtn.addEventListener('click', async function() {
                             const customTitle = 'Confirm Cancellation Request';
                             const customMessage = 'Are you sure you want to send a cancellation request to the Admin? It will return to "Pending" status and this action cannot be undone until processed.';
-                            const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
+                            const isConfirmed = await showConfirmation(customTitle, customMessage);
                             
                             if(!isConfirmed) return;
                             // Add your client cancel request AJAX call implementation here
@@ -372,7 +374,7 @@
             } catch (error) {
                 console.error('Errand details error:', error);
                 errorMessage.textContent = error.message || 'Unable to load errand information.';
-                errorMessage.style.display = 'block';
+                errorMessage.style.display = 'flex';
             }
         });
     </script>

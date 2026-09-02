@@ -339,7 +339,9 @@
                     status.textContent = errand.status;
                     status.className = errand.status_class;
 
-                    row.querySelector('.errand-view-link').href = '/admin/view-errand/' + encodeURIComponent(errand.id);
+                    row.querySelector('.errand-view-link').href = 
+                        '/admin/view-errand/' + encodeURIComponent(errand.id) +
+                        '?from=admin.dashboard';
 
                     const deleteBtn = row.querySelector('.action-delete');
                     const cancelBtn = row.querySelector('.action-cancel');
@@ -349,7 +351,7 @@
                         deleteBtn.addEventListener('click', async function(){
                             const customTitle = 'Confirm Deletion';
                             const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
-                            const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
+                            const isConfirmed = await showConfirmation(customTitle, customMessage);
                             
                             if(!isConfirmed) return;
                             
@@ -360,7 +362,7 @@
                         cancelBtn.addEventListener('click', async function(){
                             const customTitle = 'Confirm Cancellation';
                             const customMessage = 'Force-cancel this active errand? The errand status will be reset back to "Pending" status and the platform will hold the funds for manual payout adjustments.';
-                            const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
+                            const isConfirmed = await showConfirmation(customTitle, customMessage);
                             
                             if(!isConfirmed) return;
                             

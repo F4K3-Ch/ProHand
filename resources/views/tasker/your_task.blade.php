@@ -154,6 +154,8 @@
             <td>
                 <div class="button-row">
                     <a href="#" class="btn-view errand-view-link">View</a>
+                    <button type="button" class="btn-cancel cancel-request action-btn-cancel-request" style="display: none;">Cancel</button>
+                    <button type="button" disabled class="btn-cancel-disabled action-btn-cancel-disabled" style="display: none;">Cancel</button>
                 </div>
             </td>
         </tr>
@@ -327,7 +329,28 @@
                     status.textContent = errand.status;
                     status.className = errand.status_class;
 
-                    row.querySelector('.errand-view-link').href = '/tasker/view-errand/' + encodeURIComponent(errand.id);
+                    row.querySelector('.errand-view-link').href =
+                        '/tasker/view-errand/' + encodeURIComponent(errand.id) +
+                        '?from=tasker.your_task';
+
+                    const cancelRequestBtn = row.querySelector('.action-btn-cancel-request');
+                    const cancelDisabledBtn = row.querySelector('.action-btn-cancel-disabled');
+
+                    if (Number(errand.cancel_requested_by_tasker) === 0) {
+                        cancelRequestBtn.style.display = 'flex';
+                        
+                        cancelRequestBtn.addEventListener('click', async function(){
+                            const customTitle = 'Confirm Cancellation Request';
+                            const customMessage = 'Are you sure you want to send a cancellation request to the Admin? It will return to "Pending" status and this action cannot be undone until processed.';
+                            const isConfirmed = await showConfirmation(customTitle, customMessage);
+                            
+                            if(!isConfirmed) return;
+
+                            // Add your client cancel request AJAX call implementation here
+                        });
+                    } else {
+                        cancelDisabledBtn.style.display = 'flex';
+                    }
 
                     tableBody.appendChild(row);
                 });

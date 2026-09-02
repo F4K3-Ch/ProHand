@@ -3,11 +3,11 @@
 @section('title', 'View Errand')
 
 @section('sidebar')
-    @include('layouts.sidebar.client')
+    @include('layouts.sidebar.admin')
 @endsection
 
 @section('content')
-    <a href="{{ route('admin.dashboard') }}" class="btn-back">
+    <a href="{{ route(request('from', 'admin.dashboard')) }}" class="btn-back">
         <i class="fa-solid fa-arrow-left"></i> Back
     </a>
 

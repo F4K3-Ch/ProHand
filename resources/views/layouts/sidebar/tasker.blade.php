@@ -11,13 +11,17 @@
 
         <ul class="sidebar-links">
             <li>
-                <a href="{{ route('tasker.dashboard') }}" class="{{ request()->routeIs('tasker.dashboard') ? 'active' : '' }}">
-                    <i class="fa-solid fa-house"></i> Dashboard
+                <a href="{{ route('tasker.dashboard') }}"
+                class="{{ request()->routeIs('tasker.dashboard') || request()->query('from') === 'tasker.dashboard' ? 'active' : '' }}">
+                    <i class="fa-solid fa-house"></i>
+                    Dashboard
                 </a>
             </li>
             <li>
-                <a href="{{ route('tasker.your_task') }}" class="{{ request()->routeIs('tasker.your_task') ? 'active' : '' }}">
-                    <i class="fa-solid fa-clipboard-list"></i> Your Task
+                <a href="{{ route('tasker.your_task') }}"
+                class="{{ request()->routeIs('tasker.your_task') || request()->query('from') === 'tasker.your_task' ? 'active' : '' }}">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                    Your Task
                 </a>
             </li>
             <li><a href="#"><i class="fa-solid fa-clipboard-check"></i> Finished Errands</a></li>
@@ -27,7 +31,8 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('notifications') }}" class="notif-link {{ request()->routeIs('notifications') ? 'active' : '' }}">
+                <a href="{{ route('notifications') }}"
+                class="notif-link {{ request()->routeIs('notifications') || request()->query('from') === 'notifications' ? 'active' : '' }}">
                     <i class="fa-solid fa-bell"></i>
                     Notifications
                     <span id="notificationBadge" class="notif-badge" style="display: none;"></span>
