@@ -307,7 +307,7 @@
                                     throw new Error(result.message || 'Failed to accept errand.');
                                 }
 
-                                sessionStorage.setItem('success_message', result.message || 'Errand accepted successfully!');
+                                sessionStorage.setItem('success_message', result.message);
                                 window.location.href = '{{ route("tasker.your_task") }}';
 
                             } catch (error) {
@@ -346,7 +346,7 @@
                                 const result = await response.json();
                                 if (!response.ok || !result.success) throw new Error(result.message || 'Failed to start errand.');
 
-                                sessionStorage.setItem('success_message', result.message || 'Errand started successfully!');
+                                sessionStorage.setItem('success_message', result.message);
                                 window.location.reload();
 
                             } catch(error) {
