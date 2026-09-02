@@ -322,42 +322,42 @@
                 } else if (errand.raw_status === 'accepted') {
                     actionSlot.innerHTML = '<button type="button" id="startErrandBtn" class="btn-start-errand">Start Errand</button>';
                         
-                        const startErrandBtn = actionSlot.querySelector('#startErrandBtn');
-                        if (startErrandBtn) {
-                            startErrandBtn.addEventListener('click', async function(){
-                                const customTitle = 'Start Errand';
-                                const customMessage = 'Are you ready to begin working on errand #' + errand.id + ' ("' + errand.title + '")?';
-                                const isConfirmed = await showPositiveConfirmation(customTitle, customMessage);
-                                
-                                if(!isConfirmed) return;
+                    const startErrandBtn = actionSlot.querySelector('#startErrandBtn');
+                    if (startErrandBtn) {
+                        startErrandBtn.addEventListener('click', async function(){
+                            const customTitle = 'Start Errand';
+                            const customMessage = 'Are you ready to begin working on errand #' + errand.id + ' ("' + errand.title + '")?';
+                            const isConfirmed = await showPositiveConfirmation(customTitle, customMessage);
+                            
+                            if(!isConfirmed) return;
 
-                                try {
-                                    const response = await fetch('/api/tasker/errands/' + errand.id + '/start', {
-                                        method: 'POST',
-                                        headers: {
-                                            'Accept': 'application/json',
-                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                                            'X-API-KEY': apiKey,
-                                            'X-MY-ORIGIN' : origin
-                                        },
-                                        credentials: 'same-origin'
-                                    });
+                            try {
+                                const response = await fetch('/api/tasker/errands/' + errand.id + '/start', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN' : origin
+                                    },
+                                    credentials: 'same-origin'
+                                });
 
-                                    const result = await response.json();
-                                    if (!response.ok || !result.success) throw new Error(result.message || 'Failed to start errand.');
+                                const result = await response.json();
+                                if (!response.ok || !result.success) throw new Error(result.message || 'Failed to start errand.');
 
-                                    sessionStorage.setItem('success_message', result.message || 'Errand started successfully!');
-                                    window.location.reload();
+                                sessionStorage.setItem('success_message', result.message || 'Errand started successfully!');
+                                window.location.reload();
 
-                                } catch(error) {
-                                    console.error('Start errand error:', error);
-                                    const errorText = document.getElementById('errorMessageText');
-                                    errorText.textContent = error.message;
-                                    errorText.style.display = 'block';
-                                    setTimeout(() => { errorText.style.display = 'none'; }, 4000);
-                                }
-                            });
-                        }
+                            } catch(error) {
+                                console.error('Start errand error:', error);
+                                const errorText = document.getElementById('errorMessageText');
+                                errorText.textContent = error.message;
+                                errorText.style.display = 'block';
+                                setTimeout(() => { errorText.style.display = 'none'; }, 4000);
+                            }
+                        });
+                    }
                 }
 
             } catch (error) {
