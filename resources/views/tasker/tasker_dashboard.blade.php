@@ -299,19 +299,8 @@
                                 throw new Error(result.message || 'Failed to accept errand.');
                             }
 
-                            const successMessageText = document.getElementById('successMessageText');
-                            if (successMessageText) {
-                                successMessageText.textContent = result.message || 'Errand accepted successfully!';
-                                successMessageText.style.display = 'block';
-
-                                setTimeout(() => {
-                                    successMessageText.textContent = '';
-                                    successMessageText.style.display = 'none';
-                                }, 3000);
-                            }
-
-                            loadMetrics();
-                            loadErrands();
+                            sessionStorage.setItem('success_message', result.message || 'Errand accepted successfully!');
+                            window.location.href = '{{ route("tasker.your_task") }}';
 
                         } catch(error) {
                             console.error('Accept error:', error);

@@ -62,6 +62,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/tasker/dashboard', function () {
             return view('tasker.tasker_dashboard');
         })->name('tasker.dashboard');
+
+        Route::get('/tasker/your_task', function () {
+            return view('tasker.your_task');
+        })->name('tasker.your_task');
     });
 
     // Admin dashboard

@@ -154,28 +154,24 @@
                         </div>
                     </div>
                     
-                    <div class="group-info-box">
-                        <div class="info-box">
-                            <label>User ID</label>
-                            <span id="tasker-id">Loading...</span>
-                        </div>
-
-                        <div class="info-box">
-                            <label>Email</label>
-                            <span id="tasker-email">Loading...</span>
-                        </div>
+                    <div class="info-box">
+                        <label>User ID</label>
+                        <span id="tasker-id">Loading...</span>
                     </div>
 
-                    <div class="group-info-box">
-                        <div class="info-box">
-                            <label>Name</label>
-                            <span id="tasker-name">Loading...</span>
-                        </div>
+                    <div class="info-box">
+                        <label>Email</label>
+                        <span id="tasker-email">Loading...</span>
+                    </div>
 
-                        <div class="info-box">
-                            <label>Contact Number</label>
-                            <span id="tasker-contact-number">Loading...</span>
-                        </div>
+                    <div class="info-box">
+                        <label>Name</label>
+                        <span id="tasker-name">Loading...</span>
+                    </div>
+
+                    <div class="info-box">
+                        <label>Contact Number</label>
+                        <span id="tasker-contact-number">Loading...</span>
                     </div>
                 </div>
             </div>

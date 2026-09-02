@@ -15,7 +15,6 @@ class TaskerController extends Controller
 {
     public function pendingMetrics(Request $request)
     {
-        
         $metrics = Errand::selectRaw('status, COUNT(*) as total')
             ->where('status', 'pending')
             ->groupBy('status')
