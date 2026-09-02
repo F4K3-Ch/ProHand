@@ -284,68 +284,77 @@
                     actionSlot.innerHTML = '<a href="/client/edit-errand/' + errand.id + '" id="edit-errand-btn" class="btn-edit-errand"><i class="fa-solid fa-pen"></i> Edit Errand</a>' +
                         '<button type="button" id="delete-errand-btn" class="btn-delete"><i class="fa-solid fa-trash"></i> Delete Errand</button>';
 
-                    actionSlot.querySelector('#delete-errand-btn').addEventListener('click', async function(){
-                        const customTitle = 'Confirm Deletion';
-                        const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
-                        const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
-                        
-                        if(!isConfirmed) return;
-
-                        try {
-                            const response = await fetch('/api/client/errands/' + errand.id + '/delete', {
-                                method: 'POST',
-                                headers: {
-                                    'Accept': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                                    'X-API-KEY': apiKey,
-                                    'X-MY-ORIGIN' : origin
-                                },
-                                credentials: 'same-origin'
-                            });
-
-                            const result = await response.json();
-                            if(!response.ok || !result.success) throw new Error(result.message || 'Failed to delete errand.');
-
-                            sessionStorage.setItem('success_message', result.message);
-                            window.location.href = '/client/dashboard';
-
-                        } catch(error) {
-                            console.error('Delete error:', error);
-                            const errorText = document.getElementById('errorMessageText');
-                            errorText.textContent = error.message;
-                            errorText.style.display = 'block';
-                            setTimeout(() => { errorText.style.display = 'none'; }, 4000);
-                        }
-                    });
-
-                } else if (errand.raw_status === 'accepted') {
-                    actionSlot.innerHTML = '<button disabled class="btn-edit-errand-disabled"><i class="fa-regular fa-pen-to-square"></i>Edit</button>' +
-                        '<button type="button" class="btn-cancel cancel-accepted"><i class="fa-solid fa-ban"></i>Cancel</button>';
-                    
-                    actionSlot.querySelector('.cancel-accepted').addEventListener('click', async function(){
-                        const customTitle = 'Confirm Cancellation';
-                        const customMessage = 'Are you sure you want to cancel this errand? It will return to "Pending" status.';
-                        const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
-                        
-                        if(!isConfirmed) return;
-                        
-                        // Add your cancel pending payment AJAX call implementation here
-                    });
-
-                } else if (errand.raw_status === 'in_progress') {
-                    if (Number(errand.cancel_requested_by_client) === 0) {
-                        actionSlot.innerHTML = '<span class="descriptive-status-badge"><i class="fa-solid fa-spinner fa-spin"></i>Tasker is performing errand...</span>' +
-                            '<button type="button" class="btn-cancel cancel-request"><i class="fa-solid fa-hand-holding-hand"></i>Request Cancel</button>';
-                        
-                        actionSlot.querySelector('.cancel-request').addEventListener('click', async function(){
-                            const customTitle = 'Confirm Cancellation Request';
-                            const customMessage = 'Are you sure you want to send a cancellation request to the Admin? It will return to "Pending" status and this action cannot be undone until processed.';
+                    const deleteBtn = actionSlot.querySelector('#delete-errand-btn');
+                    if (deleteBtn) {
+                        deleteBtn.addEventListener('click', async function(){
+                            const customTitle = 'Confirm Deletion';
+                            const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
                             const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
                             
                             if(!isConfirmed) return;
 
-                            // Add your client cancel request AJAX call implementation here
+                            try {
+                                const response = await fetch('/api/client/errands/' + errand.id + '/delete', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN' : origin
+                                    },
+                                    credentials: 'same-origin'
+                                });
+
+                                const result = await response.json();
+                                if (!response.ok || !result.success) throw new Error(result.message || 'Failed to delete errand.');
+
+                                sessionStorage.setItem('success_message', result.message || 'Errand deleted successfully!');
+                                window.location.href = '{{ route("client.dashboard") }}';
+
+                            } catch(error) {
+                                console.error('Delete error:', error);
+                                const errorText = document.getElementById('errorMessageText');
+                                errorText.textContent = error.message;
+                                errorText.style.display = 'block';
+                                setTimeout(() => { errorText.style.display = 'none'; }, 4000);
+                            }
                         });
+                    }
+
+                } else if (errand.raw_status === 'accepted') {
+                    actionSlot.innerHTML = '<button disabled class="btn-edit-errand-disabled"><i class="fa-regular fa-pen-to-square"></i>Edit</button>' +
+                        '<button type="button" id="cancelAcceptedBtn" class="btn-cancel"><i class="fa-solid fa-ban"></i>Cancel</button>';
+                    
+                    const cancelAcceptedBtn = actionSlot.querySelector('#cancelAcceptedBtn');
+                    if (cancelAcceptedBtn) {
+                        cancelAcceptedBtn.addEventListener('click', async function(){
+                            const customTitle = 'Confirm Cancellation';
+                            const customMessage = 'Are you sure you want to cancel this errand? It will return to "Pending" status.';
+                            const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
+                            
+                            if(!isConfirmed) return;
+                            
+                            // Add your cancel pending payment AJAX call implementation here
+                        });
+                    }
+
+                } else if (errand.raw_status === 'in_progress') {
+                    if (Number(errand.cancel_requested_by_client) === 0) {
+                        actionSlot.innerHTML = '<span class="descriptive-status-badge"><i class="fa-solid fa-spinner fa-spin"></i>Tasker is performing errand...</span>' +
+                            '<button type="button" id="cancelRequestBtn" class="btn-cancel"><i class="fa-solid fa-hand-holding-hand"></i>Request Cancel</button>';
+                        
+                        const cancelRequestBtn = actionSlot.querySelector('#cancelRequestBtn');
+                        if (cancelRequestBtn) {
+                            cancelRequestBtn.addEventListener('click', async function(){
+                                const customTitle = 'Confirm Cancellation Request';
+                                const customMessage = 'Are you sure you want to send a cancellation request to the Admin? It will return to "Pending" status and this action cannot be undone until processed.';
+                                const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
+                                
+                                if(!isConfirmed) return;
+
+                                // Add your client cancel request AJAX call implementation here
+                            });
+                        }
                     } else {
                         actionSlot.innerHTML = '<span class="descriptive-status-badge"><i class="fa-solid fa-spinner fa-spin"></i>Pending Admin Cancel...</span>';
                     }

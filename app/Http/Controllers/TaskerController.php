@@ -149,7 +149,7 @@ class TaskerController extends Controller
         }
 
         $errands = $query
-            ->latest()
+            ->orderBy('updated_at', 'desc')
             ->paginate($perPage);
 
         $formattedErrands = collect($errands->items())->map(function ($errand) {

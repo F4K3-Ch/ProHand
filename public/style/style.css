@@ -990,12 +990,12 @@ span {
     position: absolute;
     top: 4px;          /* Adjust vertical position */
     right: 6px;        /* Adjust horizontal position */
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-weight: 500;
     padding: 5px;
     border-radius: 50%;
-    width: 25px;
-    height: 25px;
+    width: 20px;
+    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;

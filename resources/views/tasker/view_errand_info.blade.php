@@ -278,7 +278,52 @@
 
                 // Handle Dynamic Actions / Badges Container
                 const actionSlot = document.querySelector('.info-bot-btn');
-                actionSlot.innerHTML = '';
+                actionSlot.innerHTML = ''; 
+
+                if (errand.raw_status === 'pending') {
+                    actionSlot.innerHTML = '<button type="button" class="btn-accept" id="acceptErrandBtn"><i class="fa-solid fa-check"></i> Accept</button>';
+
+                    const acceptBtn = actionSlot.querySelector('#acceptErrandBtn');
+                    if (acceptBtn) {
+                        acceptBtn.addEventListener('click', async function () {
+                            const customTitle = 'Confirm Acceptance';
+                            const customMessage = 'Are you sure you want to accept errand #' + errand.id + ' ("' + errand.title + '")?';
+                            const isConfirmed = await showPositiveConfirmation(customTitle, customMessage);
+                            
+                            if (!isConfirmed) return;
+
+                            try {
+                                const response = await fetch('/api/tasker/errands/' + encodeURIComponent(errandId) + '/accept', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN': origin
+                                    },
+                                    credentials: 'same-origin'
+                                });
+
+                                const result = await response.json();
+
+                                if (!response.ok || !result.success) {
+                                    throw new Error(result.message || 'Failed to accept errand.');
+                                }
+
+                                sessionStorage.setItem('success_message', result.message || 'Errand accepted successfully!');
+                                window.location.href = '{{ route("tasker.your_task") }}';
+                                
+                            } catch (error) {
+                                console.error('Accept errand error:', error);
+                                const errorText = document.getElementById('errorMessageText');
+                                errorText.textContent = error.message;
+                                errorText.style.display = 'block';
+                                setTimeout(() => { errorText.style.display = 'none'; }, 4000);
+                            }
+                        });
+                    }
+                }
 
             } catch (error) {
                 console.error('Errand details error:', error);
