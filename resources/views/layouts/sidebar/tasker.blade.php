@@ -26,8 +26,10 @@
             </li>
             <li><a href="#"><i class="fa-solid fa-clipboard-check"></i> Finished Errands</a></li>
             <li>
-                <a href="{{ route('profile') }}" class="{{ request()->routeIs('profile') ? 'active' : '' }}">
-                    <i class="fa-solid fa-circle-user"></i> My Profile
+                <a href="{{ route('profile') }}"
+                class="{{ request()->routeIs('profile', 'profile.edit', 'profile.change-password') ? 'active' : '' }}">
+                    <i class="fa-solid fa-circle-user"></i>
+                    My Profile
                 </a>
             </li>
             <li>
