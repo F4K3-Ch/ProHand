@@ -246,4 +246,79 @@ class TaskerController extends Controller
             'message' => 'Errand accepted successfully!',
         ]);
     }
+
+    public function getErrandDetails($id, Request $request)
+    {
+        $taskerId = $request->user()->id;
+
+        $errand = Errand::with(['attachment', 'client'])
+            ->where('id', $id)
+            ->where(function ($q) use ($taskerId) {
+                $q->whereNull('tasker_id')
+                    ->orWhere('tasker_id', $taskerId);
+            })
+            ->first();
+
+        if (!$errand) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Errand not found or is no longer available.'
+            ], 404);
+        }
+
+        $finishedAt = $errand->completed_at ?? $errand->failed_at;
+
+        $formattedErrand = [
+            'id' => $errand->id,
+            'title' => $errand->title,
+            'category' => Str::title(str_replace('_', ' ', $errand->category)),
+            'description' => $errand->description,
+            'location' => $errand->location,
+            'contact' => $errand->contact,
+            'fee' => '₱' . number_format($errand->fee, 2),
+            'status' => Str::title(str_replace('_', ' ', $errand->status)),
+            'raw_status' => $errand->status,
+            'cancel_requested_by_client' => $errand->cancel_requested_by_client ?? false,
+            'status_class' => 'status-field status-' . $errand->status,
+            
+            'created_at' => $errand->created_at 
+                ? Carbon::parse($errand->created_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                : 'Not Set',
+            'updated_at' => $errand->updated_at 
+                ? Carbon::parse($errand->updated_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                : 'Not Set',
+            'accepted_at' => $errand->accepted_at 
+                ? Carbon::parse($errand->accepted_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                : 'Not Set',
+            'in_progress_at' => $errand->in_progress_at 
+                ? Carbon::parse($errand->in_progress_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                : 'Not Set',
+            'deadline' => $errand->deadline 
+                ? Carbon::parse($errand->deadline)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                : 'Not Set',
+            'finished_at' => $finishedAt 
+                ? Carbon::parse($finishedAt)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                : 'Not Set',
+            
+            'attachment' => $errand->attachment ? [
+                'name' => $errand->attachment->original_name,
+                'url' => Storage::url($errand->attachment->file_path)
+            ] : null,
+
+            'client' => $errand->client ? [
+                'id' => $errand->client->id,
+                'name' => trim("{$errand->client->first_name} " . ($errand->client->middle_name ? "{$errand->client->middle_name} " : "") . "{$errand->client->last_name}"),
+                'email' => $errand->client->email,
+                'contact_number' => $errand->client->contact_number,
+                'profile_picture' => $errand->client->profile_picture 
+                    ? Storage::url($errand->client->profile_picture) 
+                    : asset('storage/uploads/profile_pictures/default.jpg')
+            ] : null,
+        ];
+
+        return response()->json([
+            'success' => true, 
+            'errand' => $formattedErrand
+        ]);
+    }
 }

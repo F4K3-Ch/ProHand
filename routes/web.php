@@ -66,6 +66,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/tasker/your_task', function () {
             return view('tasker.your_task');
         })->name('tasker.your_task');
+
+        Route::get('/tasker/view-errand/{id}', function ($id) {
+            return view('tasker.view_errand_info', ['id' => $id]);
+        })->name('tasker.view-errand');
     });
 
     // Admin dashboard

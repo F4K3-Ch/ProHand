@@ -132,7 +132,7 @@
 
             <div class="users-container">
                 <div class="user-details-container">
-                    <h1>Created By</h1>
+                    <h1>Posted By</h1>
 
                     <div class="user-header-row">
                         <div class="profile-photo-section">
