@@ -28,7 +28,7 @@
                     <div class="search-wrapper">
                         <div class="search-bar">
                             <input type="text" id="errandSearch" placeholder="Search errands...">
-                            <button type="button" class="btn-clear" id="clearSearchButton">Clear</button>
+                            <button type="button" class="btn-clear" id="clearSearchButton" style="display: none;">Clear</button>
                         </div>
                         <button type="button" class="btn-search" id="searchButton">Search</button>
                     </div>
@@ -162,7 +162,8 @@
             <td>
                 <div class="button-row">
                     <a href="#" class="btn-view errand-view-link">View</a>
-                    <span class="action-slot"></span>
+                    <button type="button" class="btn-delete action-delete" style="display: none;">Delete</button>
+                    <button type="button" class="btn-cancel cancel-accepted action-cancel" style="display: none;">Cancel</button>
                 </div>
             </td>
         </tr>
@@ -215,7 +216,7 @@
             function displayGlobalError(message){
                 if(!errorText) return;
                 errorText.textContent = message;
-                errorText.style.display = 'block';
+                errorText.style.display = 'flex';
                 setTimeout(() => { errorText.style.display = 'none'; }, 5000);
             }
 
@@ -340,31 +341,30 @@
 
                     row.querySelector('.errand-view-link').href = '/admin/view-errand/' + encodeURIComponent(errand.id);
 
-                    const actionSlot = row.querySelector('.action-slot');
+                    const deleteBtn = row.querySelector('.action-delete');
+                    const cancelBtn = row.querySelector('.action-cancel');
 
                     if (errand.raw_status === 'pending' || errand.raw_status === 'accepted') {
-                        actionSlot.innerHTML = '<button type="button" class="btn-delete">Delete</button>';
-                        
-                        actionSlot.querySelector('.btn-delete').addEventListener('click', async function(){
+                        deleteBtn.style.display = 'flex';
+                        deleteBtn.addEventListener('click', async function(){
                             const customTitle = 'Confirm Deletion';
                             const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
                             const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
                             
                             if(!isConfirmed) return;
-
-                            // Add your cancel pending payment AJAX call implementation here
+                            
+                            // Add your delete AJAX call implementation here
                         });
                     } else if (errand.raw_status === 'in_progress') {
-                        actionSlot.innerHTML = '<button type="button" class="btn-cancel cancel-accepted">Cancel</button>';
-                        
-                        actionSlot.querySelector('.btn-cancel').addEventListener('click', async function(){
+                        cancelBtn.style.display = 'flex';
+                        cancelBtn.addEventListener('click', async function(){
                             const customTitle = 'Confirm Cancellation';
                             const customMessage = 'Force-cancel this active errand? The errand status will be reset back to "Pending" status and the platform will hold the funds for manual payout adjustments.';
                             const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
                             
                             if(!isConfirmed) return;
                             
-                            // Add your cancel pending payment AJAX call implementation here
+                            // Add your cancel active errand AJAX call implementation here
                         });
                     }
 
@@ -448,7 +448,7 @@
 
             function updateClearButtonState() {
                 if(clearSearchButton) {
-                    clearSearchButton.style.display = searchInput.value ? 'inline-block' : 'none';
+                    clearSearchButton.style.display = searchInput.value ? 'flex' : 'none';
                 }
             }
         });

@@ -162,7 +162,10 @@
             <td>
                 <div class="button-row">
                     <a href="#" class="btn-view errand-view-link">View</a>
-                    <span class="action-slot"></span>
+                    <button type="button" class="btn-delete action-btn-delete" style="display: none;">Delete</button>
+                    <button type="button" class="btn-cancel cancel-accepted action-btn-cancel-accepted" style="display: none;">Cancel</button>
+                    <button type="button" class="btn-cancel cancel-request action-btn-cancel-request" style="display: none;">Cancel</button>
+                    <button type="button" disabled class="btn-cancel-disabled action-btn-cancel-disabled" style="display: none;">Cancel</button>
                 </div>
             </td>
         </tr>
@@ -215,7 +218,7 @@
             function displayGlobalError(message){
                 if(!errorText) return;
                 errorText.textContent = message;
-                errorText.style.display = 'block';
+                errorText.style.display = 'flex';
                 setTimeout(() => { errorText.style.display = 'none'; }, 5000);
             }
 
@@ -340,12 +343,15 @@
 
                     row.querySelector('.errand-view-link').href = '/client/view-errand/' + encodeURIComponent(errand.id);
 
-                    const actionSlot = row.querySelector('.action-slot');
+                    const deleteBtn = row.querySelector('.action-btn-delete');
+                    const cancelAcceptedBtn = row.querySelector('.action-btn-cancel-accepted');
+                    const cancelRequestBtn = row.querySelector('.action-btn-cancel-request');
+                    const cancelDisabledBtn = row.querySelector('.action-btn-cancel-disabled');
 
                     if (errand.raw_status === 'pending') {
-                        actionSlot.innerHTML = '<button type="button" class="btn-delete">Delete</button>';
+                        deleteBtn.style.display = 'flex';
                         
-                        actionSlot.querySelector('.btn-delete').addEventListener('click', async function(){
+                        deleteBtn.addEventListener('click', async function(){
                             const customTitle = 'Confirm Deletion';
                             const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
                             const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
@@ -373,7 +379,7 @@
                                 const successMessageText = document.getElementById('successMessageText');
                                 if (successMessageText) {
                                     successMessageText.textContent = result.message || 'Errand deleted successfully!';
-                                    successMessageText.style.display = 'block';
+                                    successMessageText.style.display = 'flex';
 
                                     setTimeout(() => {
                                         successMessageText.textContent = '';
@@ -391,9 +397,9 @@
                         });
 
                     } else if (errand.raw_status === 'accepted') {
-                        actionSlot.innerHTML = '<button type="button" class="btn-cancel cancel-accepted">Cancel</button>';
+                        cancelAcceptedBtn.style.display = 'flex';
                         
-                        actionSlot.querySelector('.btn-cancel').addEventListener('click', async function(){
+                        cancelAcceptedBtn.addEventListener('click', async function(){
                             const customTitle = 'Confirm Cancellation';
                             const customMessage = 'Are you sure you want to cancel this errand? It will return to "Pending" status.';
                             const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
@@ -405,9 +411,9 @@
 
                     } else if (errand.raw_status === 'in_progress') {
                         if (Number(errand.cancel_requested_by_client) === 0) {
-                            actionSlot.innerHTML = '<button type="button" class="btn-cancel cancel-request">Cancel</button>';
+                            cancelRequestBtn.style.display = 'flex';
                             
-                            actionSlot.querySelector('.btn-cancel').addEventListener('click', async function(){
+                            cancelRequestBtn.addEventListener('click', async function(){
                                 const customTitle = 'Confirm Cancellation Request';
                                 const customMessage = 'Are you sure you want to send a cancellation request to the Admin? It will return to "Pending" status and this action cannot be undone until processed.';
                                 const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
@@ -417,7 +423,7 @@
                                 // Add your client cancel request AJAX call implementation here
                             });
                         } else {
-                            actionSlot.innerHTML = '<button type="button" disabled class="btn-cancel-disabled">Cancel</button>';
+                            cancelDisabledBtn.style.display = 'flex';
                         }
                     }
 
@@ -500,7 +506,7 @@
 
             function updateClearButtonState() {
                 if(clearSearchButton) {
-                    clearSearchButton.style.display = searchInput.value ? 'inline-block' : 'none';
+                    clearSearchButton.style.display = searchInput.value ? 'flex' : 'none';
                 }
             }
         });

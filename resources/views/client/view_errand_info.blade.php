@@ -126,7 +126,27 @@
                 </div>
 
                 <div class="info-bot-btn">
-
+                    <a href="#" id="editErrandBtn" class="btn-edit-errand" style="display: none;">
+                        <i class="fa-solid fa-pen"></i> Edit Errand
+                    </a>
+                    <button type="button" id="deleteErrandBtn" class="btn-delete" style="display: none;">
+                        <i class="fa-solid fa-trash"></i> Delete Errand
+                    </button>
+                    <button type="button" disabled class="btn-edit-errand-disabled" id="disabledEditBtn" style="display: none;">
+                        <i class="fa-regular fa-pen-to-square"></i>Edit
+                    </button>
+                    <button type="button" id="cancelAcceptedBtn" class="btn-cancel" style="display: none;">
+                        <i class="fa-solid fa-ban"></i>Cancel
+                    </button>
+                    <span class="descriptive-status-badge" id="performingBadge" style="display: none;">
+                        <i class="fa-solid fa-spinner fa-spin"></i>Tasker is performing errand...
+                    </span>
+                    <button type="button" id="cancelRequestBtn" class="btn-cancel" style="display: none;">
+                        <i class="fa-solid fa-hand-holding-hand"></i>Request Cancel
+                    </button>
+                    <span class="descriptive-status-badge" id="pendingCancelBadge" style="display: none;">
+                        <i class="fa-solid fa-spinner fa-spin"></i>Pending Admin Cancel...
+                    </span>
                 </div>
             </div>
 
@@ -211,7 +231,6 @@
 
                 const errand = result.errand;
 
-                // Populate text fields
                 document.getElementById('errand-id').textContent = errand.id;
                 document.getElementById('errand-category').textContent = errand.category;
                 document.getElementById('errand-title').textContent = errand.title;
@@ -231,7 +250,6 @@
                 document.getElementById('errand-deadline').textContent = errand.deadline;
                 document.getElementById('errand-finished-at').textContent = errand.finished_at;
 
-                // Handle Tasker Section Visibility & Data
                 const usersContainer = document.getElementById('users-container');
                 const profilePhoto = document.getElementById('tasker-profile-photo');
                 const photoSpinner = document.getElementById('profile-photo-spinner');
@@ -260,7 +278,6 @@
                     usersContainer.style.display = 'none';
                 }
 
-                // Handle Attachments
                 const attachContainer = document.getElementById('errand-attachment');
                 const attachItem = attachContainer.querySelector('.attachment-item');
                 const noAttachItem = attachContainer.querySelector('.no-attachments');
@@ -276,85 +293,79 @@
                     downloadBtn.setAttribute('download', errand.attachment.name);
                 }
 
-                // Handle Dynamic Actions / Badges Container
-                const actionSlot = document.querySelector('.info-bot-btn');
-                actionSlot.innerHTML = '';
-
                 if (errand.raw_status === 'pending') {
-                    actionSlot.innerHTML = '<a href="/client/edit-errand/' + errand.id + '" id="edit-errand-btn" class="btn-edit-errand"><i class="fa-solid fa-pen"></i> Edit Errand</a>' +
-                        '<button type="button" id="delete-errand-btn" class="btn-delete"><i class="fa-solid fa-trash"></i> Delete Errand</button>';
+                    const editBtn = document.getElementById('editErrandBtn');
+                    const deleteBtn = document.getElementById('deleteErrandBtn');
 
-                    const deleteBtn = actionSlot.querySelector('#delete-errand-btn');
-                    if (deleteBtn) {
-                        deleteBtn.addEventListener('click', async function(){
-                            const customTitle = 'Confirm Deletion';
-                            const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
-                            const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
-                            
-                            if(!isConfirmed) return;
+                    editBtn.href = '/client/edit-errand/' + errand.id;
+                    editBtn.style.display = 'flex';
+                    deleteBtn.style.display = 'flex';
 
-                            try {
-                                const response = await fetch('/api/client/errands/' + errand.id + '/delete', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Accept': 'application/json',
-                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                                        'X-API-KEY': apiKey,
-                                        'X-MY-ORIGIN' : origin
-                                    },
-                                    credentials: 'same-origin'
-                                });
+                    deleteBtn.addEventListener('click', async function() {
+                        const customTitle = 'Confirm Deletion';
+                        const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
+                        const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
 
-                                const result = await response.json();
-                                if (!response.ok || !result.success) throw new Error(result.message || 'Failed to delete errand.');
+                        try {
+                            const response = await fetch('/api/client/errands/' + errand.id + '/delete', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN' : origin
+                                },
+                                credentials: 'same-origin'
+                            });
 
-                                sessionStorage.setItem('success_message', result.message || 'Errand deleted successfully!');
-                                window.location.href = '{{ route("client.dashboard") }}';
+                            const result = await response.json();
+                            if (!response.ok || !result.success) throw new Error(result.message || 'Failed to delete errand.');
 
-                            } catch(error) {
-                                console.error('Delete error:', error);
-                                const errorText = document.getElementById('errorMessageText');
-                                errorText.textContent = error.message;
-                                errorText.style.display = 'block';
-                                setTimeout(() => { errorText.style.display = 'none'; }, 4000);
-                            }
-                        });
-                    }
+                            sessionStorage.setItem('success_message', result.message || 'Errand deleted successfully!');
+                            window.location.href = '{{ route("client.dashboard") }}';
+
+                        } catch(error) {
+                            console.error('Delete error:', error);
+                            const errorText = document.getElementById('errorMessageText');
+                            errorText.textContent = error.message;
+                            errorText.style.display = 'block';
+                            setTimeout(() => { errorText.style.display = 'none'; }, 4000);
+                        }
+                    });
+
                 } else if (errand.raw_status === 'accepted') {
-                    actionSlot.innerHTML = '<button disabled class="btn-edit-errand-disabled"><i class="fa-regular fa-pen-to-square"></i>Edit</button>' +
-                        '<button type="button" id="cancelAcceptedBtn" class="btn-cancel"><i class="fa-solid fa-ban"></i>Cancel</button>';
-                    
-                    const cancelAcceptedBtn = actionSlot.querySelector('#cancelAcceptedBtn');
-                    if (cancelAcceptedBtn) {
-                        cancelAcceptedBtn.addEventListener('click', async function(){
-                            const customTitle = 'Confirm Cancellation';
-                            const customMessage = 'Are you sure you want to cancel this errand? It will return to "Pending" status.';
-                            const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
-                            
-                            if(!isConfirmed) return;
-                            
-                            // Add your cancel pending payment AJAX call implementation here
-                        });
-                    }
+                    document.getElementById('disabledEditBtn').style.display = 'flex';
+                    const cancelAcceptedBtn = document.getElementById('cancelAcceptedBtn');
+                    cancelAcceptedBtn.style.display = 'flex';
+
+                    cancelAcceptedBtn.addEventListener('click', async function() {
+                        const customTitle = 'Confirm Cancellation';
+                        const customMessage = 'Are you sure you want to cancel this errand? It will return to "Pending" status.';
+                        const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
+                        // Add your cancel pending payment AJAX call implementation here
+                    });
+
                 } else if (errand.raw_status === 'in_progress') {
                     if (Number(errand.cancel_requested_by_client) === 0) {
-                        actionSlot.innerHTML = '<span class="descriptive-status-badge"><i class="fa-solid fa-spinner fa-spin"></i>Tasker is performing errand...</span>' +
-                            '<button type="button" id="cancelRequestBtn" class="btn-cancel"><i class="fa-solid fa-hand-holding-hand"></i>Request Cancel</button>';
-                        
-                        const cancelRequestBtn = actionSlot.querySelector('#cancelRequestBtn');
-                        if (cancelRequestBtn) {
-                            cancelRequestBtn.addEventListener('click', async function(){
-                                const customTitle = 'Confirm Cancellation Request';
-                                const customMessage = 'Are you sure you want to send a cancellation request to the Admin? It will return to "Pending" status and this action cannot be undone until processed.';
-                                const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
-                                
-                                if(!isConfirmed) return;
+                        document.getElementById('performingBadge').style.display = 'flex';
+                        const cancelRequestBtn = document.getElementById('cancelRequestBtn');
+                        cancelRequestBtn.style.display = 'flex';
 
-                                // Add your client cancel request AJAX call implementation here
-                            });
-                        }
+                        cancelRequestBtn.addEventListener('click', async function() {
+                            const customTitle = 'Confirm Cancellation Request';
+                            const customMessage = 'Are you sure you want to send a cancellation request to the Admin? It will return to "Pending" status and this action cannot be undone until processed.';
+                            const isConfirmed = await showNegativeConfirmation(customTitle, customMessage);
+                            
+                            if(!isConfirmed) return;
+                            // Add your client cancel request AJAX call implementation here
+
+                        });
                     } else {
-                        actionSlot.innerHTML = '<span class="descriptive-status-badge"><i class="fa-solid fa-spinner fa-spin"></i>Pending Admin Cancel...</span>';
+                        document.getElementById('pendingCancelBadge').style.display = 'flex';
                     }
                 }
 

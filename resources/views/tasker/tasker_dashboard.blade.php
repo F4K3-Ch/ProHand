@@ -136,7 +136,7 @@
 
     <template id="errand-error-template">
         <tr>
-            <td class="no-found" colspan="8" class="errand-error-text">Unable to load errands.</td>
+            <td class="no-found errand-error-text" colspan="8">Unable to load errands.</td>
         </tr>
     </template>
 
@@ -175,7 +175,7 @@
             function displayGlobalError(message){
                 if(!errorText) return;
                 errorText.textContent = message;
-                errorText.style.display = 'block';
+                errorText.style.display = 'flex';
                 setTimeout(() => { errorText.style.display = 'none'; }, 5000);
             }
 
@@ -388,7 +388,7 @@
 
             function updateClearButtonState() {
                 if(clearSearchButton) {
-                    clearSearchButton.style.display = searchInput.value ? 'inline-block' : 'none';
+                    clearSearchButton.style.display = searchInput.value ? 'flex' : 'none';
                 }
             }
         });

@@ -126,7 +126,12 @@
                 </div>
 
                 <div class="info-bot-btn">
-
+                    <button type="button" class="btn-accept" id="acceptErrandBtn" style="display: none;">
+                        <i class="fa-solid fa-check"></i> Accept
+                    </button>
+                    <button type="button" id="startErrandBtn" class="btn-start-errand" style="display: none;">
+                        Start Errand
+                    </button>
                 </div>
             </div>
 
@@ -272,92 +277,85 @@
                     downloadBtn.setAttribute('download', errand.attachment.name);
                 }
 
-                // Handle Dynamic Actions / Badges Container
-                const actionSlot = document.querySelector('.info-bot-btn');
-                actionSlot.innerHTML = ''; 
-
                 if (errand.raw_status === 'pending') {
-                    actionSlot.innerHTML = '<button type="button" class="btn-accept" id="acceptErrandBtn"><i class="fa-solid fa-check"></i> Accept</button>';
+                    const acceptBtn = document.getElementById('acceptErrandBtn');
+                    acceptBtn.style.display = 'flex';
 
-                    const acceptBtn = actionSlot.querySelector('#acceptErrandBtn');
-                    if (acceptBtn) {
-                        acceptBtn.addEventListener('click', async function () {
-                            const customTitle = 'Confirm Acceptance';
-                            const customMessage = 'Are you sure you want to accept errand #' + errand.id + ' ("' + errand.title + '")?';
-                            const isConfirmed = await showPositiveConfirmation(customTitle, customMessage);
-                            
-                            if (!isConfirmed) return;
-
-                            try {
-                                const response = await fetch('/api/tasker/errands/' + encodeURIComponent(errandId) + '/accept', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'Accept': 'application/json',
-                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                        'X-API-KEY': apiKey,
-                                        'X-MY-ORIGIN': origin
-                                    },
-                                    credentials: 'same-origin'
-                                });
-
-                                const result = await response.json();
-
-                                if (!response.ok || !result.success) {
-                                    throw new Error(result.message || 'Failed to accept errand.');
-                                }
-
-                                sessionStorage.setItem('success_message', result.message);
-                                window.location.href = '{{ route("tasker.your_task") }}';
-
-                            } catch (error) {
-                                console.error('Accept errand error:', error);
-                                const errorText = document.getElementById('errorMessageText');
-                                errorText.textContent = error.message;
-                                errorText.style.display = 'block';
-                                setTimeout(() => { errorText.style.display = 'none'; }, 4000);
-                            }
-                        });
-                    }
-                } else if (errand.raw_status === 'accepted') {
-                    actionSlot.innerHTML = '<button type="button" id="startErrandBtn" class="btn-start-errand">Start Errand</button>';
+                    acceptBtn.addEventListener('click', async function () {
+                        const customTitle = 'Confirm Acceptance';
+                        const customMessage = 'Are you sure you want to accept errand #' + errand.id + ' ("' + errand.title + '")?';
+                        const isConfirmed = await showPositiveConfirmation(customTitle, customMessage);
                         
-                    const startErrandBtn = actionSlot.querySelector('#startErrandBtn');
-                    if (startErrandBtn) {
-                        startErrandBtn.addEventListener('click', async function(){
-                            const customTitle = 'Start Errand';
-                            const customMessage = 'Are you ready to begin working on errand #' + errand.id + ' ("' + errand.title + '")?';
-                            const isConfirmed = await showPositiveConfirmation(customTitle, customMessage);
-                            
-                            if(!isConfirmed) return;
+                        if (!isConfirmed) return;
 
-                            try {
-                                const response = await fetch('/api/tasker/errands/' + errand.id + '/start', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Accept': 'application/json',
-                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                                        'X-API-KEY': apiKey,
-                                        'X-MY-ORIGIN' : origin
-                                    },
-                                    credentials: 'same-origin'
-                                });
+                        try {
+                            const response = await fetch('/api/tasker/errands/' + encodeURIComponent(errandId) + '/accept', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN': origin
+                                },
+                                credentials: 'same-origin'
+                            });
 
-                                const result = await response.json();
-                                if (!response.ok || !result.success) throw new Error(result.message || 'Failed to start errand.');
+                            const result = await response.json();
 
-                                sessionStorage.setItem('success_message', result.message);
-                                window.location.reload();
-
-                            } catch(error) {
-                                console.error('Start errand error:', error);
-                                const errorText = document.getElementById('errorMessageText');
-                                errorText.textContent = error.message;
-                                errorText.style.display = 'block';
-                                setTimeout(() => { errorText.style.display = 'none'; }, 4000);
+                            if (!response.ok || !result.success) {
+                                throw new Error(result.message || 'Failed to accept errand.');
                             }
-                        });
-                    }
+
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.href = '{{ route("tasker.your_task") }}';
+
+                        } catch (error) {
+                            console.error('Accept errand error:', error);
+                            const errorText = document.getElementById('errorMessageText');
+                            errorText.textContent = error.message;
+                            errorText.style.display = 'block';
+                            setTimeout(() => { errorText.style.display = 'none'; }, 4000);
+                        }
+                    });
+
+                } else if (errand.raw_status === 'accepted') {
+                    const startErrandBtn = document.getElementById('startErrandBtn');
+                    startErrandBtn.style.display = 'flex';
+                        
+                    startErrandBtn.addEventListener('click', async function(){
+                        const customTitle = 'Start Errand';
+                        const customMessage = 'Are you ready to begin working on errand #' + errand.id + ' ("' + errand.title + '")?';
+                        const isConfirmed = await showPositiveConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
+
+                        try {
+                            const response = await fetch('/api/tasker/errands/' + errand.id + '/start', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN' : origin
+                                },
+                                credentials: 'same-origin'
+                            });
+
+                            const result = await response.json();
+                            if (!response.ok || !result.success) throw new Error(result.message || 'Failed to start errand.');
+
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.reload();
+
+                        } catch(error) {
+                            console.error('Start errand error:', error);
+                            const errorText = document.getElementById('errorMessageText');
+                            errorText.textContent = error.message;
+                            errorText.style.display = 'block';
+                            setTimeout(() => { errorText.style.display = 'none'; }, 4000);
+                        }
+                    });
                 }
 
             } catch (error) {

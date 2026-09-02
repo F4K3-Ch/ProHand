@@ -154,7 +154,6 @@
             <td>
                 <div class="button-row">
                     <a href="#" class="btn-view errand-view-link">View</a>
-                    <span class="action-slot"></span>
                 </div>
             </td>
         </tr>
@@ -207,7 +206,7 @@
             function displayGlobalError(message){
                 if(!errorText) return;
                 errorText.textContent = message;
-                errorText.style.display = 'block';
+                errorText.style.display = 'flex';
                 setTimeout(() => { errorText.style.display = 'none'; }, 5000);
             }
 
@@ -330,8 +329,6 @@
 
                     row.querySelector('.errand-view-link').href = '/tasker/view-errand/' + encodeURIComponent(errand.id);
 
-                    const actionSlot = row.querySelector('.action-slot');
-
                     tableBody.appendChild(row);
                 });
             }
@@ -411,7 +408,7 @@
 
             function updateClearButtonState() {
                 if(clearSearchButton) {
-                    clearSearchButton.style.display = searchInput.value ? 'inline-block' : 'none';
+                    clearSearchButton.style.display = searchInput.value ? 'flex' : 'none';
                 }
             }
         });
