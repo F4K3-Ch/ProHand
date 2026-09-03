@@ -346,7 +346,7 @@
                     const deleteBtn = row.querySelector('.action-delete');
                     const cancelBtn = row.querySelector('.action-cancel');
 
-                    if (errand.raw_status === 'pending' || errand.raw_status === 'accepted') {
+                    if (errand.raw_status === 'pending') {
                         deleteBtn.style.display = 'flex';
                         deleteBtn.addEventListener('click', async function(){
                             const customTitle = 'Confirm Deletion';
@@ -357,11 +357,11 @@
                             
                             // Add your delete AJAX call implementation here
                         });
-                    } else if (errand.raw_status === 'in_progress') {
+                    } else if (errand.raw_status === 'in_progress' || errand.raw_status === 'accepted' || errand.raw_status === 'awaiting_confirmation') {
                         cancelBtn.style.display = 'flex';
                         cancelBtn.addEventListener('click', async function(){
                             const customTitle = 'Confirm Cancellation';
-                            const customMessage = 'Force-cancel this active errand? The errand status will be reset back to "Pending" status and the platform will hold the funds for manual payout adjustments.';
+                            const customMessage = 'Force-cancel this errand awaiting confirmation? The errand status will be reset back to "Pending" status.';
                             const isConfirmed = await showConfirmation(customTitle, customMessage);
                             
                             if(!isConfirmed) return;

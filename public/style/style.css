@@ -60,7 +60,7 @@
 }
 
 /* Dark Mode */
-:root {
+/* :root {
     --color-bg: #1a1a1a;
     --color-card-bg: #222222;
 
@@ -97,7 +97,7 @@
     --scrollbar-track: #1a1a1a; 
     --scrollbar-thumb: #444c56;
     --scrollbar-thumb-hover: #5a636e;
-}
+} */
 
 /* ===== WebKit Browsers (Chrome, Edge, Safari) ===== */
 ::-webkit-scrollbar {

@@ -336,17 +336,19 @@
                     const cancelRequestBtn = row.querySelector('.action-btn-cancel-request');
                     const cancelDisabledBtn = row.querySelector('.action-btn-cancel-disabled');
 
-                    if (Number(errand.cancel_requested_by_tasker) === 0) {
+                    if (errand.raw_status === 'awaiting_confirmation') {
+                        cancelDisabledBtn.style.display = 'flex';
+                    } else if (Number(errand.cancel_requested_by_tasker) === 0) {
                         cancelRequestBtn.style.display = 'flex';
-                        
-                        cancelRequestBtn.addEventListener('click', async function(){
+
+                        cancelRequestBtn.addEventListener('click', async function() {
                             const customTitle = 'Confirm Cancellation Request';
                             const customMessage = 'Are you sure you want to send a cancellation request to the Admin? It will return to "Pending" status and this action cannot be undone until processed.';
                             const isConfirmed = await showConfirmation(customTitle, customMessage);
-                            
-                            if(!isConfirmed) return;
 
-                            // Add your client cancel request AJAX call implementation here
+                            if (!isConfirmed) return;
+
+                            // Add your cancellation request AJAX call here
                         });
                     } else {
                         cancelDisabledBtn.style.display = 'flex';

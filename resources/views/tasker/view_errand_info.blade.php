@@ -129,12 +129,22 @@
                     <button type="button" class="btn-accept" id="acceptErrandBtn" style="display: none;">
                         <i class="fa-solid fa-check"></i> Accept
                     </button>
+
                     <button type="button" id="startErrandBtn" class="btn-start-errand" style="display: none;">
                         <i class="fa-solid fa-play"></i> Start Errand
                     </button>
+
                     <button type="button" id="completeErrandBtn" class="btn-complete-errand" style="display: none;">
                         <i class="fa-solid fa-check"></i> Mark as Completed
                     </button>
+
+                    <button type="button" id="cancelRequestBtn" class="btn-cancel" style="display: none;">
+                        <i class="fa-solid fa-hand-holding-hand"></i>Request Cancel
+                    </button>
+
+                    <span id="awaitingConfirmationBadge" class="descriptive-status-badge" style="display: none;">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Awaiting Client Confirmation
+                    </span>
                 </div>
             </div>
 
@@ -360,6 +370,19 @@
                         }
                     });
 
+                    const cancelRequestBtn = document.getElementById('cancelRequestBtn');
+                    cancelRequestBtn.style.display = 'flex';
+
+                    cancelRequestBtn.addEventListener('click', async function(){
+                        const customTitle = 'Confirm Cancellation Request';
+                        const customMessage = 'Are you sure you want to send a cancellation request to the Admin for errand #' + errand.id + ' ("' + errand.title + '")?';
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
+
+                        // Add your cancel request AJAX call here
+                    });
+
                 } else if (errand.raw_status === 'in_progress') {
                     const completeErrandBtn = document.getElementById('completeErrandBtn');
                     completeErrandBtn.style.display = 'flex';
@@ -397,6 +420,23 @@
                             setTimeout(() => { errorText.style.display = 'none'; }, 4000);
                         }
                     });
+
+                    const cancelRequestBtn = document.getElementById('cancelRequestBtn');
+                    cancelRequestBtn.style.display = 'flex';
+
+                    cancelRequestBtn.addEventListener('click', async function(){
+                        const customTitle = 'Confirm Cancellation Request';
+                        const customMessage = 'Are you sure you want to send a cancellation request to the Admin for errand #' + errand.id + ' ("' + errand.title + '")?';
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
+
+                        // Add your cancel request AJAX call here
+                    });
+
+                } else if (errand.raw_status === 'awaiting_confirmation') {
+                    const awaitingConfirmationBadge = document.getElementById('awaitingConfirmationBadge');
+                    awaitingConfirmationBadge.style.display = 'flex';
                 }
 
             } catch (error) {

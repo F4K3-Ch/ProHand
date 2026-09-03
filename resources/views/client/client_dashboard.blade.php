@@ -427,6 +427,8 @@
                         } else {
                             cancelDisabledBtn.style.display = 'flex';
                         }
+                    } else if (errand.raw_status === 'awaiting_confirmation') {
+                        cancelDisabledBtn.style.display = 'flex';
                     }
 
                     tableBody.appendChild(row);
