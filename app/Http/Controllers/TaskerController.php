@@ -204,8 +204,6 @@ class TaskerController extends Controller
             ], 404);
         }
 
-        $finishedAt = $errand->completed_at ?? $errand->failed_at;
-
         $formattedErrand = [
             'id' => $errand->id,
             'title' => $errand->title,
@@ -234,8 +232,8 @@ class TaskerController extends Controller
             'deadline' => $errand->deadline 
                 ? Carbon::parse($errand->deadline)->timezone('Asia/Manila')->format('M d, Y h:i A') 
                 : 'Not Set',
-            'finished_at' => $finishedAt 
-                ? Carbon::parse($finishedAt)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+            'finished_at' => $errand->finished_at
+                ? Carbon::parse($errand->finished_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
                 : 'Not Set',
             
             'attachment' => $errand->attachment ? [

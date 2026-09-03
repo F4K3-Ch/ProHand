@@ -39,8 +39,7 @@ CREATE TABLE IF NOT EXISTS errands (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     accepted_at TIMESTAMP NULL DEFAULT NULL,      -- when tasker accepts the errand
     in_progress_at TIMESTAMP NULL DEFAULT NULL,    -- when errand moves to in_process
-    completed_at TIMESTAMP NULL DEFAULT NULL,     -- when errand is completed
-    failed_at TIMESTAMP NULL DEFAULT NULL,        -- when errand failed
+    finished_at TIMESTAMP NULL DEFAULT NULL,
 
     FOREIGN KEY (client_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (tasker_id) REFERENCES users(id) ON DELETE SET NULL
@@ -106,8 +105,7 @@ CREATE TABLE IF NOT EXISTS history (
     created_at DATETIME,
     accepted_at DATETIME,
     in_progress_at DATETIME,
-    completed_at DATETIME,
-    failed_at DATETIME,
+    finished_at DATETIME,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     -- delete flags
