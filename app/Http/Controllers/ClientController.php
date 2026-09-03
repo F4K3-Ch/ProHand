@@ -425,38 +425,6 @@ class ClientController extends Controller
         try {
             $history = DB::transaction(function () use ($errand, $client, $tasker) {
 
-                $clientProfilePicture = 'uploads/history/profile_pictures/default.jpg';
-                $taskerProfilePicture = 'uploads/history/profile_pictures/default.jpg';
-
-                if (
-                    $client->profile_picture &&
-                    $client->profile_picture !== 'uploads/profile_pictures/default.jpg' &&
-                    Storage::disk('public')->exists($client->profile_picture)
-                ) {
-                    $extension = pathinfo($client->profile_picture, PATHINFO_EXTENSION);
-                    $clientProfilePicture = 'uploads/history/profile_pictures/' . Str::uuid() . '.' . $extension;
-
-                    Storage::disk('public')->copy(
-                        $client->profile_picture,
-                        $clientProfilePicture
-                    );
-                }
-
-                if (
-                    $tasker &&
-                    $tasker->profile_picture &&
-                    $tasker->profile_picture !== 'uploads/profile_pictures/default.jpg' &&
-                    Storage::disk('public')->exists($tasker->profile_picture)
-                ) {
-                    $extension = pathinfo($tasker->profile_picture, PATHINFO_EXTENSION);
-                    $taskerProfilePicture = 'uploads/history/profile_pictures/' . Str::uuid() . '.' . $extension;
-
-                    Storage::disk('public')->copy(
-                        $tasker->profile_picture,
-                        $taskerProfilePicture
-                    );
-                }
-
                 $history = History::create([
                     'errand_id' => $errand->id,
                     'title' => $errand->title,
@@ -474,7 +442,6 @@ class ClientController extends Controller
                     'client_middle_name' => $client->middle_name,
                     'client_email' => $client->email,
                     'client_contact_number' => $client->contact_number,
-                    'client_profile_picture' => $clientProfilePicture,
 
                     'tasker_id' => $tasker?->id,
                     'tasker_last_name' => $tasker?->last_name,
@@ -482,21 +449,70 @@ class ClientController extends Controller
                     'tasker_middle_name' => $tasker?->middle_name,
                     'tasker_email' => $tasker?->email,
                     'tasker_contact_number' => $tasker?->contact_number,
-                    'tasker_profile_picture' => $taskerProfilePicture,
 
                     'created_at' => $errand->created_at,
                     'accepted_at' => $errand->accepted_at,
                     'in_progress_at' => $errand->in_progress_at,
-                    'finished_at' => $errand->finished_at,
+                    'finished_at' => Carbon::now(),
                 ]);
 
-                foreach ($errand->attachment as $attachment) {
-                    if (!Storage::disk('public')->exists($attachment->file_path)) {
-                        continue;
-                    }
+                $clientProfilePicture = 'uploads/history/profile_pictures/default.jpg';
+                $taskerProfilePicture = 'uploads/history/profile_pictures/default.jpg';
 
-                    $extension = pathinfo($attachment->file_path, PATHINFO_EXTENSION);
-                    $historyPath = 'uploads/history/attachments/' . Str::uuid() . '.' . $extension;
+                if (
+                    $client->profile_picture &&
+                    $client->profile_picture !== 'uploads/profile_pictures/default.jpg' &&
+                    Storage::disk('public')->exists($client->profile_picture)
+                ) {
+                    $extension = pathinfo($client->profile_picture, PATHINFO_EXTENSION);
+
+                    $clientProfilePicture =
+                        'uploads/history/profile_pictures/client_' .
+                        $history->id . '.' . $extension;
+
+                    Storage::disk('public')->copy(
+                        $client->profile_picture,
+                        $clientProfilePicture
+                    );
+                }
+
+                if (
+                    $tasker &&
+                    $tasker->profile_picture &&
+                    $tasker->profile_picture !== 'uploads/profile_pictures/default.jpg' &&
+                    Storage::disk('public')->exists($tasker->profile_picture)
+                ) {
+                    $extension = pathinfo($tasker->profile_picture, PATHINFO_EXTENSION);
+
+                    $taskerProfilePicture =
+                        'uploads/history/profile_pictures/tasker_' .
+                        $history->id . '.' . $extension;
+
+                    Storage::disk('public')->copy(
+                        $tasker->profile_picture,
+                        $taskerProfilePicture
+                    );
+                }
+
+                $history->update([
+                    'client_profile_picture' => $clientProfilePicture,
+                    'tasker_profile_picture' => $taskerProfilePicture,
+                ]);
+
+                $attachment = $errand->attachment;
+
+                if (
+                    $attachment &&
+                    Storage::disk('public')->exists($attachment->file_path)
+                ) {
+                    $extension = pathinfo(
+                        $attachment->file_path,
+                        PATHINFO_EXTENSION
+                    );
+
+                    $historyPath =
+                        'uploads/history/attachments/' .
+                        Str::uuid() . '.' . $extension;
 
                     Storage::disk('public')->copy(
                         $attachment->file_path,
@@ -534,7 +550,7 @@ class ClientController extends Controller
                     Notification::create([
                         'user_id' => $taskerId,
                         'type' => 'errand',
-                        'message' => "Your Errand: \"{$errandTitle}\" (ID: {$errandId}) has been confirmed as completed by Client: \"{$clientName}\" (ID: {$client->id}).",
+                        'message' => "Your Errand: \"{$errandTitle}\" (ID: {$errandId}) has been confirmed as completed by Client: \"{$clientName}\" (ID: {$client->id}) and has been moved to history.",
                         'link' => '',
                         'is_read' => false,
                     ]);
@@ -560,6 +576,7 @@ class ClientController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Errand completed and moved to history successfully.',
+                'history_id' => $history->id,
             ]);
         } catch (\Throwable $e) {
             return response()->json([
