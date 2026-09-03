@@ -337,7 +337,7 @@ class TaskerController extends Controller
         if (!$errand) {
             return response()->json([
                 'success' => false,
-                'message' => 'Errand not found, not in accepted status, or not assigned to you.',
+                'message' => 'Errand not found or is no longer available.',
             ], 404);
         }
 
