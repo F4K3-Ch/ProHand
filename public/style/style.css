@@ -1209,7 +1209,7 @@ body {
 .totals {
     background-color: var(--color-card-bg);
     border: 1px solid var(--color-border);
-    border-radius: 6px;
+    border-radius: 8px;
     display: flex;
     flex-direction: column;
     padding: 10px;
@@ -1218,57 +1218,68 @@ body {
 
 .totals h3 {
     color: var(--color-text);
-    font-size: 1.2rem;       
+    font-size: 1rem;         
     font-weight: 600;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
 .total-cards-container {
     display: flex;
     flex-wrap: wrap; 
-    gap: 10px;
+    gap: 8px;
 }
 
 .total-card {
-    flex: 1;        /* allow minimum width */
+    flex: 1;        
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    border-radius: 6px;     /* slightly more rounded */
-    padding: 10px;
+    border-radius: 6px;     
+    padding: 8px 10px;
     text-align: center;
-    min-width: 100px;       /* ensure cards don’t shrink too small */
+    min-width: 100px;      
     transition: all 0.2s ease;
+    border: 1px solid var(--color-border);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .total-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
 .card-header {
     display: flex;
     align-items: center;
-    gap: 5px;
+    justify-content: center;
+    gap: 6px;
 }
 
 .total-card h3 {
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 600;
-    margin-bottom: 5px;
+    color: var(--color-sec-text);
+    margin: 0;
+    letter-spacing: -0.01em;
 }
 
 .total-card p {
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-top: 4px;
+    margin-bottom: 0;
+    line-height: 1.2;
 }
 
 /* Circle Base */
 .status-circle {
-    width: 15px;
-    height: 15px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     flex-shrink: 0;
+    box-shadow: 0 0 6px currentColor;
 }
 
 /* Status/Role Badges */
@@ -1319,10 +1330,9 @@ body {
 
 .info-box span.status-field.status-failed {
     background-color: rgba(220, 38, 38, 0.15); 
-    color: #dc2626;         
+    color: #dc2626;                             
     border-color: rgba(220, 38, 38, 0.3);
 }
-
 
 /* Status Background + Font Color Mapping */
 .status-pending {
@@ -1360,49 +1370,48 @@ body {
     color: #dc2626;                            
 }
 
-/* Total Cards */
-/* Total cards with semi-transparent background matching the circle color */
+/* Total Cards Backgrounds */
 .total-card.bg-pending {
-    background-color: rgba(250, 204, 21, 0.15);  
+    background-color: rgba(250, 204, 21, 0.12);  
 }
 
 .total-card.bg-accepted {
-    background-color: rgba(59, 130, 246, 0.15);
+    background-color: rgba(59, 130, 246, 0.12);
 }
 
 .total-card.bg-in-progress {
-    background-color: rgba(251, 146, 60, 0.15); 
+    background-color: rgba(251, 146, 60, 0.12); 
 }
 
 .total-card.bg-awaiting-confirmation {
-    background-color: rgba(147, 51, 234, 0.15); 
+    background-color: rgba(147, 51, 234, 0.12); 
 }
 
 .total-card.bg-dispute {
-    background-color: rgba(239, 68, 68, 0.15); 
+    background-color: rgba(239, 68, 68, 0.12); 
 }
 
 .total-card.bg-completed {
-    background-color: rgba(22, 163, 74, 0.15);  
+    background-color: rgba(22, 163, 74, 0.12);  
 }
 
 .total-card.bg-failed {
-    background-color: rgba(220, 38, 38, 0.15);  
+    background-color: rgba(220, 38, 38, 0.12);  
 }
 
 .total-card.bg-total {
-    background-color: rgba(107, 114, 128, 0.15); 
+    background-color: rgba(107, 114, 128, 0.12); 
 }
 
 /* Circle Colors */
-.circle-pending { background-color: #facc15; }
-.circle-accepted { background-color: #3b82f6; }
-.circle-progress  { background-color: #fb923c; }
-.circle-awaiting-confirmation { background-color: #9333ea; }
-.circle-dispute { background-color: #ef4444; }
-.circle-complete { background-color: #16a34a; }
-.circle-failed   { background-color: #dc2626; }
-.circle-total    { background-color: #6b7280; }
+.circle-pending { background-color: #facc15; color: #facc15; }
+.circle-accepted { background-color: #3b82f6; color: #3b82f6; }
+.circle-progress  { background-color: #fb923c; color: #fb923c; }
+.circle-awaiting-confirmation { background-color: #9333ea; color: #9333ea; }
+.circle-dispute { background-color: #ef4444; color: #ef4444; }
+.circle-complete { background-color: #16a34a; color: #16a34a; }
+.circle-failed   { background-color: #dc2626; color: #dc2626; }
+.circle-total    { background-color: #6b7280; color: #6b7280; }
 
 /* Role Background + Font Color Mapping */
 .role-admin {
@@ -1420,24 +1429,23 @@ body {
     color: #16a34a;   
 }
 
-
 /* Role cards with semi-transparent background matching the circle color */
 .total-card.bg-admin {
-    background-color: rgba(239, 68, 68, 0.15); 
+    background-color: rgba(239, 68, 68, 0.12); 
 }
 
 .total-card.bg-tasker {
-    background-color: rgba(59, 130, 246, 0.15);
+    background-color: rgba(59, 130, 246, 0.12);
 }
 
 .total-card.bg-client {
-    background-color: rgba(22, 163, 74, 0.15); 
+    background-color: rgba(22, 163, 74, 0.12); 
 }
 
-/* Circle Colors */
-.circle-admin { background-color: #ef4444; } 
-.circle-tasker { background-color: #3b82f6; }
-.circle-client { background-color: #16a34a; }
+/* Role Circle Colors */
+.circle-admin { background-color: #ef4444; color: #ef4444; } 
+.circle-tasker { background-color: #3b82f6; color: #3b82f6; }
+.circle-client { background-color: #16a34a; color: #16a34a; }
 
 /* Tables */
 .user-header-table {
