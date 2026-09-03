@@ -132,12 +132,14 @@
                     <button type="button" id="deleteErrandBtn" class="btn-delete" style="display: none;">
                         <i class="fa-solid fa-trash"></i> Delete Errand
                     </button>
+
                     <button type="button" disabled class="btn-edit-errand-disabled" id="disabledEditBtn" style="display: none;">
                         <i class="fa-regular fa-pen-to-square"></i>Edit
                     </button>
                     <button type="button" id="cancelAcceptedBtn" class="btn-cancel" style="display: none;">
                         <i class="fa-solid fa-ban"></i>Cancel
                     </button>
+
                     <span class="descriptive-status-badge" id="performingBadge" style="display: none;">
                         <i class="fa-solid fa-spinner fa-spin"></i>Tasker is performing errand...
                     </span>
@@ -147,6 +149,13 @@
                     <span class="descriptive-status-badge" id="pendingCancelBadge" style="display: none;">
                         <i class="fa-solid fa-spinner fa-spin"></i>Pending Admin Cancel...
                     </span>
+
+                    <button type="button" id="confirmCompletionBtn" class="btn-confirm-completion" style="display: none;">
+                        <i class="fa-solid fa-check"></i> Confirm Completion
+                    </button>
+                    <button type="button" id="disputeErrandBtn" class="btn-dispute" style="display: none;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Dispute
+                    </button>
                 </div>
             </div>
 
@@ -369,6 +378,30 @@
                     } else {
                         document.getElementById('pendingCancelBadge').style.display = 'flex';
                     }
+                } else if (errand.raw_status === 'awaiting_confirmation') {
+                    const confirmCompletionBtn = document.getElementById('confirmCompletionBtn');
+                    const disputeErrandBtn = document.getElementById('disputeErrandBtn');
+
+                    confirmCompletionBtn.style.display = 'flex';
+                    disputeErrandBtn.style.display = 'flex';
+
+                    confirmCompletionBtn.addEventListener('click', async function() {
+                        const customTitle = 'Confirm Completion';
+                        const customMessage = 'Are you sure you want to confirm the completion of errand #' + errand.id + ' ("' + errand.title + '")? This action cannot be undone.';
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
+                        // Add your confirm completion AJAX call implementation here
+                    });
+
+                    disputeErrandBtn.addEventListener('click', async function() {
+                        const customTitle = 'Dispute Errand';
+                        const customMessage = 'Are you sure you want to dispute errand #' + errand.id + ' ("' + errand.title + '")? This action will notify the Admin for review.';
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
+                        // Add your dispute errand AJAX call implementation here
+                    });
                 }
 
             } catch (error) {

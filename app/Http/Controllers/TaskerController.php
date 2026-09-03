@@ -389,4 +389,68 @@ class TaskerController extends Controller
             'message' => 'Errand started successfully!',
         ]);
     }
+
+    public function markAwaitingConfirmation(Request $request, $id)
+    {
+        $tasker = $request->user();
+
+        $errand = Errand::where('id', $id)
+            ->where('status', 'in_progress')
+            ->where('tasker_id', $tasker->id)
+            ->first();
+
+        if (!$errand) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errand not found or is no longer available.',
+            ], 404);
+        }
+
+        $errand->status = 'awaiting_confirmation';
+        $errand->save();
+
+        $errand_id = $errand->id;
+        $errand_title = $errand->title;
+        
+        $client_id = $errand->client_id;
+        $client = User::find($client_id);
+        $client_full_name = $client ? trim("{$client->first_name} " . ($client->middle_name ? "{$client->middle_name} " : "") . "{$client->last_name}") : 'Client';
+
+        $tasker_id = $tasker->id;
+        $tasker_full_name = trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}");
+
+        $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) has been marked as completed by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) and is awaiting your confirmation.";
+        $admin_msg = "Errand Awaiting Confirmation | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Marked as Completed by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+
+        $notif_type = "errand";
+
+        $client_link = route('client.view-errand', ['id' => $errand_id]) . '?from=notifications';
+        $admin_link = route('admin.view-errand', ['id' => $errand_id]) . '?from=notifications';
+
+        if ($client_id) {
+            Notification::create([
+                'user_id' => $client_id,
+                'type' => $notif_type,
+                'message' => $client_msg,
+                'link' => $client_link,
+                'is_read' => false,
+            ]);
+        }
+
+        $admins = User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id' => $admin->id,
+                'type' => $notif_type,
+                'message' => $admin_msg,
+                'link' => $admin_link,
+                'is_read' => false,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Errand marked as awaiting confirmation successfully!',
+        ]);
+    }
 }

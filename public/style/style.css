@@ -3214,14 +3214,43 @@ select[name="role"] option[value="client"] {
 .btn-start-errand,
 .btn-update {
     background-color: #F59E0B;
-    /* background-color: #facc15; */
     transition: all 0.2s ease;
+    gap: 5px;
 }
 
 .btn-start-errand:hover,
 .btn-update:hover {
     background-color: #D97706;
-    /* background-color: #eab308 */
+}
+
+.btn-complete-errand {
+    background-color: #28a745;
+    transition: all 0.2s ease;
+    gap: 5px;
+}
+
+.btn-complete-errand:hover {
+    background-color: #218838;
+}
+
+.btn-confirm-completion {
+    background-color: #28a745;
+    transition: all 0.2s ease;
+    gap: 5px;
+}
+
+.btn-confirm-completion:hover {
+    background-color: #218838;
+}
+
+.btn-dispute {
+    background-color: #dc2626;
+    transition: all 0.2s ease;
+    gap: 5px;
+}
+
+.btn-dispute:hover {
+    background-color: #b91c1c;
 }
 
 .info-bot-btn select option[value="completed"] {

@@ -130,7 +130,10 @@
                         <i class="fa-solid fa-check"></i> Accept
                     </button>
                     <button type="button" id="startErrandBtn" class="btn-start-errand" style="display: none;">
-                        Start Errand
+                        <i class="fa-solid fa-play"></i> Start Errand
+                    </button>
+                    <button type="button" id="completeErrandBtn" class="btn-complete-errand" style="display: none;">
+                        <i class="fa-solid fa-check"></i> Mark as Completed
                     </button>
                 </div>
             </div>
@@ -350,6 +353,44 @@
 
                         } catch(error) {
                             console.error('Start errand error:', error);
+                            const errorText = document.getElementById('errorMessageText');
+                            errorText.textContent = error.message;
+                            errorText.style.display = 'block';
+                            setTimeout(() => { errorText.style.display = 'none'; }, 4000);
+                        }
+                    });
+
+                } else if (errand.raw_status === 'in_progress') {
+                    const completeErrandBtn = document.getElementById('completeErrandBtn');
+                    completeErrandBtn.style.display = 'flex';
+
+                    completeErrandBtn.addEventListener('click', async function(){
+                        const customTitle = 'Finish Errand';
+                        const customMessage = 'Are you sure you want to mark errand #' + errand.id + ' ("' + errand.title + '") as finished and send it to the client for confirmation?';
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
+
+                        try {
+                            const response = await fetch('/api/tasker/errands/' + errand.id + '/awaiting-confirmation', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN' : origin
+                                },
+                                credentials: 'same-origin'
+                            });
+
+                            const result = await response.json();
+                            if (!response.ok || !result.success) throw new Error(result.message || 'Failed to mark the errand.');
+
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.reload();
+
+                        } catch(error) {
+                            console.error('Complete errand error:', error);
                             const errorText = document.getElementById('errorMessageText');
                             errorText.textContent = error.message;
                             errorText.style.display = 'block';
