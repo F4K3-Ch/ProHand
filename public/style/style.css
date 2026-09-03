@@ -60,7 +60,7 @@
 }
 
 /* Dark Mode */
-/* :root {
+:root {
     --color-bg: #1a1a1a;
     --color-card-bg: #222222;
 
@@ -97,7 +97,7 @@
     --scrollbar-track: #1a1a1a; 
     --scrollbar-thumb: #444c56;
     --scrollbar-thumb-hover: #5a636e;
-} */
+}
 
 /* ===== WebKit Browsers (Chrome, Edge, Safari) ===== */
 ::-webkit-scrollbar {
@@ -132,7 +132,7 @@
 .circle-spinner {
     width: 18px;
     height: 18px;
-    border: 2px solid var(--color-btn-text);
+    border: 2px solid var(--color-span);
     border-top-color: transparent;
     border-radius: 50%;
     animation: circleRotate 0.6s linear infinite;
