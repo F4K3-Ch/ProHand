@@ -145,6 +145,10 @@
                     <span id="awaitingConfirmationBadge" class="descriptive-status-badge" style="display: none;">
                         <i class="fa-solid fa-spinner fa-spin"></i> Awaiting Client Confirmation
                     </span>
+
+                    <span id="disputeBadge" class="descriptive-status-badge" style="display: none;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> The client raised a dispute on your submission. An admin is reviewing the case.
+                    </span>
                 </div>
             </div>
 
@@ -437,6 +441,9 @@
                 } else if (errand.raw_status === 'awaiting_confirmation') {
                     const awaitingConfirmationBadge = document.getElementById('awaitingConfirmationBadge');
                     awaitingConfirmationBadge.style.display = 'flex';
+                } else if (errand.raw_status === 'dispute') {
+                    const disputeBadge = document.getElementById('disputeBadge');
+                    disputeBadge.style.display = 'flex';
                 }
 
             } catch (error) {

@@ -3144,8 +3144,7 @@ select[name="role"] option[value="client"] {
 
 /* Treat both links and forms the same */
 .info-bot-btn a,
-.info-bot-btn form,
-.info-bot-btn .descriptive-status-badge {
+.info-bot-btn form {
     flex: 1; 
     min-width: 140px;  /* optional: prevents buttons from getting too tiny */
     display: flex;
@@ -3154,8 +3153,7 @@ select[name="role"] option[value="client"] {
 /* Buttons inside links or forms */
 .info-bot-btn a,
 .info-bot-btn button,
-.info-bot-btn form button,
-.info-bot-btn .descriptive-status-badge {
+.info-bot-btn form button {
     color: var(--color-btn-text);
     flex: 1;                   /* fill parent container */
     display: flex;
@@ -3173,9 +3171,25 @@ select[name="role"] option[value="client"] {
 
 .info-bot-btn .descriptive-status-badge {
     background-color: #F59E0B;
+    color: var(--color-btn-text);
+    flex: 1;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
     padding: 10px;
-    gap: 5px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: left;
     cursor: default;
+    border: none;
+    width: 100%;
+}
+
+.info-bot-btn .descriptive-status-badge i {
+    font-size: 1.1rem;
+    flex-shrink: 0;
 }
 
 /* Shared base styling */

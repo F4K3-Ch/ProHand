@@ -37,8 +37,7 @@ class History extends Model
         'created_at',
         'accepted_at',
         'in_progress_at',
-        'completed_at',
-        'failed_at',
+        'finished_at',
         'tasker_deleted',
         'client_deleted'
     ];
@@ -48,8 +47,7 @@ class History extends Model
         'created_at'     => 'datetime',
         'accepted_at'    => 'datetime',
         'in_progress_at'  => 'datetime',
-        'completed_at'   => 'datetime',
-        'failed_at'      => 'datetime',
+        'finished_at'   => 'datetime',
         'fee'            => 'decimal:2',
         'tasker_deleted' => 'boolean',
         'client_deleted' => 'boolean',

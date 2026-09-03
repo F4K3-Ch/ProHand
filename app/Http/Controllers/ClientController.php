@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Str;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Storage;
+use App\Models\User;
+use App\Models\Notification;
 use App\Models\Errand;
 use App\Models\ErrandAttachment;
+use App\Models\History;
+use App\Models\HistoryAttachment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class ClientController extends Controller
 {
@@ -332,5 +337,235 @@ class ClientController extends Controller
             'success' => true,
             'message' => 'Errand deleted successfully.'
         ]);
+    }
+
+    public function markDispute(Request $request, $id)
+    {
+        $client = $request->user();
+
+        $errand = Errand::where('id', $id)
+            ->whereIn('status', ['awaiting_confirmation'])
+            ->where('client_id', $client->id)
+            ->first();
+
+        if (!$errand) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Errand not found.'
+            ], 404);
+        }
+
+        $errand->status = 'dispute';
+        $errand->save();
+
+        $errand_id = $errand->id;
+        $errand_title = $errand->title;
+        
+        $client_id = $client->id;
+        $client_full_name = trim("{$client->first_name} " . ($client->middle_name ? "{$client->middle_name} " : "") . "{$client->last_name}");
+
+        $tasker_id = $errand->tasker_id;
+        $tasker = User::find($tasker_id);
+        $tasker_full_name = $tasker ? trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}") : 'Tasker';
+
+        $tasker_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) that you marked as awaiting confirmation has been disputed by Client: \"{$client_full_name}\" (ID: {$client_id}).";
+        $admin_msg = "Errand Disputed | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Disputed by Client: \"{$client_full_name}\" (ID: {$client_id}).";
+
+        $notif_type = "errand";
+
+        $tasker_link = route('tasker.view-errand', ['id' => $errand_id]) . '?from=notifications';
+        $admin_link = route('admin.view-errand', ['id' => $errand_id]) . '?from=notifications';
+
+        if ($tasker_id) {
+            Notification::create([
+                'user_id' => $tasker_id,
+                'type' => $notif_type,
+                'message' => $tasker_msg,
+                'link' => $tasker_link,
+                'is_read' => false,
+            ]);
+        }
+
+        $admins = User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id' => $admin->id,
+                'type' => $notif_type,
+                'message' => $admin_msg,
+                'link' => $admin_link,
+                'is_read' => false,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Errand dispute raised successfully!',
+        ]);
+    }
+
+    public function confirmCompletion(Request $request, $id)
+    {
+        $client = $request->user();
+
+        $errand = Errand::with('attachment')
+            ->where('id', $id)
+            ->where('client_id', $client->id)
+            ->where('status', 'awaiting_confirmation')
+            ->first();
+
+        if (!$errand) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errand not found or is not awaiting confirmation.'
+            ], 404);
+        }
+
+        $tasker = $errand->tasker_id ? User::find($errand->tasker_id) : null;
+
+        try {
+            $history = DB::transaction(function () use ($errand, $client, $tasker) {
+
+                $clientProfilePicture = 'uploads/history/profile_pictures/default.jpg';
+                $taskerProfilePicture = 'uploads/history/profile_pictures/default.jpg';
+
+                if (
+                    $client->profile_picture &&
+                    $client->profile_picture !== 'uploads/profile_pictures/default.jpg' &&
+                    Storage::disk('public')->exists($client->profile_picture)
+                ) {
+                    $extension = pathinfo($client->profile_picture, PATHINFO_EXTENSION);
+                    $clientProfilePicture = 'uploads/history/profile_pictures/' . Str::uuid() . '.' . $extension;
+
+                    Storage::disk('public')->copy(
+                        $client->profile_picture,
+                        $clientProfilePicture
+                    );
+                }
+
+                if (
+                    $tasker &&
+                    $tasker->profile_picture &&
+                    $tasker->profile_picture !== 'uploads/profile_pictures/default.jpg' &&
+                    Storage::disk('public')->exists($tasker->profile_picture)
+                ) {
+                    $extension = pathinfo($tasker->profile_picture, PATHINFO_EXTENSION);
+                    $taskerProfilePicture = 'uploads/history/profile_pictures/' . Str::uuid() . '.' . $extension;
+
+                    Storage::disk('public')->copy(
+                        $tasker->profile_picture,
+                        $taskerProfilePicture
+                    );
+                }
+
+                $history = History::create([
+                    'errand_id' => $errand->id,
+                    'title' => $errand->title,
+                    'category' => $errand->category,
+                    'description' => $errand->description,
+                    'fee' => $errand->fee,
+                    'deadline' => $errand->deadline,
+                    'location' => $errand->location,
+                    'contact' => $errand->contact,
+                    'status' => 'completed',
+
+                    'client_id' => $client->id,
+                    'client_last_name' => $client->last_name,
+                    'client_first_name' => $client->first_name,
+                    'client_middle_name' => $client->middle_name,
+                    'client_email' => $client->email,
+                    'client_contact_number' => $client->contact_number,
+                    'client_profile_picture' => $clientProfilePicture,
+
+                    'tasker_id' => $tasker?->id,
+                    'tasker_last_name' => $tasker?->last_name,
+                    'tasker_first_name' => $tasker?->first_name,
+                    'tasker_middle_name' => $tasker?->middle_name,
+                    'tasker_email' => $tasker?->email,
+                    'tasker_contact_number' => $tasker?->contact_number,
+                    'tasker_profile_picture' => $taskerProfilePicture,
+
+                    'created_at' => $errand->created_at,
+                    'accepted_at' => $errand->accepted_at,
+                    'in_progress_at' => $errand->in_progress_at,
+                    'finished_at' => $errand->finished_at,
+                ]);
+
+                foreach ($errand->attachment as $attachment) {
+                    if (!Storage::disk('public')->exists($attachment->file_path)) {
+                        continue;
+                    }
+
+                    $extension = pathinfo($attachment->file_path, PATHINFO_EXTENSION);
+                    $historyPath = 'uploads/history/attachments/' . Str::uuid() . '.' . $extension;
+
+                    Storage::disk('public')->copy(
+                        $attachment->file_path,
+                        $historyPath
+                    );
+
+                    HistoryAttachment::create([
+                        'history_errand_id' => $history->id,
+                        'file_path' => $historyPath,
+                        'original_name' => $attachment->original_name,
+                        'uploaded_at' => $attachment->uploaded_at,
+                    ]);
+                }
+
+                $errandId = $errand->id;
+                $errandTitle = $errand->title;
+
+                $clientName = trim(
+                    "{$client->first_name} " .
+                    ($client->middle_name ? "{$client->middle_name} " : "") .
+                    "{$client->last_name}"
+                );
+
+                $taskerId = $tasker?->id;
+
+                $taskerName = $tasker
+                    ? trim(
+                        "{$tasker->first_name} " .
+                        ($tasker->middle_name ? "{$tasker->middle_name} " : "") .
+                        "{$tasker->last_name}"
+                    )
+                    : 'Tasker';
+
+                if ($taskerId) {
+                    Notification::create([
+                        'user_id' => $taskerId,
+                        'type' => 'errand',
+                        'message' => "Your Errand: \"{$errandTitle}\" (ID: {$errandId}) has been confirmed as completed by Client: \"{$clientName}\" (ID: {$client->id}).",
+                        'link' => '',
+                        'is_read' => false,
+                    ]);
+                }
+
+                $admins = User::where('role', 'admin')->get();
+
+                foreach ($admins as $admin) {
+                    Notification::create([
+                        'user_id' => $admin->id,
+                        'type' => 'errand',
+                        'message' => "Errand Completed | Errand: \"{$errandTitle}\" (ID: {$errandId}) | Client: \"{$clientName}\" (ID: {$client->id}) | Tasker: \"{$taskerName}\" (ID: {$taskerId}). The client confirmed the errand as completed and it has been transferred to history.",
+                        'link' => '',
+                        'is_read' => false,
+                    ]);
+                }
+
+                $errand->delete();
+
+                return $history;
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Errand completed and moved to history successfully.',
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

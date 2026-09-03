@@ -31,8 +31,7 @@ class Errand extends Model
         'updated_at',
         'accepted_at',
         'in_progress_at',
-        'completed_at',
-        'failed_at'
+        'finished_at'
     ];
 
     protected $casts = [
@@ -41,8 +40,7 @@ class Errand extends Model
         'updated_at'    => 'datetime',
         'accepted_at'   => 'datetime',
         'in_progress_at' => 'datetime',
-        'completed_at'  => 'datetime',
-        'failed_at'     => 'datetime',
+        'finished_at'     => 'datetime',
 
         'cancel_requested_by_tasker' => 'boolean',
         'cancel_requested_by_client' => 'boolean',

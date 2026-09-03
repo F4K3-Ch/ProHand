@@ -23,6 +23,8 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
         Route::get('/client/errands/{id}', [ClientController::class, 'getErrandDetails']);
         Route::post('/client/errands/{id}/update', [ClientController::class, 'editErrand']);
         Route::post('/client/errands/{id}/delete', [ClientController::class, 'destroyErrand']);
+        Route::post('/client/errands/{id}/dispute', [ClientController::class, 'markDispute']);
+        Route::post('/client/errands/{id}/complete', [ClientController::class, 'confirmCompletion']);
     });
 
     Route::middleware('role:tasker')->group(function () {

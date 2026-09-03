@@ -156,6 +156,10 @@
                     <button type="button" id="disputeErrandBtn" class="btn-dispute" style="display: none;">
                         <i class="fa-solid fa-triangle-exclamation"></i> Dispute
                     </button>
+
+                    <span id="disputeBadge" class="descriptive-status-badge" style="display: none;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> You raised a dispute. An admin will review the details and contact you.
+                    </span>
                 </div>
             </div>
 
@@ -391,7 +395,32 @@
                         const isConfirmed = await showConfirmation(customTitle, customMessage);
                         
                         if(!isConfirmed) return;
-                        // Add your confirm completion AJAX call implementation here
+
+                        try {
+                            const response = await fetch('/api/client/errands/' + errand.id + '/complete', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN' : origin
+                                },
+                                credentials: 'same-origin'
+                            });
+
+                            const result = await response.json();
+                            if (!response.ok || !result.success) throw new Error(result.message || 'Failed to mark complete errand.');
+
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.reload();
+
+                        } catch(error) {
+                            console.error('Delete error:', error);
+                            const errorText = document.getElementById('errorMessageText');
+                            errorText.textContent = error.message;
+                            errorText.style.display = 'block';
+                            setTimeout(() => { errorText.style.display = 'none'; }, 4000);
+                        }
                     });
 
                     disputeErrandBtn.addEventListener('click', async function() {
@@ -400,8 +429,37 @@
                         const isConfirmed = await showConfirmation(customTitle, customMessage);
                         
                         if(!isConfirmed) return;
-                        // Add your dispute errand AJAX call implementation here
+
+                        try {
+                            const response = await fetch('/api/client/errands/' + errand.id + '/dispute', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN' : origin
+                                },
+                                credentials: 'same-origin'
+                            });
+
+                            const result = await response.json();
+                            if (!response.ok || !result.success) throw new Error(result.message || 'Failed to dispute errand.');
+
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.reload();
+
+                        } catch(error) {
+                            console.error('Delete error:', error);
+                            const errorText = document.getElementById('errorMessageText');
+                            errorText.textContent = error.message;
+                            errorText.style.display = 'block';
+                            setTimeout(() => { errorText.style.display = 'none'; }, 4000);
+                        }
                     });
+
+                } else if (errand.raw_status === 'dispute') {
+                    const disputeBadge = document.getElementById('disputeBadge');
+                    disputeBadge.style.display = 'flex';
                 }
 
             } catch (error) {
