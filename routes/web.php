@@ -44,6 +44,10 @@ Route::middleware('auth')->group(function () {
             return view('client.client_dashboard');
         })->name('client.dashboard');
 
+        Route::get('/client/finished', function () {
+            return view('client.client_finished_errands');
+        })->name('client.finished');
+
         Route::get('/client/create-errand', function () {
             return view('client.create_errand');
         })->name('client.create.errand');

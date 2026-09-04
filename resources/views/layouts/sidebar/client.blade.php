@@ -17,7 +17,13 @@
                     Dashboard
                 </a>
             </li>
-            <li><a href="#"><i class="fa-solid fa-clipboard-check"></i> Finished Errands</a></li>
+            <li>
+                <a href="{{ route('client.finished') }}"
+                class="{{ request()->routeIs('client.finished') || request()->query('from') === 'client.finished' ? 'active' : '' }}">
+                    <i class="fa-solid fa-clipboard-check"></i>
+                    Finished Errands
+                </a>
+            </li>
             <li>
                 <a href="{{ route('client.create.errand') }}" class="{{ request()->routeIs('client.create.errand') ? 'active' : '' }}">
                     <i class="fa-solid fa-circle-plus"></i> Create Errand
