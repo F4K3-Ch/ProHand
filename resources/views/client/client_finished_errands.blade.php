@@ -138,6 +138,7 @@
             <td>
                 <div class="button-row">
                     <a href="#" class="btn-view errand-view-link">View</a>
+                    <button type="button" class="btn-delete action-btn-delete">Delete</button>
                 </div>
             </td>
         </tr>
@@ -311,6 +312,16 @@
                         '/client/view-errand/' + encodeURIComponent(errand.id) +
                         '?from=client.finished';
 
+                    const deleteBtn = row.querySelector('.action-btn-delete');
+                    deleteBtn.addEventListener('click', async function(){
+                        const customTitle = 'Confirm Deletion';
+                        const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
+
+                        // Proceed with deletion
+                    });
                     tableBody.appendChild(row);
                 });
             }

@@ -79,7 +79,7 @@ class ClientController extends Controller
         }
 
         $errands = $query
-            ->latest()
+            ->orderBy('updated_at', 'desc')
             ->paginate($perPage);
 
         $formattedErrands = collect($errands->items())->map(function ($errand) {
@@ -170,7 +170,7 @@ class ClientController extends Controller
         }
 
         $errands = $query
-            ->latest()
+            ->orderBy('finished_at', 'desc')
             ->paginate($perPage);
 
         $formattedErrands = collect($errands->items())->map(function ($errand) {
@@ -574,7 +574,7 @@ class ClientController extends Controller
         if (!$errand) {
             return response()->json([
                 'success' => false,
-                'message' => 'Errand not found or is not awaiting confirmation.'
+                'message' => 'Errand not found.'
             ], 404);
         }
 
