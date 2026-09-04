@@ -200,7 +200,7 @@ class TaskerController extends Controller
         if (!$errand) {
             return response()->json([
                 'success' => false, 
-                'message' => 'Errand not found or is no longer available.'
+                'message' => 'Errand not found.'
             ], 404);
         }
 
@@ -268,8 +268,8 @@ class TaskerController extends Controller
 
         if (!$errand) {
             return response()->json([
-                'success' => false,
-                'message' => 'Errand not found or is no longer available.',
+                'success' => false, 
+                'message' => 'Errand not found.'
             ], 404);
         }
 
@@ -334,8 +334,8 @@ class TaskerController extends Controller
 
         if (!$errand) {
             return response()->json([
-                'success' => false,
-                'message' => 'Errand not found or is no longer available.',
+                'success' => false, 
+                'message' => 'Errand not found.'
             ], 404);
         }
 
@@ -399,8 +399,8 @@ class TaskerController extends Controller
 
         if (!$errand) {
             return response()->json([
-                'success' => false,
-                'message' => 'Errand not found or is no longer available.',
+                'success' => false, 
+                'message' => 'Errand not found.'
             ], 404);
         }
 

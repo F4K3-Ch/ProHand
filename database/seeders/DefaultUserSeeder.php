@@ -2,11 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
-class UserSeeder extends Seeder
+class DefaultUserSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -19,7 +20,15 @@ class UserSeeder extends Seeder
                 'first_name' => 'Super',
                 'middle_name' => null,
                 'last_name' => 'Admin',
-                'contact_number' => '09942215875',
+                'contact_number' => '09000000001',
+                'role' => 'admin'
+            ],
+            [
+                'email' => 'admin2@example-email.com',
+                'first_name' => 'Super',
+                'middle_name' => null,
+                'last_name' => 'C',
+                'contact_number' => '09000000002',
                 'role' => 'admin'
             ],
             [
@@ -27,6 +36,14 @@ class UserSeeder extends Seeder
                 'first_name' => 'Christian',
                 'middle_name' => 'Luego',
                 'last_name' => 'Mejorada',
+                'contact_number' => '09942215875',
+                'role' => 'tasker'
+            ],
+            [
+                'email' => 'tasker2@example-email.com',
+                'first_name' => 'Christian',
+                'middle_name' => 'Medavillo',
+                'last_name' => 'Luego',
                 'contact_number' => '09101644142',
                 'role' => 'tasker'
             ],
@@ -37,7 +54,15 @@ class UserSeeder extends Seeder
                 'last_name' => 'Ra',
                 'contact_number' => '09000000000',
                 'role' => 'client'
-            ]
+            ],
+            [
+                'email' => 'client2@example-email.com',
+                'first_name' => 'Irish',
+                'middle_name' => 'Rue',
+                'last_name' => 'La',
+                'contact_number' => '09000000003',
+                'role' => 'client'
+            ],
         ];
 
         foreach ($default_users as $user) {

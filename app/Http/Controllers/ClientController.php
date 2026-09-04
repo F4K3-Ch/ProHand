@@ -624,9 +624,7 @@ class ClientController extends Controller
                 ) {
                     $extension = pathinfo($client->profile_picture, PATHINFO_EXTENSION);
 
-                    $clientProfilePicture =
-                        'uploads/history/profile_pictures/client_' .
-                        $history->id . '.' . $extension;
+                    $clientProfilePicture = 'uploads/history/profile_pictures/client_' . $history->errand_id . '.' . $extension;
 
                     Storage::disk('public')->copy(
                         $client->profile_picture,
@@ -642,9 +640,7 @@ class ClientController extends Controller
                 ) {
                     $extension = pathinfo($tasker->profile_picture, PATHINFO_EXTENSION);
 
-                    $taskerProfilePicture =
-                        'uploads/history/profile_pictures/tasker_' .
-                        $history->id . '.' . $extension;
+                    $taskerProfilePicture = 'uploads/history/profile_pictures/tasker_' . $history->errand_id . '.' . $extension;
 
                     Storage::disk('public')->copy(
                         $tasker->profile_picture,
@@ -659,10 +655,7 @@ class ClientController extends Controller
 
                 $attachment = $errand->attachment;
 
-                if (
-                    $attachment &&
-                    Storage::disk('public')->exists($attachment->file_path)
-                ) {
+                if ($attachment && Storage::disk('public')->exists($attachment->file_path)) {
                     $extension = pathinfo(
                         $attachment->file_path,
                         PATHINFO_EXTENSION
@@ -685,31 +678,30 @@ class ClientController extends Controller
                     ]);
                 }
 
-                $errandId = $errand->id;
-                $errandTitle = $errand->title;
+                $errand_id = $errand->id;
+                $errand_title = $errand->title;
+                
+                $client_id = $client->id;
+                $client_full_name = trim("{$client->first_name} " . ($client->middle_name ? "{$client->middle_name} " : "") . "{$client->last_name}");
 
-                $clientName = trim(
-                    "{$client->first_name} " .
-                    ($client->middle_name ? "{$client->middle_name} " : "") .
-                    "{$client->last_name}"
-                );
+                $tasker_id = $errand->tasker_id;
+                $tasker = User::find($tasker_id);
+                $tasker_full_name = $tasker ? trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}") : 'Tasker';
 
-                $taskerId = $tasker?->id;
+                $tasker_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) has been confirmed as completed by Client: \"{$client_full_name}\" (ID: {$client_id}) and has been moved to history.";
+                $admin_msg = "Errand Completed | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). The client confirmed the errand as completed and it has been transferred to history.";
 
-                $taskerName = $tasker
-                    ? trim(
-                        "{$tasker->first_name} " .
-                        ($tasker->middle_name ? "{$tasker->middle_name} " : "") .
-                        "{$tasker->last_name}"
-                    )
-                    : 'Tasker';
+                $notif_type = "errand";
 
-                if ($taskerId) {
+                $tasker_link = route('tasker.view-errand', ['id' => $errand_id]) . '?from=notifications';
+                $admin_link = route('admin.view-errand', ['id' => $errand_id]) . '?from=notifications';
+
+                if ($tasker_id) {
                     Notification::create([
-                        'user_id' => $taskerId,
-                        'type' => 'errand',
-                        'message' => "Your Errand: \"{$errandTitle}\" (ID: {$errandId}) has been confirmed as completed by Client: \"{$clientName}\" (ID: {$client->id}) and has been moved to history.",
-                        'link' => '',
+                        'user_id' => $tasker_id,
+                        'type' => $notif_type,
+                        'message' => $tasker_msg,
+                        'link' => $tasker_link,
                         'is_read' => false,
                     ]);
                 }
@@ -719,9 +711,9 @@ class ClientController extends Controller
                 foreach ($admins as $admin) {
                     Notification::create([
                         'user_id' => $admin->id,
-                        'type' => 'errand',
-                        'message' => "Errand Completed | Errand: \"{$errandTitle}\" (ID: {$errandId}) | Client: \"{$clientName}\" (ID: {$client->id}) | Tasker: \"{$taskerName}\" (ID: {$taskerId}). The client confirmed the errand as completed and it has been transferred to history.",
-                        'link' => '',
+                        'type' => $notif_type,
+                        'message' => $admin_msg,
+                        'link' => $admin_link,
                         'is_read' => false,
                     ]);
                 }
