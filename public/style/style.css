@@ -1409,7 +1409,7 @@ body {
 .circle-progress  { background-color: #fb923c; color: #fb923c; }
 .circle-awaiting-confirmation { background-color: #9333ea; color: #9333ea; }
 .circle-dispute { background-color: #ef4444; color: #ef4444; }
-.circle-complete { background-color: #16a34a; color: #16a34a; }
+.circle-completed { background-color: #16a34a; color: #16a34a; }
 .circle-failed   { background-color: #dc2626; color: #dc2626; }
 .circle-total    { background-color: #6b7280; color: #6b7280; }
 

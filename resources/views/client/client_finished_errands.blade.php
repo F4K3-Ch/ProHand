@@ -27,7 +27,7 @@
                 <div class="header-right">
                     <div class="search-wrapper">
                         <div class="search-bar">
-                            <input type="text" id="errandSearch" placeholder="Search errands...">
+                            <input type="text" id="errandSearch" placeholder="Search finished errands...">
                             <button type="button" class="btn-clear" id="clearSearchButton">Clear</button>
                         </div>
                         <button type="button" class="btn-search" id="searchButton">Search</button>
@@ -59,7 +59,7 @@
                                 <span class="status-circle circle-completed"></span>
                                 <h3>Completed</h3>
                             </div>
-                            <p id="metric-pending"></p>
+                            <p id="metric-completed"></p>
                         </div>
 
                         <div class="total-card bg-failed" id="metric-card-failed" style="display:none;">
@@ -67,7 +67,7 @@
                                 <span class="status-circle circle-failed"></span>
                                 <h3>Failed</h3>
                             </div>
-                            <p id="metric-accepted"></p>
+                            <p id="metric-failed"></p>
                         </div>
 
                         <div class="total-card bg-total" id="metric-card-total">
@@ -104,7 +104,7 @@
                                     <th>Title</th>
                                     <th>Category</th>
                                     <th>Created At</th>
-                                    <th>Deadline</th>
+                                    <th>Finished At</th>
                                     <th>Fee</th>
                                     <th>Status</th>
                                     <th>Actions</th>
@@ -132,13 +132,12 @@
             <td class="errand-title"></td>
             <td class="errand-category"></td>
             <td class="errand-created-at"></td>
-            <td class="errand-deadline"></td>
+            <td class="errand-finished-at"></td>
             <td class="errand-fee"></td>
             <td><span class="errand-status"></span></td>
             <td>
                 <div class="button-row">
                     <a href="#" class="btn-view errand-view-link">View</a>
-                    <button type="button" class="btn-delete action-btn-delete" style="display: none;">Delete</button>
                 </div>
             </td>
         </tr>
@@ -146,13 +145,13 @@
 
     <template id="errand-empty-template">
         <tr>
-            <td class="no-found" colspan="8">No errands found.</td>
+            <td class="no-found" colspan="8">No finished errands found.</td>
         </tr>
     </template>
 
     <template id="errand-error-template">
         <tr>
-            <td class="no-found errand-error-text" colspan="8">Unable to load errands.</td>
+            <td class="no-found errand-error-text" colspan="8">Unable to load finished errands.</td>
         </tr>
     </template>
 
@@ -202,7 +201,7 @@
 
             async function loadMetrics(){
                 try{
-                    const response = await fetch('/api/client/dashboard/active-metrics', {
+                    const response = await fetch('/api/client/dashboard/finished-metrics', {
                         method: 'GET',
                         headers: {
                             'Accept': 'application/json',
@@ -219,19 +218,13 @@
 
                     const metrics = result.metrics;
 
-                    document.getElementById('metric-pending').textContent = metrics.pending;
-                    document.getElementById('metric-accepted').textContent = metrics.accepted;
-                    document.getElementById('metric-in-progress').textContent = metrics.in_progress;
-                    document.getElementById('metric-awaiting-confirmation').textContent = metrics.awaiting_confirmation;
-                    document.getElementById('metric-dispute').textContent = metrics.dispute;
+                    document.getElementById('metric-completed').textContent = metrics.completed;
+                    document.getElementById('metric-failed').textContent = metrics.failed;
                     document.getElementById('metric-total').textContent = metrics.total;
 
                     const cardToggles = {
-                        'metric-card-pending': metrics.pending,
-                        'metric-card-accepted': metrics.accepted,
-                        'metric-card-in-progress': metrics.in_progress,
-                        'metric-card-awaiting-confirmation': metrics.awaiting_confirmation,
-                        'metric-card-dispute': metrics.dispute
+                        'metric-card-completed': metrics.completed,
+                        'metric-card-failed': metrics.failed
                     };
 
                     Object.entries(cardToggles).forEach(([cardId, val]) => {
@@ -265,7 +258,7 @@
                 }
 
                 try{
-                    const response = await fetch('/api/client/dashboard/active-errands?' + params.toString(), {
+                    const response = await fetch('/api/client/dashboard/finished-errands?' + params.toString(), {
                         method: 'GET',
                         headers: {
                             'Accept': 'application/json',
@@ -277,7 +270,7 @@
                     const result = await response.json();
 
                     if(!response.ok || !result.success){
-                        throw new Error(result.message || 'Failed to load errands.');
+                        throw new Error(result.message || 'Failed to load finished errands.');
                     }
 
                     displayErrands(result.errands);
@@ -307,7 +300,7 @@
                     row.querySelector('.errand-title').textContent = errand.title;
                     row.querySelector('.errand-category').textContent = errand.category;
                     row.querySelector('.errand-created-at').textContent = errand.created_at;
-                    row.querySelector('.errand-deadline').textContent = errand.deadline;
+                    row.querySelector('.errand-finished-at').textContent = errand.finished_at;
                     row.querySelector('.errand-fee').textContent = errand.fee;
 
                     const status = row.querySelector('.errand-status');
@@ -316,93 +309,7 @@
 
                     row.querySelector('.errand-view-link').href =
                         '/client/view-errand/' + encodeURIComponent(errand.id) +
-                        '?from=client.dashboard';
-
-                    const deleteBtn = row.querySelector('.action-btn-delete');
-                    const cancelAcceptedBtn = row.querySelector('.action-btn-cancel-accepted');
-                    const cancelRequestBtn = row.querySelector('.action-btn-cancel-request');
-                    const cancelDisabledBtn = row.querySelector('.action-btn-cancel-disabled');
-
-                    if (errand.raw_status === 'pending') {
-                        deleteBtn.style.display = 'flex';
-                        
-                        deleteBtn.addEventListener('click', async function(){
-                            const customTitle = 'Confirm Deletion';
-                            const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
-                            const isConfirmed = await showConfirmation(customTitle, customMessage);
-                            
-                            if(!isConfirmed) return;
-
-                            try {
-                                const response = await fetch('/api/client/errands/' + errand.id + '/delete', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Accept': 'application/json',
-                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                                        'X-API-KEY': apiKey,
-                                        'X-MY-ORIGIN' : origin
-                                    },
-                                    credentials: 'same-origin'
-                                });
-
-                                const result = await response.json();
-
-                                if(!response.ok || !result.success){
-                                    throw new Error(result.message || 'Failed to delete errand.');
-                                }
-
-                                const successMessageText = document.getElementById('successMessageText');
-                                if (successMessageText) {
-                                    successMessageText.textContent = result.message || 'Errand deleted successfully!';
-                                    successMessageText.style.display = 'flex';
-
-                                    setTimeout(() => {
-                                        successMessageText.textContent = '';
-                                        successMessageText.style.display = 'none';
-                                    }, 3000);
-                                }
-
-                                loadMetrics();
-                                loadErrands();
-
-                            } catch(error) {
-                                console.error('Delete error:', error);
-                                displayGlobalError(error.message);
-                            }
-                        });
-
-                    } else if (errand.raw_status === 'accepted') {
-                        cancelAcceptedBtn.style.display = 'flex';
-                        
-                        cancelAcceptedBtn.addEventListener('click', async function(){
-                            const customTitle = 'Confirm Cancellation';
-                            const customMessage = 'Are you sure you want to cancel this errand? It will return to "Pending" status.';
-                            const isConfirmed = await showConfirmation(customTitle, customMessage);
-                            
-                            if(!isConfirmed) return;
-                            
-                            // Add your cancel pending payment AJAX call implementation here
-                        });
-
-                    } else if (errand.raw_status === 'in_progress') {
-                        if (Number(errand.cancel_requested_by_client) === 0) {
-                            cancelRequestBtn.style.display = 'flex';
-                            
-                            cancelRequestBtn.addEventListener('click', async function(){
-                                const customTitle = 'Confirm Cancellation Request';
-                                const customMessage = 'Are you sure you want to send a cancellation request to the Admin? It will return to "Pending" status and this action cannot be undone until processed.';
-                                const isConfirmed = await showConfirmation(customTitle, customMessage);
-                                
-                                if(!isConfirmed) return;
-
-                                // Add your client cancel request AJAX call implementation here
-                            });
-                        } else {
-                            cancelDisabledBtn.style.display = 'flex';
-                        }
-                    } else if (errand.raw_status === 'awaiting_confirmation') {
-                        cancelDisabledBtn.style.display = 'flex';
-                    }
+                        '?from=client.finished';
 
                     tableBody.appendChild(row);
                 });

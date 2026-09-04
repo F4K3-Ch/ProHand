@@ -181,8 +181,8 @@ class ClientController extends Controller
                 'created_at' => $errand->created_at 
                     ? Carbon::parse($errand->created_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
                     : '—',
-                'deadline' => $errand->deadline 
-                    ? Carbon::parse($errand->deadline)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                'finished_at' => $errand->finished_at 
+                    ? Carbon::parse($errand->finished_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
                     : '—',
                 'fee' => '₱' . number_format($errand->fee, 2),
                 'status' => Str::title(str_replace('_', ' ', $errand->status)),
