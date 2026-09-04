@@ -676,6 +676,8 @@ class ClientController extends Controller
                         'original_name' => $attachment->original_name,
                         'uploaded_at' => $attachment->uploaded_at,
                     ]);
+
+                    Storage::disk('public')->delete($attachment->file_path);
                 }
 
                 $errand_id = $errand->id;
