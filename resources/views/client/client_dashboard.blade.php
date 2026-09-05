@@ -116,7 +116,7 @@
                     </a>
                 </div>
 
-                <div class="client-errands-table">
+                <div class="errands-container">
                     <div class="table-header-controls">
                         <h4>My Errands</h4>
                         <div class="rows-per-page">
@@ -130,24 +130,8 @@
                         </div>
                     </div>
 
-                    <div class="table-scroll">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Errand ID</th>
-                                    <th>Title</th>
-                                    <th>Category</th>
-                                    <th>Created At</th>
-                                    <th>Deadline</th>
-                                    <th>Fee</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="errands-table-body">
+                    <div id="errands-cards-grid" class="errands-cards-grid">
 
-                            </tbody>
-                        </table>
                     </div>
 
                     <div id="pagination-container" class="pagination-container">
@@ -160,45 +144,42 @@
         </div>
     </main>
 
-    <template id="errand-row-template">
-        <tr>
-            <td class="errand-id"></td>
-            <td class="errand-title"></td>
-            <td class="errand-category"></td>
-            <td class="errand-created-at"></td>
-            <td class="errand-deadline"></td>
-            <td class="errand-fee"></td>
-            <td><span class="errand-status"></span></td>
-            <td>
-                <div class="button-row">
-                    <a href="#" class="btn-view errand-view-link">View</a>
-                    <button type="button" class="btn-delete action-btn-delete" style="display: none;">Delete</button>
-                    <button type="button" class="btn-cancel cancel-accepted action-btn-cancel-accepted" style="display: none;">Cancel</button>
-                    <button type="button" class="btn-cancel cancel-request action-btn-cancel-request" style="display: none;">Cancel</button>
-                    <button type="button" disabled class="btn-cancel-disabled action-btn-cancel-disabled" style="display: none;">Cancel</button>
-                </div>
-            </td>
-        </tr>
+    <template id="errand-card-template">
+        <div class="errand-post-card">
+            <div class="errand-card-top">
+                <span class="errand-id-badge">ID: <span class="errand-id"></span></span>
+                <span class="errand-status"></span>
+            </div>
+            <h4 class="errand-title"></h4>
+            <div class="errand-card-details">
+                <p><span><i class="fa-solid fa-folder-open"></i> Category</span> <span class="errand-category"></span></p>
+                <p><span><i class="fa-solid fa-location-dot"></i> Location</span> <span class="errand-location"></span></p>
+                <p><span><i class="fa-solid fa-calendar-plus"></i> Created</span> <span class="errand-created-at"></span></p>
+                <p><span><i class="fa-solid fa-clock"></i> Deadline</span> <span class="errand-deadline"></span></p>
+                <p><span><i class="fa-solid fa-peso-sign"></i> Fee</span> <strong class="errand-fee"></strong></p>
+            </div>
+            <div class="errand-card-actions">
+                <a href="#" class="btn-view errand-view-link"><i class="fa-solid fa-eye"></i> View</a>
+                <button type="button" class="btn-delete errand-card-btn-delete" style="display: none;"><i class="fa-solid fa-trash"></i> Delete</button>
+                <button type="button" class="btn-cancel cancel-accepted errand-card-btn-cancel-accepted" style="display: none;"><i class="fa-solid fa-ban"></i> Cancel</button>
+                <button type="button" class="btn-cancel cancel-request errand-card-btn-cancel-request" style="display: none;"><i class="fa-solid fa-triangle-exclamation"></i> Cancel</button>
+                <button type="button" disabled class="btn-cancel-disabled errand-card-btn-cancel-disabled" style="display: none;"><i class="fa-solid fa-ban"></i> Cancel</button>
+            </div>
+        </div>
     </template>
 
     <template id="errand-empty-template">
-        <tr>
-            <td class="no-found" colspan="8">No errands found.</td>
-        </tr>
+        <div class="errand-card-message no-found">No errands found.</div>
     </template>
 
     <template id="errand-error-template">
-        <tr>
-            <td class="no-found errand-error-text" colspan="8">Unable to load errands.</td>
-        </tr>
+        <div class="errand-card-message no-found errand-error-text">Unable to load errands.</div>
     </template>
 
     <template id="errand-loading-template">
-        <tr>
-            <td class="no-found" colspan="8">
-                <span class="circle-spinner" style="width:20px;height:20px;border-width:2px;"></span>
-            </td>
-        </tr>
+        <div class="errand-card-message no-found">
+            <span class="circle-spinner" style="width:20px;height:20px;border-width:2px;"></span>
+        </div>
     </template>
 
     <template id="pagination-button-template">
@@ -209,7 +190,7 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function(){
-            const tableBody = document.getElementById('errands-table-body');
+            const cardsGrid = document.getElementById('errands-cards-grid');
             const paginationContainer = document.getElementById('pagination-container');
             const pagesContainer = document.getElementById('pagination-pages');
             const searchInput = document.getElementById('errandSearch');
@@ -234,8 +215,8 @@
             }
 
             function showLoading(){
-                tableBody.innerHTML = '';
-                tableBody.appendChild(document.getElementById('errand-loading-template').content.cloneNode(true));
+                cardsGrid.innerHTML = '';
+                cardsGrid.appendChild(document.getElementById('errand-loading-template').content.cloneNode(true));
             }
 
             async function loadMetrics(){
@@ -318,7 +299,7 @@
                         throw new Error(result.message || 'Failed to load errands.');
                     }
 
-                    if (result.pagination.total === 0 && currentSearch === '') {
+                    if (currentSearch === '') {
                         if(welcomeBanner) welcomeBanner.style.display = 'flex';
                     } else {
                         if(welcomeBanner) welcomeBanner.style.display = 'none';
@@ -329,43 +310,44 @@
                 }catch(error){
                     console.error('Errands error:', error);
                     displayGlobalError(error.message);
-                    tableBody.innerHTML = '';
-                    tableBody.appendChild(document.getElementById('errand-error-template').content.cloneNode(true));
+                    cardsGrid.innerHTML = '';
+                    cardsGrid.appendChild(document.getElementById('errand-error-template').content.cloneNode(true));
                 }
             }
 
             function displayErrands(errands){
-                tableBody.innerHTML = '';
+                cardsGrid.innerHTML = '';
 
                 if(!errands || errands.length === 0){
-                    tableBody.appendChild(document.getElementById('errand-empty-template').content.cloneNode(true));
+                    cardsGrid.appendChild(document.getElementById('errand-empty-template').content.cloneNode(true));
                     return;
                 }
 
-                const template = document.getElementById('errand-row-template');
+                const template = document.getElementById('errand-card-template');
 
                 errands.forEach(function(errand){
-                    const row = template.content.cloneNode(true);
+                    const card = template.content.cloneNode(true);
 
-                    row.querySelector('.errand-id').textContent = errand.id;
-                    row.querySelector('.errand-title').textContent = errand.title;
-                    row.querySelector('.errand-category').textContent = errand.category;
-                    row.querySelector('.errand-created-at').textContent = errand.created_at;
-                    row.querySelector('.errand-deadline').textContent = errand.deadline;
-                    row.querySelector('.errand-fee').textContent = errand.fee;
+                    card.querySelector('.errand-id').textContent = errand.id;
+                    card.querySelector('.errand-title').textContent = errand.title;
+                    card.querySelector('.errand-category').textContent = errand.category;
+                    card.querySelector('.errand-location').textContent = errand.location;
+                    card.querySelector('.errand-created-at').textContent = errand.created_at;
+                    card.querySelector('.errand-deadline').textContent = errand.deadline;
+                    card.querySelector('.errand-fee').textContent = errand.fee;
 
-                    const status = row.querySelector('.errand-status');
+                    const status = card.querySelector('.errand-status');
                     status.textContent = errand.status;
                     status.className = errand.status_class;
 
-                    row.querySelector('.errand-view-link').href =
+                    card.querySelector('.errand-view-link').href =
                         '/client/view-errand/' + encodeURIComponent(errand.id) +
                         '?from=client.dashboard';
 
-                    const deleteBtn = row.querySelector('.action-btn-delete');
-                    const cancelAcceptedBtn = row.querySelector('.action-btn-cancel-accepted');
-                    const cancelRequestBtn = row.querySelector('.action-btn-cancel-request');
-                    const cancelDisabledBtn = row.querySelector('.action-btn-cancel-disabled');
+                    const deleteBtn = card.querySelector('.errand-card-btn-delete');
+                    const cancelAcceptedBtn = card.querySelector('.errand-card-btn-cancel-accepted');
+                    const cancelRequestBtn = card.querySelector('.errand-card-btn-cancel-request');
+                    const cancelDisabledBtn = card.querySelector('.errand-card-btn-cancel-disabled');
 
                     if (errand.raw_status === 'pending') {
                         deleteBtn.style.display = 'flex';
@@ -448,7 +430,7 @@
                         cancelDisabledBtn.style.display = 'flex';
                     }
 
-                    tableBody.appendChild(row);
+                    cardsGrid.appendChild(card);
                 });
             }
 

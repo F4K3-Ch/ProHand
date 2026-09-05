@@ -86,6 +86,7 @@ class ClientController extends Controller
             return [
                 'id' => $errand->id,
                 'title' => $errand->title,
+                'location' => $errand->location,
                 'category' => Str::title(str_replace('_', ' ', $errand->category)),
                 'created_at' => $errand->created_at 
                     ? Carbon::parse($errand->created_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 

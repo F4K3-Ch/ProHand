@@ -13,7 +13,15 @@
 
     <main class="view-main">
         <div class="create-errand-container">
-            <h1>Create Errand</h1>
+            <div class="errand-form-header">
+                <div class="header-icon-wrapper">
+                    <i class="fa-solid fa-circle-plus"></i>
+                </div>
+                <div class="header-text-group">
+                    <h1>Create Errand</h1>
+                    <p>Easily submit your errand details and let our dedicated taskers handle the rest.</p>
+                </div>
+            </div>
 
             <div class="view-main-error-success-message">
                 <p id="errorElement" class="error" style="display: none;"></p>
@@ -24,7 +32,7 @@
 
                 <div class="create-errand-input-box">
                     <label for="title">Title</label>
-                    <input type="text" name="title" id="title" required>
+                    <input type="text" name="title" id="title" placeholder="e.g., Pick up documents from downtown office" required>
                 </div>
 
                 <div class="create-errand-input-box">
@@ -44,27 +52,27 @@
 
                 <div class="create-errand-input-box">
                     <label for="description">Description</label>
-                    <textarea name="description" id="description" required></textarea>
+                    <textarea name="description" id="description" placeholder="Provide clear instructions and specific requirements..." required></textarea>
                 </div>
 
                 <div class="create-errand-input-box">
                     <label for="location">Location</label>
-                    <input type="text" name="location" id="location" required>
+                    <input type="text" name="location" id="location" placeholder="e.g., 123 Main Street, Brgy. Poblacion" required>
                 </div>
 
                 <div class="create-errand-input-box">
                     <label for="deadline">Deadline</label>
-                    <input type="text" name="deadline" id="deadline" required>
+                    <input type="text" name="deadline" id="deadline" placeholder="Select date & time" required>
                 </div>
 
                 <div class="create-errand-input-box">
                     <label for="fee">Fee (₱)</label>
-                    <input type="number" step="0.01" min="0" name="fee" id="fee" required>
+                    <input type="number" step="0.01" min="0" name="fee" id="fee" placeholder="0.00" required>
                 </div>
 
                 <div class="create-errand-input-box">
                     <label for="contact">Contact</label>
-                    <textarea name="contact" id="contact" placeholder="Phone, email, social media..." required></textarea>
+                    <textarea name="contact" id="contact" placeholder="Phone number, email, or preferred communication channels..." required></textarea>
                 </div>
 
                 <div class="create-errand-input-box">
@@ -74,7 +82,7 @@
                 </div>
 
                 <button type="submit" class="btn" id="createErrandButton">
-                    Create Errand
+                    Post Errand
                     <div class="circle-spinner" id="errandSpinner" style="display: none;"></div>
                 </button>
             </form>

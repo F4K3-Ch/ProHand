@@ -25,11 +25,6 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('client.create.errand') }}" class="{{ request()->routeIs('client.create.errand') ? 'active' : '' }}">
-                    <i class="fa-solid fa-circle-plus"></i> Create Errand
-                </a>
-            </li>
-            <li>
                 <a href="{{ route('profile') }}"
                 class="{{ request()->routeIs('profile', 'profile.edit', 'profile.change-password') ? 'active' : '' }}">
                     <i class="fa-solid fa-circle-user"></i>
