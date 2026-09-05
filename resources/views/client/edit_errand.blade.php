@@ -7,7 +7,7 @@
 @endsection
 
 @section('content')
-    <a href="/client/view-errand/{{ $id }}" class="btn-back">
+    <a href="/client/view-errand/{{ $id }}" class="btn-back" id="backButton">
         <i class="fa-solid fa-arrow-left"></i> Back
     </a>
 
@@ -105,13 +105,20 @@
 @endsection
 
 @push('styles')
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="[https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css](https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css)">
 @endpush
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="[https://cdn.jsdelivr.net/npm/flatpickr](https://cdn.jsdelivr.net/npm/flatpickr)"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const fromParam = urlParams.get('from');
+            const backButton = document.getElementById('backButton');
+            if (backButton && fromParam) {
+                backButton.href = '/client/view-errand/{{ $id }}?from=' + encodeURIComponent(fromParam);
+            }
+
             const mainContainer = document.querySelector('.view-main');
             const errandId = mainContainer ? mainContainer.getAttribute('data-errand-id') : null;
             
@@ -226,7 +233,11 @@
                     }
 
                     sessionStorage.setItem('success_message', data.message);
-                    window.location.href = '/client/view-errand/' + errandId + '?from=client.dashboard';
+                    
+                    const redirectUrl = fromParam 
+                        ? '/client/view-errand/' + errandId + '?from=' + encodeURIComponent(fromParam) 
+                        : '/client/view-errand/' + errandId;
+                    window.location.href = redirectUrl;
 
                 } catch (err) {
                     let errorMessage = 'An unexpected error occurred.';
