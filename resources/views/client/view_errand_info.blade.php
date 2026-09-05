@@ -460,6 +460,19 @@
                 } else if (errand.raw_status === 'dispute') {
                     const disputeBadge = document.getElementById('disputeBadge');
                     disputeBadge.style.display = 'flex';
+                } else if (errand.raw_status === 'completed' || errand.raw_status === 'failed') {
+                    const deleteBtn = document.getElementById('deleteErrandBtn');
+                    deleteBtn.style.display = 'flex';
+
+                    deleteBtn.addEventListener('click', async function() {
+                        const customTitle = 'Confirm Deletion';
+                        const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
+
+                        // Add your delete completed/failed errand AJAX call implementation here
+                    });
                 }
 
             } catch (error) {

@@ -106,6 +106,16 @@
                     </div>
                 </section>
 
+                <div id="client-welcome-banner" class="welcome-banner-card" style="display: none;">
+                    <div class="welcome-banner-text">
+                        <h4>Need help with an errand?</h4>
+                        <p>Post your task and let trusted local taskers take care of it for you.</p>
+                    </div>
+                    <a href="{{ route('client.create.errand') }}" class="btn-create-errand">
+                        <span><i class="fa-solid fa-circle-plus"></i></span> Post Here
+                    </a>
+                </div>
+
                 <div class="client-errands-table">
                     <div class="table-header-controls">
                         <h4>My Errands</h4>
@@ -207,6 +217,7 @@
             const clearSearchButton = document.getElementById('clearSearchButton');
             const perPageSelect = document.getElementById('perPageSelect');
             const errorText = document.getElementById('errorMessageText');
+            const welcomeBanner = document.getElementById('client-welcome-banner');
 
             let currentPage = 1;
             let currentSearch = '';
@@ -305,6 +316,12 @@
 
                     if(!response.ok || !result.success){
                         throw new Error(result.message || 'Failed to load errands.');
+                    }
+
+                    if (result.pagination.total === 0 && currentSearch === '') {
+                        if(welcomeBanner) welcomeBanner.style.display = 'flex';
+                    } else {
+                        if(welcomeBanner) welcomeBanner.style.display = 'none';
                     }
 
                     displayErrands(result.errands);
