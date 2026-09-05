@@ -122,10 +122,10 @@
                         <div class="rows-per-page">
                             <label for="perPageSelect"><h4>Show:</h4></label>
                             <select id="perPageSelect" class="form-control">
-                                <option value="5">5</option>
-                                <option value="10" selected>10</option>
-                                <option value="25">25</option>
-                                <option value="50">50</option>
+                                <option value="4">4</option>
+                                <option value="8" selected>8</option>
+                                <option value="16">16</option>
+                                <option value="32">32</option>
                             </select>
                         </div>
                     </div>

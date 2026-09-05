@@ -51,9 +51,9 @@ class ClientController extends Controller
         $clientId = $request->user()->id;
 
         $search = $request->query('search');
-        $perPage = (int) $request->query('per_page', 10);
+        $perPage = (int) $request->query('per_page', 8);
 
-        $allowedPerPage = [5, 10, 25, 50];
+        $allowedPerPage = [4, 8, 16, 32];
 
         if (!in_array($perPage, $allowedPerPage)) {
             $perPage = 10;
@@ -72,6 +72,7 @@ class ClientController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('id', 'like', "%{$search}%")
                     ->orWhere('title', 'like', "%{$search}%")
+                    ->orWhere('location', 'like', "%{$search}%")
                     ->orWhere('category', 'like', "%{$search}%")
                     ->orWhere('location', 'like', "%{$search}%")
                     ->orWhere('status', 'like', "%{$search}%");

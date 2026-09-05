@@ -1247,6 +1247,7 @@ body {
 .total-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    border-color: var(--color-span);
 }
 
 .card-header {
@@ -1539,7 +1540,7 @@ body {
     background-color: var(--color-bg);
     border: 1px solid var(--color-border);
     border-radius: 12px;
-    padding: 16px;
+    padding: 14px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
