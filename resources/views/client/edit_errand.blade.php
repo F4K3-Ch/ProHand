@@ -105,11 +105,11 @@
 @endsection
 
 @push('styles')
-    <link rel="stylesheet" href="[https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css](https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css)">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 @endpush
 
 @push('scripts')
-    <script src="[https://cdn.jsdelivr.net/npm/flatpickr](https://cdn.jsdelivr.net/npm/flatpickr)"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
             const urlParams = new URLSearchParams(window.location.search);
@@ -233,11 +233,7 @@
                     }
 
                     sessionStorage.setItem('success_message', data.message);
-                    
-                    const redirectUrl = fromParam 
-                        ? '/client/view-errand/' + errandId + '?from=' + encodeURIComponent(fromParam) 
-                        : '/client/view-errand/' + errandId;
-                    window.location.href = redirectUrl;
+                    window.location.href = '/client/view-errand/' + errandId + '?from=client.dashboard';
 
                 } catch (err) {
                     let errorMessage = 'An unexpected error occurred.';
