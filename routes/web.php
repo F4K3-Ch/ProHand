@@ -86,6 +86,10 @@ Route::middleware('auth')->group(function () {
             return view('admin.admin_dashboard');
         })->name('admin.dashboard');
 
+        Route::get('/admin/history', function () {
+            return view('admin.admin_history');
+        })->name('admin.history');
+
         Route::get('/admin/view-errand/{id}', function ($id) {
             return view('admin.view_errand_info', ['id' => $id]);
         })->name('admin.view-errand');

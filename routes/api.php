@@ -45,5 +45,7 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
     Route::middleware('role:admin')->group(function() {
         Route::get('/admin/dashboard/active-metrics', [AdminController::class, 'allActiveMetrics']);
         Route::get('/admin/dashboard/active-errands', [AdminController::class, 'allActiveErrands']);
+        Route::get('/admin/history/history-metrics', [AdminController::class, 'allHistoryMetrics']);
+        Route::get('/admin/history/history-errands', [AdminController::class, 'allHistoryErrands']);
     });
 });

@@ -17,7 +17,13 @@
                     Dashboard
                 </a>
             </li>
-            <li><a href="#"><i class="fa-solid fa-clipboard-check"></i> Finished Errands</a></li>
+            <li>
+                <a href="{{ route('admin.history') }}"
+                class="{{ request()->routeIs('admin.history') || request()->query('from') === 'admin.history' ? 'active' : '' }}">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    History
+                </a>
+            </li>
             <li><a href="#"><i class="fa-solid fa-users"></i> Manage Users</a></li>
             <li>
                 <a href="{{ route('profile') }}"
