@@ -127,7 +127,9 @@
                     </div>
                 </div>
 
-                <div class="info-bot-btn" id="admin-action-buttons"></div>
+                <div class="info-bot-btn">
+                    
+                </div>
             </div>
 
             <div class="users-container" id="users-container">
