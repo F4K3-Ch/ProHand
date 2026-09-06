@@ -249,9 +249,9 @@
                 document.getElementById('errand-id').textContent = errand.id;
                 document.getElementById('errand-category').textContent = errand.category;
                 document.getElementById('errand-title').textContent = errand.title;
-                document.getElementById('errand-description').textContent = errand.description || 'None';
+                document.getElementById('errand-description').textContent = errand.description;
                 document.getElementById('errand-location').textContent = errand.location;
-                document.getElementById('errand-contact').textContent = errand.contact || 'None';
+                document.getElementById('errand-contact').textContent = errand.contact;
                 document.getElementById('errand-fee').textContent = errand.fee;
                 
                 const statusElement = document.getElementById('errand-status');

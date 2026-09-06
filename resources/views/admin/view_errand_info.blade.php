@@ -25,8 +25,8 @@
                         <p class="error" id="sessionErrorMessage">{{ session('error') }}</p>
                     @endif
 
-                    <p class="success" id="successMessageText" style="display: none;"></p>
-                    <p class="error" id="errorMessageText" style="display: none;"></p>
+                    <p class="success" id="successMessageText" style="display:none;"></p>
+                    <p class="error" id="errorMessageText" style="display:none;"></p>
                 </div>
 
                 <div class="group-info-box">
@@ -88,8 +88,8 @@
                         <span id="errand-accepted-at">Loading...</span>
                     </div>
                     <div class="info-box">
-                        <label>In Process At</label>
-                        <span id="errand-in-process-at">Loading...</span>
+                        <label>In Progress At</label>
+                        <span id="errand-in-progress-at">Loading...</span>
                     </div>
                 </div>
 
@@ -108,16 +108,18 @@
                     <div class="info-box">
                         <label>Attachment</label>
                         <div id="errand-attachment">
-                            <div class="attachment-item" style="display: none;">
+                            <div class="attachment-item" style="display:none;">
                                 <a href="#" target="_blank" class="attachment-name" title="Preview File">
                                     <i class="fa-solid fa-file"></i>
                                     <span class="attachment-filename"></span>
                                 </a>
+
                                 <a href="#" class="btn-download" download>
                                     <i class="fa-solid fa-download"></i>
                                     Download
                                 </a>
                             </div>
+
                             <div class="no-attachments">
                                 <p class="no-attachment">None</p>
                             </div>
@@ -125,12 +127,10 @@
                     </div>
                 </div>
 
-                <div class="info-bot-btn">
-
-                </div>
+                <div class="info-bot-btn" id="admin-action-buttons"></div>
             </div>
 
-            <div class="users-container" 
+            <div class="users-container" id="users-container">
                 <div class="user-details-container">
                     <h1>Posted By</h1>
 
@@ -142,29 +142,42 @@
                                     class="profile-preview-photo"
                                     src=""
                                     alt="Profile Picture"
-                                    style="display: none;"
+                                    style="display:none;"
                                 >
 
                                 <div
-                                    id="profile-photo-spinner"
+                                    id="client-profile-photo-spinner"
                                     class="circle-spinner"
-                                    style="width: 110px; height: 110px; border-width: 4px;"
+                                    style="width:110px;height:110px;border-width:4px;"
                                 ></div>
                             </div>
                         </div>
 
-                        <div class="user-cancellation-alert-box">
+                        <div
+                            class="user-cancellation-alert-box"
+                            id="client-cancellation-box"
+                            style="display:none;"
+                        >
                             <p class="alert-title">
-                                <i class="fa-solid fa-triangle-exclamation"></i> Requesting Cancellation
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                Requesting Cancellation
                             </p>
 
                             <div class="alert-action-buttons">
-                                <button type="button" class="btn-approve-release">
-                                    <i class="fa-solid fa-user-minus"></i>Approve
+                                <button
+                                    type="button"
+                                    class="btn-approve-release"
+                                    data-requester="client"
+                                >
+                                    <i class="fa-solid fa-user-minus"></i> Approve
                                 </button>
 
-                                <button type="button" class="btn-deny-release">
-                                    <i class="fa-solid fa-user-check"></i>Deny
+                                <button
+                                    type="button"
+                                    class="btn-deny-release"
+                                    data-requester="client"
+                                >
+                                    <i class="fa-solid fa-user-check"></i> Deny
                                 </button>
                             </div>
                         </div>
@@ -195,7 +208,7 @@
                     </div>
                 </div>
 
-                <div class="user-details-container" id="tasker-container">
+                <div class="user-details-container" id="tasker-container" style="display:none;">
                     <h1>Accepted By</h1>
 
                     <div class="user-header-row">
@@ -206,29 +219,41 @@
                                     class="profile-preview-photo"
                                     src=""
                                     alt="Profile Picture"
-                                    style="display: none;"
+                                    style="display:none;"
                                 >
 
                                 <div
-                                    id="profile-photo-spinner"
                                     class="circle-spinner"
-                                    style="width: 110px; height: 110px; border-width: 4px;"
+                                    style="width:110px;height:110px;border-width:4px;"
                                 ></div>
                             </div>
                         </div>
 
-                        <div class="user-cancellation-alert-box">
+                        <div
+                            class="user-cancellation-alert-box"
+                            id="tasker-cancellation-box"
+                            style="display:none;"
+                        >
                             <p class="alert-title">
-                                <i class="fa-solid fa-triangle-exclamation"></i> Requesting Cancellation
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                Requesting Cancellation
                             </p>
 
                             <div class="alert-action-buttons">
-                                <button type="button" class="btn-approve-release">
-                                    <i class="fa-solid fa-user-minus"></i>Approve
+                                <button
+                                    type="button"
+                                    class="btn-approve-release"
+                                    data-requester="tasker"
+                                >
+                                    <i class="fa-solid fa-user-minus"></i> Approve
                                 </button>
 
-                                <button type="button" class="btn-deny-release">
-                                    <i class="fa-solid fa-user-check"></i>Deny
+                                <button
+                                    type="button"
+                                    class="btn-deny-release"
+                                    data-requester="tasker"
+                                >
+                                    <i class="fa-solid fa-user-check"></i> Deny
                                 </button>
                             </div>
                         </div>
@@ -282,7 +307,7 @@
                     headers: {
                         'Accept': 'application/json',
                         'X-API-KEY': apiKey,
-                        'X-MY-ORIGIN' : origin
+                        'X-MY-ORIGIN': origin
                     },
                     credentials: 'same-origin'
                 });
@@ -299,9 +324,9 @@
                 document.getElementById('errand-id').textContent = errand.id;
                 document.getElementById('errand-category').textContent = errand.category;
                 document.getElementById('errand-title').textContent = errand.title;
-                document.getElementById('errand-description').textContent = errand.description || 'None';
+                document.getElementById('errand-description').textContent = errand.description;
                 document.getElementById('errand-location').textContent = errand.location;
-                document.getElementById('errand-contact').textContent = errand.contact || 'None';
+                document.getElementById('errand-contact').textContent = errand.contact;
                 document.getElementById('errand-fee').textContent = errand.fee;
                 
                 const statusElement = document.getElementById('errand-status');
@@ -320,53 +345,80 @@
 
                 usersContainer.style.display = 'flex';
 
-                const clientProfilePhoto = document.getElementById('client-profile-photo');
-                const clientPhotoSpinner = document.getElementById('profile-photo-spinner');
+                /* Client */
+                const client = errand.client;
+                const clientPhoto = document.getElementById('client-profile-photo');
+                const clientSpinner = document.getElementById('client-profile-photo-spinner');
 
-                document.getElementById('client-id').textContent = errand.client.id;
-                document.getElementById('client-email').textContent = errand.client.email;
-                document.getElementById('client-name').textContent = errand.client.name;
-                document.getElementById('client-contact-number').textContent = errand.client.contact_number;
+                if (client) {
+                    document.getElementById('client-id').textContent = client.id;
+                    document.getElementById('client-email').textContent = client.email;
+                    document.getElementById('client-name').textContent = client.name;
+                    document.getElementById('client-contact-number').textContent = client.contact_number;
 
-                if (errand.client.profile_picture) {
-                    clientProfilePhoto.src = errand.client.profile_picture;
+                    if (client.profile_picture) {
+                        clientPhoto.src = client.profile_picture;
 
-                    clientProfilePhoto.onload = function() {
-                        clientPhotoSpinner.style.display = 'none';
-                        clientProfilePhoto.style.display = 'flex';
-                    };
-
-                    clientProfilePhoto.onerror = function() {
-                        clientPhotoSpinner.style.display = 'none';
-                    };
-                } else {
-                    clientPhotoSpinner.style.display = 'none';
-                }
-
-                const taskerProfilePhoto = document.getElementById('tasker-profile-photo');
-                const taskerPhotoSpinner = taskerContainer.querySelector('.circle-spinner');
-
-                if (errand.tasker) {
-                    taskerContainer.style.display = 'block';
-
-                    document.getElementById('tasker-id').textContent = errand.tasker.id;
-                    document.getElementById('tasker-email').textContent = errand.tasker.email;
-                    document.getElementById('tasker-name').textContent = errand.tasker.name;
-                    document.getElementById('tasker-contact-number').textContent = errand.tasker.contact_number;
-
-                    if (errand.tasker.profile_picture) {
-                        taskerProfilePhoto.src = errand.tasker.profile_picture;
-
-                        taskerProfilePhoto.onload = function() {
-                            taskerPhotoSpinner.style.display = 'none';
-                            taskerProfilePhoto.style.display = 'flex';
+                        clientPhoto.onload = function () {
+                            clientSpinner.style.display = 'none';
+                            clientPhoto.style.display = 'flex';
                         };
 
-                        taskerProfilePhoto.onerror = function() {
-                            taskerPhotoSpinner.style.display = 'none';
+                        clientPhoto.onerror = function () {
+                            clientSpinner.style.display = 'none';
+                            clientPhoto.style.display = 'none';
                         };
                     } else {
-                        taskerPhotoSpinner.style.display = 'none';
+                        clientSpinner.style.display = 'none';
+                    }
+
+                    const clientCancelBox = document.getElementById('client-cancellation-box');
+
+                    if (errand.cancel_requested_by_client) {
+                        clientCancelBox.style.display = 'block';
+                    }
+                } else {
+                    document.getElementById('client-id').textContent = 'None';
+                    document.getElementById('client-email').textContent = 'None';
+                    document.getElementById('client-name').textContent = 'None';
+                    document.getElementById('client-contact-number').textContent = 'None';
+                    clientSpinner.style.display = 'none';
+                }
+
+                /* Tasker */
+                if (errand.tasker) {
+                    const tasker = errand.tasker;
+
+                    taskerContainer.style.display = 'block';
+
+                    document.getElementById('tasker-id').textContent = tasker.id;
+                    document.getElementById('tasker-email').textContent = tasker.email;
+                    document.getElementById('tasker-name').textContent = tasker.name;
+                    document.getElementById('tasker-contact-number').textContent = tasker.contact_number;
+
+                    const taskerPhoto = document.getElementById('tasker-profile-photo');
+                    const taskerSpinner = taskerContainer.querySelector('.circle-spinner');
+
+                    if (tasker.profile_picture) {
+                        taskerPhoto.src = tasker.profile_picture;
+
+                        taskerPhoto.onload = function () {
+                            taskerSpinner.style.display = 'none';
+                            taskerPhoto.style.display = 'flex';
+                        };
+
+                        taskerPhoto.onerror = function () {
+                            taskerSpinner.style.display = 'none';
+                            taskerPhoto.style.display = 'none';
+                        };
+                    } else {
+                        taskerSpinner.style.display = 'none';
+                    }
+
+                    const taskerCancelBox = document.getElementById('tasker-cancellation-box');
+
+                    if (errand.cancel_requested_by_tasker) {
+                        taskerCancelBox.style.display = 'block';
                     }
                 } else {
                     taskerContainer.style.display = 'none';
@@ -387,6 +439,45 @@
                     downloadBtn.href = errand.attachment.url;
                     downloadBtn.setAttribute('download', errand.attachment.name);
                 }
+
+                /* Cancellation buttons */
+                document.querySelectorAll('.btn-approve-release, .btn-deny-release').forEach(button => {
+                    button.addEventListener('click', async function () {
+                        const requester = this.dataset.requester;
+                        const action = this.classList.contains('btn-approve-release')
+                            ? 'approve'
+                            : 'deny';
+
+                        console.log(
+                            'Cancellation action:',
+                            action,
+                            'Requester:',
+                            requester,
+                            'Errand:',
+                            errand.id
+                        );
+
+                        /*
+                        * Add your actual admin cancellation endpoint here.
+                        * Example:
+                        *
+                        * await fetch('/api/admin/errands/' + errand.id + '/cancellation', {
+                        *     method: 'POST',
+                        *     headers: {
+                        *         'Accept': 'application/json',
+                        *         'Content-Type': 'application/json',
+                        *         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        *         'X-API-KEY': apiKey,
+                        *         'X-MY-ORIGIN': origin
+                        *     },
+                        *     body: JSON.stringify({
+                        *         requester: requester,
+                        *         action: action
+                        *     })
+                        * });
+                        */
+                    });
+                });
 
             } catch (error) {
                 console.error('Errand details error:', error);
