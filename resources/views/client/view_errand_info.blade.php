@@ -140,15 +140,17 @@
                         <i class="fa-solid fa-ban"></i>Cancel
                     </button>
 
-                    <span class="descriptive-status-badge" id="performingBadge" style="display: none;">
-                        <i class="fa-solid fa-spinner fa-spin"></i>Tasker is performing errand...
-                    </span>
-                    <button type="button" id="cancelRequestBtn" class="btn-cancel" style="display: none;">
-                        <i class="fa-solid fa-hand-holding-hand"></i>Request Cancel
-                    </button>
-                    <span class="descriptive-status-badge" id="pendingCancelBadge" style="display: none;">
-                        <i class="fa-solid fa-spinner fa-spin"></i>Pending Admin Cancel...
-                    </span>
+                    <div class="badge-button-column">
+                        <span class="descriptive-status-badge" id="performingBadge" style="display: none;">
+                            <i class="fa-solid fa-spinner fa-spin"></i>Tasker is currently working on this errand...
+                        </span>
+                        <button type="button" id="cancelRequestBtn" class="btn-cancel" style="display: none;">
+                            <i class="fa-solid fa-hand-holding-hand"></i>Request Cancel
+                        </button>
+                        <span class="descriptive-status-badge" id="pendingCancelBadge" style="display: none;">
+                            <i class="fa-solid fa-spinner fa-spin"></i>Pending Admin Cancel...
+                        </span>
+                    </div>
 
                     <button type="button" id="confirmCompletionBtn" class="btn-confirm-completion" style="display: none;">
                         <i class="fa-solid fa-check"></i> Confirm Completion

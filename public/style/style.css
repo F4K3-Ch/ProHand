@@ -3497,22 +3497,31 @@ select[name="role"] option[value="client"] {
     width: 100%;
 }
 
+.badge-button-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
 .info-bot-btn .descriptive-status-badge {
-    background-color: #F59E0B;
-    color: var(--color-btn-text);
+    background-color: color-mix(in srgb, #F59E0B 15%, var(--color-card-bg));
+    color: #F59E0B;
+    border: 1px solid color-mix(in srgb, #F59E0B 40%, var(--color-border));
     flex: 1;
     display: flex;
-    justify-content: flex-start;
     align-items: center;
+    justify-content: center;
     gap: 10px;
-    padding: 10px;
-    border-radius: 6px;
+    padding: 12px 16px;
+    border-radius: 8px;
     font-size: 0.9rem;
     font-weight: 500;
-    text-align: left;
+    text-align: center;
     cursor: default;
-    border: none;
     width: 100%;
+    box-sizing: border-box;
+    line-height: 1.4;
 }
 
 .info-bot-btn .descriptive-status-badge i {
