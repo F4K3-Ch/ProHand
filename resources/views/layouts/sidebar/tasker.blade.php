@@ -18,10 +18,10 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('tasker.your_task') }}"
-                class="{{ request()->routeIs('tasker.your_task') || request()->query('from') === 'tasker.your_task' ? 'active' : '' }}">
+                <a href="{{ route('tasker.available-errands') }}"
+                class="{{ request()->routeIs('tasker.available-errands') || request()->query('from') === 'tasker.available-errands' ? 'active' : '' }}">
                     <i class="fa-solid fa-clipboard-list"></i>
-                    Your Task
+                    Available Errands
                 </a>
             </li>
             <li><a href="#"><i class="fa-solid fa-clipboard-check"></i> Finished Errands</a></li>

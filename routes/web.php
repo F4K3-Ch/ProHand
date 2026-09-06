@@ -67,9 +67,9 @@ Route::middleware('auth')->group(function () {
             return view('tasker.tasker_dashboard');
         })->name('tasker.dashboard');
 
-        Route::get('/tasker/your_task', function () {
-            return view('tasker.your_task');
-        })->name('tasker.your_task');
+        Route::get('/tasker/available-errands', function () {
+            return view('tasker.available_errands');
+        })->name('tasker.available-errands');
 
         Route::get('/tasker/view-errand/{id}', function ($id) {
             return view('tasker.view_errand_info', ['id' => $id]);

@@ -106,12 +106,12 @@
                     </div>
                 </section>
 
-                <div id="client-welcome-banner" class="welcome-banner-card" style="display: none;">
+                <div id="welcome-banner" class="welcome-banner-card" style="display: none;">
                     <div class="welcome-banner-text">
                         <h4>Need help with an errand?</h4>
                         <p>Post your task and let trusted local taskers take care of it for you.</p>
                     </div>
-                    <a href="{{ route('client.create.errand') }}" class="btn-create-errand">
+                    <a href="{{ route('client.create.errand') }}" class="btn-welcome">
                         <span><i class="fa-solid fa-circle-plus"></i></span> Post Here
                     </a>
                 </div>
@@ -198,7 +198,7 @@
             const clearSearchButton = document.getElementById('clearSearchButton');
             const perPageSelect = document.getElementById('perPageSelect');
             const errorText = document.getElementById('errorMessageText');
-            const welcomeBanner = document.getElementById('client-welcome-banner');
+            const welcomeBanner = document.getElementById('welcome-banner');
 
             let currentPage = 1;
             let currentSearch = '';

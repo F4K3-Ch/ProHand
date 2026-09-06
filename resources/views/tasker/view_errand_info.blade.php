@@ -325,7 +325,7 @@
                             }
 
                             sessionStorage.setItem('success_message', result.message);
-                            window.location.href = '{{ route("tasker.your_task") }}';
+                            window.location.href = '{{ route("tasker.dashboard") }}';
 
                         } catch (error) {
                             console.error('Accept errand error:', error);

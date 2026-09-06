@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Tasker Dashboard - Prohand')
+@section('title', 'Your Task - Prohand')
 
 @section('sidebar')
     @include('layouts.sidebar.tasker')
@@ -9,7 +9,7 @@
 @section('content')
     <main class="main">
         <div class="fixed-wrapper">
-            <header class="header"> 
+            <header class="header">
                 <div class="header-left">
                     <div class="logo">
                         <img src="{{ asset('img/ProHand(Adapt).png') }}" alt="ProHand Logo" class="logo-img">
@@ -23,11 +23,11 @@
                         </label>
                     </div>
                 </div>
-
+                
                 <div class="header-right">
                     <div class="search-wrapper">
                         <div class="search-bar">
-                            <input type="text" id="errandSearch" placeholder="Search available errands...">
+                            <input type="text" id="errandSearch" placeholder="Search your tasks errands...">
                             <button type="button" class="btn-clear" id="clearSearchButton">Clear</button>
                         </div>
                         <button type="button" class="btn-search" id="searchButton">Search</button>
@@ -52,52 +52,78 @@
 
             <div class="contents">
                 <section class="totals">
-                    <h3>Available Errand Metrics</h3>
+                    <h3>Errand Status Metrics</h3>
                     <div class="total-cards-container">
-                        <div class="total-card bg-pending" id="metric-card-pending">
+                        <div class="total-card bg-accepted" id="metric-card-accepted" style="display:none;">
                             <div class="card-header">
-                                <span class="status-circle circle-pending"></span>
-                                <h3>Pending Errands</h3>
+                                <span class="status-circle circle-accepted"></span>
+                                <h3>Accepted</h3>
                             </div>
-                            <p id="metric-pending">
+                            <p id="metric-accepted"></p>
+                        </div>
+
+                        <div class="total-card bg-in-progress" id="metric-card-in-progress" style="display:none;">
+                            <div class="card-header">
+                                <span class="status-circle circle-progress"></span>
+                                <h3>In Progress</h3>
+                            </div>
+                            <p id="metric-in-progress"></p>
+                        </div>
+
+                        <div class="total-card bg-awaiting-confirmation" id="metric-card-awaiting-confirmation" style="display:none;">
+                            <div class="card-header">
+                                <span class="status-circle circle-awaiting-confirmation"></span>
+                                <h3>Awaiting Confirmation</h3>
+                            </div>
+                            <p id="metric-awaiting-confirmation"></p>
+                        </div>
+
+                        <div class="total-card bg-dispute" id="metric-card-dispute" style="display:none;">
+                            <div class="card-header">
+                                <span class="status-circle circle-dispute"></span>
+                                <h3>Dispute</h3>
+                            </div>
+                            <p id="metric-dispute"></p>
+                        </div>
+
+                        <div class="total-card bg-total" id="metric-card-total">
+                            <div class="card-header">
+                                <span class="status-circle circle-total"></span>
+                                <h3>Total Active Errands</h3>
+                            </div>
+                            <p id="metric-total">
                                 <span id="metric-spinner" class="circle-spinner" style="width:15px;height:15px;border-width:2px;"></span>
                             </p>
                         </div>
                     </div>
                 </section>
 
-                <div class="tasker-errands-table">
+                <div id="welcome-banner" class="welcome-banner-card" style="display: none;">
+                    <div class="welcome-banner-text">
+                        <h4>Looking for tasks to complete?</h4>
+                        <p>Browse through available local errands and accept tasks that match your skills.</p>
+                    </div>
+                    <a href="{{ route('tasker.available-errands') }}" class="btn-welcome">
+                        <span><i class="fa-solid fa-compass"></i></span> Explore Tasks
+                    </a>
+                </div>
+
+                <div class="errands-container">
                     <div class="table-header-controls">
-                        <h4>Available Pending Errands</h4>
+                        <h4>My Assigned Errands</h4>
                         <div class="rows-per-page">
                             <label for="perPageSelect"><h4>Show:</h4></label>
                             <select id="perPageSelect" class="form-control">
-                                <option value="5">5</option>
-                                <option value="10" selected>10</option>
-                                <option value="25">25</option>
-                                <option value="50">50</option>
+                                <option value="4">4</option>
+                                <option value="8" selected>8</option>
+                                <option value="16">16</option>
+                                <option value="32">32</option>
                             </select>
                         </div>
                     </div>
 
-                    <div class="table-scroll">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Errand ID</th>
-                                    <th>Title</th>
-                                    <th>Category</th>
-                                    <th>Created At</th>
-                                    <th>Deadline</th>
-                                    <th>Fee</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="errands-table-body">
+                    <div id="errands-cards-grid" class="errands-cards-grid">
 
-                            </tbody>
-                        </table>
                     </div>
 
                     <div id="pagination-container" class="pagination-container">
@@ -110,42 +136,40 @@
         </div>
     </main>
 
-    <template id="errand-row-template">
-        <tr>
-            <td class="errand-id"></td>
-            <td class="errand-title"></td>
-            <td class="errand-category"></td>
-            <td class="errand-created-at"></td>
-            <td class="errand-deadline"></td>
-            <td class="errand-fee"></td>
-            <td><span class="errand-status"></span></td>
-            <td>
-                <div class="button-row">
-                    <a href="#" class="btn-view errand-view-link">View</a>
-                    <button type="button" class="btn-accept">Accept</button>
-                </div>
-            </td>
-        </tr>
+    <template id="errand-card-template">
+        <div class="errand-post-card">
+            <div class="errand-card-top">
+                <span class="errand-id-badge">ID: <span class="errand-id"></span></span>
+                <span class="errand-status"></span>
+            </div>
+            <h4 class="errand-title"></h4>
+            <div class="errand-card-details">
+                <p><span><i class="fa-solid fa-folder-open"></i> Category</span> <span class="errand-category"></span></p>
+                <p><span><i class="fa-solid fa-location-dot"></i> Location</span> <span class="errand-location"></span></p>
+                <p><span><i class="fa-solid fa-calendar-plus"></i> Created</span> <span class="errand-created-at"></span></p>
+                <p><span><i class="fa-solid fa-clock"></i> Deadline</span> <span class="errand-deadline"></span></p>
+                <p><span><i class="fa-solid fa-peso-sign"></i> Fee</span> <strong class="errand-fee"></strong></p>
+            </div>
+            <div class="errand-card-actions">
+                <a href="#" class="btn-view errand-view-link"><i class="fa-solid fa-eye"></i> View</a>
+                <button type="button" class="btn-cancel cancel-request errand-card-btn-cancel-request" style="display: none;"><i class="fa-solid fa-triangle-exclamation"></i> Cancel</button>
+                <button type="button" disabled class="btn-cancel-disabled errand-card-btn-cancel-disabled" style="display: none;"><i class="fa-solid fa-ban"></i> Cancel</button>
+            </div>
+        </div>
     </template>
 
     <template id="errand-empty-template">
-        <tr>
-            <td class="no-found" colspan="8">No available pending errands found.</td>
-        </tr>
+        <div class="errand-card-message no-found">No errands found.</div>
     </template>
 
     <template id="errand-error-template">
-        <tr>
-            <td class="no-found errand-error-text" colspan="8">Unable to load errands.</td>
-        </tr>
+        <div class="errand-card-message no-found errand-error-text">Unable to load errands.</div>
     </template>
 
     <template id="errand-loading-template">
-        <tr>
-            <td class="no-found" colspan="8">
-                <span class="circle-spinner" style="width:20px;height:20px;border-width:2px;"></span>
-            </td>
-        </tr>
+        <div class="errand-card-message no-found">
+            <span class="circle-spinner" style="width:20px;height:20px;border-width:2px;"></span>
+        </div>
     </template>
 
     <template id="pagination-button-template">
@@ -156,7 +180,7 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function(){
-            const tableBody = document.getElementById('errands-table-body');
+            const cardsGrid = document.getElementById('errands-cards-grid');
             const paginationContainer = document.getElementById('pagination-container');
             const pagesContainer = document.getElementById('pagination-pages');
             const searchInput = document.getElementById('errandSearch');
@@ -164,6 +188,7 @@
             const clearSearchButton = document.getElementById('clearSearchButton');
             const perPageSelect = document.getElementById('perPageSelect');
             const errorText = document.getElementById('errorMessageText');
+            const welcomeBanner = document.getElementById('welcome-banner');
 
             let currentPage = 1;
             let currentSearch = '';
@@ -180,13 +205,13 @@
             }
 
             function showLoading(){
-                tableBody.innerHTML = '';
-                tableBody.appendChild(document.getElementById('errand-loading-template').content.cloneNode(true));
+                cardsGrid.innerHTML = '';
+                cardsGrid.appendChild(document.getElementById('errand-loading-template').content.cloneNode(true));
             }
 
             async function loadMetrics(){
                 try{
-                    const response = await fetch('/api/tasker/dashboard/pending-metrics', {
+                    const response = await fetch('/api/tasker/dashboard/accepted-metrics', {
                         method: 'GET',
                         headers: {
                             'Accept': 'application/json',
@@ -198,10 +223,34 @@
                     const result = await response.json();
 
                     if(!response.ok || !result.success){
-                        throw new Error(result.message || 'Failed to load dashboard metrics.');
+                        throw new Error(result.message || 'Failed to load dashboard data.');
                     }
 
-                    document.getElementById('metric-pending').textContent = result.metrics.pending;
+                    const metrics = result.metrics;
+
+                    document.getElementById('metric-accepted').textContent = metrics.accepted;
+                    document.getElementById('metric-in-progress').textContent = metrics.in_progress;
+                    document.getElementById('metric-awaiting-confirmation').textContent = metrics.awaiting_confirmation;
+                    document.getElementById('metric-dispute').textContent = metrics.dispute;
+                    document.getElementById('metric-total').textContent = metrics.total;
+
+                    const cardToggles = {
+                        'metric-card-accepted': metrics.accepted,
+                        'metric-card-in-progress': metrics.in_progress,
+                        'metric-card-awaiting-confirmation': metrics.awaiting_confirmation,
+                        'metric-card-dispute': metrics.dispute
+                    };
+
+                    Object.entries(cardToggles).forEach(([cardId, val]) => {
+                        const card = document.getElementById(cardId);
+                        if (card) {
+                            card.style.display = val > 0 ? 'flex' : 'none';
+                        }
+                    });
+                    
+                    const totalCard = document.getElementById('metric-card-total');
+                    if(totalCard) totalCard.style.display = 'flex';
+
                 }catch(error){
                     console.error('Metrics error:', error);
                     displayGlobalError(error.message);
@@ -223,7 +272,7 @@
                 }
 
                 try{
-                    const response = await fetch('/api/tasker/dashboard/pending-errands?' + params.toString(), {
+                    const response = await fetch('/api/tasker/dashboard/accepted-errands?' + params.toString(), {
                         method: 'GET',
                         headers: {
                             'Accept': 'application/json',
@@ -238,79 +287,73 @@
                         throw new Error(result.message || 'Failed to load errands.');
                     }
 
+                    if (currentSearch === '') {
+                        if(welcomeBanner) welcomeBanner.style.display = 'flex';
+                    } else {
+                        if(welcomeBanner) welcomeBanner.style.display = 'none';
+                    }
+
                     displayErrands(result.errands);
                     displayPagination(result.pagination);
                 }catch(error){
                     console.error('Errands error:', error);
                     displayGlobalError(error.message);
-                    tableBody.innerHTML = '';
-                    tableBody.appendChild(document.getElementById('errand-error-template').content.cloneNode(true));
+                    cardsGrid.innerHTML = '';
+                    cardsGrid.appendChild(document.getElementById('errand-error-template').content.cloneNode(true));
                 }
             }
 
             function displayErrands(errands){
-                tableBody.innerHTML = '';
+                cardsGrid.innerHTML = '';
 
                 if(!errands || errands.length === 0){
-                    tableBody.appendChild(document.getElementById('errand-empty-template').content.cloneNode(true));
+                    cardsGrid.appendChild(document.getElementById('errand-empty-template').content.cloneNode(true));
                     return;
                 }
 
-                const template = document.getElementById('errand-row-template');
+                const template = document.getElementById('errand-card-template');
 
                 errands.forEach(function(errand){
-                    const row = template.content.cloneNode(true);
+                    const card = template.content.cloneNode(true);
 
-                    row.querySelector('.errand-id').textContent = errand.id;
-                    row.querySelector('.errand-title').textContent = errand.title;
-                    row.querySelector('.errand-category').textContent = errand.category;
-                    row.querySelector('.errand-created-at').textContent = errand.created_at;
-                    row.querySelector('.errand-deadline').textContent = errand.deadline;
-                    row.querySelector('.errand-fee').textContent = errand.fee;
+                    card.querySelector('.errand-id').textContent = errand.id;
+                    card.querySelector('.errand-title').textContent = errand.title;
+                    card.querySelector('.errand-category').textContent = errand.category;
+                    card.querySelector('.errand-location').textContent = errand.location;
+                    card.querySelector('.errand-created-at').textContent = errand.created_at;
+                    card.querySelector('.errand-deadline').textContent = errand.deadline;
+                    card.querySelector('.errand-fee').textContent = errand.fee;
 
-                    const status = row.querySelector('.errand-status');
+                    const status = card.querySelector('.errand-status');
                     status.textContent = errand.status;
                     status.className = errand.status_class;
 
-                    row.querySelector('.errand-view-link').href =
+                    card.querySelector('.errand-view-link').href =
                         '/tasker/view-errand/' + encodeURIComponent(errand.id) +
                         '?from=tasker.dashboard';
 
-                    row.querySelector('.btn-accept').addEventListener('click', async function(){
-                        const customTitle = 'Confirm Acceptance';
-                        const customMessage = 'Are you sure you want to accept errand #' + errand.id + ' ("' + errand.title + '")?';
-                        const isConfirmed = await showConfirmation(customTitle, customMessage);
-                        
-                        if(!isConfirmed) return;
+                    const cancelRequestBtn = card.querySelector('.errand-card-btn-cancel-request');
+                    const cancelDisabledBtn = card.querySelector('.errand-card-btn-cancel-disabled');
 
-                        try {
-                            const response = await fetch('/api/tasker/errands/' + errand.id + '/accept', {
-                                method: 'POST',
-                                headers: {
-                                    'Accept': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                                    'X-API-KEY': apiKey,
-                                    'X-MY-ORIGIN' : origin
-                                },
-                                credentials: 'same-origin'
-                            });
+                    if (errand.raw_status === 'awaiting_confirmation') {
+                        cancelDisabledBtn.style.display = 'flex';
+                    } else if (Number(errand.cancel_requested_by_tasker) === 0) {
+                        cancelRequestBtn.style.display = 'flex';
 
-                            const result = await response.json();
+                        cancelRequestBtn.addEventListener('click', async function() {
+                            const customTitle = 'Confirm Cancellation Request';
+                            const customMessage = 'Are you sure you want to send a cancellation request to the Admin? It will return to "Pending" status and this action cannot be undone until processed.';
+                            const isConfirmed = await showConfirmation(customTitle, customMessage);
 
-                            if (!response.ok || !result.success) {
-                                throw new Error(result.message || 'Failed to accept errand.');
-                            }
+                            if (!isConfirmed) return;
 
-                            sessionStorage.setItem('success_message', result.message || 'Errand accepted successfully!');
-                            window.location.href = '{{ route("tasker.your_task") }}';
+                            // Add your cancellation request AJAX call here
+                        });
+                    } else {
+                        cancelDisabledBtn.style.display = 'flex';
+                    }
 
-                        } catch(error) {
-                            console.error('Accept error:', error);
-                            displayGlobalError(error.message);
-                        }
-                    });
-
-                    tableBody.appendChild(row);
+                    cardsGrid.appendChild(card);
                 });
             }
 
@@ -358,7 +401,6 @@
                 pagesContainer.appendChild(button);
             }
 
-            // Event Listeners for search & controls
             searchButton.addEventListener('click', function() {
                 currentSearch = searchInput.value.trim();
                 currentPage = 1;

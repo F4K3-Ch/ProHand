@@ -56,7 +56,7 @@ class ClientController extends Controller
         $allowedPerPage = [4, 8, 16, 32];
 
         if (!in_array($perPage, $allowedPerPage)) {
-            $perPage = 10;
+            $perPage = 8;
         }
 
         $query = Errand::where('client_id', $clientId)
@@ -146,12 +146,12 @@ class ClientController extends Controller
         $clientId = $request->user()->id;
 
         $search = $request->query('search');
-        $perPage = (int) $request->query('per_page', 10);
+        $perPage = (int) $request->query('per_page', 8);
 
-        $allowedPerPage = [5, 10, 25, 50];
+        $allowedPerPage = [4, 8, 16, 32];
 
         if (!in_array($perPage, $allowedPerPage)) {
-            $perPage = 10;
+            $perPage = 8;
         }
 
         $query = History::where('client_id', $clientId)
@@ -165,8 +165,8 @@ class ClientController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('id', 'like', "%{$search}%")
                     ->orWhere('title', 'like', "%{$search}%")
-                    ->orWhere('category', 'like', "%{$search}%")
                     ->orWhere('location', 'like', "%{$search}%")
+                    ->orWhere('category', 'like', "%{$search}%")
                     ->orWhere('status', 'like', "%{$search}%");
             });
         }
@@ -179,6 +179,7 @@ class ClientController extends Controller
             return [
                 'id' => $errand->errand_id,
                 'title' => $errand->title,
+                'location' => $errand->location,
                 'category' => Str::title(str_replace('_', ' ', $errand->category)),
                 'created_at' => $errand->created_at 
                     ? Carbon::parse($errand->created_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 

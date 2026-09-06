@@ -30,10 +30,10 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
     });
 
     Route::middleware('role:tasker')->group(function () {
-        Route::get('/tasker/dashboard/pending-metrics', [TaskerController::class, 'pendingMetrics']);
-        Route::get('/tasker/dashboard/pending-errands', [TaskerController::class, 'pendingErrands']);
-        Route::get('/tasker/your-task/accepted-metrics', [TaskerController::class, 'acceptedMetrics']);
-        Route::get('/tasker/your-task/accepted-errands', [TaskerController::class, 'acceptedErrands']);
+        Route::get('/tasker/dashboard/accepted-metrics', [TaskerController::class, 'acceptedMetrics']);
+        Route::get('/tasker/dashboard/accepted-errands', [TaskerController::class, 'acceptedErrands']);
+        Route::get('/tasker/available-errands/pending-metrics', [TaskerController::class, 'pendingMetrics']);
+        Route::get('/tasker/available-errands/pending-errands', [TaskerController::class, 'pendingErrands']);
         Route::get('/tasker/errands/{id}', [TaskerController::class, 'getErrandDetails']);
         Route::post('/tasker/errands/{id}/accept', [TaskerController::class, 'acceptErrand']);
         Route::post('/tasker/errands/{id}/start', [TaskerController::class, 'startErrand']);
