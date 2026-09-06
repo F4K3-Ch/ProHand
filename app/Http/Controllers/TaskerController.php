@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Storage;
 
 class TaskerController extends Controller
 {
-    public function pendingMetrics(Request $request)
+    public function pendingMetrics()
     {
         $metrics = Errand::selectRaw('status, COUNT(*) as total')
             ->where('status', 'pending')
@@ -280,7 +280,7 @@ class TaskerController extends Controller
         ]);
     }
 
-    public function getErrandDetails($id, Request $request)
+    public function getErrandDetails(Request $request, $id)
     {
         $taskerId = $request->user()->id;
 

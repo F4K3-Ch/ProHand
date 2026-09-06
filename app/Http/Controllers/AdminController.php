@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
-    public function allActiveMetrics(Request $request)
+    public function allActiveMetrics()
     {
         $metrics = Errand::selectRaw('status, COUNT(*) as total')
             ->groupBy('status')
@@ -100,7 +100,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function allHistoryMetrics(Request $request)
+    public function allHistoryMetrics()
     {
         $metrics = History::selectRaw('status, COUNT(*) as total')
             ->groupBy('status')
@@ -180,13 +180,10 @@ class AdminController extends Controller
         ]);
     }
 
-    public function getErrandDetails($id, Request $request)
+    public function getErrandDetails($id)
     {
-        $clientId = $request->user()->id;
-
-        $errand = Errand::with(['attachment', 'tasker'])
+        $errand = Errand::with(['attachment', 'client', 'tasker'])
             ->where('id', $id)
-            ->where('client_id', $clientId)
             ->first();
 
         if ($errand) {
@@ -201,6 +198,7 @@ class AdminController extends Controller
                 'status' => Str::title(str_replace('_', ' ', $errand->status)),
                 'raw_status' => $errand->status,
                 'cancel_requested_by_client' => $errand->cancel_requested_by_client,
+                'cancel_requested_by_tasker' => $errand->cancel_requested_by_tasker,
                 'status_class' => 'status-field status-' . $errand->status,
 
                 'created_at' => $errand->created_at
@@ -227,6 +225,20 @@ class AdminController extends Controller
                     'url' => Storage::url($errand->attachment->file_path)
                 ] : null,
 
+                'client' => $errand->client ? [
+                    'id' => $errand->client->id,
+                    'name' => trim(
+                        "{$errand->client->first_name} " .
+                        ($errand->client->middle_name ? "{$errand->client->middle_name} " : "") .
+                        $errand->client->last_name
+                    ),
+                    'email' => $errand->client->email,
+                    'contact_number' => $errand->client->contact_number,
+                    'profile_picture' => $errand->client->profile_picture
+                        ? Storage::url($errand->client->profile_picture)
+                        : asset('storage/uploads/profile_pictures/default.jpg')
+                ] : null,
+
                 'tasker' => $errand->tasker ? [
                     'id' => $errand->tasker->id,
                     'name' => trim(
@@ -248,10 +260,8 @@ class AdminController extends Controller
             ]);
         }
 
-        $history = History::with('attachment')
+        $history = History::with(['attachment'])
             ->where('errand_id', $id)
-            ->where('client_id', $clientId)
-            ->where('client_deleted', false)
             ->first();
 
         if (!$history) {
@@ -295,6 +305,20 @@ class AdminController extends Controller
             'attachment' => $history->attachment ? [
                 'name' => $history->attachment->original_name,
                 'url' => Storage::url($history->attachment->file_path)
+            ] : null,
+
+            'client' => $history->client_id ? [
+                'id' => $history->client_id,
+                'name' => trim(
+                    "{$history->client_first_name} " .
+                    ($history->client_middle_name ? "{$history->client_middle_name} " : "") .
+                    $history->client_last_name
+                ),
+                'email' => $history->client_email,
+                'contact_number' => $history->client_contact_number,
+                'profile_picture' => $history->client_profile_picture
+                    ? Storage::url($history->client_profile_picture)
+                    : asset('storage/uploads/history/profile_pictures/default.jpg')
             ] : null,
 
             'tasker' => $history->tasker_id ? [

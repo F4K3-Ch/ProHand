@@ -130,7 +130,7 @@
                 </div>
             </div>
 
-            <div class="users-container">
+            <div class="users-container" 
                 <div class="user-details-container">
                     <h1>Posted By</h1>
 
@@ -195,7 +195,7 @@
                     </div>
                 </div>
 
-                <div class="user-details-container">
+                <div class="user-details-container" id="tasker-container">
                     <h1>Accepted By</h1>
 
                     <div class="user-header-row">
@@ -264,5 +264,135 @@
 @endsection
 
 @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            const mainContainer = document.querySelector('.view-main');
+            const errandId = mainContainer ? mainContainer.getAttribute('data-errand-id') : null;
+            const errorMessage = document.getElementById('errorMessageText');
 
+            if (!errandId) {
+                errorMessage.textContent = 'Errand ID not found.';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/errands/' + encodeURIComponent(errandId), {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-API-KEY': apiKey,
+                        'X-MY-ORIGIN' : origin
+                    },
+                    credentials: 'same-origin'
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || 'Failed to load errand details.');
+                }
+
+                const errand = result.errand;
+
+                // Populate text fields
+                document.getElementById('errand-id').textContent = errand.id;
+                document.getElementById('errand-category').textContent = errand.category;
+                document.getElementById('errand-title').textContent = errand.title;
+                document.getElementById('errand-description').textContent = errand.description || 'None';
+                document.getElementById('errand-location').textContent = errand.location;
+                document.getElementById('errand-contact').textContent = errand.contact || 'None';
+                document.getElementById('errand-fee').textContent = errand.fee;
+                
+                const statusElement = document.getElementById('errand-status');
+                statusElement.textContent = errand.status;
+                statusElement.className = errand.status_class;
+
+                document.getElementById('errand-created-at').textContent = errand.created_at;
+                document.getElementById('errand-updated-at').textContent = errand.updated_at;
+                document.getElementById('errand-accepted-at').textContent = errand.accepted_at;
+                document.getElementById('errand-in-progress-at').textContent = errand.in_progress_at;
+                document.getElementById('errand-deadline').textContent = errand.deadline;
+                document.getElementById('errand-finished-at').textContent = errand.finished_at;
+
+                const usersContainer = document.getElementById('users-container');
+                const taskerContainer = document.getElementById('tasker-container');
+
+                usersContainer.style.display = 'flex';
+
+                const clientProfilePhoto = document.getElementById('client-profile-photo');
+                const clientPhotoSpinner = document.getElementById('profile-photo-spinner');
+
+                document.getElementById('client-id').textContent = errand.client.id;
+                document.getElementById('client-email').textContent = errand.client.email;
+                document.getElementById('client-name').textContent = errand.client.name;
+                document.getElementById('client-contact-number').textContent = errand.client.contact_number;
+
+                if (errand.client.profile_picture) {
+                    clientProfilePhoto.src = errand.client.profile_picture;
+
+                    clientProfilePhoto.onload = function() {
+                        clientPhotoSpinner.style.display = 'none';
+                        clientProfilePhoto.style.display = 'flex';
+                    };
+
+                    clientProfilePhoto.onerror = function() {
+                        clientPhotoSpinner.style.display = 'none';
+                    };
+                } else {
+                    clientPhotoSpinner.style.display = 'none';
+                }
+
+                const taskerProfilePhoto = document.getElementById('tasker-profile-photo');
+                const taskerPhotoSpinner = taskerContainer.querySelector('.circle-spinner');
+
+                if (errand.tasker) {
+                    taskerContainer.style.display = 'block';
+
+                    document.getElementById('tasker-id').textContent = errand.tasker.id;
+                    document.getElementById('tasker-email').textContent = errand.tasker.email;
+                    document.getElementById('tasker-name').textContent = errand.tasker.name;
+                    document.getElementById('tasker-contact-number').textContent = errand.tasker.contact_number;
+
+                    if (errand.tasker.profile_picture) {
+                        taskerProfilePhoto.src = errand.tasker.profile_picture;
+
+                        taskerProfilePhoto.onload = function() {
+                            taskerPhotoSpinner.style.display = 'none';
+                            taskerProfilePhoto.style.display = 'flex';
+                        };
+
+                        taskerProfilePhoto.onerror = function() {
+                            taskerPhotoSpinner.style.display = 'none';
+                        };
+                    } else {
+                        taskerPhotoSpinner.style.display = 'none';
+                    }
+                } else {
+                    taskerContainer.style.display = 'none';
+                }
+
+                // Handle Attachments
+                const attachContainer = document.getElementById('errand-attachment');
+                const attachItem = attachContainer.querySelector('.attachment-item');
+                const noAttachItem = attachContainer.querySelector('.no-attachments');
+
+                if (errand.attachment) {
+                    attachItem.style.display = 'flex';
+                    noAttachItem.style.display = 'none';
+                    attachItem.querySelector('.attachment-filename').textContent = errand.attachment.name;
+                    attachItem.querySelector('.attachment-name').href = errand.attachment.url;
+                    
+                    const downloadBtn = attachItem.querySelector('.btn-download');
+                    downloadBtn.href = errand.attachment.url;
+                    downloadBtn.setAttribute('download', errand.attachment.name);
+                }
+
+            } catch (error) {
+                console.error('Errand details error:', error);
+                errorMessage.textContent = error.message || 'Unable to load errand information.';
+                errorMessage.style.display = 'flex';
+            }
+        });
+    </script>
 @endpush
