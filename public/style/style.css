@@ -2407,7 +2407,7 @@ body {
     padding: 6px 8px;
     border-radius: 6px;
     font-size: 0.9rem;
-    font-weight: 400;  
+    font-weight: 500;
     outline: none;
 
     white-space: nowrap;
@@ -3185,7 +3185,7 @@ select[name="role"] option[value="client"] {
     padding: 6px 8px;
     border-radius: 6px;
     font-size: 0.9rem;
-    font-weight: 400;
+    font-weight: 500;
     outline: none;
     
     /* Preserves line breaks, spaces, and multi-line steps */
