@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Tasker Dashboard - Prohand')
+@section('title', 'Available Errands - Prohand')
 
 @section('sidebar')
     @include('layouts.sidebar.tasker')
@@ -15,7 +15,7 @@
                         <img src="{{ asset('img/ProHand(Adapt).png') }}" alt="ProHand Logo" class="logo-img">
                         <div class="title">
                             <h1>Pro<span>Hand</span></h1>
-                            <h2>Dashboard</h2>
+                            <h2>Available Errands</h2>
                         </div>
 
                         <label for="sidebar-toggle-check" class="sidebar-toggle-btn" aria-label="Toggle Navigation Menu">

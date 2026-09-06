@@ -44,9 +44,9 @@ Route::middleware('auth')->group(function () {
             return view('client.client_dashboard');
         })->name('client.dashboard');
 
-        Route::get('/client/finished', function () {
-            return view('client.client_finished_errands');
-        })->name('client.finished');
+        Route::get('/client/history', function () {
+            return view('client.client_history');
+        })->name('client.history');
 
         Route::get('/client/create-errand', function () {
             return view('client.create_errand');
@@ -70,6 +70,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/tasker/available-errands', function () {
             return view('tasker.available_errands');
         })->name('tasker.available-errands');
+
+        Route::get('/tasker/history', function () {
+            return view('tasker.tasker_history');
+        })->name('tasker.history');
 
         Route::get('/tasker/view-errand/{id}', function ($id) {
             return view('tasker.view_errand_info', ['id' => $id]);

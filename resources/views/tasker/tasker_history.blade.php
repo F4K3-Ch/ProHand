@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Client Finished Errands - ProHand')
+@section('title', 'Tasker History - ProHand')
 
 @section('sidebar')
-    @include('layouts.sidebar.client')
+    @include('layouts.sidebar.tasker')
 @endsection
 
 @section('content')
@@ -15,7 +15,7 @@
                         <img src="{{ asset('img/ProHand(Adapt).png') }}" alt="ProHand Logo" class="logo-img">
                         <div class="title">
                             <h1>Pro<span>Hand</span></h1>
-                            <h2>Finished Errands</h2>
+                            <h2>History Errands</h2>
                         </div>
 
                         <label for="sidebar-toggle-check" class="sidebar-toggle-btn" aria-label="Toggle Navigation Menu">
@@ -73,7 +73,7 @@
                         <div class="total-card bg-total" id="metric-card-total">
                             <div class="card-header">
                                 <span class="status-circle circle-total"></span>
-                                <h3>Total Finished Errands</h3>
+                                <h3>Total History Errands</h3>
                             </div>
                             <p id="metric-total">
                                 <span id="metric-spinner" class="circle-spinner" style="width:15px;height:15px;border-width:2px;"></span>
@@ -183,7 +183,7 @@
 
             async function loadMetrics(){
                 try{
-                    const response = await fetch('/api/client/dashboard/finished-metrics', {
+                    const response = await fetch('/api/tasker/history/history-metrics', {
                         method: 'GET',
                         headers: {
                             'Accept': 'application/json',
@@ -240,7 +240,7 @@
                 }
 
                 try{
-                    const response = await fetch('/api/client/dashboard/finished-errands?' + params.toString(), {
+                    const response = await fetch('/api/tasker/history/history-errands?' + params.toString(), {
                         method: 'GET',
                         headers: {
                             'Accept': 'application/json',
@@ -291,8 +291,8 @@
                     status.className = errand.status_class;
 
                     card.querySelector('.errand-view-link').href =
-                        '/client/view-errand/' + encodeURIComponent(errand.id) +
-                        '?from=client.finished';
+                        '/tasker/view-errand/' + encodeURIComponent(errand.id) +
+                        '?from=tasker.history';
 
                     const deleteBtn = card.querySelector('.errand-card-btn-delete');
                     if(deleteBtn){

@@ -149,6 +149,10 @@
                     <span id="disputeBadge" class="descriptive-status-badge" style="display: none;">
                         <i class="fa-solid fa-triangle-exclamation"></i> The client raised a dispute on your submission. An admin is reviewing the case.
                     </span>
+
+                    <button type="button" id="deleteErrandBtn" class="btn-delete" style="display: none;">
+                        <i class="fa-solid fa-trash"></i> Delete Errand
+                    </button>
                 </div>
             </div>
 
@@ -444,6 +448,19 @@
                 } else if (errand.raw_status === 'dispute') {
                     const disputeBadge = document.getElementById('disputeBadge');
                     disputeBadge.style.display = 'flex';
+                } else if (errand.raw_status === 'completed' || errand.raw_status === 'failed') {
+                    const deleteBtn = document.getElementById('deleteErrandBtn');
+                    deleteBtn.style.display = 'flex';
+
+                    deleteBtn.addEventListener('click', async function() {
+                        const customTitle = 'Confirm Deletion';
+                        const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
+
+                        // Add your delete completed/failed errand AJAX call implementation here
+                    });
                 }
 
             } catch (error) {

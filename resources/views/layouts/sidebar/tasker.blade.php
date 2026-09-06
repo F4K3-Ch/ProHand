@@ -24,7 +24,13 @@
                     Available Errands
                 </a>
             </li>
-            <li><a href="#"><i class="fa-solid fa-clipboard-check"></i> Finished Errands</a></li>
+            <li>
+                <a href="{{ route('tasker.history') }}"
+                class="{{ request()->routeIs('tasker.history') || request()->query('from') === 'tasker.history' ? 'active' : '' }}">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    History
+                </a>
+            </li>
             <li>
                 <a href="{{ route('profile') }}"
                 class="{{ request()->routeIs('profile', 'profile.edit', 'profile.change-password') ? 'active' : '' }}">

@@ -412,7 +412,7 @@
                             if (!response.ok || !result.success) throw new Error(result.message || 'Failed to mark complete errand.');
 
                             sessionStorage.setItem('success_message', result.message);
-                            window.location.href = '{{ route("client.finished") }}';
+                            window.location.href = '{{ route("client.history") }}';
 
                         } catch(error) {
                             console.error('Delete error:', error);

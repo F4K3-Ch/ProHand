@@ -12,16 +12,16 @@
         <ul class="sidebar-links">
             <li>
                 <a href="{{ route('client.dashboard') }}"
-                class="{{ request()->routeIs('client.dashboard') || request()->query('from') === 'client.dashboard' ? 'active' : '' }}">
+                class="{{ request()->routeIs('client.dashboard', 'client.create.errand') || request()->query('from') === 'client.dashboard' ? 'active' : '' }}">
                     <i class="fa-solid fa-house"></i>
                     Dashboard
                 </a>
             </li>
             <li>
-                <a href="{{ route('client.finished') }}"
-                class="{{ request()->routeIs('client.finished') || request()->query('from') === 'client.finished' ? 'active' : '' }}">
-                    <i class="fa-solid fa-clipboard-check"></i>
-                    Finished Errands
+                <a href="{{ route('client.history') }}"
+                class="{{ request()->routeIs('client.history') || request()->query('from') === 'client.history' ? 'active' : '' }}">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    History
                 </a>
             </li>
             <li>

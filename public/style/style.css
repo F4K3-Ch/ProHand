@@ -1571,8 +1571,6 @@ body {
 .errand-id-badge {
     font-size: 1rem;
     font-weight: 700;
-    color: var(--color-span);
-    background-color: color-mix(in srgb, var(--color-span) 10%, transparent);
     padding: 3px 8px;
     border-radius: 6px;
     letter-spacing: 0.03em;
@@ -1808,6 +1806,35 @@ body {
     gap: 8px;
     font-size: 0.9rem;
     color: var(--color-sec-text);
+    background-color: var(--color-input-bg);
+    border: 1px solid var(--color-input-border);
+    padding: 6px 12px;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+.table-header-controls .rows-per-page label h4 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.table-header-controls .rows-per-page select.form-control {
+    background-color: var(--color-card-bg);
+    color: var(--color-text);
+    border: 1px solid var(--color-input-border);
+    border-radius: 6px;
+    padding: 3px 6px;
+    font-size: 0.85rem;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.table-header-controls .rows-per-page select.form-control:focus {
+    border-color: var(--color-input-focus-border);
+    box-shadow: var(--shadow-input-focus);
 }
 
 .table-header-controls .rows-per-page select.form-control {

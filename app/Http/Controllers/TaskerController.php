@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\Notification;
 use App\Models\Errand;
 use App\Models\ErrandAttachment;
+use App\Models\History;
+use App\Models\HistoryAttachment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
@@ -91,10 +93,10 @@ class TaskerController extends Controller
 
     public function acceptedMetrics(Request $request)
     {
-        $tasker = $request->user();
+        $taskerId = $request->user()->id;
 
         $metrics = Errand::selectRaw('status, COUNT(*) as total')
-            ->where('tasker_id', $tasker->id)
+            ->where('tasker_id', $taskerId)
             ->whereIn('status', ['accepted', 'in_progress', 'awaiting_confirmation', 'dispute'])
             ->groupBy('status')
             ->pluck('total', 'status');
@@ -187,6 +189,97 @@ class TaskerController extends Controller
         ]);
     }
 
+    public function historyMetrics(Request $request)
+    {
+        $taskerId = $request->user()->id;
+
+        $metrics = History::where('tasker_id', $taskerId)
+            ->where('tasker_deleted', false)
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $completed = $metrics['completed'] ?? 0;
+        $failed = $metrics['failed'] ?? 0;
+        $total = $metrics->sum();
+
+        return response()->json([
+            'success' => true,
+            'metrics' => [
+                'completed' => $completed,
+                'failed' => $failed,
+                'total' => $total,
+            ],
+        ]);
+    }
+
+    public function historyErrands(Request $request)
+    {
+        $taskerId = $request->user()->id;
+
+        $search = $request->query('search');
+        $perPage = (int) $request->query('per_page', 8);
+
+        $allowedPerPage = [4, 8, 16, 32];
+
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 8;
+        }
+
+        $query = History::where('tasker_id', $taskerId)
+            ->where('tasker_deleted', false)
+            ->whereIn('status', [
+                'completed', 
+                'failed'
+            ]);
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', "%{$search}%")
+                    ->orWhere('title', 'like', "%{$search}%")
+                    ->orWhere('location', 'like', "%{$search}%")
+                    ->orWhere('category', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%");
+            });
+        }
+
+        $errands = $query
+            ->orderBy('finished_at', 'desc')
+            ->paginate($perPage);
+
+        $formattedErrands = collect($errands->items())->map(function ($errand) {
+            return [
+                'id' => $errand->errand_id,
+                'title' => $errand->title,
+                'location' => $errand->location,
+                'category' => Str::title(str_replace('_', ' ', $errand->category)),
+                'created_at' => $errand->created_at 
+                    ? Carbon::parse($errand->created_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                    : '—',
+                'finished_at' => $errand->finished_at 
+                    ? Carbon::parse($errand->finished_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                    : '—',
+                'fee' => '₱' . number_format($errand->fee, 2),
+                'status' => Str::title(str_replace('_', ' ', $errand->status)),
+                'raw_status' => $errand->status,
+                'status_class' => 'status-badge status-' . $errand->status,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'errands' => $formattedErrands,
+            'pagination' => [
+                'current_page' => $errands->currentPage(),
+                'last_page' => $errands->lastPage(),
+                'per_page' => $errands->perPage(),
+                'total' => $errands->total(),
+                'from' => $errands->firstItem(),
+                'to' => $errands->lastItem(),
+            ],
+        ]);
+    }
+
     public function getErrandDetails($id, Request $request)
     {
         $taskerId = $request->user()->id;
@@ -199,63 +292,127 @@ class TaskerController extends Controller
             })
             ->first();
 
-        if (!$errand) {
+        if ($errand) {
+            $formattedErrand = [
+                'id' => $errand->id,
+                'title' => $errand->title,
+                'category' => Str::title(str_replace('_', ' ', $errand->category)),
+                'description' => $errand->description,
+                'location' => $errand->location,
+                'contact' => $errand->contact,
+                'fee' => '₱' . number_format($errand->fee, 2),
+                'status' => Str::title(str_replace('_', ' ', $errand->status)),
+                'raw_status' => $errand->status,
+                'cancel_requested_by_client' => $errand->cancel_requested_by_client ?? false,
+                'status_class' => 'status-field status-' . $errand->status,
+                
+                'created_at' => $errand->created_at 
+                    ? Carbon::parse($errand->created_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                    : 'Not Set',
+                'updated_at' => $errand->updated_at 
+                    ? Carbon::parse($errand->updated_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                    : 'Not Set',
+                'accepted_at' => $errand->accepted_at 
+                    ? Carbon::parse($errand->accepted_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                    : 'Not Set',
+                'in_progress_at' => $errand->in_progress_at 
+                    ? Carbon::parse($errand->in_progress_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                    : 'Not Set',
+                'deadline' => $errand->deadline 
+                    ? Carbon::parse($errand->deadline)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                    : 'Not Set',
+                'finished_at' => $errand->finished_at
+                    ? Carbon::parse($errand->finished_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                    : 'Not Set',
+                
+                'attachment' => $errand->attachment ? [
+                    'name' => $errand->attachment->original_name,
+                    'url' => Storage::url($errand->attachment->file_path)
+                ] : null,
+
+                'client' => $errand->client ? [
+                    'id' => $errand->client->id,
+                    'name' => trim("{$errand->client->first_name} " . ($errand->client->middle_name ? "{$errand->client->middle_name} " : "") . "{$errand->client->last_name}"),
+                    'email' => $errand->client->email,
+                    'contact_number' => $errand->client->contact_number,
+                    'profile_picture' => $errand->client->profile_picture 
+                        ? Storage::url($errand->client->profile_picture) 
+                        : asset('storage/uploads/profile_pictures/default.jpg')
+                ] : null,
+            ];
+
             return response()->json([
-                'success' => false, 
+                'success' => true, 
+                'errand' => $formattedErrand
+            ]);
+        }
+
+        $history = History::with('attachment')
+            ->where('errand_id', $id)
+            ->where('tasker_id', $taskerId)
+            ->where('tasker_deleted', false)
+            ->first();
+
+        if (!$history) {
+            return response()->json([
+                'success' => false,
                 'message' => 'Errand not found.'
             ], 404);
         }
 
         $formattedErrand = [
-            'id' => $errand->id,
-            'title' => $errand->title,
-            'category' => Str::title(str_replace('_', ' ', $errand->category)),
-            'description' => $errand->description,
-            'location' => $errand->location,
-            'contact' => $errand->contact,
-            'fee' => '₱' . number_format($errand->fee, 2),
-            'status' => Str::title(str_replace('_', ' ', $errand->status)),
-            'raw_status' => $errand->status,
-            'cancel_requested_by_client' => $errand->cancel_requested_by_client ?? false,
-            'status_class' => 'status-field status-' . $errand->status,
-            
-            'created_at' => $errand->created_at 
-                ? Carbon::parse($errand->created_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+            'id' => $history->errand_id,
+            'title' => $history->title,
+            'category' => Str::title(str_replace('_', ' ', $history->category)),
+            'description' => $history->description,
+            'location' => $history->location,
+            'contact' => $history->contact,
+            'fee' => '₱' . number_format($history->fee, 2),
+            'status' => Str::title(str_replace('_', ' ', $history->status)),
+            'raw_status' => $history->status,
+            'status_class' => 'status-field status-' . $history->status,
+
+            'created_at' => $history->created_at
+                ? Carbon::parse($history->created_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                 : 'Not Set',
-            'updated_at' => $errand->updated_at 
-                ? Carbon::parse($errand->updated_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+            'updated_at' => $history->updated_at
+                ? Carbon::parse($history->updated_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                 : 'Not Set',
-            'accepted_at' => $errand->accepted_at 
-                ? Carbon::parse($errand->accepted_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+            'accepted_at' => $history->accepted_at
+                ? Carbon::parse($history->accepted_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                 : 'Not Set',
-            'in_progress_at' => $errand->in_progress_at 
-                ? Carbon::parse($errand->in_progress_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+            'in_progress_at' => $history->in_progress_at
+                ? Carbon::parse($history->in_progress_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                 : 'Not Set',
-            'deadline' => $errand->deadline 
-                ? Carbon::parse($errand->deadline)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+            'deadline' => $history->deadline
+                ? Carbon::parse($history->deadline)->timezone('Asia/Manila')->format('M d, Y h:i A')
                 : 'Not Set',
-            'finished_at' => $errand->finished_at
-                ? Carbon::parse($errand->finished_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+            'finished_at' => $history->finished_at
+                ? Carbon::parse($history->finished_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                 : 'Not Set',
-            
-            'attachment' => $errand->attachment ? [
-                'name' => $errand->attachment->original_name,
-                'url' => Storage::url($errand->attachment->file_path)
+
+            'attachment' => $history->attachment ? [
+                'name' => $history->attachment->original_name,
+                'url' => Storage::url($history->attachment->file_path)
             ] : null,
 
-            'client' => $errand->client ? [
-                'id' => $errand->client->id,
-                'name' => trim("{$errand->client->first_name} " . ($errand->client->middle_name ? "{$errand->client->middle_name} " : "") . "{$errand->client->last_name}"),
-                'email' => $errand->client->email,
-                'contact_number' => $errand->client->contact_number,
-                'profile_picture' => $errand->client->profile_picture 
-                    ? Storage::url($errand->client->profile_picture) 
-                    : asset('storage/uploads/profile_pictures/default.jpg')
+            'client' => $history->client_id ? [
+                'id' => $history->client_id,
+                'name' => trim(
+                    "{$history->client_first_name} " .
+                    ($history->client_middle_name ? "{$history->client_middle_name} " : "") .
+                    $history->client_last_name
+                ),
+                'email' => $history->client_email,
+                'contact_number' => $history->client_contact_number,
+                'profile_picture' => $history->client_profile_picture
+                    ? Storage::url($history->client_profile_picture)
+                    : asset('storage/uploads/history/profile_pictures/default.jpg')
             ] : null,
         ];
 
         return response()->json([
-            'success' => true, 
+            'success' => true,
             'errand' => $formattedErrand
         ]);
     }
