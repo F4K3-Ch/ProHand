@@ -335,7 +335,7 @@
                     const cancelRequestBtn = card.querySelector('.errand-card-btn-cancel-request');
                     const cancelDisabledBtn = card.querySelector('.errand-card-btn-cancel-disabled');
 
-                    if (errand.raw_status === 'awaiting_confirmation') {
+                    if (errand.raw_status === 'awaiting_confirmation' || errand.raw_status === 'dispute') {
                         cancelDisabledBtn.style.display = 'flex';
                     } else if (Number(errand.cancel_requested_by_tasker) === 0) {
                         cancelRequestBtn.style.display = 'flex';

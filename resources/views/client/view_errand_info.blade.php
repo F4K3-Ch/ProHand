@@ -158,7 +158,7 @@
                     </button>
 
                     <span id="disputeBadge" class="descriptive-status-badge" style="display: none;">
-                        <i class="fa-solid fa-triangle-exclamation"></i> You raised a dispute. An admin will review the details and contact you.
+                        <i class="fa-solid fa-triangle-exclamation"></i> You have raised a dispute for this task. Our admin team is currently reviewing the submitted details and will reach out to you shortly.
                     </span>
                 </div>
             </div>

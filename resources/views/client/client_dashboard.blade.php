@@ -426,7 +426,7 @@
                         } else {
                             cancelDisabledBtn.style.display = 'flex';
                         }
-                    } else if (errand.raw_status === 'awaiting_confirmation') {
+                    } else if (errand.raw_status === 'awaiting_confirmation' || errand.raw_status === 'dispute') {
                         cancelDisabledBtn.style.display = 'flex';
                     }
 

@@ -147,7 +147,7 @@
                     </span>
 
                     <span id="disputeBadge" class="descriptive-status-badge" style="display: none;">
-                        <i class="fa-solid fa-triangle-exclamation"></i> The client raised a dispute on your submission. An admin is reviewing the case.
+                        <i class="fa-solid fa-triangle-exclamation"></i> The client raised a dispute on your submission. An admin is reviewing the case and will contact you shortly.
                     </span>
 
                     <button type="button" id="deleteErrandBtn" class="btn-delete" style="display: none;">
