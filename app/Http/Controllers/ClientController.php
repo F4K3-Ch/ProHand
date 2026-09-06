@@ -74,7 +74,6 @@ class ClientController extends Controller
                     ->orWhere('title', 'like', "%{$search}%")
                     ->orWhere('location', 'like', "%{$search}%")
                     ->orWhere('category', 'like', "%{$search}%")
-                    ->orWhere('location', 'like', "%{$search}%")
                     ->orWhere('status', 'like', "%{$search}%");
             });
         }

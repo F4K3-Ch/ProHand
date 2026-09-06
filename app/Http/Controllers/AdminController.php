@@ -41,12 +41,12 @@ class AdminController extends Controller
     public function allActiveErrands(Request $request)
     {
         $search = $request->query('search');
-        $perPage = (int) $request->query('per_page', 10);
+        $perPage = (int) $request->query('per_page', 8);
 
-        $allowedPerPage = [5, 10, 25, 50];
+        $allowedPerPage = [4, 8, 16, 32];
 
         if (!in_array($perPage, $allowedPerPage)) {
-            $perPage = 10;
+            $perPage = 8;
         }
 
         $query = Errand::query();
@@ -69,6 +69,7 @@ class AdminController extends Controller
             return [
                 'id' => $errand->id,
                 'title' => $errand->title,
+                'location' => $errand->location,
                 'category' => Str::title(str_replace('_', ' ', $errand->category)),
                 'created_at' => $errand->created_at 
                     ? Carbon::parse($errand->created_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
@@ -79,7 +80,6 @@ class AdminController extends Controller
                 'fee' => '₱' . number_format($errand->fee, 2),
                 'status' => Str::title(str_replace('_', ' ', $errand->status)),
                 'raw_status' => $errand->status,
-                'cancel_requested_by_client' => $errand->cancel_requested_by_client ?? false,
                 'status_class' => 'status-badge status-' . $errand->status,
             ];
         });

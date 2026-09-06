@@ -151,9 +151,9 @@
                 <p><span><i class="fa-solid fa-peso-sign"></i> Fee</span> <strong class="errand-fee"></strong></p>
             </div>
             <div class="errand-card-actions">
-                <a href="#" class="btn-view errand-view-link"><i class="fa-solid fa-eye"></i> View</a>
-                <button type="button" class="btn-cancel cancel-request errand-card-btn-cancel-request" style="display: none;"><i class="fa-solid fa-triangle-exclamation"></i> Cancel</button>
-                <button type="button" disabled class="btn-cancel-disabled errand-card-btn-cancel-disabled" style="display: none;"><i class="fa-solid fa-ban"></i> Cancel</button>
+                <a href="#" class="btn-view"><i class="fa-solid fa-eye"></i> View</a>
+                <button type="button" class="btn-cancel-request" style="display: none;"><i class="fa-solid fa-triangle-exclamation"></i> Cancel</button>
+                <button type="button" disabled class="btn-cancel-disabled" style="display: none;"><i class="fa-solid fa-ban"></i> Cancel</button>
             </div>
         </div>
     </template>
@@ -328,12 +328,12 @@
                     status.textContent = errand.status;
                     status.className = errand.status_class;
 
-                    card.querySelector('.errand-view-link').href =
+                    card.querySelector('.btn-view').href =
                         '/tasker/view-errand/' + encodeURIComponent(errand.id) +
                         '?from=tasker.dashboard';
 
-                    const cancelRequestBtn = card.querySelector('.errand-card-btn-cancel-request');
-                    const cancelDisabledBtn = card.querySelector('.errand-card-btn-cancel-disabled');
+                    const cancelRequestBtn = card.querySelector('.btn-cancel-request');
+                    const cancelDisabledBtn = card.querySelector('.btn-cancel-disabled');
 
                     if (errand.raw_status === 'awaiting_confirmation' || errand.raw_status === 'dispute') {
                         cancelDisabledBtn.style.display = 'flex';

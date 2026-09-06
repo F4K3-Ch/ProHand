@@ -159,11 +159,11 @@
                 <p><span><i class="fa-solid fa-peso-sign"></i> Fee</span> <strong class="errand-fee"></strong></p>
             </div>
             <div class="errand-card-actions">
-                <a href="#" class="btn-view errand-view-link"><i class="fa-solid fa-eye"></i> View</a>
-                <button type="button" class="btn-delete errand-card-btn-delete" style="display: none;"><i class="fa-solid fa-trash"></i> Delete</button>
-                <button type="button" class="btn-cancel cancel-accepted errand-card-btn-cancel-accepted" style="display: none;"><i class="fa-solid fa-ban"></i> Cancel</button>
-                <button type="button" class="btn-cancel cancel-request errand-card-btn-cancel-request" style="display: none;"><i class="fa-solid fa-triangle-exclamation"></i> Cancel</button>
-                <button type="button" disabled class="btn-cancel-disabled errand-card-btn-cancel-disabled" style="display: none;"><i class="fa-solid fa-ban"></i> Cancel</button>
+                <a href="#" class="btn-view"><i class="fa-solid fa-eye"></i> View</a>
+                <button type="button" class="btn-delete" style="display: none;"><i class="fa-solid fa-trash"></i> Delete</button>
+                <button type="button" class="btn-cancel" style="display: none;"><i class="fa-solid fa-ban"></i> Cancel</button>
+                <button type="button" class="btn-cancel-request" style="display: none;"><i class="fa-solid fa-triangle-exclamation"></i> Cancel</button>
+                <button type="button" disabled class="btn-cancel-disabled" style="display: none;"><i class="fa-solid fa-ban"></i> Cancel</button>
             </div>
         </div>
     </template>
@@ -340,14 +340,14 @@
                     status.textContent = errand.status;
                     status.className = errand.status_class;
 
-                    card.querySelector('.errand-view-link').href =
+                    card.querySelector('.btn-view').href =
                         '/client/view-errand/' + encodeURIComponent(errand.id) +
                         '?from=client.dashboard';
 
-                    const deleteBtn = card.querySelector('.errand-card-btn-delete');
-                    const cancelAcceptedBtn = card.querySelector('.errand-card-btn-cancel-accepted');
-                    const cancelRequestBtn = card.querySelector('.errand-card-btn-cancel-request');
-                    const cancelDisabledBtn = card.querySelector('.errand-card-btn-cancel-disabled');
+                    const deleteBtn = card.querySelector('.btn-delete');
+                    const cancelAcceptedBtn = card.querySelector('.btn-cancel');
+                    const cancelRequestBtn = card.querySelector('.btn-cancel-request');
+                    const cancelDisabledBtn = card.querySelector('.btn-cancel-disabled');
 
                     if (errand.raw_status === 'pending') {
                         deleteBtn.style.display = 'flex';

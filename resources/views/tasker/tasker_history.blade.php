@@ -125,8 +125,8 @@
                 <p><span><i class="fa-solid fa-peso-sign"></i> Fee</span> <strong class="errand-fee"></strong></p>
             </div>
             <div class="errand-card-actions">
-                <a href="#" class="btn-view errand-view-link"><i class="fa-solid fa-eye"></i> View</a>
-                <button type="button" class="btn-delete errand-card-btn-delete"><i class="fa-solid fa-trash"></i> Delete</button>
+                <a href="#" class="btn-view"><i class="fa-solid fa-eye"></i> View</a>
+                <button type="button" class="btn-delete"><i class="fa-solid fa-trash"></i> Delete</button>
             </div>
         </div>
     </template>
@@ -290,11 +290,11 @@
                     status.textContent = errand.status;
                     status.className = errand.status_class;
 
-                    card.querySelector('.errand-view-link').href =
+                    card.querySelector('.btn-view').href =
                         '/tasker/view-errand/' + encodeURIComponent(errand.id) +
                         '?from=tasker.history';
 
-                    const deleteBtn = card.querySelector('.errand-card-btn-delete');
+                    const deleteBtn = card.querySelector('.btn-delete');
                     if(deleteBtn){
                         deleteBtn.addEventListener('click', async function(){
                             const customTitle = 'Confirm Deletion';

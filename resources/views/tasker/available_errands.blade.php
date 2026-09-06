@@ -109,7 +109,7 @@
                 <p><span><i class="fa-solid fa-peso-sign"></i> Fee</span> <strong class="errand-fee"></strong></p>
             </div>
             <div class="errand-card-actions">
-                <a href="#" class="btn-view errand-view-link"><i class="fa-solid fa-eye"></i> View</a>
+                <a href="#" class="btn-view"><i class="fa-solid fa-eye"></i> View</a>
                 <button type="button" class="btn-accept"><i class="fa-solid fa-check"></i> Accept</button>
             </div>
         </div>
@@ -254,7 +254,7 @@
                     status.textContent = errand.status;
                     status.className = errand.status_class;
 
-                    card.querySelector('.errand-view-link').href =
+                    card.querySelector('.btn-view').href =
                         '/tasker/view-errand/' + encodeURIComponent(errand.id) +
                         '?from=tasker.available-errands';
 

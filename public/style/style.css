@@ -1220,7 +1220,7 @@ body {
 
 .totals h3 {
     color: var(--color-text);
-    font-size: 1rem;         
+    font-size: 1.2rem;         
     font-weight: 600;
     margin-bottom: 6px;
 }
@@ -1289,7 +1289,7 @@ body {
 .status-badge,
 .role-badge {
     color: var(--color-text);
-    font-size: 0.9rem;
+    font-size: 1rem;
     padding: 4px;
     border-radius: 3px;
 }
@@ -1713,11 +1713,13 @@ body {
     background-color: #DC2626;
 }
 
-.errand-card-actions .btn-cancel {
+.errand-card-actions .btn-cancel,
+.errand-card-actions .btn-cancel-request {
     background-color: #6B7280;
 }
 
-.errand-card-actions .btn-cancel:hover {
+.errand-card-actions .btn-cancel:hover,
+.errand-card-actions .btn-cancel-request:hover {
     background-color: #4B5563;
 }
 
