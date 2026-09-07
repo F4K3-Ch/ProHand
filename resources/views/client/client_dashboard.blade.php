@@ -419,24 +419,12 @@
                                 });
 
                                 const result = await response.json();
-
                                 if(!response.ok || !result.success){
                                     throw new Error(result.message || 'Failed to cancel errand.');
                                 }
 
-                                const successMessageText = document.getElementById('successMessageText');
-                                if (successMessageText) {
-                                    successMessageText.textContent = result.message || 'Errand cancelled successfully!';
-                                    successMessageText.style.display = 'flex';
-
-                                    setTimeout(() => {
-                                        successMessageText.textContent = '';
-                                        successMessageText.style.display = 'none';
-                                    }, 3000);
-                                }
-
-                                loadMetrics();
-                                loadErrands();
+                                sessionStorage.setItem('success_message', result.message);
+                                window.location.reload();
 
                             } catch(error) {
                                 console.error('Cancel error:', error);

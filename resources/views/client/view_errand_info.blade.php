@@ -150,7 +150,7 @@
                             <i class="fa-solid fa-hand-holding-hand"></i>Request Cancel
                         </button>
                         <span class="descriptive-status-badge" id="pendingCancelBadge" style="display: none;">
-                            <i class="fa-solid fa-spinner fa-spin"></i>Pending Admin Cancel...
+                            <i class="fa-solid fa-spinner fa-spin"></i>Waiting for Admin Decision on your Cancellation request...
                         </span>
                     </div>
 
@@ -366,8 +366,33 @@
                         const customMessage = 'Are you sure you want to cancel this errand? It will return to "Pending" status.';
                         const isConfirmed = await showConfirmation(customTitle, customMessage);
                         
-                        if(!isConfirmed) return;
-                        // Add your cancel pending payment AJAX call implementation here
+                        try {
+                            const response = await fetch('/api/client/errands/' + errand.id + '/cancel', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN' : origin
+                                },
+                                credentials: 'same-origin'
+                            });
+
+                            const result = await response.json();
+                            if(!response.ok || !result.success){
+                                throw new Error(result.message || 'Failed to cancel errand.');
+                            }
+
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.reload();
+
+                        } catch(error) {
+                            console.error('Delete error:', error);
+                            const errorText = document.getElementById('errorMessageText');
+                            errorText.textContent = error.message;
+                            errorText.style.display = 'block';
+                            setTimeout(() => { errorText.style.display = 'none'; }, 4000);
+                        }
                     });
 
                 } else if (errand.raw_status === 'in_progress') {
