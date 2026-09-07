@@ -128,7 +128,30 @@
                 </div>
 
                 <div class="info-bot-btn">
-                    
+                    <button type="button" id="deleteErrandBtn" class="btn-delete" style="display: none;">
+                        <i class="fa-solid fa-trash"></i> Delete Errand
+                    </button>
+
+                    <span id="performingBadge" class="descriptive-status-badge" style="display:none;">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        Tasker is performing errand...
+                    </span>
+
+                    <button type="button" id="cancelBtn" class="btn-cancel" style="display: none;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Force Cancel
+                    </button>
+
+                    <button type="button" id="confirmCompletionBtn" class="btn-confirm-completion" style="display: none;">
+                        <i class="fa-solid fa-check"></i> Confirm Completion
+                    </button>
+
+                    <button type="button" id="completeDisputeBtn" class="btn-approve" style="display:none;">
+                        <i class="fa-solid fa-circle-check"></i> Mark as Completed
+                    </button>
+
+                    <button type="button" id="failDisputeBtn" class="btn-delete" style="display:none;">
+                        <i class="fa-solid fa-circle-xmark"></i> Mark as Failed
+                    </button>
                 </div>
             </div>
 
@@ -440,6 +463,81 @@
                     const downloadBtn = attachItem.querySelector('.btn-download');
                     downloadBtn.href = errand.attachment.url;
                     downloadBtn.setAttribute('download', errand.attachment.name);
+                }
+
+                if (errand.raw_status === 'pending') {
+                    const deleteBtn = document.getElementById('deleteErrandBtn');
+
+                    deleteBtn.style.display = 'flex';
+                    deleteBtn.addEventListener('click', async function() {
+                        const customTitle = 'Confirm Deletion';
+                        const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
+                        // Add your AJAX call implementation here
+                    });
+                } else if (errand.raw_status === 'accepted') {
+                    cancelBtn.style.display = 'flex';
+                    cancelBtn.addEventListener('click', async function(){
+                        const customTitle = 'Confirm Cancellation';
+                        const customMessage = 'Force-cancel this errand? The errand status will be reset back to "Pending" status.';
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
+                        
+                        // Add your cancel active errand AJAX call implementation here
+                    });
+                } else if (errand.raw_status === 'awaiting_confirmation') {
+                    const confirmCompletionBtn = document.getElementById('confirmCompletionBtn');
+                    confirmCompletionBtn.style.display = 'flex';
+
+                    confirmCompletionBtn.addEventListener('click', async function() {
+                        const customTitle = 'Confirm Completion';
+                        const customMessage = 'Are you sure you want to confirm the completion of errand #' + errand.id + ' ("' + errand.title + '")? This action cannot be undone.';
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
+                        
+                        // Add your cancel active errand AJAX call implementation here
+                    });
+                } else if (errand.raw_status === 'in_progress') {
+                    document.getElementById('performingBadge').style.display = 'flex';
+                    cancelBtn.style.display = 'flex';
+                    cancelBtn.addEventListener('click', async function(){
+                        const customTitle = 'Confirm Cancellation';
+                        const customMessage = 'Force-cancel this errand? The errand status will be reset back to "Pending" status.';
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
+                        
+                        // Add your cancel active errand AJAX call implementation here
+                    });
+                } else if (errand.raw_status === 'dispute') {
+                    const completeDisputeBtn = document.getElementById('completeDisputeBtn');
+                    const failDisputeBtn = document.getElementById('failDisputeBtn');
+
+                    completeDisputeBtn.style.display = 'flex';
+                    completeDisputeBtn.addEventListener('click', async function(){
+                        const customTitle = 'Confirm Completion';
+                        const customMessage = 'Mark this disputed errand as "Completed"? This will resolve the dispute and finish the errand.';
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
+                        
+                        // Add your complete disputed errand AJAX call implementation here
+                    });
+
+                    failDisputeBtn.style.display = 'flex';
+                    failDisputeBtn.addEventListener('click', async function(){
+                        const customTitle = 'Confirm Failure';
+                        const customMessage = 'Mark this disputed errand as "Failed"? This will resolve the dispute and mark the errand as failed.';
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
+                        
+                        // Add your fail disputed errand AJAX call implementation here
+                    });
                 }
 
                 /* Cancellation buttons */

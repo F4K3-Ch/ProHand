@@ -133,14 +133,16 @@
                         <i class="fa-solid fa-trash"></i> Delete Errand
                     </button>
 
-                    <button type="button" disabled class="btn-edit-errand-disabled" id="disabledEditBtn" style="display: none;">
-                        <i class="fa-regular fa-pen-to-square"></i>Edit
-                    </button>
-                    <button type="button" id="cancelAcceptedBtn" class="btn-cancel" style="display: none;">
-                        <i class="fa-solid fa-ban"></i>Cancel
-                    </button>
+                    <div class="badge-button-column" id="acceptedBadgeContainer" style="display: none;">
+                        <span class="descriptive-status-badge" id="waitingToStartBadge" style="display: none;">
+                            <i class="fa-solid fa-spinner fa-spin"></i>Tasker has accepted this errand and is preparing to begin...
+                        </span>
+                        <button type="button" id="cancelAcceptedBtn" class="btn-cancel" style="display: none;">
+                            <i class="fa-solid fa-ban"></i>Cancel
+                        </button>
+                    </div>
 
-                    <div class="badge-button-column">
+                    <div class="badge-button-column" id="inProgressBadgeContainer" style="display: none;">
                         <span class="descriptive-status-badge" id="performingBadge" style="display: none;">
                             <i class="fa-solid fa-spinner fa-spin"></i>Tasker is currently working on this errand...
                         </span>
@@ -159,7 +161,7 @@
                         <i class="fa-solid fa-triangle-exclamation"></i> Dispute
                     </button>
 
-                    <span id="disputeBadge" class="descriptive-status-badge" style="display: none;">
+                    <span class="descriptive-status-badge" id="disputeBadge" style="display: none;">
                         <i class="fa-solid fa-triangle-exclamation"></i> You have raised a dispute for this task. Our admin team is currently reviewing the submitted details and will reach out to you shortly.
                     </span>
                 </div>
@@ -353,7 +355,9 @@
                     });
 
                 } else if (errand.raw_status === 'accepted') {
-                    document.getElementById('disabledEditBtn').style.display = 'flex';
+                    const acceptedBadgeContainer = document.getElementById('acceptedBadgeContainer');
+                    acceptedBadgeContainer.style.display = 'flex';
+                    document.getElementById('waitingToStartBadge').style.display = 'flex';
                     const cancelAcceptedBtn = document.getElementById('cancelAcceptedBtn');
                     cancelAcceptedBtn.style.display = 'flex';
 
@@ -367,6 +371,8 @@
                     });
 
                 } else if (errand.raw_status === 'in_progress') {
+                    const inProgressBadgeContainer = document.getElementById('inProgressBadgeContainer');
+                    inProgressBadgeContainer.style.display = 'flex';
                     if (Number(errand.cancel_requested_by_client) === 0) {
                         document.getElementById('performingBadge').style.display = 'flex';
                         const cancelRequestBtn = document.getElementById('cancelRequestBtn');

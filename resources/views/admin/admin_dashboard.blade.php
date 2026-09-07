@@ -153,6 +153,7 @@
                 <a href="#" class="btn-view"><i class="fa-solid fa-eye"></i> View</a>
                 <button type="button" class="btn-delete" style="display: none;"><i class="fa-solid fa-trash"></i> Delete</button>
                 <button type="button" class="btn-cancel" style="display: none;"><i class="fa-solid fa-triangle-exclamation"></i> Cancel</button>
+                <button type="button" disabled class="btn-cancel-disabled" style="display: none;"><i class="fa-solid fa-ban"></i> Cancel</button>
             </div>
         </div>
     </template>
@@ -340,17 +341,20 @@
                             
                             // Add your delete AJAX call implementation here
                         });
-                    } else if (errand.raw_status === 'in_progress' || errand.raw_status === 'accepted' || errand.raw_status === 'awaiting_confirmation') {
+                    } else if (errand.raw_status === 'in_progress' || errand.raw_status === 'accepted') {
                         cancelBtn.style.display = 'flex';
                         cancelBtn.addEventListener('click', async function(){
                             const customTitle = 'Confirm Cancellation';
-                            const customMessage = 'Force-cancel this errand awaiting confirmation? The errand status will be reset back to "Pending" status.';
+                            const customMessage = 'Force-cancel this errand? The errand status will be reset back to "Pending" status.';
                             const isConfirmed = await showConfirmation(customTitle, customMessage);
                             
                             if(!isConfirmed) return;
                             
                             // Add your cancel active errand AJAX call implementation here
                         });
+                    } else if (errand.raw_status === 'awaiting_confirmation' || errand.raw_status === 'dispute') {
+                        const cancelDisabledBtn = card.querySelector('.btn-cancel-disabled');
+                        cancelDisabledBtn.style.display = 'flex';
                     }
 
                     cardsGrid.appendChild(card);

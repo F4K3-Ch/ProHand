@@ -3522,7 +3522,6 @@ select[name="role"] option[value="client"] {
     text-align: center;
     cursor: default;
     width: 100%;
-    box-sizing: border-box;
     line-height: 1.4;
 }
 
@@ -4088,6 +4087,13 @@ select[name="role"] option[value="client"] {
     flex: 1;                /* Forces text block to fill space but remain bounded */
     word-break: break-word; /* Automatically wraps long strings or single long words to the next line */
     overflow-wrap: break-word;
+}
+
+.notification-card .notif-message:has(.circle-spinner) {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .notif-message h3 {

@@ -146,7 +146,7 @@
                         <i class="fa-solid fa-spinner fa-spin"></i> Awaiting Client Confirmation
                     </span>
 
-                    <span id="disputeBadge" class="descriptive-status-badge" style="display: none;">
+                    <span class="descriptive-status-badge" id="disputeBadge"  style="display: none;">
                         <i class="fa-solid fa-triangle-exclamation"></i> The client raised a dispute on your submission. An admin is reviewing the case and will contact you shortly.
                     </span>
 
