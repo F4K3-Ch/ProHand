@@ -344,12 +344,11 @@
                         '/client/view-errand/' + encodeURIComponent(errand.id) +
                         '?from=client.dashboard';
 
-                    const deleteBtn = card.querySelector('.btn-delete');
-                    const cancelAcceptedBtn = card.querySelector('.btn-cancel');
                     const cancelRequestBtn = card.querySelector('.btn-cancel-request');
                     const cancelDisabledBtn = card.querySelector('.btn-cancel-disabled');
 
                     if (errand.raw_status === 'pending') {
+                        const deleteBtn = card.querySelector('.btn-delete');
                         deleteBtn.style.display = 'flex';
                         
                         deleteBtn.addEventListener('click', async function(){
@@ -398,16 +397,52 @@
                         });
 
                     } else if (errand.raw_status === 'accepted') {
+                        const cancelAcceptedBtn = card.querySelector('.btn-cancel');
                         cancelAcceptedBtn.style.display = 'flex';
-                        
+
                         cancelAcceptedBtn.addEventListener('click', async function(){
                             const customTitle = 'Confirm Cancellation';
                             const customMessage = 'Are you sure you want to cancel this errand? It will return to "Pending" status.';
                             const isConfirmed = await showConfirmation(customTitle, customMessage);
                             
                             if(!isConfirmed) return;
-                            
-                            // Add your cancel pending payment AJAX call implementation here
+
+                            try {
+                                const response = await fetch('/api/client/errands/' + errand.id + '/cancel', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN' : origin
+                                    },
+                                    credentials: 'same-origin'
+                                });
+
+                                const result = await response.json();
+
+                                if(!response.ok || !result.success){
+                                    throw new Error(result.message || 'Failed to cancel errand.');
+                                }
+
+                                const successMessageText = document.getElementById('successMessageText');
+                                if (successMessageText) {
+                                    successMessageText.textContent = result.message || 'Errand cancelled successfully!';
+                                    successMessageText.style.display = 'flex';
+
+                                    setTimeout(() => {
+                                        successMessageText.textContent = '';
+                                        successMessageText.style.display = 'none';
+                                    }, 3000);
+                                }
+
+                                loadMetrics();
+                                loadErrands();
+
+                            } catch(error) {
+                                console.error('Cancel error:', error);
+                                displayGlobalError(error.message);
+                            }
                         });
 
                     } else if (errand.raw_status === 'in_progress') {
