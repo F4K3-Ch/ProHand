@@ -232,12 +232,6 @@
                 }, 5000);
             }
 
-            if (!errandId) {
-                errorMessage.textContent = 'Errand ID not found.';
-                errorMessage.style.display = 'block';
-                return;
-            }
-
             try {
                 const response = await fetch('/api/client/errands/' + encodeURIComponent(errandId), {
                     method: 'GET',

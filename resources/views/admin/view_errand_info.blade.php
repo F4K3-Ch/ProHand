@@ -318,12 +318,15 @@
         document.addEventListener('DOMContentLoaded', async function () {
             const mainContainer = document.querySelector('.view-main');
             const errandId = mainContainer ? mainContainer.getAttribute('data-errand-id') : null;
-            const errorMessage = document.getElementById('errorMessageText');
-
-            if (!errandId) {
-                errorMessage.textContent = 'Errand ID not found.';
-                errorMessage.style.display = 'block';
-                return;
+            const errorMessageText = document.getElementById('errorMessageText');
+            
+            function displayGlobalError(message){
+                if(!errorMessageText) return;
+                errorMessageText.textContent = message;
+                errorMessageText.style.display = 'flex';
+                setTimeout(() => { 
+                    errorMessageText.style.display = 'none'; 
+                }, 5000);
             }
 
             try {
@@ -604,9 +607,8 @@
                 });
 
             } catch (error) {
-                console.error('Errand details error:', error);
-                errorMessage.textContent = error.message || 'Unable to load errand information.';
-                errorMessage.style.display = 'flex';
+                console.error('Error:', error);
+                displayGlobalError(error.message);
             }
         });
     </script>

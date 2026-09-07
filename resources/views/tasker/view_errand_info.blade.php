@@ -221,12 +221,6 @@
                 }, 5000);
             }
 
-            if (!errandId) {
-                errorMessage.textContent = 'Errand ID not found.';
-                errorMessage.style.display = 'block';
-                return;
-            }
-
             try {
                 const response = await fetch('/api/tasker/errands/' + encodeURIComponent(errandId), {
                     method: 'GET',
