@@ -341,7 +341,7 @@
                             
                             // Add your delete AJAX call implementation here
                         });
-                    } else if (errand.raw_status === 'in_progress' || errand.raw_status === 'accepted') {
+                    } else if (errand.raw_status === 'in_progress' || errand.raw_status === 'accepted' || errand.raw_status === 'awaiting_confirmation') {
                         cancelBtn.style.display = 'flex';
                         cancelBtn.addEventListener('click', async function(){
                             const customTitle = 'Confirm Cancellation';
@@ -352,7 +352,7 @@
                             
                             // Add your cancel active errand AJAX call implementation here
                         });
-                    } else if (errand.raw_status === 'awaiting_confirmation' || errand.raw_status === 'dispute') {
+                    } else if (errand.raw_status === 'dispute') {
                         const cancelDisabledBtn = card.querySelector('.btn-cancel-disabled');
                         cancelDisabledBtn.style.display = 'flex';
                     }

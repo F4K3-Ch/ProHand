@@ -137,10 +137,6 @@
                         Tasker is performing errand...
                     </span>
 
-                    <button type="button" id="cancelBtn" class="btn-cancel" style="display: none;">
-                        <i class="fa-solid fa-triangle-exclamation"></i> Force Cancel
-                    </button>
-
                     <button type="button" id="confirmCompletionBtn" class="btn-confirm-completion" style="display: none;">
                         <i class="fa-solid fa-check"></i> Confirm Completion
                     </button>
@@ -151,6 +147,10 @@
 
                     <button type="button" id="failDisputeBtn" class="btn-delete" style="display:none;">
                         <i class="fa-solid fa-circle-xmark"></i> Mark as Failed
+                    </button>
+
+                    <button type="button" id="cancelBtn" class="btn-cancel" style="display: none;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Force Cancel
                     </button>
                 </div>
             </div>
@@ -488,6 +488,18 @@
                         
                         // Add your cancel active errand AJAX call implementation here
                     });
+                } else if (errand.raw_status === 'in_progress') {
+                    document.getElementById('performingBadge').style.display = 'flex';
+                    cancelBtn.style.display = 'flex';
+                    cancelBtn.addEventListener('click', async function(){
+                        const customTitle = 'Confirm Cancellation';
+                        const customMessage = 'Force-cancel this errand? The errand status will be reset back to "Pending" status.';
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
+                        
+                        // Add your cancel active errand AJAX call implementation here
+                    });
                 } else if (errand.raw_status === 'awaiting_confirmation') {
                     const confirmCompletionBtn = document.getElementById('confirmCompletionBtn');
                     confirmCompletionBtn.style.display = 'flex';
@@ -501,8 +513,7 @@
                         
                         // Add your cancel active errand AJAX call implementation here
                     });
-                } else if (errand.raw_status === 'in_progress') {
-                    document.getElementById('performingBadge').style.display = 'flex';
+
                     cancelBtn.style.display = 'flex';
                     cancelBtn.addEventListener('click', async function(){
                         const customTitle = 'Confirm Cancellation';
@@ -537,6 +548,19 @@
                         if(!isConfirmed) return;
                         
                         // Add your fail disputed errand AJAX call implementation here
+                    });
+                } else if (errand.raw_status === 'completed' || errand.raw_status === 'failed') {
+                    const deleteBtn = document.getElementById('deleteErrandBtn');
+                    deleteBtn.style.display = 'flex';
+
+                    deleteBtn.addEventListener('click', async function() {
+                        const customTitle = 'Confirm Deletion';
+                        const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
+
+                        // Add your delete completed/failed errand AJAX call implementation here
                     });
                 }
 
