@@ -56,10 +56,9 @@
 
                     <button
                         type="button"
-                        id="deleteAllButton"
+                        id="deleteAllNotif"
                         class="btn-delete-all"
-                        style="display:none;"
-                        onclick="return confirm('Are you sure you want to delete all notifications?')">
+                        style="display:none;">
                         Delete All Notifications
                     </button>
                 </div>
@@ -125,6 +124,7 @@
             const searchButton = document.getElementById('searchButton');
             const clearSearchButton = document.getElementById('clearSearchButton');
             const errorText = document.getElementById('errorMessageText');
+            const deleteAllNotif = document.getElementById('deleteAllNotif');
 
             let currentSearch = '';
 
@@ -195,11 +195,9 @@
             function displayNotifications(notifications){
                 notificationsList.innerHTML = '';
 
-                const deleteAllButton = document.getElementById('deleteAllButton');
-
                 if(!notifications || notifications.length === 0){
-                    if(deleteAllButton){
-                        deleteAllButton.style.display = 'none';
+                    if(deleteAllNotif){
+                        deleteAllNotif.style.display = 'none';
                     }
 
                     notificationsList.appendChild(
@@ -210,8 +208,8 @@
                     return;
                 }
 
-                if(deleteAllButton){
-                    deleteAllButton.style.display = 'inline-block';
+                if(deleteAllNotif){
+                    deleteAllNotif.style.display = 'inline-block';
                 }
 
                 const template = document.getElementById('notification-card-template');
@@ -222,11 +220,10 @@
                     const messageElement = card.querySelector('.notification-message');
                     const dateElement = card.querySelector('.notification-date');
                     const viewLink = card.querySelector('.view-link');
+                    const deleteBtn = card.querySelector('.btn-delete');
 
                     typeElement.textContent = notification.type;
-
                     messageElement.textContent = notification.message;
-
                     dateElement.textContent = notification.created_at;
 
                     if(notification.link){
@@ -235,7 +232,91 @@
                         viewLink.style.display = 'none';
                     }
 
+                    deleteBtn.addEventListener('click', async function(){
+                        try {
+                            const response = await fetch('/api/notifications/' + notification.id + '/delete', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN' : origin
+                                },
+                                credentials: 'same-origin'
+                            });
+
+                            const result = await response.json();
+
+                            if(!response.ok || !result.success){
+                                throw new Error(result.message || 'Failed to delete notification.');
+                            }
+
+                            const successMessageText = document.getElementById('successMessageText');
+                            if (successMessageText) {
+                                successMessageText.textContent = result.message || 'Notification deleted successfully!';
+                                successMessageText.style.display = 'flex';
+
+                                setTimeout(() => {
+                                    successMessageText.textContent = '';
+                                    successMessageText.style.display = 'none';
+                                }, 3000);
+                            }
+
+                            loadNotifications();
+
+                        } catch(error) {
+                            console.error('Delete error:', error);
+                            displayGlobalError(error.message);
+                        }
+                    });
+
                     notificationsList.appendChild(card);
+                });
+            }
+
+            if (deleteAllNotif) {
+                deleteAllNotif.addEventListener('click', async function(){
+                    const customTitle = 'Confirm Deletion';
+                    const customMessage = 'Are you sure you want to delete all notifications? They will be deleted permanently.';
+                    const isConfirmed = await showConfirmation(customTitle, customMessage);
+
+                    if(!isConfirmed) return;
+
+                    try {
+                        const response = await fetch('/api/notifications/delete-all', {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                'X-API-KEY': apiKey,
+                                'X-MY-ORIGIN' : origin
+                            },
+                            credentials: 'same-origin'
+                        });
+
+                        const result = await response.json();
+
+                        if(!response.ok || !result.success){
+                            throw new Error(result.message || 'Failed to delete all notifications.');
+                        }
+
+                        const successMessageText = document.getElementById('successMessageText');
+                        if (successMessageText) {
+                            successMessageText.textContent = result.message || 'All notifications deleted successfully!';
+                            successMessageText.style.display = 'flex';
+
+                            setTimeout(() => {
+                                successMessageText.textContent = '';
+                                successMessageText.style.display = 'none';
+                            }, 3000);
+                        }
+
+                        loadNotifications();
+
+                    } catch(error) {
+                        console.error('Delete all error:', error);
+                        displayGlobalError(error.message);
+                    }
                 });
             }
 
@@ -265,7 +346,7 @@
                 if(!errorText) return;
 
                 errorText.textContent = message;
-                errorText.style.display = 'block';
+                errorText.style.display = 'flex';
 
                 setTimeout(() => {
                     errorText.textContent = '';

@@ -15,6 +15,8 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
     Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/{id}/delete', [NotificationController::class, 'destroy']);
+    Route::post('/notifications/delete-all', [NotificationController::class, 'destroyAll']);
 
     Route::middleware('role:client')->group(function () {
         Route::get('/client/dashboard/active-metrics', [ClientController::class, 'activeMetrics']);
