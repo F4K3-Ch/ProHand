@@ -367,7 +367,7 @@
                             if (!response.ok || !result.success) throw new Error(result.message || 'Failed to start errand.');
 
                             sessionStorage.setItem('success_message', result.message);
-                            window.location.reload();
+                            window.location.href = window.location.href;
 
                         } catch(error) {
                             console.error('Error:', error);
@@ -415,7 +415,7 @@
                             if (!response.ok || !result.success) throw new Error(result.message || 'Failed to mark the errand.');
 
                             sessionStorage.setItem('success_message', result.message);
-                            window.location.reload();
+                            window.location.href = window.location.href;
 
                         } catch(error) {
                             console.error('Error:', error);
