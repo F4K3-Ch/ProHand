@@ -344,7 +344,6 @@
                         '/client/view-errand/' + encodeURIComponent(errand.id) +
                         '?from=client.dashboard';
 
-                    const cancelRequestBtn = card.querySelector('.btn-cancel-request');
                     const cancelDisabledBtn = card.querySelector('.btn-cancel-disabled');
 
                     if (errand.raw_status === 'pending') {
@@ -447,6 +446,7 @@
 
                     } else if (errand.raw_status === 'in_progress') {
                         if (Number(errand.cancel_requested_by_client) === 0) {
+                            const cancelRequestBtn = card.querySelector('.btn-cancel-request');
                             cancelRequestBtn.style.display = 'flex';
                             
                             cancelRequestBtn.addEventListener('click', async function(){
@@ -456,7 +456,42 @@
                                 
                                 if(!isConfirmed) return;
 
-                                // Add your client cancel request AJAX call implementation here
+                                try {
+                                    const response = await fetch('/api/client/errands/' + errand.id + '/request-cancel', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Accept': 'application/json',
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                            'X-API-KEY': apiKey,
+                                            'X-MY-ORIGIN' : origin
+                                        },
+                                        credentials: 'same-origin'
+                                    });
+
+                                    const result = await response.json();
+
+                                    if(!response.ok || !result.success){
+                                        throw new Error(result.message || 'Failed to request cancellation.');
+                                    }
+
+                                    const successMessageText = document.getElementById('successMessageText');
+                                    if (successMessageText) {
+                                        successMessageText.textContent = result.message || 'Cancellation request submitted successfully!';
+                                        successMessageText.style.display = 'flex';
+
+                                        setTimeout(() => {
+                                            successMessageText.textContent = '';
+                                            successMessageText.style.display = 'none';
+                                        }, 3000);
+                                    }
+
+                                    loadMetrics();
+                                    loadErrands();
+
+                                } catch(error) {
+                                    console.error('Cancel request error:', error);
+                                    displayGlobalError(error.message);
+                                }
                             });
                         } else {
                             cancelDisabledBtn.style.display = 'flex';
