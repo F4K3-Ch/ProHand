@@ -160,7 +160,6 @@
             const searchButton = document.getElementById('searchButton');
             const clearSearchButton = document.getElementById('clearSearchButton');
             const perPageSelect = document.getElementById('perPageSelect');
-            const errorText = document.getElementById('errorMessageText');
 
             let currentPage = 1;
             let currentSearch = '';
@@ -169,11 +168,14 @@
             loadErrands();
             updateClearButtonState();
 
+            const errorMessageText = document.getElementById('errorMessageText');
             function displayGlobalError(message){
-                if(!errorText) return;
-                errorText.textContent = message;
-                errorText.style.display = 'flex';
-                setTimeout(() => { errorText.style.display = 'none'; }, 5000);
+                if(!errorMessageText) return;
+                errorMessageText.textContent = message;
+                errorMessageText.style.display = 'flex';
+                setTimeout(() => { 
+                    errorMessageText.style.display = 'none'; 
+                }, 5000);
             }
 
             function showLoading(){

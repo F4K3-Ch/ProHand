@@ -123,8 +123,17 @@
             const searchInput = document.getElementById('notificationSearch');
             const searchButton = document.getElementById('searchButton');
             const clearSearchButton = document.getElementById('clearSearchButton');
-            const errorText = document.getElementById('errorMessageText');
             const deleteAllNotif = document.getElementById('deleteAllNotif');
+
+            const errorMessageText = document.getElementById('errorMessageText');
+            function displayGlobalError(message){
+                if(!errorMessageText) return;
+                errorMessageText.textContent = message;
+                errorMessageText.style.display = 'flex';
+                setTimeout(() => { 
+                    errorMessageText.style.display = 'none'; 
+                }, 5000);
+            }
 
             let currentSearch = '';
 
@@ -340,18 +349,6 @@
                 }
 
                 notificationsList.appendChild(card);
-            }
-
-            function displayGlobalError(message){
-                if(!errorText) return;
-
-                errorText.textContent = message;
-                errorText.style.display = 'flex';
-
-                setTimeout(() => {
-                    errorText.textContent = '';
-                    errorText.style.display = 'none';
-                }, 5000);
             }
 
             function updateClearButton(){

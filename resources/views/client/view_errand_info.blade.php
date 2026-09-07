@@ -221,7 +221,16 @@
         document.addEventListener('DOMContentLoaded', async function () {
             const mainContainer = document.querySelector('.view-main');
             const errandId = mainContainer ? mainContainer.getAttribute('data-errand-id') : null;
-            const errorMessage = document.getElementById('errorMessageText');
+            const errorMessageText = document.getElementById('errorMessageText');
+            
+            function displayGlobalError(message){
+                if(!errorMessageText) return;
+                errorMessageText.textContent = message;
+                errorMessageText.style.display = 'flex';
+                setTimeout(() => { 
+                    errorMessageText.style.display = 'none'; 
+                }, 5000);
+            }
 
             if (!errandId) {
                 errorMessage.textContent = 'Errand ID not found.';
@@ -346,11 +355,8 @@
                             window.location.href = '{{ route("client.dashboard") }}';
 
                         } catch(error) {
-                            console.error('Delete error:', error);
-                            const errorText = document.getElementById('errorMessageText');
-                            errorText.textContent = error.message;
-                            errorText.style.display = 'block';
-                            setTimeout(() => { errorText.style.display = 'none'; }, 4000);
+                            console.error('Error:', error);
+                            displayGlobalError(error.message);
                         }
                     });
 
@@ -380,18 +386,15 @@
 
                             const result = await response.json();
                             if(!response.ok || !result.success){
-                                throw new Error(result.message || 'Failed to cancel errand.');
+                                throw new Error(result.message);
                             }
 
                             sessionStorage.setItem('success_message', result.message);
                             window.location.reload();
 
                         } catch(error) {
-                            console.error('Delete error:', error);
-                            const errorText = document.getElementById('errorMessageText');
-                            errorText.textContent = error.message;
-                            errorText.style.display = 'block';
-                            setTimeout(() => { errorText.style.display = 'none'; }, 4000);
+                            console.error('Error:', error);
+                            displayGlobalError(error.message);
                         }
                     });
 
@@ -408,10 +411,32 @@
                             const customMessage = 'Are you sure you want to send a cancellation request to the Admin? It will return to "Pending" status and this action cannot be undone until processed.';
                             const isConfirmed = await showConfirmation(customTitle, customMessage);
                             
-                            if(!isConfirmed) return;
-                            // Add your client cancel request AJAX call implementation here
+                            try {
+                                const response = await fetch('/api/client/errands/' + errand.id + '/delete', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN' : origin
+                                    },
+                                    credentials: 'same-origin'
+                                });
 
+                                const result = await response.json();
+                                if(!response.ok || !result.success){
+                                    throw new Error(result.message);
+                                }
+
+                                sessionStorage.setItem('success_message', result.message);
+                                window.location.reload();
+
+                            } catch(error) {
+                                console.error('Error:', error);
+                                displayGlobalError(error.message);
+                            }
                         });
+
                     } else {
                         document.getElementById('pendingCancelBadge').style.display = 'flex';
                     }
@@ -442,17 +467,16 @@
                             });
 
                             const result = await response.json();
-                            if (!response.ok || !result.success) throw new Error(result.message || 'Failed to mark complete errand.');
+                            if(!response.ok || !result.success){
+                                throw new Error(result.message);
+                            }
 
                             sessionStorage.setItem('success_message', result.message);
                             window.location.href = '{{ route("client.history") }}';
 
                         } catch(error) {
-                            console.error('Delete error:', error);
-                            const errorText = document.getElementById('errorMessageText');
-                            errorText.textContent = error.message;
-                            errorText.style.display = 'block';
-                            setTimeout(() => { errorText.style.display = 'none'; }, 4000);
+                            console.error('Error:', error);
+                            displayGlobalError(error.message);
                         }
                     });
 
@@ -476,17 +500,16 @@
                             });
 
                             const result = await response.json();
-                            if (!response.ok || !result.success) throw new Error(result.message || 'Failed to dispute errand.');
+                            if(!response.ok || !result.success){
+                                throw new Error(result.message);
+                            }
 
                             sessionStorage.setItem('success_message', result.message);
                             window.location.reload();
 
                         } catch(error) {
-                            console.error('Delete error:', error);
-                            const errorText = document.getElementById('errorMessageText');
-                            errorText.textContent = error.message;
-                            errorText.style.display = 'block';
-                            setTimeout(() => { errorText.style.display = 'none'; }, 4000);
+                            console.error('Error:', error);
+                            displayGlobalError(error.message);
                         }
                     });
 
@@ -509,9 +532,8 @@
                 }
 
             } catch (error) {
-                console.error('Errand details error:', error);
-                errorMessage.textContent = error.message || 'Unable to load errand information.';
-                errorMessage.style.display = 'flex';
+                console.error('Error:', error);
+                displayGlobalError(error.message);
             }
         });
     </script>

@@ -197,7 +197,6 @@
             const searchButton = document.getElementById('searchButton');
             const clearSearchButton = document.getElementById('clearSearchButton');
             const perPageSelect = document.getElementById('perPageSelect');
-            const errorText = document.getElementById('errorMessageText');
             const welcomeBanner = document.getElementById('welcome-banner');
 
             let currentPage = 1;
@@ -207,11 +206,14 @@
             loadErrands();
             updateClearButtonState();
 
+            const errorMessageText = document.getElementById('errorMessageText');
             function displayGlobalError(message){
-                if(!errorText) return;
-                errorText.textContent = message;
-                errorText.style.display = 'flex';
-                setTimeout(() => { errorText.style.display = 'none'; }, 5000);
+                if(!errorMessageText) return;
+                errorMessageText.textContent = message;
+                errorMessageText.style.display = 'flex';
+                setTimeout(() => { 
+                    errorMessageText.style.display = 'none'; 
+                }, 5000);
             }
 
             function showLoading(){
@@ -370,27 +372,13 @@
                                 });
 
                                 const result = await response.json();
+                                if (!response.ok || !result.success) throw new Error(result.message || 'Failed to delete errand.');
 
-                                if(!response.ok || !result.success){
-                                    throw new Error(result.message || 'Failed to delete errand.');
-                                }
-
-                                const successMessageText = document.getElementById('successMessageText');
-                                if (successMessageText) {
-                                    successMessageText.textContent = result.message || 'Errand deleted successfully!';
-                                    successMessageText.style.display = 'flex';
-
-                                    setTimeout(() => {
-                                        successMessageText.textContent = '';
-                                        successMessageText.style.display = 'none';
-                                    }, 3000);
-                                }
-
-                                loadMetrics();
-                                loadErrands();
+                                sessionStorage.setItem('success_message', result.message || 'Errand deleted successfully!');
+                                window.location.href = '{{ route("client.dashboard") }}';
 
                             } catch(error) {
-                                console.error('Delete error:', error);
+                                console.error('Error:', error);
                                 displayGlobalError(error.message);
                             }
                         });
@@ -420,14 +408,14 @@
 
                                 const result = await response.json();
                                 if(!response.ok || !result.success){
-                                    throw new Error(result.message || 'Failed to cancel errand.');
+                                    throw new Error(result.message);
                                 }
 
                                 sessionStorage.setItem('success_message', result.message);
                                 window.location.reload();
 
                             } catch(error) {
-                                console.error('Cancel error:', error);
+                                console.error('Error:', error);
                                 displayGlobalError(error.message);
                             }
                         });
@@ -457,27 +445,15 @@
                                     });
 
                                     const result = await response.json();
-
                                     if(!response.ok || !result.success){
-                                        throw new Error(result.message || 'Failed to request cancellation.');
+                                        throw new Error(result.message);
                                     }
 
-                                    const successMessageText = document.getElementById('successMessageText');
-                                    if (successMessageText) {
-                                        successMessageText.textContent = result.message || 'Cancellation request submitted successfully!';
-                                        successMessageText.style.display = 'flex';
-
-                                        setTimeout(() => {
-                                            successMessageText.textContent = '';
-                                            successMessageText.style.display = 'none';
-                                        }, 3000);
-                                    }
-
-                                    loadMetrics();
-                                    loadErrands();
+                                    sessionStorage.setItem('success_message', result.message);
+                                    window.location.reload();
 
                                 } catch(error) {
-                                    console.error('Cancel request error:', error);
+                                    console.error('Error:', error);
                                     displayGlobalError(error.message);
                                 }
                             });
