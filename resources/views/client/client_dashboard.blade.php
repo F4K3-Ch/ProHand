@@ -372,10 +372,12 @@
                                 });
 
                                 const result = await response.json();
-                                if (!response.ok || !result.success) throw new Error(result.message || 'Failed to delete errand.');
+                                if(!response.ok || !result.success){
+                                    throw new Error(result.message || 'Failed to delete errand.');
+                                }
 
                                 sessionStorage.setItem('success_message', result.message || 'Errand deleted successfully!');
-                                window.location.href = '{{ route("client.dashboard") }}';
+                                window.location.href = window.location.href;
 
                             } catch(error) {
                                 console.error('Error:', error);
@@ -412,7 +414,7 @@
                                 }
 
                                 sessionStorage.setItem('success_message', result.message);
-                                window.location.reload();
+                                window.location.href = window.location.href;
 
                             } catch(error) {
                                 console.error('Error:', error);
@@ -450,7 +452,7 @@
                                     }
 
                                     sessionStorage.setItem('success_message', result.message);
-                                    window.location.reload();
+                                    window.location.href = window.location.href;
 
                                 } catch(error) {
                                     console.error('Error:', error);
