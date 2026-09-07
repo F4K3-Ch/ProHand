@@ -31,6 +31,7 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
         Route::post('/client/errands/{id}/complete', [ClientController::class, 'confirmCompletion']);
         Route::post('/client/errands/{id}/cancel', [ClientController::class, 'cancelErrand']);
         Route::post('/client/errands/{id}/request-cancel', [ClientController::class, 'requestCancellation']);
+        Route::post('/client/history/{id}/delete', [ClientController::class, 'destroyHistory']);
     });
 
     Route::middleware('role:tasker')->group(function () {

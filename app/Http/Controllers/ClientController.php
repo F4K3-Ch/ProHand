@@ -877,4 +877,28 @@ class ClientController extends Controller
             'message' => 'Cancellation request submitted successfully. Waiting for admin approval.',
         ]);
     }
+
+    public function destroyHistory(Request $request, $id)
+    {
+        $clientId = $request->user()->id;
+
+        $history = History::where('errand_id', $id)
+            ->where('client_id', $clientId)
+            ->first();
+
+        if (!$history) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'History record not found.'
+            ], 404);
+        }
+
+        $history->client_deleted = true;
+        $history->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Errand removed from history successfully.'
+        ]);
+    }
 }
