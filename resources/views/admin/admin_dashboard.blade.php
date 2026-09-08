@@ -341,7 +341,30 @@
                             
                             if(!isConfirmed) return;
                             
-                            // Add your delete AJAX call implementation here
+                            try {
+                                const response = await fetch('/api/admin/errands/' + errand.id + '/delete', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN' : origin
+                                    },
+                                    credentials: 'same-origin'
+                                });
+
+                                const result = await response.json();
+                                if(!response.ok || !result.success){
+                                    throw new Error(result.message);
+                                }
+
+                                sessionStorage.setItem('success_message', result.message);
+                                window.location.href = window.location.href;
+
+                            } catch(error) {
+                                console.error('Error:', error);
+                                displayGlobalError(error.message);
+                            }
                         });
                     } else if (errand.raw_status === 'in_progress' || errand.raw_status === 'accepted' || errand.raw_status === 'awaiting_confirmation') {
                         cancelBtn.style.display = 'flex';
@@ -352,7 +375,30 @@
                             
                             if(!isConfirmed) return;
                             
-                            // Add your cancel active errand AJAX call implementation here
+                            try {
+                                const response = await fetch('/api/admin/errands/' + errand.id + '/reset-to-pending', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN' : origin
+                                    },
+                                    credentials: 'same-origin'
+                                });
+
+                                const result = await response.json();
+                                if(!response.ok || !result.success){
+                                    throw new Error(result.message);
+                                }
+
+                                sessionStorage.setItem('success_message', result.message);
+                                window.location.href = window.location.href;
+
+                            } catch(error) {
+                                console.error('Error:', error);
+                                displayGlobalError(error.message);
+                            }
                         });
                     } else if (errand.raw_status === 'dispute') {
                         const cancelDisabledBtn = card.querySelector('.btn-cancel-disabled');

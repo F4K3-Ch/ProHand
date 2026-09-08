@@ -395,7 +395,8 @@ class ClientController extends Controller
     {
         $clientId = $request->user()->id;
 
-        $errand = Errand::where('id', $id)
+        $errand = Errand::with('attachment')
+            ->where('id', $id)
             ->where('client_id', $clientId)
             ->first();
 
@@ -425,7 +426,7 @@ class ClientController extends Controller
             'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,gif,docx', 'max:10240'],
         ]);
 
-        $errand->update([
+        $errand->fill([
             'title' => $validated['title'],
             'category' => $validated['category'],
             'description' => $validated['description'],
@@ -457,6 +458,8 @@ class ClientController extends Controller
                 'original_name' => $file->getClientOriginalName(),
             ]);
         }
+
+        $errand->touch(); 
 
         return response()->json([
             'success' => true,

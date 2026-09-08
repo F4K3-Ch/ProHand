@@ -478,8 +478,33 @@
                         const isConfirmed = await showConfirmation(customTitle, customMessage);
                         
                         if(!isConfirmed) return;
-                        // Add your AJAX call implementation here
+
+                        try {
+                            const response = await fetch('/api/admin/errands/' + errand.id + '/delete', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN' : origin
+                                },
+                                credentials: 'same-origin'
+                            });
+
+                            const result = await response.json();
+                            if(!response.ok || !result.success){
+                                throw new Error(result.message);
+                            }
+
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.href = '{{ route("admin.dashboard") }}';
+
+                        } catch(error) {
+                            console.error('Error:', error);
+                            displayGlobalError(error.message);
+                        }
                     });
+                    
                 } else if (errand.raw_status === 'accepted') {
                     cancelBtn.style.display = 'flex';
                     cancelBtn.addEventListener('click', async function(){
@@ -489,7 +514,30 @@
                         
                         if(!isConfirmed) return;
                         
-                        // Add your cancel active errand AJAX call implementation here
+                        try {
+                            const response = await fetch('/api/admin/errands/' + errand.id + '/reset-to-pending', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN' : origin
+                                },
+                                credentials: 'same-origin'
+                            });
+
+                            const result = await response.json();
+                            if(!response.ok || !result.success){
+                                throw new Error(result.message);
+                            }
+
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.href = window.location.href;
+
+                        } catch(error) {
+                            console.error('Error:', error);
+                            displayGlobalError(error.message);
+                        }
                     });
                 } else if (errand.raw_status === 'in_progress') {
                     document.getElementById('performingBadge').style.display = 'flex';
@@ -501,7 +549,30 @@
                         
                         if(!isConfirmed) return;
                         
-                        // Add your cancel active errand AJAX call implementation here
+                        try {
+                            const response = await fetch('/api/admin/errands/' + errand.id + '/reset-to-pending', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN' : origin
+                                },
+                                credentials: 'same-origin'
+                            });
+
+                            const result = await response.json();
+                            if(!response.ok || !result.success){
+                                throw new Error(result.message);
+                            }
+
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.href = window.location.href;
+
+                        } catch(error) {
+                            console.error('Error:', error);
+                            displayGlobalError(error.message);
+                        }
                     });
                 } else if (errand.raw_status === 'awaiting_confirmation') {
                     const confirmCompletionBtn = document.getElementById('confirmCompletionBtn');

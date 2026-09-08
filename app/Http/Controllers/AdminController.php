@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Models\Notification;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -64,7 +66,7 @@ class AdminController extends Controller
         }
 
         $errands = $query
-            ->latest()
+            ->orderBy('updated_at', 'desc')
             ->paginate($perPage);
 
         $formattedErrands = collect($errands->items())->map(function ($errand) {
@@ -339,6 +341,155 @@ class AdminController extends Controller
         return response()->json([
             'success' => true,
             'errand' => $formattedErrand
+        ]);
+    }
+
+    public function resetErrandToPending(Request $request, $id)
+    {
+        $admin = $request->user();
+
+        $errand = Errand::where('id', $id)
+            ->whereIn('status', ['accepted', 'in_progress'])
+            ->first();
+
+        if (!$errand) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Errand not found or is not in an accepted or in-progress state.'
+            ], 404);
+        }
+
+        $tasker_id = $errand->tasker_id;
+        $client_id = $errand->client_id;
+
+        $errand->status = 'pending';
+        $errand->tasker_id = null;
+        $errand->accepted_at = null;
+        $errand->in_progress_at = null;
+        $errand->cancel_requested_by_client = false;
+        $errand->cancel_requested_by_tasker = false;
+        $errand->save();
+
+        $errand_id = $errand->id;
+        $errand_title = $errand->title;
+        
+        $admin_full_name = trim("{$admin->first_name} " . ($admin->middle_name ? "{$admin->middle_name} " : "") . "{$admin->last_name}");
+
+        $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) status was reset to \"Pending\" by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
+        $tasker_msg = "The Errand: \"{$errand_title}\" (ID: {$errand_id}) you were assigned to has been reset to \"Pending\" by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
+        $admin_msg = "Errand Reset | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Reset to Pending by Admin: \"{$admin_full_name}\" (ID: {$admin->id}).";
+
+        $notif_type = "errand";
+
+        $client_link = route('client.view-errand', ['id' => $errand_id]) . '?from=notifications';
+        $tasker_link = route('tasker.view-errand', ['id' => $errand_id]) . '?from=notifications';
+        $admin_link = route('admin.view-errand', ['id' => $errand_id]) . '?from=notifications';
+
+        if ($client_id) {
+            Notification::create([
+                'user_id' => $client_id,
+                'type' => $notif_type,
+                'message' => $client_msg,
+                'link' => $client_link,
+                'is_read' => false,
+            ]);
+        }
+
+        if ($tasker_id) {
+            Notification::create([
+                'user_id' => $tasker_id,
+                'type' => $notif_type,
+                'message' => $tasker_msg,
+                'link' => $tasker_link,
+                'is_read' => false,
+            ]);
+        }
+
+        $admins = User::where('role', 'admin')->where('id', '!=', $admin->id)->get();
+        foreach ($admins as $adm) {
+            Notification::create([
+                'user_id' => $adm->id,
+                'type' => $notif_type,
+                'message' => $admin_msg,
+                'link' => $admin_link,
+                'is_read' => false,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Errand successfully reset to pending status!',
+        ]);
+    }
+
+    public function destroyErrand(Request $request, $id)
+    {
+        $admin = $request->user();
+
+        $errand = Errand::with('attachment')
+            ->where('id', $id)
+            ->first();
+
+        if (!$errand) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Errand not found.'
+            ], 404);
+        }
+
+        if (strtolower($errand->status) !== 'pending') {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Only pending errands can be deleted.'
+            ], 403);
+        }
+
+        $client_id = $errand->client_id;
+
+        $errand_id = $errand->id;
+        $errand_title = $errand->title;
+
+        if ($errand->attachment) {
+            Storage::disk('public')->delete($errand->attachment->file_path);
+            $errand->attachment()->delete();
+        }
+
+        $errand->delete();
+
+        $admin_full_name = trim("{$admin->first_name} " . ($admin->middle_name ? "{$admin->middle_name} " : "") . "{$admin->last_name}");
+        
+        $client_msg = "Your Pending Errand: \"{$errand_title}\" (ID: {$errand_id}) has been deleted by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
+        $admin_msg = "Errand Deleted | Pending Errand: \"{$errand_title}\" (ID: {$errand_id}) | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin->id}).";
+
+        $notif_type = "errand";
+
+        $client_link = route('client.dashboard') . '?from=notifications';
+        $admin_link = route('admin.dashboard') . '?from=notifications';
+
+        if ($client_id) {
+            Notification::create([
+                'user_id' => $client_id,
+                'type' => $notif_type,
+                'message' => $client_msg,
+                'link' => $client_link,
+                'is_read' => false,
+            ]);
+        }
+
+        $admins = User::where('role', 'admin')->where('id', '!=', $admin->id)->get();
+        foreach ($admins as $adm) {
+            Notification::create([
+                'user_id' => $adm->id,
+                'type' => $notif_type,
+                'message' => $admin_msg,
+                'link' => $admin_link,
+                'is_read' => false,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Errand deleted successfully.',
         ]);
     }
 }

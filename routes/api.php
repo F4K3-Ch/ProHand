@@ -55,5 +55,7 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
         Route::get('/admin/history/history-metrics', [AdminController::class, 'allHistoryMetrics']);
         Route::get('/admin/history/history-errands', [AdminController::class, 'allHistoryErrands']);
         Route::get('/admin/errands/{id}', [AdminController::class, 'getErrandDetails']);
+        Route::post('/admin/errands/{id}/reset-to-pending', [AdminController::class, 'resetErrandToPending']);
+        Route::post('/admin/errands/{id}/delete', [AdminController::class, 'destroyErrand']);
     });
 });
