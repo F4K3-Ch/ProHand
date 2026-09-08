@@ -349,7 +349,30 @@
 
                             if (!isConfirmed) return;
 
-                            // Add your cancellation request AJAX call here
+                            try {
+                                const response = await fetch('/api/tasker/errands/' + errand.id + '/request-cancel', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN' : origin
+                                    },
+                                    credentials: 'same-origin'
+                                });
+
+                                const result = await response.json();
+                                if(!response.ok || !result.success){
+                                    throw new Error(result.message);
+                                }
+
+                                sessionStorage.setItem('success_message', result.message);
+                                window.location.href = window.location.href;
+
+                            } catch(error) {
+                                console.error('Error:', error);
+                                displayGlobalError(error.message);
+                            }
                         });
                     } else {
                         cancelDisabledBtn.style.display = 'flex';

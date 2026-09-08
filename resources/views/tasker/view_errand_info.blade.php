@@ -138,6 +138,10 @@
                         <i class="fa-solid fa-check"></i> Mark as Completed
                     </button>
 
+                    <span class="descriptive-status-badge" id="pendingCancelBadge" style="display: none;">
+                        <i class="fa-solid fa-spinner fa-spin"></i>Waiting for Admin Decision on your Cancellation request...
+                    </span>
+
                     <button type="button" id="cancelRequestBtn" class="btn-cancel" style="display: none;">
                         <i class="fa-solid fa-hand-holding-hand"></i>Request Cancel
                     </button>
@@ -342,99 +346,220 @@
 
                 } else if (errand.raw_status === 'accepted') {
                     const startErrandBtn = document.getElementById('startErrandBtn');
-                    startErrandBtn.style.display = 'flex';
-                        
-                    startErrandBtn.addEventListener('click', async function(){
-                        const customTitle = 'Start Errand';
-                        const customMessage = 'Are you ready to begin working on errand #' + errand.id + ' ("' + errand.title + '")?';
-                        const isConfirmed = await showConfirmation(customTitle, customMessage);
-                        
-                        if(!isConfirmed) return;
-
-                        try {
-                            const response = await fetch('/api/tasker/errands/' + errand.id + '/start', {
-                                method: 'POST',
-                                headers: {
-                                    'Accept': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                                    'X-API-KEY': apiKey,
-                                    'X-MY-ORIGIN' : origin
-                                },
-                                credentials: 'same-origin'
-                            });
-
-                            const result = await response.json();
-                            if (!response.ok || !result.success) throw new Error(result.message || 'Failed to start errand.');
-
-                            sessionStorage.setItem('success_message', result.message);
-                            window.location.href = window.location.href;
-
-                        } catch(error) {
-                            console.error('Error:', error);
-                            displayGlobalError(error.message);
-                        }
-                    });
-
                     const cancelRequestBtn = document.getElementById('cancelRequestBtn');
-                    cancelRequestBtn.style.display = 'flex';
+                    const pendingCancelBadge = document.getElementById('pendingCancelBadge');
 
-                    cancelRequestBtn.addEventListener('click', async function(){
-                        const customTitle = 'Confirm Cancellation Request';
-                        const customMessage = 'Are you sure you want to send a cancellation request to the Admin for errand #' + errand.id + ' ("' + errand.title + '")?';
-                        const isConfirmed = await showConfirmation(customTitle, customMessage);
-                        
-                        if(!isConfirmed) return;
+                    if (Number(errand.cancel_requested_by_tasker) === 0) {
+                        startErrandBtn.style.display = 'flex';
+                        cancelRequestBtn.style.display = 'flex';
+                        pendingCancelBadge.style.display = 'none';
 
-                        // Add your cancel request AJAX call here
-                    });
+                        startErrandBtn.addEventListener('click', async function() {
+                            const customTitle = 'Start Errand';
+                            const customMessage =
+                                'Are you ready to start errand #' + errand.id +
+                                ' ("' + errand.title + '")?';
+
+                            const isConfirmed = await showConfirmation(customTitle, customMessage);
+
+                            if (!isConfirmed) return;
+
+                            try {
+                                const response = await fetch(
+                                    '/api/tasker/errands/' + errand.id + '/start',
+                                    {
+                                        method: 'POST',
+                                        headers: {
+                                            'Accept': 'application/json',
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                            'X-API-KEY': apiKey,
+                                            'X-MY-ORIGIN': origin
+                                        },
+                                        credentials: 'same-origin'
+                                    }
+                                );
+
+                                const result = await response.json();
+
+                                if (!response.ok || !result.success) {
+                                    throw new Error(result.message || 'Failed to start errand.');
+                                }
+
+                                sessionStorage.setItem(
+                                    'success_message',
+                                    result.message || 'Errand started successfully.'
+                                );
+
+                                window.location.href = window.location.href;
+
+                            } catch (error) {
+                                console.error('Error:', error);
+                                displayGlobalError(error.message);
+                            }
+                        });
+
+                        cancelRequestBtn.addEventListener('click', async function() {
+                            const customTitle = 'Confirm Cancellation Request';
+                            const customMessage =
+                                'Are you sure you want to request cancellation of errand #' +
+                                errand.id + ' ("' + errand.title +
+                                '")? The request will be sent to the Admin for review.';
+
+                            const isConfirmed = await showConfirmation(customTitle, customMessage);
+
+                            if (!isConfirmed) return;
+
+                            try {
+                                const response = await fetch(
+                                    '/api/tasker/errands/' + errand.id + '/request-cancel',
+                                    {
+                                        method: 'POST',
+                                        headers: {
+                                            'Accept': 'application/json',
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                            'X-API-KEY': apiKey,
+                                            'X-MY-ORIGIN': origin
+                                        },
+                                        credentials: 'same-origin'
+                                    }
+                                );
+
+                                const result = await response.json();
+
+                                if (!response.ok || !result.success) {
+                                    throw new Error(
+                                        result.message || 'Failed to submit cancellation request.'
+                                    );
+                                }
+
+                                sessionStorage.setItem(
+                                    'success_message',
+                                    result.message || 'Cancellation request submitted successfully.'
+                                );
+
+                                window.location.href = window.location.href;
+
+                            } catch (error) {
+                                console.error('Error:', error);
+                                displayGlobalError(error.message);
+                            }
+                        });
+
+                    } else {
+                        startErrandBtn.style.display = 'none';
+                        cancelRequestBtn.style.display = 'none';
+                        pendingCancelBadge.style.display = 'flex';
+                    }
 
                 } else if (errand.raw_status === 'in_progress') {
                     const completeErrandBtn = document.getElementById('completeErrandBtn');
-                    completeErrandBtn.style.display = 'flex';
-
-                    completeErrandBtn.addEventListener('click', async function(){
-                        const customTitle = 'Finish Errand';
-                        const customMessage = 'Are you sure you want to mark errand #' + errand.id + ' ("' + errand.title + '") as finished and send it to the client for confirmation?';
-                        const isConfirmed = await showConfirmation(customTitle, customMessage);
-                        
-                        if(!isConfirmed) return;
-
-                        try {
-                            const response = await fetch('/api/tasker/errands/' + errand.id + '/awaiting-confirmation', {
-                                method: 'POST',
-                                headers: {
-                                    'Accept': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                                    'X-API-KEY': apiKey,
-                                    'X-MY-ORIGIN' : origin
-                                },
-                                credentials: 'same-origin'
-                            });
-
-                            const result = await response.json();
-                            if (!response.ok || !result.success) throw new Error(result.message || 'Failed to mark the errand.');
-
-                            sessionStorage.setItem('success_message', result.message);
-                            window.location.href = window.location.href;
-
-                        } catch(error) {
-                            console.error('Error:', error);
-                            displayGlobalError(error.message);
-                        }
-                    });
-
                     const cancelRequestBtn = document.getElementById('cancelRequestBtn');
-                    cancelRequestBtn.style.display = 'flex';
+                    const pendingCancelBadge = document.getElementById('pendingCancelBadge');
 
-                    cancelRequestBtn.addEventListener('click', async function(){
-                        const customTitle = 'Confirm Cancellation Request';
-                        const customMessage = 'Are you sure you want to send a cancellation request to the Admin for errand #' + errand.id + ' ("' + errand.title + '")?';
-                        const isConfirmed = await showConfirmation(customTitle, customMessage);
-                        
-                        if(!isConfirmed) return;
+                    if (Number(errand.cancel_requested_by_tasker) === 0) {
+                        completeErrandBtn.style.display = 'flex';
+                        cancelRequestBtn.style.display = 'flex';
+                        pendingCancelBadge.style.display = 'none';
 
-                        // Add your cancel request AJAX call here
-                    });
+                        completeErrandBtn.addEventListener('click', async function() {
+                            const customTitle = 'Mark Errand as Completed';
+                            const customMessage =
+                                'Are you sure you want to mark errand #' + errand.id +
+                                ' ("' + errand.title +
+                                '") as completed? The client will be asked to confirm the completion.';
+
+                            const isConfirmed = await showConfirmation(customTitle, customMessage);
+
+                            if (!isConfirmed) return;
+
+                            try {
+                                const response = await fetch(
+                                    '/api/tasker/errands/' + errand.id + '/awaiting-confirmation',
+                                    {
+                                        method: 'POST',
+                                        headers: {
+                                            'Accept': 'application/json',
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                            'X-API-KEY': apiKey,
+                                            'X-MY-ORIGIN': origin
+                                        },
+                                        credentials: 'same-origin'
+                                    }
+                                );
+
+                                const result = await response.json();
+
+                                if (!response.ok || !result.success) {
+                                    throw new Error(
+                                        result.message || 'Failed to mark errand as completed.'
+                                    );
+                                }
+
+                                sessionStorage.setItem(
+                                    'success_message',
+                                    result.message || 'Errand marked as completed.'
+                                );
+
+                                window.location.href = window.location.href;
+
+                            } catch (error) {
+                                console.error('Error:', error);
+                                displayGlobalError(error.message);
+                            }
+                        });
+
+                        cancelRequestBtn.addEventListener('click', async function() {
+                            const customTitle = 'Confirm Cancellation Request';
+                            const customMessage =
+                                'Are you sure you want to request cancellation of errand #' +
+                                errand.id + ' ("' + errand.title +
+                                '")? The request will be sent to the Admin for review.';
+
+                            const isConfirmed = await showConfirmation(customTitle, customMessage);
+
+                            if (!isConfirmed) return;
+
+                            try {
+                                const response = await fetch(
+                                    '/api/tasker/errands/' + errand.id + '/request-cancel',
+                                    {
+                                        method: 'POST',
+                                        headers: {
+                                            'Accept': 'application/json',
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                            'X-API-KEY': apiKey,
+                                            'X-MY-ORIGIN': origin
+                                        },
+                                        credentials: 'same-origin'
+                                    }
+                                );
+
+                                const result = await response.json();
+
+                                if (!response.ok || !result.success) {
+                                    throw new Error(
+                                        result.message || 'Failed to submit cancellation request.'
+                                    );
+                                }
+
+                                sessionStorage.setItem(
+                                    'success_message',
+                                    result.message || 'Cancellation request submitted successfully.'
+                                );
+
+                                window.location.href = window.location.href;
+
+                            } catch (error) {
+                                console.error('Error:', error);
+                                displayGlobalError(error.message);
+                            }
+                        });
+
+                    } else {
+                        completeErrandBtn.style.display = 'none';
+                        cancelRequestBtn.style.display = 'none';
+                        pendingCancelBadge.style.display = 'flex';
+                    }
 
                 } else if (errand.raw_status === 'awaiting_confirmation') {
                     const awaitingConfirmationBadge = document.getElementById('awaitingConfirmationBadge');

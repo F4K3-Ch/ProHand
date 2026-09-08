@@ -45,6 +45,7 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
         Route::post('/tasker/errands/{id}/accept', [TaskerController::class, 'acceptErrand']);
         Route::post('/tasker/errands/{id}/start', [TaskerController::class, 'startErrand']);
         Route::post('/tasker/errands/{id}/awaiting-confirmation', [TaskerController::class, 'markAwaitingConfirmation']);
+        Route::post('/tasker/errands/{id}/request-cancel', [TaskerController::class, 'requestCancellation']);
     });
 
     Route::middleware('role:admin')->group(function() {

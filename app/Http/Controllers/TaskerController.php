@@ -303,7 +303,7 @@ class TaskerController extends Controller
                 'fee' => '₱' . number_format($errand->fee, 2),
                 'status' => Str::title(str_replace('_', ' ', $errand->status)),
                 'raw_status' => $errand->status,
-                'cancel_requested_by_client' => $errand->cancel_requested_by_client ?? false,
+                'cancel_requested_by_tasker' => $errand->cancel_requested_by_tasker,
                 'status_class' => 'status-field status-' . $errand->status,
                 
                 'created_at' => $errand->created_at 
@@ -608,6 +608,60 @@ class TaskerController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Errand marked as awaiting confirmation successfully!',
+        ]);
+    }
+
+    public function requestCancellation(Request $request, $id)
+    {
+        $tasker = $request->user();
+
+        $errand = Errand::where('id', $id)
+            ->whereIn('status', ['accepted', 'in_progress'])
+            ->where('tasker_id', $tasker->id)
+            ->first();
+
+        if (!$errand) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Errand not found or cannot be cancelled.'
+            ], 404);
+        }
+
+        if ($errand->cancel_requested_by_tasker) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Cancellation has already been requested for this errand.'
+            ], 400);
+        }
+
+        $errand->cancel_requested_by_tasker = true;
+        $errand->save();
+
+        $errand_id = $errand->id;
+        $errand_title = $errand->title;
+        
+        $tasker_id = $tasker->id;
+        $tasker_full_name = trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}");
+
+        $notif_type = "errand";
+
+        $admin_msg = "Cancellation Requested | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) has requested a cancellation.";
+        $admin_link = route('admin.view-errand', ['id' => $errand_id]) . '?from=notifications';
+
+        $admins = User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id' => $admin->id,
+                'type' => $notif_type,
+                'message' => $admin_msg,
+                'link' => $admin_link,
+                'is_read' => false,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cancellation request submitted successfully. Waiting for admin approval.',
         ]);
     }
 }
