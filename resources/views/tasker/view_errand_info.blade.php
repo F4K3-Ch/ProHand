@@ -147,7 +147,7 @@
                     </button>
 
                     <span id="awaitingConfirmationBadge" class="descriptive-status-badge" style="display: none;">
-                        <i class="fa-solid fa-spinner fa-spin"></i> Awaiting Client Confirmation
+                        <i class="fa-solid fa-spinner fa-spin"></i> Awaiting Client or Admin Confirmation
                     </span>
 
                     <span class="descriptive-status-badge" id="disputeBadge"  style="display: none;">
