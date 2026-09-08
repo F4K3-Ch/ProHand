@@ -343,7 +343,7 @@
                     status.className = errand.status_class;
 
                     card.querySelector('.btn-view').href =
-                        '/client/view-errand/' + encodeURIComponent(errand.id) +
+                        '/client/view-errand/' + errand.id +
                         '?from=client.dashboard';
 
                     const cancelDisabledBtn = card.querySelector('.btn-cancel-disabled');

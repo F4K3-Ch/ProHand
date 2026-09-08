@@ -233,7 +233,7 @@
             }
 
             try {
-                const response = await fetch('/api/client/errands/' + encodeURIComponent(errandId), {
+                const response = await fetch('/api/client/errands/' + errandId, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
@@ -318,7 +318,7 @@
                     const deleteBtn = document.getElementById('deleteErrandBtn');
 
                     editBtn.href =
-                        '/client/edit-errand/' + encodeURIComponent(errand.id) +
+                        '/client/edit-errand/' + errand.id +
                         '?from=client.dashboard';
                     editBtn.style.display = 'flex';
                     deleteBtn.style.display = 'flex';

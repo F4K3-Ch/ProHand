@@ -331,7 +331,7 @@
                     status.className = errand.status_class;
 
                     card.querySelector('.btn-view').href =
-                        '/tasker/view-errand/' + encodeURIComponent(errand.id) +
+                        '/tasker/view-errand/' + errand.id +
                         '?from=tasker.dashboard';
 
                     const cancelRequestBtn = card.querySelector('.btn-cancel-request');

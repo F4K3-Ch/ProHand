@@ -293,7 +293,7 @@
                     status.className = errand.status_class;
 
                     card.querySelector('.btn-view').href =
-                        '/tasker/view-errand/' + encodeURIComponent(errand.id) +
+                        '/tasker/view-errand/' + errand.id +
                         '?from=tasker.history';
 
                     const deleteBtn = card.querySelector('.btn-delete');

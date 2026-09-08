@@ -226,7 +226,7 @@
             }
 
             try {
-                const response = await fetch('/api/tasker/errands/' + encodeURIComponent(errandId), {
+                const response = await fetch('/api/tasker/errands/' + errandId, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
@@ -317,10 +317,9 @@
                         if (!isConfirmed) return;
 
                         try {
-                            const response = await fetch('/api/tasker/errands/' + encodeURIComponent(errandId) + '/accept', {
+                            const response = await fetch('/api/tasker/errands/' + errandId + '/accept', {
                                 method: 'POST',
                                 headers: {
-                                    'Content-Type': 'application/json',
                                     'Accept': 'application/json',
                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                                     'X-API-KEY': apiKey,
@@ -356,28 +355,22 @@
 
                         startErrandBtn.addEventListener('click', async function() {
                             const customTitle = 'Start Errand';
-                            const customMessage =
-                                'Are you ready to start errand #' + errand.id +
-                                ' ("' + errand.title + '")?';
-
+                            const customMessage = 'Are you ready to start errand #' + errand.id +' ("' + errand.title + '")?';
                             const isConfirmed = await showConfirmation(customTitle, customMessage);
 
                             if (!isConfirmed) return;
 
                             try {
-                                const response = await fetch(
-                                    '/api/tasker/errands/' + errand.id + '/start',
-                                    {
-                                        method: 'POST',
-                                        headers: {
-                                            'Accept': 'application/json',
-                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                                            'X-API-KEY': apiKey,
-                                            'X-MY-ORIGIN': origin
-                                        },
-                                        credentials: 'same-origin'
-                                    }
-                                );
+                                const response = await fetch('/api/tasker/errands/' + errandId + '/start', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN': origin
+                                    },
+                                    credentials: 'same-origin'
+                                });
 
                                 const result = await response.json();
 
@@ -400,29 +393,23 @@
 
                         cancelRequestBtn.addEventListener('click', async function() {
                             const customTitle = 'Confirm Cancellation Request';
-                            const customMessage =
-                                'Are you sure you want to request cancellation of errand #' +
-                                errand.id + ' ("' + errand.title +
-                                '")? The request will be sent to the Admin for review.';
+                            const customMessage = 'Are you sure you want to request cancellation of errand #' + errand.id + ' ("' + errand.title + '")? The request will be sent to the Admin for review.';
 
                             const isConfirmed = await showConfirmation(customTitle, customMessage);
 
                             if (!isConfirmed) return;
 
                             try {
-                                const response = await fetch(
-                                    '/api/tasker/errands/' + errand.id + '/request-cancel',
-                                    {
-                                        method: 'POST',
-                                        headers: {
-                                            'Accept': 'application/json',
-                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                                            'X-API-KEY': apiKey,
-                                            'X-MY-ORIGIN': origin
-                                        },
-                                        credentials: 'same-origin'
-                                    }
-                                );
+                                const response = await fetch('/api/tasker/errands/' + errandId + '/request-cancel', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN': origin
+                                    },
+                                    credentials: 'same-origin'
+                                });
 
                                 const result = await response.json();
 
@@ -463,29 +450,22 @@
 
                         completeErrandBtn.addEventListener('click', async function() {
                             const customTitle = 'Mark Errand as Completed';
-                            const customMessage =
-                                'Are you sure you want to mark errand #' + errand.id +
-                                ' ("' + errand.title +
-                                '") as completed? The client will be asked to confirm the completion.';
-
+                            const customMessage = 'Are you sure you want to mark errand #' + errand.id + ' ("' + errand.title + '") as completed? The client will be asked to confirm the completion.';
                             const isConfirmed = await showConfirmation(customTitle, customMessage);
 
                             if (!isConfirmed) return;
 
                             try {
-                                const response = await fetch(
-                                    '/api/tasker/errands/' + errand.id + '/awaiting-confirmation',
-                                    {
-                                        method: 'POST',
-                                        headers: {
-                                            'Accept': 'application/json',
-                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                                            'X-API-KEY': apiKey,
-                                            'X-MY-ORIGIN': origin
-                                        },
-                                        credentials: 'same-origin'
-                                    }
-                                );
+                                const response = await fetch('/api/tasker/errands/' + errandId + '/awaiting-confirmation', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN': origin
+                                    },
+                                    credentials: 'same-origin'
+                                });
 
                                 const result = await response.json();
 
@@ -510,29 +490,23 @@
 
                         cancelRequestBtn.addEventListener('click', async function() {
                             const customTitle = 'Confirm Cancellation Request';
-                            const customMessage =
-                                'Are you sure you want to request cancellation of errand #' +
-                                errand.id + ' ("' + errand.title +
-                                '")? The request will be sent to the Admin for review.';
+                            const customMessage = 'Are you sure you want to request cancellation of errand #' + errand.id + ' ("' + errand.title + '")? The request will be sent to the Admin for review.';
 
                             const isConfirmed = await showConfirmation(customTitle, customMessage);
 
                             if (!isConfirmed) return;
 
                             try {
-                                const response = await fetch(
-                                    '/api/tasker/errands/' + errand.id + '/request-cancel',
-                                    {
-                                        method: 'POST',
-                                        headers: {
-                                            'Accept': 'application/json',
-                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                                            'X-API-KEY': apiKey,
-                                            'X-MY-ORIGIN': origin
-                                        },
-                                        credentials: 'same-origin'
-                                    }
-                                );
+                                const response = await fetch('/api/tasker/errands/' + errandId + '/request-cancel', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN': origin
+                                    },
+                                    credentials: 'same-origin'
+                                });
 
                                 const result = await response.json();
 

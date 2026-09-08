@@ -257,7 +257,7 @@
                     status.className = errand.status_class;
 
                     card.querySelector('.btn-view').href =
-                        '/tasker/view-errand/' + encodeURIComponent(errand.id) +
+                        '/tasker/view-errand/' + errand.id +
                         '?from=tasker.available-errands';
 
                     card.querySelector('.btn-accept').addEventListener('click', async function(){
