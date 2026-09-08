@@ -17,7 +17,13 @@ class RoleMiddleware
     {
         $user = $request->user();
 
-        if (!in_array($user->role, $roles, true)) {
+        if (!$user || !in_array($user->role, $roles, true)) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'You are not authorized to access this resource.'
+                ], 403);
+            }
+
             return redirect()
                 ->route($user->role . '.dashboard')
                 ->with('error', 'You are not authorized to access this page.');
