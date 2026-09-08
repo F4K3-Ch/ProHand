@@ -552,7 +552,30 @@
                         
                         if(!isConfirmed) return;
 
-                        // Add your delete completed/failed errand AJAX call implementation here
+                        try {
+                            const response = await fetch('/api/tasker/history/' + errand.id + '/delete', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN' : origin
+                                },
+                                credentials: 'same-origin'
+                            });
+
+                            const result = await response.json();
+                            if(!response.ok || !result.success){
+                                throw new Error(result.message);
+                            }
+
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.href = '{{ route("tasker.history") }}';
+
+                        } catch(error) {
+                            console.error('Error:', error);
+                            displayGlobalError(error.message);
+                        }
                     });
                 }
 

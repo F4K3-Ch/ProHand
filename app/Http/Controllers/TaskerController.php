@@ -664,4 +664,28 @@ class TaskerController extends Controller
             'message' => 'Cancellation request submitted successfully. Waiting for admin approval.',
         ]);
     }
+
+    public function destroyHistory(Request $request, $id)
+    {
+        $taskerId = $request->user()->id;
+
+        $history = History::where('errand_id', $id)
+            ->where('tasker_id', $taskerId)
+            ->first();
+
+        if (!$history) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'History record not found.'
+            ], 404);
+        }
+
+        $history->tasker_deleted = true;
+        $history->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Errand removed from history successfully.'
+        ]);
+    }
 }
