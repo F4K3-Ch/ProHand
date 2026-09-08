@@ -317,7 +317,7 @@
                         if (!isConfirmed) return;
 
                         try {
-                            const response = await fetch('/api/tasker/errands/' + errandId + '/accept', {
+                            const response = await fetch('/api/tasker/errands/' + errand.id + '/accept', {
                                 method: 'POST',
                                 headers: {
                                     'Accept': 'application/json',
@@ -361,7 +361,7 @@
                             if (!isConfirmed) return;
 
                             try {
-                                const response = await fetch('/api/tasker/errands/' + errandId + '/start', {
+                                const response = await fetch('/api/tasker/errands/' + errand.id + '/start', {
                                     method: 'POST',
                                     headers: {
                                         'Accept': 'application/json',
@@ -400,7 +400,7 @@
                             if (!isConfirmed) return;
 
                             try {
-                                const response = await fetch('/api/tasker/errands/' + errandId + '/request-cancel', {
+                                const response = await fetch('/api/tasker/errands/' + errand.id + '/request-cancel', {
                                     method: 'POST',
                                     headers: {
                                         'Accept': 'application/json',
@@ -456,7 +456,7 @@
                             if (!isConfirmed) return;
 
                             try {
-                                const response = await fetch('/api/tasker/errands/' + errandId + '/awaiting-confirmation', {
+                                const response = await fetch('/api/tasker/errands/' + errand.id + '/awaiting-confirmation', {
                                     method: 'POST',
                                     headers: {
                                         'Accept': 'application/json',
@@ -497,7 +497,7 @@
                             if (!isConfirmed) return;
 
                             try {
-                                const response = await fetch('/api/tasker/errands/' + errandId + '/request-cancel', {
+                                const response = await fetch('/api/tasker/errands/' + errand.id + '/request-cancel', {
                                     method: 'POST',
                                     headers: {
                                         'Accept': 'application/json',

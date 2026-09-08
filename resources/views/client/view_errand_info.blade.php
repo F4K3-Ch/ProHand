@@ -406,7 +406,7 @@
                             const isConfirmed = await showConfirmation(customTitle, customMessage);
                             
                             try {
-                                const response = await fetch('/api/client/errands/' + errand.id + '/delete', {
+                                const response = await fetch('/api/client/errands/' + errand.id + '/request-cancel', {
                                     method: 'POST',
                                     headers: {
                                         'Accept': 'application/json',
