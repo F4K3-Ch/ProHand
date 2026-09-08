@@ -147,7 +147,7 @@
             setTimeout(() => {
                 errorMessageText.textContent = '';
                 errorMessageText.style.display = 'none';
-            }, 3000);
+            }, 5000);
         }
 
         function showConfirmation(customTitle, customMessage) {
