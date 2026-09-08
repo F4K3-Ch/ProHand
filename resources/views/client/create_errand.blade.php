@@ -24,7 +24,7 @@
             </div>
 
             <div class="view-main-error-success-message">
-                <p id="errorElement" class="error" style="display: none;"></p>
+                <p class="error" id="errorMessageText" style="display: none;"></p>
             </div>
 
             <form id="create-errand-form" enctype="multipart/form-data">
@@ -97,86 +97,102 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
-        flatpickr('#deadline', {
-            enableTime: true,
-            dateFormat: 'Y-m-d H:i:s',
-            altInput: true,
-            altFormat: 'F j, Y h:i K',
-            minDate: 'today'
-        });
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('create-errand-form');
+            const fileInput = document.getElementById('attachment');
+            const errandSpinner = document.getElementById('errandSpinner');
+            const createErrandButton = document.getElementById('createErrandButton');
+            const errorMessageText = document.getElementById('errorMessageText');
 
-        const form = document.getElementById('create-errand-form');
-        const fileInput = document.getElementById('attachment');
-        const errorElement = document.getElementById('errorElement');
-        const errandSpinner = document.getElementById('errandSpinner');
-        const createErrandButton = document.getElementById('createErrandButton');
+            const fp = flatpickr('#deadline', {
+                enableTime: true,
+                dateFormat: 'Y-m-d H:i:s',
+                altInput: true,
+                altFormat: 'F j, Y h:i K',
+                minDate: 'today'
+            });
 
-        fileInput.addEventListener('change', function () {
-            const maxSize = 10 * 1024 * 1024;
+            function displayGlobalError(message) {
+                if (!errorMessageText) return;
+                errorMessageText.textContent = message;
+                errorMessageText.style.display = 'flex'; 
 
-            if (this.files.length > 0 && this.files[0].size > maxSize) {
-                errorElement.textContent = 'This file is too large. Please choose a file smaller than 10MB.';
-                errorElement.style.display = 'block';
-                this.value = '';
-                return;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                setTimeout(() => { 
+                    errorMessageText.style.display = 'none'; 
+                }, 5000);
             }
 
-            errorElement.textContent = '';
-            errorElement.style.display = 'none';
-        });
+            fileInput.addEventListener('change', function () {
+                const maxSize = 10 * 1024 * 1024;
 
-        form.addEventListener('submit', async function (e) {
-            e.preventDefault();
-
-            errandSpinner.style.display = 'inline-block';
-            createErrandButton.disabled = true;
-            errorElement.textContent = '';
-            errorElement.style.display = 'none';
-
-            const formData = new FormData(form);
-
-            try {
-                const response = await fetch('/api/client/create', {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                        'X-API-KEY': apiKey,
-                        'X-MY-ORIGIN' : origin
-                    },
-                    credentials: 'same-origin',
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw data;
+                if (this.files.length > 0 && this.files[0].size > maxSize) {
+                    displayGlobalError('This file is too large. Please choose a file smaller than 10MB.');
+                    this.value = '';
+                    return;
                 }
 
-                sessionStorage.setItem('success_message', data.message);
-                window.location.href = "{{ route('client.dashboard') }}";
-            } catch (err) {
-                let errorMessage = 'An unexpected error occurred.';
+                if (errorMessageText) {
+                    errorMessageText.textContent = '';
+                    errorMessageText.style.display = 'none';
+                }
+            });
 
-                if (err.errors) {
-                    const firstKey = Object.keys(err.errors)[0];
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
 
-                    if (firstKey && err.errors[firstKey]?.length) {
-                        errorMessage = err.errors[firstKey][0];
+                errandSpinner.style.display = 'inline-block';
+                createErrandButton.disabled = true;
+                if (errorMessageText) {
+                    errorMessageText.textContent = '';
+                    errorMessageText.style.display = 'none';
+                }
+
+                const formData = new FormData(form);
+
+                try {
+                    const response = await fetch('/api/client/create', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                            'X-API-KEY': apiKey,
+                            'X-MY-ORIGIN' : origin
+                        },
+                        credentials: 'same-origin',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw data;
                     }
-                } else if (err.message) {
-                    errorMessage = err.message;
-                } else if (err.error) {
-                    errorMessage = err.error;
-                }
 
-                errorElement.textContent = errorMessage;
-                errorElement.style.display = 'block';
-            } finally {
-                errandSpinner.style.display = 'none';
-                createErrandButton.disabled = false;
-            }
+                    sessionStorage.setItem('success_message', data.message);
+                    window.location.href = "{{ route('client.dashboard') }}";
+                } catch (err) {
+                    let errorMessage = 'An unexpected error occurred.';
+
+                    if (err.errors) {
+                        const firstKey = Object.keys(err.errors)[0];
+
+                        if (firstKey && err.errors[firstKey]?.length) {
+                            errorMessage = err.errors[firstKey][0];
+                        }
+                    } else if (err.message) {
+                        errorMessage = err.message;
+                    } else if (err.error) {
+                        errorMessage = err.error;
+                    }
+
+                    displayGlobalError(errorMessage);
+                } finally {
+                    errandSpinner.style.display = 'none';
+                    createErrandButton.disabled = false;
+                }
+            });
         });
     </script>
 @endpush

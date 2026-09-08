@@ -269,6 +269,7 @@ class ClientController extends Controller
                 'location' => $errand->location,
                 'contact' => $errand->contact,
                 'fee' => '₱' . number_format($errand->fee, 2),
+                'raw_fee' => $errand->fee,
                 'status' => Str::title(str_replace('_', ' ', $errand->status)),
                 'raw_status' => $errand->status,
                 'cancel_requested_by_client' => $errand->cancel_requested_by_client,
@@ -289,6 +290,7 @@ class ClientController extends Controller
                 'deadline' => $errand->deadline
                     ? Carbon::parse($errand->deadline)->timezone('Asia/Manila')->format('M d, Y h:i A')
                     : 'Not Set',
+                'raw_deadline' => $errand->deadline,
                 'finished_at' => $errand->finished_at
                     ? Carbon::parse($errand->finished_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                     : 'Not Set',
@@ -840,8 +842,6 @@ class ClientController extends Controller
         $user_full_name = trim("{$client->first_name} " . ($client->middle_name ? "{$client->middle_name} " : "") . "{$client->last_name}");
 
         $tasker_id = $errand->tasker_id;
-        $tasker = $tasker_id ? User::find($tasker_id) : null;
-        $tasker_full_name = $tasker ? trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}") : 'Tasker';
 
         $notif_type = "errand";
 

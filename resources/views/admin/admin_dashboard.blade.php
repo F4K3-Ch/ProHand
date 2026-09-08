@@ -326,7 +326,7 @@
                     status.className = errand.status_class;
 
                     card.querySelector('.btn-view').href =
-                        '/admin/view-errand/' + encodeURIComponent(errand.id) +
+                        '/admin/view-errand/' + errand.id +
                         '?from=admin.dashboard';
 
                     const deleteBtn = card.querySelector('.btn-delete');

@@ -16,7 +16,7 @@
             <h1>Edit Errand</h1>
 
             <div class="view-main-error-success-message">
-                <p class="error" id="errorElement" style="display: none;"></p>
+                <p class="error" id="errorMessageText" style="display: none;"></p>
             </div>
 
             <form id="edit-errand-form" enctype="multipart/form-data">
@@ -115,6 +115,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             const fromParam = urlParams.get('from');
             const backButton = document.getElementById('backButton');
+
             if (backButton && fromParam) {
                 backButton.href = '/client/view-errand/{{ $id }}?from=' + encodeURIComponent(fromParam);
             }
@@ -128,6 +129,19 @@
             const errandSpinner = document.getElementById('errandSpinner');
             const updateErrandButton = document.getElementById('updateErrandButton');
 
+            const errorMessageText = document.getElementById('errorMessageText');
+            function displayGlobalError(message) {
+                if (!errorMessageText) return;
+                errorMessageText.textContent = message;
+                errorMessageText.style.display = 'flex'; 
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                setTimeout(() => { 
+                    errorMessageText.style.display = 'none'; 
+                }, 5000);
+            }
+
             const fp = flatpickr('#deadline', {
                 enableTime: true,
                 dateFormat: 'Y-m-d H:i:s',
@@ -135,12 +149,6 @@
                 altFormat: 'F j, Y h:i K',
                 minDate: 'today'
             });
-
-            if (!errandId) {
-                errorElement.textContent = 'Errand ID not found.';
-                errorElement.style.display = 'block';
-                return;
-            }
 
             try {
                 const response = await fetch('/api/client/errands/' + errandId, {
@@ -161,14 +169,14 @@
                 const errand = result.errand;
 
                 document.getElementById('title').value = errand.title || '';
-                document.getElementById('category').value = errand.category ? errand.category.toLowerCase().replace(/\s+/g, '_') : '';
+                document.getElementById('category').value = errand.category ? errand.category.toLowerCase() : '';
                 document.getElementById('description').value = errand.description || '';
                 document.getElementById('location').value = errand.location || '';
-                document.getElementById('fee').value = errand.fee ? errand.fee.toString().replace(/[^\d.]/g, '') : '';
+                document.getElementById('fee').value = errand.raw_fee ?? '';
                 document.getElementById('contact').value = errand.contact || '';
-                
-                if (errand.deadline && errand.deadline !== 'Not Set') {
-                    fp.setDate(errand.deadline);
+
+                if (errand.raw_deadline && errand.raw_deadline !== 'Not Set') {
+                    fp.setDate(errand.raw_deadline); 
                 }
 
                 const currentFileDiv = document.getElementById('current-file');
@@ -185,22 +193,20 @@
 
             } catch (error) {
                 console.error('Error loading errand:', error);
-                errorElement.textContent = error.message;
-                errorElement.style.display = 'block';
+                displayGlobalError(error.message);
             }
 
             fileInput.addEventListener('change', function () {
                 const maxSize = 10 * 1024 * 1024;
 
                 if (this.files.length > 0 && this.files[0].size > maxSize) {
-                    errorElement.textContent = 'This file is too large. Please choose a file smaller than 10MB.';
-                    errorElement.style.display = 'block';
+                    displayGlobalError('This file is too large. Please choose a file smaller than 10MB.');
                     this.value = '';
                     return;
                 }
 
-                errorElement.textContent = '';
-                errorElement.style.display = 'none';
+                errorMessageText.textContent = '';
+                errorMessageText.style.display = 'none';
             });
 
             form.addEventListener('submit', async function (e) {
@@ -208,13 +214,13 @@
 
                 errandSpinner.style.display = 'inline-block';
                 updateErrandButton.disabled = true;
-                errorElement.textContent = '';
-                errorElement.style.display = 'none';
+                errorMessageText.textContent = '';
+                errorMessageText.style.display = 'none';
 
                 const formData = new FormData(form);
 
                 try {
-                    const response = await fetch('/api/client/errands/' + encodeURIComponent(errandId) + '/update', {
+                    const response = await fetch('/api/client/errands/' + errandId + '/update', {
                         method: 'POST',
                         headers: {
                             'Accept': 'application/json',
@@ -249,8 +255,7 @@
                         errorMessage = err.error;
                     }
 
-                    errorElement.textContent = errorMessage;
-                    errorElement.style.display = 'block';
+                    displayGlobalError(errorMessage);
                 } finally {
                     errandSpinner.style.display = 'none';
                     updateErrandButton.disabled = false;
