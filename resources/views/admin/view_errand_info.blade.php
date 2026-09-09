@@ -753,45 +753,6 @@
                     });
                 }
 
-                /* Cancellation buttons */
-                document.querySelectorAll('.btn-approve-release, .btn-deny-release').forEach(button => {
-                    button.addEventListener('click', async function () {
-                        const requester = this.dataset.requester;
-                        const action = this.classList.contains('btn-approve-release')
-                            ? 'approve'
-                            : 'deny';
-
-                        console.log(
-                            'Cancellation action:',
-                            action,
-                            'Requester:',
-                            requester,
-                            'Errand:',
-                            errand.id
-                        );
-
-                        /*
-                        * Add your actual admin cancellation endpoint here.
-                        * Example:
-                        *
-                        * await fetch('/api/admin/errands/' + errand.id + '/cancellation', {
-                        *     method: 'POST',
-                        *     headers: {
-                        *         'Accept': 'application/json',
-                        *         'Content-Type': 'application/json',
-                        *         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        *         'X-API-KEY': apiKey,
-                        *         'X-MY-ORIGIN': origin
-                        *     },
-                        *     body: JSON.stringify({
-                        *         requester: requester,
-                        *         action: action
-                        *     })
-                        * });
-                        */
-                    });
-                });
-
             } catch (error) {
                 console.error('Error:', error);
                 displayGlobalError(error.message);

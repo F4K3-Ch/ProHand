@@ -365,7 +365,9 @@
                         const customTitle = 'Confirm Cancellation';
                         const customMessage = 'Are you sure you want to cancel this errand? It will return to "Pending" status.';
                         const isConfirmed = await showConfirmation(customTitle, customMessage);
-                        
+                            
+                        if(!isConfirmed) return;
+
                         try {
                             const response = await fetch('/api/client/errands/' + errand.id + '/cancel', {
                                 method: 'POST',
@@ -405,6 +407,8 @@
                             const customMessage = 'Are you sure you want to send a cancellation request to the Admin? It will return to "Pending" status and this action cannot be undone until processed.';
                             const isConfirmed = await showConfirmation(customTitle, customMessage);
                             
+                            if(!isConfirmed) return;
+
                             try {
                                 const response = await fetch('/api/client/errands/' + errand.id + '/request-cancel', {
                                     method: 'POST',
