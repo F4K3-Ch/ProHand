@@ -350,13 +350,13 @@ class AdminController extends Controller
         $admin = $request->user();
 
         $errand = Errand::where('id', $id)
-            ->whereIn('status', ['accepted', 'in_progress'])
+            ->whereIn('status', ['accepted', 'in_progress', 'awaiting_confirmation'])
             ->first();
 
         if (!$errand) {
             return response()->json([
                 'success' => false, 
-                'message' => 'Errand not found or is not in an accepted or in-progress state.'
+                'message' => 'Errand not found or is not in an accepted, in-progress or awaiting_confirmation state.'
             ], 404);
         }
 
@@ -377,7 +377,7 @@ class AdminController extends Controller
         $admin_full_name = trim("{$admin->first_name} " . ($admin->middle_name ? "{$admin->middle_name} " : "") . "{$admin->last_name}");
 
         $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) status was reset to \"Pending\" by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
-        $tasker_msg = "Your Assigned Errand: \"{$errand_title}\" (ID: {$errand_id}) you were assigned to has been reset to \"Pending\" by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
+        $tasker_msg = "The Errand: \"{$errand_title}\" (ID: {$errand_id}) you were assigned to has been reset to \"Pending\" by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
         $admin_msg = "Errand Reset | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Reset to Pending by Admin: \"{$admin_full_name}\" (ID: {$admin->id}).";
 
         $notif_type = "errand";
@@ -675,7 +675,7 @@ class AdminController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Errand completed and moved to history successfully by admin.',
+                'message' => 'Errand completed and moved to history successfully.',
                 'history_id' => $history->id,
             ]);
         } catch (\Throwable $e) {
@@ -859,7 +859,7 @@ class AdminController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Errand marked as failed and moved to history successfully by admin.',
+                'message' => 'Errand marked as failed and moved to history successfully.',
                 'history_id' => $history->id,
             ]);
         } catch (\Throwable $e) {

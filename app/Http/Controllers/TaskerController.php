@@ -577,7 +577,7 @@ class TaskerController extends Controller
         $tasker_full_name = trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}");
 
         $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) has been marked as completed by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) and is awaiting your confirmation.";
-        $admin_msg = "Errand Awaiting Confirmation | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Marked as Completed by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+        $admin_msg = "Errand Awaiting Confirmation | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Marked by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
 
         $notif_type = "errand";
 
