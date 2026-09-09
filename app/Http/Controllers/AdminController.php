@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Notification;
 use Illuminate\Support\Str;
@@ -476,8 +477,8 @@ class AdminController extends Controller
             ]);
         }
 
-        $admins = User::where('role', 'admin')->where('id', '!=', $admin->id)->get();
-        foreach ($admins as $adm) {
+        $otherAdmins = User::where('role', 'admin')->where('id', '!=', $admin->id)->get();
+        foreach ($otherAdmins as $adm) {
             Notification::create([
                 'user_id' => $adm->id,
                 'type' => $notif_type,
@@ -491,5 +492,373 @@ class AdminController extends Controller
             'success' => true,
             'message' => 'Errand deleted successfully.',
         ]);
+    }
+
+    public function updateCompleted(Request $request, $id)
+    {
+        $admin = $request->user();
+
+        $errand = Errand::with('attachment')
+            ->where('id', $id)
+            ->whereIn('status', ['awaiting_confirmation', 'dispute'])
+            ->first();
+
+        if (!$errand) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errand not found or is not in an awaiting confirmation or dispute state.'
+            ], 404);
+        }
+
+        $client = User::find($errand->client_id);
+        $tasker = $errand->tasker_id ? User::find($errand->tasker_id) : null;
+
+        try {
+            $history = DB::transaction(function () use ($errand, $admin, $client, $tasker) {
+
+                $history = History::create([
+                    'errand_id' => $errand->id,
+                    'title' => $errand->title,
+                    'category' => $errand->category,
+                    'description' => $errand->description,
+                    'fee' => $errand->fee,
+                    'deadline' => $errand->deadline,
+                    'location' => $errand->location,
+                    'contact' => $errand->contact,
+                    'status' => 'completed',
+
+                    'client_id' => $client?->id,
+                    'client_last_name' => $client?->last_name,
+                    'client_first_name' => $client?->first_name,
+                    'client_middle_name' => $client?->middle_name,
+                    'client_email' => $client?->email,
+                    'client_contact_number' => $client?->contact_number,
+
+                    'tasker_id' => $tasker?->id,
+                    'tasker_last_name' => $tasker?->last_name,
+                    'tasker_first_name' => $tasker?->first_name,
+                    'tasker_middle_name' => $tasker?->middle_name,
+                    'tasker_email' => $tasker?->email,
+                    'tasker_contact_number' => $tasker?->contact_number,
+
+                    'created_at' => $errand->created_at,
+                    'accepted_at' => $errand->accepted_at,
+                    'in_progress_at' => $errand->in_progress_at,
+                    'finished_at' => Carbon::now(),
+                ]);
+
+                $clientProfilePicture = 'uploads/history/profile_pictures/default.jpg';
+                $taskerProfilePicture = 'uploads/history/profile_pictures/default.jpg';
+
+                if (
+                    $client &&
+                    $client->profile_picture &&
+                    $client->profile_picture !== 'uploads/profile_pictures/default.jpg' &&
+                    Storage::disk('public')->exists($client->profile_picture)
+                ) {
+                    $extension = pathinfo($client->profile_picture, PATHINFO_EXTENSION);
+                    $clientProfilePicture = 'uploads/history/profile_pictures/client_' . $history->errand_id . '.' . $extension;
+
+                    Storage::disk('public')->copy(
+                        $client->profile_picture,
+                        $clientProfilePicture
+                    );
+                }
+
+                if (
+                    $tasker &&
+                    $tasker->profile_picture &&
+                    $tasker->profile_picture !== 'uploads/profile_pictures/default.jpg' &&
+                    Storage::disk('public')->exists($tasker->profile_picture)
+                ) {
+                    $extension = pathinfo($tasker->profile_picture, PATHINFO_EXTENSION);
+                    $taskerProfilePicture = 'uploads/history/profile_pictures/tasker_' . $history->errand_id . '.' . $extension;
+
+                    Storage::disk('public')->copy(
+                        $tasker->profile_picture,
+                        $taskerProfilePicture
+                    );
+                }
+
+                $history->update([
+                    'client_profile_picture' => $clientProfilePicture,
+                    'tasker_profile_picture' => $taskerProfilePicture,
+                ]);
+
+                $attachment = $errand->attachment;
+
+                if ($attachment && Storage::disk('public')->exists($attachment->file_path)) {
+                    $extension = pathinfo(
+                        $attachment->file_path,
+                        PATHINFO_EXTENSION
+                    );
+
+                    $historyPath =
+                        'uploads/history/attachments/' .
+                        Str::uuid() . '.' . $extension;
+
+                    Storage::disk('public')->copy(
+                        $attachment->file_path,
+                        $historyPath
+                    );
+
+                    HistoryAttachment::create([
+                        'history_errand_id' => $history->id,
+                        'file_path' => $historyPath,
+                        'original_name' => $attachment->original_name,
+                        'uploaded_at' => $attachment->uploaded_at,
+                    ]);
+
+                    Storage::disk('public')->delete($attachment->file_path);
+                }
+
+                $errand_id = $errand->id;
+                $errand_title = $errand->title;
+                
+                $admin_full_name = trim("{$admin->first_name} " . ($admin->middle_name ? "{$admin->middle_name} " : "") . "{$admin->last_name}");
+                $client_id = $errand->client_id;
+                $tasker_id = $errand->tasker_id;
+
+                $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) has been resolved and marked as completed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and moved to history.";
+                $tasker_msg = "The Errand: \"{$errand_title}\" (ID: {$errand_id}) has been resolved and marked as completed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and moved to history.";
+                $admin_msg = "Errand Force Completed | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Completed by Admin: \"{$admin_full_name}\" (ID: {$admin->id}). Transferred to history.";
+
+                $notif_type = "errand";
+
+                $client_link = route('client.view-errand', ['id' => $errand_id]) . '?from=notifications';
+                $tasker_link = route('tasker.view-errand', ['id' => $errand_id]) . '?from=notifications';
+                $admin_link = route('admin.view-errand', ['id' => $errand_id]) . '?from=notifications';
+
+                if ($client_id) {
+                    Notification::create([
+                        'user_id' => $client_id,
+                        'type' => $notif_type,
+                        'message' => $client_msg,
+                        'link' => $client_link,
+                        'is_read' => false,
+                    ]);
+                }
+
+                if ($tasker_id) {
+                    Notification::create([
+                        'user_id' => $tasker_id,
+                        'type' => $notif_type,
+                        'message' => $tasker_msg,
+                        'link' => $tasker_link,
+                        'is_read' => false,
+                    ]);
+                }
+
+                $otherAdmins = User::where('role', 'admin')->where('id', '!=', $admin->id)->get();
+                foreach ($otherAdmins as $adm) {
+                    Notification::create([
+                        'user_id' => $adm->id,
+                        'type' => $notif_type,
+                        'message' => $admin_msg,
+                        'link' => $admin_link,
+                        'is_read' => false,
+                    ]);
+                }
+
+                $errand->delete();
+
+                return $history;
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Errand completed and moved to history successfully by admin.',
+                'history_id' => $history->id,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function updateFailed(Request $request, $id)
+    {
+        $admin = $request->user();
+
+        $errand = Errand::with('attachment')
+            ->where('id', $id)
+            ->where('status', 'dispute')
+            ->first();
+
+        if (!$errand) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errand not found or is not in a dispute state.'
+            ], 404);
+        }
+
+        $client = User::find($errand->client_id);
+        $tasker = $errand->tasker_id ? User::find($errand->tasker_id) : null;
+
+        try {
+            $history = DB::transaction(function () use ($errand, $admin, $client, $tasker) {
+
+                $history = History::create([
+                    'errand_id' => $errand->id,
+                    'title' => $errand->title,
+                    'category' => $errand->category,
+                    'description' => $errand->description,
+                    'fee' => $errand->fee,
+                    'deadline' => $errand->deadline,
+                    'location' => $errand->location,
+                    'contact' => $errand->contact,
+                    'status' => 'failed',
+
+                    'client_id' => $client?->id,
+                    'client_last_name' => $client?->last_name,
+                    'client_first_name' => $client?->first_name,
+                    'client_middle_name' => $client?->middle_name,
+                    'client_email' => $client?->email,
+                    'client_contact_number' => $client?->contact_number,
+
+                    'tasker_id' => $tasker?->id,
+                    'tasker_last_name' => $tasker?->last_name,
+                    'tasker_first_name' => $tasker?->first_name,
+                    'tasker_middle_name' => $tasker?->middle_name,
+                    'tasker_email' => $tasker?->email,
+                    'tasker_contact_number' => $tasker?->contact_number,
+
+                    'created_at' => $errand->created_at,
+                    'accepted_at' => $errand->accepted_at,
+                    'in_progress_at' => $errand->in_progress_at,
+                    'finished_at' => Carbon::now(),
+                ]);
+
+                $clientProfilePicture = 'uploads/history/profile_pictures/default.jpg';
+                $taskerProfilePicture = 'uploads/history/profile_pictures/default.jpg';
+
+                if (
+                    $client &&
+                    $client->profile_picture &&
+                    $client->profile_picture !== 'uploads/profile_pictures/default.jpg' &&
+                    Storage::disk('public')->exists($client->profile_picture)
+                ) {
+                    $extension = pathinfo($client->profile_picture, PATHINFO_EXTENSION);
+                    $clientProfilePicture = 'uploads/history/profile_pictures/client_' . $history->errand_id . '.' . $extension;
+
+                    Storage::disk('public')->copy(
+                        $client->profile_picture,
+                        $clientProfilePicture
+                    );
+                }
+
+                if (
+                    $tasker &&
+                    $tasker->profile_picture &&
+                    $tasker->profile_picture !== 'uploads/profile_pictures/default.jpg' &&
+                    Storage::disk('public')->exists($tasker->profile_picture)
+                ) {
+                    $extension = pathinfo($tasker->profile_picture, PATHINFO_EXTENSION);
+                    $taskerProfilePicture = 'uploads/history/profile_pictures/tasker_' . $history->errand_id . '.' . $extension;
+
+                    Storage::disk('public')->copy(
+                        $tasker->profile_picture,
+                        $taskerProfilePicture
+                    );
+                }
+
+                $history->update([
+                    'client_profile_picture' => $clientProfilePicture,
+                    'tasker_profile_picture' => $taskerProfilePicture,
+                ]);
+
+                $attachment = $errand->attachment;
+
+                if ($attachment && Storage::disk('public')->exists($attachment->file_path)) {
+                    $extension = pathinfo(
+                        $attachment->file_path,
+                        PATHINFO_EXTENSION
+                    );
+
+                    $historyPath =
+                        'uploads/history/attachments/' .
+                        Str::uuid() . '.' . $extension;
+
+                    Storage::disk('public')->copy(
+                        $attachment->file_path,
+                        $historyPath
+                    );
+
+                    HistoryAttachment::create([
+                        'history_errand_id' => $history->id,
+                        'file_path' => $historyPath,
+                        'original_name' => $attachment->original_name,
+                        'uploaded_at' => $attachment->uploaded_at,
+                    ]);
+
+                    Storage::disk('public')->delete($attachment->file_path);
+                }
+
+                $errand_id = $errand->id;
+                $errand_title = $errand->title;
+                
+                $admin_full_name = trim("{$admin->first_name} " . ($admin->middle_name ? "{$admin->middle_name} " : "") . "{$admin->last_name}");
+                $client_id = $errand->client_id;
+                $tasker_id = $errand->tasker_id;
+
+                $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been marked as failed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and moved to history.";
+                $tasker_msg = "The Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been marked as failed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and moved to history.";
+                $admin_msg = "Errand Dispute Marked Failed | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Marked Failed by Admin: \"{$admin_full_name}\" (ID: {$admin->id}). Transferred to history.";
+
+                $notif_type = "errand";
+
+                $client_link = route('client.view-errand', ['id' => $errand_id]) . '?from=notifications';
+                $tasker_link = route('tasker.view-errand', ['id' => $errand_id]) . '?from=notifications';
+                $admin_link = route('admin.view-errand', ['id' => $errand_id]) . '?from=notifications';
+
+                if ($client_id) {
+                    Notification::create([
+                        'user_id' => $client_id,
+                        'type' => $notif_type,
+                        'message' => $client_msg,
+                        'link' => $client_link,
+                        'is_read' => false,
+                    ]);
+                }
+
+                if ($tasker_id) {
+                    Notification::create([
+                        'user_id' => $tasker_id,
+                        'type' => $notif_type,
+                        'message' => $tasker_msg,
+                        'link' => $tasker_link,
+                        'is_read' => false,
+                    ]);
+                }
+
+                $otherAdmins = User::where('role', 'admin')->where('id', '!=', $admin->id)->get();
+                foreach ($otherAdmins as $adm) {
+                    Notification::create([
+                        'user_id' => $adm->id,
+                        'type' => $notif_type,
+                        'message' => $admin_msg,
+                        'link' => $admin_link,
+                        'is_read' => false,
+                    ]);
+                }
+
+                $errand->delete();
+
+                return $history;
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Errand marked as failed and moved to history successfully by admin.',
+                'history_id' => $history->id,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

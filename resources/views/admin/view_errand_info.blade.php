@@ -605,7 +605,7 @@
                     completeDisputeBtn.style.display = 'flex';
                     completeDisputeBtn.addEventListener('click', async function(){
                         const customTitle = 'Confirm Completion';
-                        const customMessage = 'Mark this disputed errand as "Completed"? This will resolve the dispute and finish the errand.';
+                        const customMessage = 'Mark this disputed errand as "Completed"? This will resolve the dispute and finish the errand. This action cannot be undone.';
                         const isConfirmed = await showConfirmation(customTitle, customMessage);
                         
                         if(!isConfirmed) return;
@@ -616,7 +616,7 @@
                     failDisputeBtn.style.display = 'flex';
                     failDisputeBtn.addEventListener('click', async function(){
                         const customTitle = 'Confirm Failure';
-                        const customMessage = 'Mark this disputed errand as "Failed"? This will resolve the dispute and mark the errand as failed.';
+                        const customMessage = 'Mark this disputed errand as "Failed"? This will resolve the dispute and mark the errand as failed. This action cannot be undone.';
                         const isConfirmed = await showConfirmation(customTitle, customMessage);
                         
                         if(!isConfirmed) return;
