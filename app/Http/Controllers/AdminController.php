@@ -423,6 +423,178 @@ class AdminController extends Controller
         ]);
     }
 
+    public function approveCancellation(Request $request, $id)
+    {
+        $admin = $request->user();
+        $requester = $request->input('requester'); // 'client' or 'tasker'
+
+        $errand = Errand::where('id', $id)
+            ->where(function ($query) {
+                $query->where('cancel_requested_by_client', true)
+                    ->orWhere('cancel_requested_by_tasker', true);
+            })
+            ->first();
+
+        if (!$errand) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Errand not found or has no pending cancellation request.'
+            ], 404);
+        }
+
+        $tasker_id = $errand->tasker_id;
+        $client_id = $errand->client_id;
+
+        $errand->status = 'pending';
+        $errand->tasker_id = null;
+        $errand->accepted_at = null;
+        $errand->in_progress_at = null;
+        $errand->cancel_requested_by_client = false;
+        $errand->cancel_requested_by_tasker = false;
+        $errand->save();
+
+        $errand_id = $errand->id;
+        $errand_title = $errand->title;
+        
+        $admin_full_name = trim("{$admin->first_name} " . ($admin->middle_name ? "{$admin->middle_name} " : "") . "{$admin->last_name}");
+
+        if ($requester === 'client') {
+            $client_msg = "Your cancellation request for Errand: \"{$errand_title}\" (ID: {$errand_id}) was approved by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}). Status reset to Pending.";
+            $tasker_msg = "The client's cancellation request for Errand: \"{$errand_title}\" (ID: {$errand_id}) was approved by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}). You are no longer assigned.";
+            $admin_msg = "Cancellation Approved (Client) | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Reset to Pending by Admin: \"{$admin_full_name}\" (ID: {$admin->id}).";
+        } else {
+            $client_msg = "The tasker's cancellation request for Errand: \"{$errand_title}\" (ID: {$errand_id}) was approved by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}). Status reset to Pending.";
+            $tasker_msg = "Your cancellation request for Errand: \"{$errand_title}\" (ID: {$errand_id}) was approved by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
+            $admin_msg = "Cancellation Approved (Tasker) | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Reset to Pending by Admin: \"{$admin_full_name}\" (ID: {$admin->id}).";
+        }
+
+        $notif_type = "errand";
+
+        $client_link = route('client.view-errand', ['id' => $errand_id]) . '?from=notifications';
+        $tasker_link = route('tasker.view-errand', ['id' => $errand_id]) . '?from=notifications';
+        $admin_link = route('admin.view-errand', ['id' => $errand_id]) . '?from=notifications';
+
+        if ($client_id) {
+            Notification::create([
+                'user_id' => $client_id,
+                'type' => $notif_type,
+                'message' => $client_msg,
+                'link' => $client_link,
+                'is_read' => false,
+            ]);
+        }
+
+        if ($tasker_id) {
+            Notification::create([
+                'user_id' => $tasker_id,
+                'type' => $notif_type,
+                'message' => $tasker_msg,
+                'link' => $tasker_link,
+                'is_read' => false,
+            ]);
+        }
+
+        $admins = User::where('role', 'admin')->where('id', '!=', $admin->id)->get();
+        foreach ($admins as $adm) {
+            Notification::create([
+                'user_id' => $adm->id,
+                'type' => $notif_type,
+                'message' => $admin_msg,
+                'link' => $admin_link,
+                'is_read' => false,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cancellation request approved successfully and errand reset to pending!',
+        ]);
+    }
+
+    public function denyCancellation(Request $request, $id)
+    {
+        $admin = $request->user();
+        $requester = $request->input('requester'); // 'client' or 'tasker'
+
+        $errand = Errand::where('id', $id)->first();
+
+        if (!$errand) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Errand not found.'
+            ], 404);
+        }
+
+        if ($requester === 'client') {
+            $errand->cancel_requested_by_client = false;
+        } elseif ($requester === 'tasker') {
+            $errand->cancel_requested_by_tasker = false;
+        } else {
+            $errand->cancel_requested_by_client = false;
+            $errand->cancel_requested_by_tasker = false;
+        }
+        $errand->save();
+
+        $tasker_id = $errand->tasker_id;
+        $client_id = $errand->client_id;
+        $errand_id = $errand->id;
+        $errand_title = $errand->title;
+        
+        $admin_full_name = trim("{$admin->first_name} " . ($admin->middle_name ? "{$admin->middle_name} " : "") . "{$admin->last_name}");
+
+        if ($requester === 'client') {
+            $client_msg = "Your cancellation request for Errand: \"{$errand_title}\" (ID: {$errand_id}) was denied by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
+            $tasker_msg = "The client's cancellation request for Errand: \"{$errand_title}\" (ID: {$errand_id}) was denied by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
+            $admin_msg = "Cancellation Denied (Client Request) | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Denied by Admin: \"{$admin_full_name}\" (ID: {$admin->id}).";
+        } else {
+            $client_msg = "The tasker's cancellation request for Errand: \"{$errand_title}\" (ID: {$errand_id}) was denied by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
+            $tasker_msg = "Your cancellation request for Errand: \"{$errand_title}\" (ID: {$errand_id}) was denied by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
+            $admin_msg = "Cancellation Denied (Tasker Request) | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Denied by Admin: \"{$admin_full_name}\" (ID: {$admin->id}).";
+        }
+
+        $notif_type = "errand";
+
+        $client_link = route('client.view-errand', ['id' => $errand_id]) . '?from=notifications';
+        $tasker_link = route('tasker.view-errand', ['id' => $errand_id]) . '?from=notifications';
+        $admin_link = route('admin.view-errand', ['id' => $errand_id]) . '?from=notifications';
+
+        if ($client_id) {
+            Notification::create([
+                'user_id' => $client_id,
+                'type' => $notif_type,
+                'message' => $client_msg,
+                'link' => $client_link,
+                'is_read' => false,
+            ]);
+        }
+
+        if ($tasker_id) {
+            Notification::create([
+                'user_id' => $tasker_id,
+                'type' => $notif_type,
+                'message' => $tasker_msg,
+                'link' => $tasker_link,
+                'is_read' => false,
+            ]);
+        }
+
+        $admins = User::where('role', 'admin')->where('id', '!=', $admin->id)->get();
+        foreach ($admins as $adm) {
+            Notification::create([
+                'user_id' => $adm->id,
+                'type' => $notif_type,
+                'message' => $admin_msg,
+                'link' => $admin_link,
+                'is_read' => false,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cancellation request denied successfully!',
+        ]);
+    }
+
     public function destroyErrand(Request $request, $id)
     {
         $admin = $request->user();

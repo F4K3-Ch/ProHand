@@ -403,7 +403,7 @@
                     const clientCancelBox = document.getElementById('client-cancellation-box');
 
                     if (errand.cancel_requested_by_client) {
-                        clientCancelBox.style.display = 'block';
+                        clientCancelBox.style.display = 'flex';
                     }
                 } else {
                     document.getElementById('client-id').textContent = 'None';
@@ -446,11 +446,56 @@
                     const taskerCancelBox = document.getElementById('tasker-cancellation-box');
 
                     if (errand.cancel_requested_by_tasker) {
-                        taskerCancelBox.style.display = 'block';
+                        taskerCancelBox.style.display = 'flex';
                     }
                 } else {
                     taskerContainer.style.display = 'none';
                 }
+        
+                document.querySelectorAll('.btn-approve-release, .btn-deny-release').forEach(button => {
+                    button.addEventListener('click', async function () {
+                        const requesterType = this.getAttribute('data-requester');
+                        const isApprove = this.classList.contains('btn-approve-release');
+                        
+                        const actionText = isApprove ? 'approve' : 'deny';
+                        const customTitle = (isApprove ? 'Approve' : 'Deny') + ' Cancellation';
+                        const customMessage = 'Are you sure you want to ' + actionText + ' the cancellation request from this ' + requesterType + '?';
+                        
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
+                        if (!isConfirmed) return;
+
+                        const endpoint = isApprove 
+                            ? '/api/admin/errands/' + errand.id + '/approve-cancellation' 
+                            : '/api/admin/errands/' + errand.id + '/deny-cancellation';
+
+                        try {
+                            const response = await fetch(endpoint, {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN': origin
+                                },
+                                body: JSON.stringify({ requester: requesterType }),
+                                credentials: 'same-origin'
+                            });
+
+                            const result = await response.json();
+                            if (!response.ok || !result.success) {
+                                throw new Error(result.message || 'Failed to process cancellation request.');
+                            }
+
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.reload();
+
+                        } catch (error) {
+                            console.error('Error:', error);
+                            displayGlobalError(error.message);
+                        }
+                    });
+                });
 
                 // Handle Attachments
                 const attachContainer = document.getElementById('errand-attachment');

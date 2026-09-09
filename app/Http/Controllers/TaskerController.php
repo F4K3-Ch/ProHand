@@ -641,12 +641,27 @@ class TaskerController extends Controller
         $errand_title = $errand->title;
         
         $tasker_id = $tasker->id;
-        $tasker_full_name = trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}");
+        $user_full_name = trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}");
+
+        $client_id = $errand->client_id;
 
         $notif_type = "errand";
 
-        $admin_msg = "Cancellation Requested | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) has requested a cancellation.";
+        $client_msg = "Tasker \"{$user_full_name}\" (ID: {$tasker_id}) has requested a cancellation for the Errand: \"{$errand_title}\" (ID: {$errand_id}). Waiting for admin decision.";
+        $admin_msg = "Cancellation Requested | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Tasker: \"{$user_full_name}\" (ID: {$tasker_id}) has a cancellation request.";
+
+        $client_link = route('client.view-errand', ['id' => $errand_id]) . '?from=notifications';
         $admin_link = route('admin.view-errand', ['id' => $errand_id]) . '?from=notifications';
+
+        if ($client_id) {
+            Notification::create([
+                'user_id' => $client_id,
+                'type' => $notif_type,
+                'message' => $client_msg,
+                'link' => $client_link,
+                'is_read' => false,
+            ]);
+        }
 
         $admins = User::where('role', 'admin')->get();
         foreach ($admins as $admin) {

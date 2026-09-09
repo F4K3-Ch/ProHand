@@ -848,7 +848,7 @@ class ClientController extends Controller
 
         $notif_type = "errand";
 
-        $tasker_msg = "Client \"{$user_full_name}\" (ID: {$client_id}) has requested a cancellation for the In-progress Errand: \"{$errand_title}\" (ID: {$errand_id}). Waiting for admin approval.";
+        $tasker_msg = "Client \"{$user_full_name}\" (ID: {$client_id}) has requested a cancellation for the In-progress Errand: \"{$errand_title}\" (ID: {$errand_id}). Waiting for admin decision.";
         $admin_msg = "Cancellation Requested | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$user_full_name}\" (ID: {$client_id}) has a cancellation request.";
 
         $tasker_link = route('tasker.view-errand', ['id' => $errand_id]) . '?from=notifications';
