@@ -28,7 +28,7 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
         Route::post('/client/errands/{id}/update', [ClientController::class, 'editErrand']);
         Route::post('/client/errands/{id}/delete', [ClientController::class, 'destroyErrand']);
         Route::post('/client/errands/{id}/dispute', [ClientController::class, 'markDispute']);
-        Route::post('/client/errands/{id}/complete', [ClientController::class, 'confirmCompletion']);
+        Route::post('/client/errands/{id}/completed', [ClientController::class, 'confirmCompletion']);
         Route::post('/client/errands/{id}/cancel', [ClientController::class, 'cancelErrand']);
         Route::post('/client/errands/{id}/request-cancel', [ClientController::class, 'requestCancellation']);
         Route::post('/client/history/{id}/delete', [ClientController::class, 'destroyHistory']);
@@ -57,5 +57,7 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
         Route::get('/admin/errands/{id}', [AdminController::class, 'getErrandDetails']);
         Route::post('/admin/errands/{id}/reset-to-pending', [AdminController::class, 'resetErrandToPending']);
         Route::post('/admin/errands/{id}/delete', [AdminController::class, 'destroyErrand']);
+        Route::post('/admin/errands/{id}/completed', [AdminController::class, 'updateCompleted']);
+        Route::post('/admin/errands/{id}/failed', [AdminController::class, 'updateFailed']);
     });
 });

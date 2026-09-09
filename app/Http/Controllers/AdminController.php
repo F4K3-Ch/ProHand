@@ -377,7 +377,7 @@ class AdminController extends Controller
         $admin_full_name = trim("{$admin->first_name} " . ($admin->middle_name ? "{$admin->middle_name} " : "") . "{$admin->last_name}");
 
         $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) status was reset to \"Pending\" by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
-        $tasker_msg = "The Errand: \"{$errand_title}\" (ID: {$errand_id}) you were assigned to has been reset to \"Pending\" by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
+        $tasker_msg = "Your Assigned Errand: \"{$errand_title}\" (ID: {$errand_id}) you were assigned to has been reset to \"Pending\" by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
         $admin_msg = "Errand Reset | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Reset to Pending by Admin: \"{$admin_full_name}\" (ID: {$admin->id}).";
 
         $notif_type = "errand";
@@ -616,12 +616,23 @@ class AdminController extends Controller
                 $errand_title = $errand->title;
                 
                 $admin_full_name = trim("{$admin->first_name} " . ($admin->middle_name ? "{$admin->middle_name} " : "") . "{$admin->last_name}");
+                
                 $client_id = $errand->client_id;
-                $tasker_id = $errand->tasker_id;
+                $client_full_name = trim("{$client->first_name} " . ($client->middle_name ? "{$client->middle_name} " : "") . "{$client->last_name}");
 
-                $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) has been resolved and marked as completed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and moved to history.";
-                $tasker_msg = "The Errand: \"{$errand_title}\" (ID: {$errand_id}) has been resolved and marked as completed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and moved to history.";
-                $admin_msg = "Errand Force Completed | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Completed by Admin: \"{$admin_full_name}\" (ID: {$admin->id}). Transferred to history.";
+                $tasker_id = $errand->tasker_id;
+                $tasker_full_name = $tasker ? trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}") : 'Tasker';
+
+
+                if ($errand->status === 'dispute') {
+                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been resolved and marked as completed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and moved to history.";
+                    $tasker_msg = "Your Assigned Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been resolved and marked as completed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and moved to history.";
+                    $admin_msg = "Errand Dispute Marked Complete | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Marked Complete by Admin: \"{$admin_full_name}\" (ID: {$admin->id}). Transferred to history.";
+                } else {
+                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) has been confirmed as completed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and has been moved to history.";
+                    $tasker_msg = "Your Assigned Errand: \"{$errand_title}\" (ID: {$errand_id}) has been confirmed as completed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and has been moved to history.";
+                    $admin_msg = "Errand Confirmed Completed | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Confirmed Complete by Admin: \"{$admin_full_name}\" (ID: {$admin->id}). Transferred to history.";
+                }
 
                 $notif_type = "errand";
 
@@ -804,7 +815,7 @@ class AdminController extends Controller
                 $tasker_id = $errand->tasker_id;
 
                 $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been marked as failed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and moved to history.";
-                $tasker_msg = "The Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been marked as failed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and moved to history.";
+                $tasker_msg = "Your Assigned Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been marked as failed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and moved to history.";
                 $admin_msg = "Errand Dispute Marked Failed | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Marked Failed by Admin: \"{$admin_full_name}\" (ID: {$admin->id}). Transferred to history.";
 
                 $notif_type = "errand";

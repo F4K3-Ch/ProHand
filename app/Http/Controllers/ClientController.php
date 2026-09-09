@@ -697,7 +697,7 @@ class ClientController extends Controller
                 $tasker = User::find($tasker_id);
                 $tasker_full_name = $tasker ? trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}") : 'Tasker';
 
-                $tasker_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) has been confirmed as completed by Client: \"{$client_full_name}\" (ID: {$client_id}) and has been moved to history.";
+                $tasker_msg = "Your Assigned Errand: \"{$errand_title}\" (ID: {$errand_id}) has been confirmed as completed by Client: \"{$client_full_name}\" (ID: {$client_id}) and has been moved to history.";
                 $admin_msg = "Errand Completed | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). The client confirmed the errand as completed and it has been transferred to history.";
 
                 $notif_type = "errand";

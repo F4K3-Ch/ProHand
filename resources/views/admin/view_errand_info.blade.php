@@ -585,7 +585,30 @@
                         
                         if(!isConfirmed) return;
                         
-                        // Add your cancel active errand AJAX call implementation here
+                        try {
+                            const response = await fetch('/api/admin/errands/' + errand.id + '/completed', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN' : origin
+                                },
+                                credentials: 'same-origin'
+                            });
+
+                            const result = await response.json();
+                            if(!response.ok || !result.success){
+                                throw new Error(result.message);
+                            }
+
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.href = '{{ route("admin.history") }}';
+
+                        } catch(error) {
+                            console.error('Error:', error);
+                            displayGlobalError(error.message);
+                        }
                     });
 
                     cancelBtn.style.display = 'flex';
@@ -596,7 +619,30 @@
                         
                         if(!isConfirmed) return;
                         
-                        // Add your cancel active errand AJAX call implementation here
+                        try {
+                            const response = await fetch('/api/admin/errands/' + errand.id + '/reset-to-pending', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN' : origin
+                                },
+                                credentials: 'same-origin'
+                            });
+
+                            const result = await response.json();
+                            if(!response.ok || !result.success){
+                                throw new Error(result.message);
+                            }
+
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.href = window.location.href;
+
+                        } catch(error) {
+                            console.error('Error:', error);
+                            displayGlobalError(error.message);
+                        }
                     });
                 } else if (errand.raw_status === 'dispute') {
                     const completeDisputeBtn = document.getElementById('completeDisputeBtn');
@@ -610,7 +656,30 @@
                         
                         if(!isConfirmed) return;
                         
-                        // Add your complete disputed errand AJAX call implementation here
+                        try {
+                            const response = await fetch('/api/admin/errands/' + errand.id + '/completed', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN' : origin
+                                },
+                                credentials: 'same-origin'
+                            });
+
+                            const result = await response.json();
+                            if(!response.ok || !result.success){
+                                throw new Error(result.message);
+                            }
+
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.href = '{{ route("admin.history") }}';
+
+                        } catch(error) {
+                            console.error('Error:', error);
+                            displayGlobalError(error.message);
+                        }
                     });
 
                     failDisputeBtn.style.display = 'flex';
@@ -621,7 +690,30 @@
                         
                         if(!isConfirmed) return;
                         
-                        // Add your fail disputed errand AJAX call implementation here
+                        try {
+                            const response = await fetch('/api/admin/errands/' + errand.id + '/failed', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN' : origin
+                                },
+                                credentials: 'same-origin'
+                            });
+
+                            const result = await response.json();
+                            if(!response.ok || !result.success){
+                                throw new Error(result.message);
+                            }
+
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.href = '{{ route("admin.history") }}';
+
+                        } catch(error) {
+                            console.error('Error:', error);
+                            displayGlobalError(error.message);
+                        }
                     });
                 } else if (errand.raw_status === 'completed' || errand.raw_status === 'failed') {
                     const deleteBtn = document.getElementById('deleteErrandBtn');

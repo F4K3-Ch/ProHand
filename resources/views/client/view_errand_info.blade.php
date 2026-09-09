@@ -449,7 +449,7 @@
                         if(!isConfirmed) return;
 
                         try {
-                            const response = await fetch('/api/client/errands/' + errand.id + '/complete', {
+                            const response = await fetch('/api/client/errands/' + errand.id + '/completed', {
                                 method: 'POST',
                                 headers: {
                                     'Accept': 'application/json',
