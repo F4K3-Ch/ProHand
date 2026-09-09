@@ -464,15 +464,12 @@ class AdminController extends Controller
 
         $notif_type = "errand";
 
-        $client_link = route('client.dashboard') . '?from=notifications';
-        $admin_link = route('admin.dashboard') . '?from=notifications';
-
         if ($client_id) {
             Notification::create([
                 'user_id' => $client_id,
                 'type' => $notif_type,
                 'message' => $client_msg,
-                'link' => $client_link,
+                'link' => null,
                 'is_read' => false,
             ]);
         }
@@ -483,7 +480,7 @@ class AdminController extends Controller
                 'user_id' => $adm->id,
                 'type' => $notif_type,
                 'message' => $admin_msg,
-                'link' => $admin_link,
+                'link' => null,
                 'is_read' => false,
             ]);
         }
@@ -871,5 +868,98 @@ class AdminController extends Controller
                 'message' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function deleteHistory(Request $request, $id)
+    {
+        $admin = $request->user();
+
+        $history = History::with('attachment')
+            ->where('errand_id', $id)
+            ->first();
+
+        if (!$history) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'History record not found.'
+            ], 404);
+        }
+
+        $client_id = $history->client_id;
+        $tasker_id = $history->tasker_id;
+
+        $errand_id = $history->errand_id;
+        $history_title = $history->title;
+
+        if ($history->attachment) {
+            Storage::disk('public')->delete($history->attachment->file_path);
+            $history->attachment()->delete();
+        }
+
+        if (
+            $history->client_profile_picture &&
+            $history->client_profile_picture !== 'uploads/history/profile_pictures/default.jpg' &&
+            Storage::disk('public')->exists($history->client_profile_picture)
+        ) {
+            Storage::disk('public')->delete($history->client_profile_picture);
+        }
+
+        if (
+            $history->tasker_profile_picture &&
+            $history->tasker_profile_picture !== 'uploads/history/profile_pictures/default.jpg' &&
+            Storage::disk('public')->exists($history->tasker_profile_picture)
+        ) {
+            Storage::disk('public')->delete($history->tasker_profile_picture);
+        }
+
+        $history->delete();
+
+        $admin_full_name = trim("{$admin->first_name} " . ($admin->middle_name ? "{$admin->middle_name} " : "") . "{$admin->last_name}");
+        $client = $client_id ? User::find($client_id) : null;
+        $tasker = $tasker_id ? User::find($tasker_id) : null;
+        $client_full_name = $client ? trim("{$client->first_name} " . ($client->middle_name ? "{$client->middle_name} " : "") . "{$client->last_name}") : 'N/A';
+        $tasker_full_name = $tasker ? trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}") : 'N/A';
+
+        $client_msg = "Your History Errand: \"{$history_title}\" (ID: {$errand_id}) has been deleted by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
+        $tasker_msg = "Your History Errand: \"{$history_title}\" (ID: {$errand_id}) has been deleted by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
+        $admin_msg = "History Errand Deleted | Errand: \"{$history_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin->id}).";
+
+        $notif_type = "errand";
+
+        if ($client_id && $history->client_deleted === false) {
+            Notification::create([
+                'user_id' => $client_id,
+                'type' => $notif_type,
+                'message' => $client_msg,
+                'link' => null,
+                'is_read' => false,
+            ]);
+        }
+
+        if ($tasker_id && $history->tasker_deleted === false) {
+            Notification::create([
+                'user_id' => $tasker_id,
+                'type' => $notif_type,
+                'message' => $tasker_msg,
+                'link' => null,
+                'is_read' => false,
+            ]);
+        }
+
+        $otherAdmins = User::where('role', 'admin')->where('id', '!=', $admin->id)->get();
+        foreach ($otherAdmins as $adm) {
+            Notification::create([
+                'user_id' => $adm->id,
+                'type' => $notif_type,
+                'message' => $admin_msg,
+                'link' => null,
+                'is_read' => false,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'History record deleted successfully.',
+        ]);
     }
 }

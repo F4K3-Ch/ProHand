@@ -304,7 +304,31 @@
                             const isConfirmed = await showConfirmation(customTitle, customMessage);
                             
                             if(!isConfirmed) return;
-                            // Proceed with deletion
+
+                            try {
+                                const response = await fetch('/api/admin/history/' + errand.id + '/delete', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN' : origin
+                                    },
+                                    credentials: 'same-origin'
+                                });
+
+                                const result = await response.json();
+                                if(!response.ok || !result.success){
+                                    throw new Error(result.message);
+                                }
+
+                                sessionStorage.setItem('success_message', result.message);
+                                window.location.href = window.location.href;
+
+                            } catch(error) {
+                                console.error('Error:', error);
+                                displayGlobalError(error.message);
+                            }
                         });
                     }
                     cardsGrid.appendChild(card);

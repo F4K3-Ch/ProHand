@@ -59,5 +59,6 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
         Route::post('/admin/errands/{id}/delete', [AdminController::class, 'destroyErrand']);
         Route::post('/admin/errands/{id}/completed', [AdminController::class, 'updateCompleted']);
         Route::post('/admin/errands/{id}/failed', [AdminController::class, 'updateFailed']);
+        Route::post('/admin/history/{id}/delete', [AdminController::class, 'deleteHistory']);
     });
 });
