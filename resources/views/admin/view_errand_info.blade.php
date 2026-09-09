@@ -488,7 +488,7 @@
                             }
 
                             sessionStorage.setItem('success_message', result.message);
-                            window.location.reload();
+                            window.location.href = window.location.href;
 
                         } catch (error) {
                             console.error('Error:', error);
