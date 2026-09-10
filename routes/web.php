@@ -97,5 +97,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/admin/manage-users', function () {
             return view('admin.manage_users');
         })->name('admin.manage-users');
+
+        Route::get('/admin/view-user/{id}', function ($id) {
+            return view('admin.view_user_info', ['id' => $id]);
+        })->name('admin.view-user');
     });
 });

@@ -349,7 +349,9 @@
                     roleBadge.textContent = user.role;
                     roleBadge.className = user.role_class;
 
-                    row.querySelector('.user-view-link').href = '/admin/users/view/' + encodeURIComponent(user.id);
+                    row.querySelector('.user-view-link').href = 
+                        '/admin/view-user/' + user.id +
+                        '?from=admin.manage-users';
 
                     tableBody.appendChild(row);
                 });

@@ -330,7 +330,7 @@
             }
 
             try {
-                const response = await fetch('/api/admin/errands/' + encodeURIComponent(errandId), {
+                const response = await fetch('/api/admin/errands/' + errandId, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',

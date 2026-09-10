@@ -216,7 +216,8 @@ class AdminController extends Controller
             $perPage = 10;
         }
 
-        $query = User::query();
+        $query = User::query()
+            ->where('id', '!=', $request->user()->id);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -1214,6 +1215,39 @@ class AdminController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'History record deleted successfully.',
+        ]);
+    }
+
+    public function showUserData(Request $request ,$id)
+    {
+        $user = User::where('id', $id)
+            ->where('id', '!=', $request->user()->id)
+            ->first();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found.'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'user' => [
+                'id' => $user->id,
+                'email' => $user->email,
+                'first_name' => $user->first_name,
+                'middle_name' => $user->middle_name ?? '',
+                'last_name' => $user->last_name,
+                'role' => $user->role,
+                'formatted_role' => Str::ucfirst(strtolower($user->role)),
+                'role_class' => 'role-' . strtolower($user->role),
+                'contact_number' => $user->contact_number,
+                'profile_picture' => asset($user->profile_picture),
+                'created_at' => $user->created_at
+                    ->timezone('Asia/Manila')
+                    ->format('F d, Y h:i A'),
+            ]
         ]);
     }
 }

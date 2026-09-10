@@ -64,5 +64,6 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
         Route::post('/admin/history/{id}/delete', [AdminController::class, 'deleteHistory']);
         Route::get('/admin/users-metrics', [AdminController::class, 'usersMetrics']);
         Route::get('/admin/users', [AdminController::class, 'allUsers']);
+        Route::get('/admin/users/{id}', [AdminController::class, 'showUserData']);
     });
 });
