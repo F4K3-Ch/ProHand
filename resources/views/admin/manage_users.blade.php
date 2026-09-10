@@ -203,7 +203,7 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function(){
-            const tableBody = document.getElementById('errands-table-body');
+            const tableBody = document.getElementById('users-table-body');
             const paginationContainer = document.getElementById('pagination-container');
             const pagesContainer = document.getElementById('pagination-pages');
             const searchInput = document.getElementById('errandSearch');
@@ -211,15 +211,15 @@
             const clearSearchButton = document.getElementById('clearSearchButton');
             const perPageSelect = document.getElementById('perPageSelect');
             const welcomeBanner = document.getElementById('welcome-banner');
+            const errorMessageText = document.getElementById('errorMessageText');
 
             let currentPage = 1;
             let currentSearch = '';
 
             loadMetrics();
-            loadErrands();
+            loadUsers();
             updateClearButtonState();
 
-            const errorMessageText = document.getElementById('errorMessageText');
             function displayGlobalError(message){
                 if(!errorMessageText) return;
                 errorMessageText.textContent = message;
@@ -231,12 +231,12 @@
 
             function showLoading(){
                 tableBody.innerHTML = '';
-                tableBody.appendChild(document.getElementById('errand-loading-template').content.cloneNode(true));
+                tableBody.appendChild(document.getElementById('users-loading-template').content.cloneNode(true));
             }
 
             async function loadMetrics(){
                 try{
-                    const response = await fetch('/api/tasker/your-task/accepted-metrics', {
+                    const response = await fetch('/api/admin/users-metrics', {
                         method: 'GET',
                         headers: {
                             'Accept': 'application/json',
@@ -248,18 +248,15 @@
                     const result = await response.json();
 
                     if(!response.ok || !result.success){
-                        throw new Error(result.message || 'Failed to load dashboard data.');
+                        throw new Error(result.message || 'Failed to load user metrics.');
                     }
 
                     const metrics = result.metrics;
 
-                    document.getElementById('metric-accepted').textContent = metrics.accepted;
-                    document.getElementById('metric-in-progress').textContent = metrics.in_progress;
-                    document.getElementById('metric-awaiting-confirmation').textContent = metrics.awaiting_confirmation;
-                    document.getElementById('metric-dispute').textContent = metrics.dispute;
+                    document.getElementById('metric-admin').textContent = metrics.admin;
+                    document.getElementById('metric-tasker').textContent = metrics.tasker;
+                    document.getElementById('metric-client').textContent = metrics.client;
                     document.getElementById('metric-total').textContent = metrics.total;
-                    
-                    const totalCard = document.getElementById('metric-card-total');
 
                 }catch(error){
                     console.error('Metrics error:', error);
@@ -267,7 +264,7 @@
                 }
             }
 
-            async function loadErrands(page){
+            async function loadUsers(page){
                 if(page) currentPage = page;
 
                 showLoading();
@@ -282,7 +279,7 @@
                 }
 
                 try{
-                    const response = await fetch('/api/tasker/your-task/accepted-errands?' + params.toString(), {
+                    const response = await fetch('/api/admin/users?' + params.toString(), {
                         method: 'GET',
                         headers: {
                             'Accept': 'application/json',
@@ -294,7 +291,7 @@
                     const result = await response.json();
 
                     if(!response.ok || !result.success){
-                        throw new Error(result.message || 'Failed to load errands.');
+                        throw new Error(result.message || 'Failed to load users.');
                     }
 
                     if (currentSearch === '') {
@@ -303,43 +300,56 @@
                         if(welcomeBanner) welcomeBanner.style.display = 'none';
                     }
 
-                    displayErrands(result.errands);
+                    displayUsers(result.users);
                     displayPagination(result.pagination);
                 }catch(error){
-                    console.error('Errands error:', error);
+                    console.error('Users error:', error);
                     displayGlobalError(error.message);
                     tableBody.innerHTML = '';
-                    tableBody.appendChild(document.getElementById('errand-error-template').content.cloneNode(true));
+                    tableBody.appendChild(document.getElementById('users-error-template').content.cloneNode(true));
                 }
             }
 
-            function displayErrands(errands){
+            function displayUsers(users){
                 tableBody.innerHTML = '';
 
-                if(!errands || errands.length === 0){
-                    tableBody.appendChild(document.getElementById('errand-empty-template').content.cloneNode(true));
+                if(!users || users.length === 0){
+                    tableBody.appendChild(document.getElementById('users-empty-template').content.cloneNode(true));
                     return;
                 }
 
-                const template = document.getElementById('errand-row-template');
+                const template = document.getElementById('users-row-template');
 
-                errands.forEach(function(errand){
+                users.forEach(function(user){
                     const row = template.content.cloneNode(true);
 
-                    row.querySelector('.errand-id').textContent = errand.id;
-                    row.querySelector('.errand-title').textContent = errand.title;
-                    row.querySelector('.errand-category').textContent = errand.category;
-                    row.querySelector('.errand-created-at').textContent = errand.created_at;
-                    row.querySelector('.errand-deadline').textContent = errand.deadline;
-                    row.querySelector('.errand-fee').textContent = errand.fee;
+                    row.querySelector('.user-id').textContent = user.id;
+                    
+                    const profileImg = row.querySelector('.user-picture');
+                    
+                    profileImg.onload = function() {
+                        profileImg.style.display = 'block';
+                    };
 
-                    const status = row.querySelector('.errand-status');
-                    status.textContent = errand.status;
-                    status.className = errand.status_class;
+                    profileImg.onerror = function() {
+                        profileImg.style.display = 'block';
+                    };
 
-                    row.querySelector('.errand-view-link').href =
-                        '/tasker/view-errand/' + encodeURIComponent(errand.id) +
-                        '?from=tasker.your_task';
+                    profileImg.src = user.profile_picture;
+                    profileImg.alt = user.first_name + ' ' + user.last_name;
+
+                    row.querySelector('.user-email').textContent = user.email;
+                    row.querySelector('.user-last-name').textContent = user.last_name;
+                    row.querySelector('.user-first-name').textContent = user.first_name;
+                    row.querySelector('.user-middle-name').textContent = user.middle_name || '';
+                    row.querySelector('.user-contact').textContent = user.contact;
+                    row.querySelector('.user-created-at').textContent = user.created_at;
+
+                    const roleBadge = row.querySelector('.user-role-badge');
+                    roleBadge.textContent = user.role;
+                    roleBadge.className = 'role-badge user-role-badge badge-' + user.role.toLowerCase();
+
+                    row.querySelector('.user-view-link').href = '/admin/users/view/' + encodeURIComponent(user.id);
 
                     tableBody.appendChild(row);
                 });
@@ -365,11 +375,11 @@
                 }
 
                 previousButton.onclick = () => {
-                    if(pagination.current_page > 1) loadErrands(pagination.current_page - 1);
+                    if(pagination.current_page > 1) loadUsers(pagination.current_page - 1);
                 };
 
                 nextButton.onclick = () => {
-                    if(pagination.current_page < pagination.last_page) loadErrands(pagination.current_page + 1);
+                    if(pagination.current_page < pagination.last_page) loadUsers(pagination.current_page + 1);
                 };
             }
 
@@ -383,7 +393,7 @@
                 if(active){
                     element.classList.add('active');
                 }else{
-                    element.addEventListener('click', () => loadErrands(page));
+                    element.addEventListener('click', () => loadUsers(page));
                 }
 
                 pagesContainer.appendChild(button);
@@ -392,7 +402,7 @@
             searchButton.addEventListener('click', function() {
                 currentSearch = searchInput.value.trim();
                 currentPage = 1;
-                loadErrands();
+                loadUsers();
                 updateClearButtonState();
             });
 
@@ -400,7 +410,7 @@
                 if (e.key === 'Enter') {
                     currentSearch = searchInput.value.trim();
                     currentPage = 1;
-                    loadErrands();
+                    loadUsers();
                     updateClearButtonState();
                 }
             });
@@ -409,13 +419,13 @@
                 searchInput.value = '';
                 currentSearch = '';
                 currentPage = 1;
-                loadErrands();
+                loadUsers();
                 updateClearButtonState();
             });
 
             perPageSelect.addEventListener('change', function() {
                 currentPage = 1;
-                loadErrands();
+                loadUsers();
             });
 
             function updateClearButtonState() {
