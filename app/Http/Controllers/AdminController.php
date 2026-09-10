@@ -240,7 +240,7 @@ class AdminController extends Controller
                 'middle_name' => $user->middle_name ?? '',
                 'last_name' => $user->last_name,
                 'email' => $user->email,
-                'contact' => $user->contact,
+                'contact_number' => $user->contact_number,
                 'profile_picture' => asset($user->profile_picture),
                 'role' => Str::title($user->role),
                 'raw_role' => strtolower($user->role),

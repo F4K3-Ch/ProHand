@@ -162,7 +162,7 @@
             <td class="user-last-name"></td>
             <td class="user-first-name"></td>
             <td class="user-middle-name"></td>
-            <td class="user-contact"></td>
+            <td class="user-contact-number"></td>
             <td class="user-created-at"></td>
             <td>
                 <span class="user-role"></span>
@@ -342,7 +342,7 @@
                     row.querySelector('.user-last-name').textContent = user.last_name;
                     row.querySelector('.user-first-name').textContent = user.first_name;
                     row.querySelector('.user-middle-name').textContent = user.middle_name || '';
-                    row.querySelector('.user-contact').textContent = user.contact;
+                    row.querySelector('.user-contact-number').textContent = user.contact_number;
                     row.querySelector('.user-created-at').textContent = user.created_at;
 
                     const roleBadge = row.querySelector('.user-role');
