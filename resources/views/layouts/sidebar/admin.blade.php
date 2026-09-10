@@ -24,7 +24,13 @@
                     History
                 </a>
             </li>
-            <li><a href="#"><i class="fa-solid fa-users"></i> Manage Users</a></li>
+            <li>
+                <a href="{{ route('admin.manage-users') }}"
+                class="{{ request()->routeIs('admin.manage-users') || request()->query('from') === 'admin.manage-users' ? 'active' : '' }}">
+                    <i class="fa-solid fa-users"></i> 
+                    Manage Users
+                </a>
+            </li>
             <li>
                 <a href="{{ route('profile') }}"
                 class="{{ request()->routeIs('profile', 'profile.edit', 'profile.change-password') ? 'active' : '' }}">

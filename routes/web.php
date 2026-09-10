@@ -93,5 +93,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/admin/view-errand/{id}', function ($id) {
             return view('admin.view_errand_info', ['id' => $id]);
         })->name('admin.view-errand');
+
+        Route::get('/admin/manage-users', function () {
+            return view('admin.manage_users');
+        })->name('admin.manage-users');
     });
 });

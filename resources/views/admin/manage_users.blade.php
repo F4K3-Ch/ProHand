@@ -108,7 +108,7 @@
 
                 <div class="users-table">
                     <div class="table-header-controls">
-                        <h4>My Errands</h4>
+                        <h4>Users</h4>
                         <div class="rows-per-page">
                             <label for="perPageSelect"><h4>Show:</h4></label>
                             <select id="perPageSelect" class="form-control">
@@ -165,7 +165,7 @@
             <td class="user-contact"></td>
             <td class="user-created-at"></td>
             <td>
-                <span class="role-badge user-role-badge"></span>
+                <span class="user-role"></span>
             </td>
             <td>
                 <div class="button-row">
@@ -345,9 +345,9 @@
                     row.querySelector('.user-contact').textContent = user.contact;
                     row.querySelector('.user-created-at').textContent = user.created_at;
 
-                    const roleBadge = row.querySelector('.user-role-badge');
+                    const roleBadge = row.querySelector('.user-role');
                     roleBadge.textContent = user.role;
-                    roleBadge.className = 'role-badge user-role-badge badge-' + user.role.toLowerCase();
+                    roleBadge.className = user.role_class;
 
                     row.querySelector('.user-view-link').href = '/admin/users/view/' + encodeURIComponent(user.id);
 

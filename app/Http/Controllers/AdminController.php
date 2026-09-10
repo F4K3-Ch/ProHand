@@ -183,6 +183,88 @@ class AdminController extends Controller
         ]);
     }
 
+    public function usersMetrics()
+    {
+        $metrics = User::selectRaw('role, COUNT(*) as total')
+            ->groupBy('role')
+            ->pluck('total', 'role');
+
+        $admin = $metrics['Admin'] ?? 0;
+        $tasker = $metrics['Tasker'] ?? 0;
+        $client = $metrics['Client'] ?? 0;
+        $total = $metrics->sum();
+
+        return response()->json([
+            'success' => true,
+            'metrics' => [
+                'admin' => $admin,
+                'tasker' => $tasker,
+                'client' => $client,
+                'total' => $total,
+            ],
+        ]);
+    }
+
+    public function allUsers(Request $request)
+    {
+        $search = $request->query('search');
+        $perPage = (int) $request->query('per_page', 10);
+
+        $allowedPerPage = [5, 10, 25, 50];
+
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 10;
+        }
+
+        $query = User::query();
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', "%{$search}%")
+                    ->orWhere('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('middle_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('role', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+
+        $formattedUsers = collect($users->items())->map(function ($user) {
+            return [
+                'id' => $user->id,
+                'first_name' => $user->first_name,
+                'middle_name' => $user->middle_name ?? '',
+                'last_name' => $user->last_name,
+                'email' => $user->email,
+                'contact' => $user->contact,
+                'profile_picture' => asset($user->profile_picture),
+                'role' => Str::title($user->role),
+                'raw_role' => strtolower($user->role),
+                'role_class' => 'role-badge role-' . strtolower($user->role),
+                'created_at' => $user->created_at 
+                    ? Carbon::parse($user->created_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                    : '—',
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'users' => $formattedUsers,
+            'pagination' => [
+                'current_page' => $users->currentPage(),
+                'last_page' => $users->lastPage(),
+                'per_page' => $users->perPage(),
+                'total' => $users->total(),
+                'from' => $users->firstItem(),
+                'to' => $users->lastItem(),
+            ],
+        ]);
+    }
+
     public function getErrandDetails($id)
     {
         $errand = Errand::with(['attachment', 'client', 'tasker'])
