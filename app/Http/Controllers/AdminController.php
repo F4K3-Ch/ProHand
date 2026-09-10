@@ -189,9 +189,9 @@ class AdminController extends Controller
             ->groupBy('role')
             ->pluck('total', 'role');
 
-        $admin = $metrics['Admin'] ?? 0;
-        $tasker = $metrics['Tasker'] ?? 0;
-        $client = $metrics['Client'] ?? 0;
+        $admin = $metrics['admin'] ?? 0;
+        $tasker = $metrics['tasker'] ?? 0;
+        $client = $metrics['client'] ?? 0;
         $total = $metrics->sum();
 
         return response()->json([
