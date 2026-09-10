@@ -95,6 +95,7 @@
                             <i class="fa-regular fa-trash-can"></i>
                             Delete Account
                         </button>
+                        <p id="admin-restricted-msg" style="display: none;">Admin accounts cannot be edited or deleted.</p>
                     </div>
                 </div>
             </div>
@@ -181,6 +182,11 @@
                 const roleElement = document.getElementById('profile-role');
                 roleElement.textContent = user.formatted_role;
                 roleElement.classList.add(user.role_class);
+
+                if (user.role === 'admin') {
+                    document.getElementById('btn-delete-account').style.display = 'none';
+                    document.getElementById('admin-restricted-msg').style.display = 'block';
+                }
 
                 profilePhoto.onload = function () {
                     profilePhotoSpinner.style.display = 'none';
