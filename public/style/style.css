@@ -2842,7 +2842,6 @@ input[type="file"]#profile_picture {
     outline: none;
 }
 
-.create-errand-input-box
 select[name="role"] option[value="admin"] {
     background-color: rgba(239, 68, 68, 0.15);  
     color: #ef4444; 

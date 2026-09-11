@@ -111,7 +111,7 @@
                         <h4>Need help with an errand?</h4>
                         <p>Post your task and let trusted local taskers take care of it for you.</p>
                     </div>
-                    <a href="{{ route('client.create.errand') }}" class="btn-welcome">
+                    <a href="{{ route('client.create-errand') }}" class="btn-welcome">
                         <span><i class="fa-solid fa-circle-plus"></i></span> Post Here
                     </a>
                 </div>

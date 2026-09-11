@@ -50,7 +50,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/client/create-errand', function () {
             return view('client.create_errand');
-        })->name('client.create.errand');
+        })->name('client.create-errand');
 
         Route::get('/client/view-errand/{id}', function ($id) {
             return view('client.view_errand_info', ['id' => $id]);
@@ -101,5 +101,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/admin/view-user/{id}', function ($id) {
             return view('admin.view_user_info', ['id' => $id]);
         })->name('admin.view-user');
+
+        Route::get('/admin/add-user', function () {
+            return view('admin.add_user');
+        })->name('admin.add-user');
     });
 });

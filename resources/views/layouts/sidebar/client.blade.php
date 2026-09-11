@@ -12,7 +12,7 @@
         <ul class="sidebar-links">
             <li>
                 <a href="{{ route('client.dashboard') }}"
-                class="{{ request()->routeIs('client.dashboard', 'client.create.errand') || request()->query('from') === 'client.dashboard' ? 'active' : '' }}">
+                class="{{ request()->routeIs('client.dashboard', 'client.create-errand') || request()->query('from') === 'client.dashboard' ? 'active' : '' }}">
                     <i class="fa-solid fa-house"></i>
                     Dashboard
                 </a>

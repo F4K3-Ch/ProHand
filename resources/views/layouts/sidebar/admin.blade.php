@@ -26,7 +26,7 @@
             </li>
             <li>
                 <a href="{{ route('admin.manage-users') }}"
-                class="{{ request()->routeIs('admin.manage-users') || request()->query('from') === 'admin.manage-users' ? 'active' : '' }}">
+                class="{{ request()->routeIs('admin.manage-users', 'admin.add-user') || request()->query('from') === 'admin.manage-users' ? 'active' : '' }}">
                     <i class="fa-solid fa-users"></i> 
                     Manage Users
                 </a>

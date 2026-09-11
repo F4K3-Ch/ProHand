@@ -101,7 +101,7 @@
                         <h4>Need to add a new user account?</h4>
                         <p>Administrators can create and manage accounts across all three user roles: Client, Tasker, and Admin.</p>
                     </div>
-                    <a href="#" class="btn-welcome">
+                    <a href="{{ route('admin.add-user') }}" class="btn-welcome">
                         <span><i class="fa-solid fa-circle-plus"></i></span> Add User
                     </a>
                 </div>
