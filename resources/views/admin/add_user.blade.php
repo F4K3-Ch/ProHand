@@ -94,7 +94,7 @@
         const formData = new FormData(this);
 
         try {
-            const response = await fetch("{{ route('register') }}", {
+            const response = await fetch('/api/admin/add-user', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -126,16 +126,7 @@
             }
 
             sessionStorage.setItem('success_message', result.message);
-
-            const role = result.user.role;
-
-            if (role === 'admin') {
-                window.location.href = '/admin/dashboard';
-            } else if (role === 'tasker') {
-                window.location.href = '/tasker/dashboard';
-            } else {
-                window.location.href = '/client/dashboard';
-            }
+            window.location.href = "{{ route('admin.add-user') }}";
 
         } catch (error) {
             console.error('Registration error:', error);

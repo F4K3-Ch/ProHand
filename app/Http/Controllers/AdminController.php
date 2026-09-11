@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Notification;
@@ -1249,5 +1250,70 @@ class AdminController extends Controller
                     ->format('F d, Y h:i A'),
             ]
         ]);
+    }
+
+    public function storeUser(Request $request)
+    {
+        $validated = $request->validate(
+            [
+                'email' => ['required', 'email', 'max:100', 'unique:users,email'],
+                'first_name' => ['required', 'string', 'max:50'],
+                'middle_name' => ['nullable', 'string', 'max:50'],
+                'last_name' => ['required', 'string', 'max:50'],
+                'role' => ['required', 'string', 'in:admin,tasker,client'],
+                'password' => ['required', 'string', 'min:3', 'confirmed'],
+                'contact_number' => ['required', 'string', 'max:20'],
+            ],
+            [
+                'email.unique' => 'This email is already registered.',
+                'email.required' => 'Please enter an email address.',
+                'email.email' => 'Please enter a valid email address.',
+
+                'password.confirmed' => 'The password confirmation does not match.',
+                'password.min' => 'The password must be at least :min characters.',
+
+                'first_name.required' => 'Please enter a first name.',
+                'last_name.required' => 'Please enter a last name.',
+                'role.required' => 'Please select a role.',
+                'role.in' => 'The selected role is invalid.',
+                'contact_number.required' => 'Please enter a contact number.',
+            ]
+        );
+
+        $user = User::create([
+            'email' => $validated['email'],
+            'first_name' => $validated['first_name'],
+            'middle_name' => $validated['middle_name'] ?? null,
+            'last_name' => $validated['last_name'],
+            'role' => strtolower($validated['role']),
+            'password' => Hash::make($validated['password']),
+            'contact_number' => $validated['contact_number'],
+        ]);
+
+        $admin_msg = "New user {$user->first_name} {$user->last_name} ({$user->role}) was added by admin " . $request->user()->first_name . ".";
+        
+        $notif_type = "system";
+
+        $admin_link = route('admin.view-user', ['id' => $user->id]) . '?from=notifications';
+
+        $otherAdmins = User::where('role', 'admin')
+            ->where('id', '!=', $request->user()->id)
+            ->get();
+
+        foreach ($otherAdmins as $adm) {
+            Notification::create([
+                'user_id' => $adm->id,
+                'type' => $notif_type,
+                'message' => $admin_msg,
+                'link' => $admin_link,
+                'is_read' => false,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User added successfully.',
+            'user' => $user
+        ], 201);
     }
 }
