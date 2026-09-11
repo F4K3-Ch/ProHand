@@ -1290,14 +1290,18 @@ class AdminController extends Controller
             'contact_number' => $validated['contact_number'],
         ]);
 
-        $admin_msg = "New user {$user->first_name} {$user->last_name} ({$user->role}) was added by admin " . $request->user()->first_name . ".";
+        $admin = $request->user();
+        $admin_full_name = trim("{$admin->first_name} " . ($admin->middle_name ? "{$admin->middle_name} " : "") . "{$admin->last_name}");
+        $new_user_full_name = trim("{$user->first_name} " . ($user->middle_name ? "{$user->middle_name} " : "") . "{$user->last_name}");
+        $formatted_role = ucfirst($user->role);
+
+        $admin_msg = "User Added | New User: \"{$new_user_full_name}\" (ID: {$user->id}, Role: {$formatted_role}) | Added by Admin: \"{$admin_full_name}\" (ID: {$admin->id}).";
         
         $notif_type = "system";
-
         $admin_link = route('admin.view-user', ['id' => $user->id]) . '?from=notifications';
 
         $otherAdmins = User::where('role', 'admin')
-            ->where('id', '!=', $request->user()->id)
+            ->where('id', '!=', $admin->id)
             ->get();
 
         foreach ($otherAdmins as $adm) {
@@ -1314,6 +1318,6 @@ class AdminController extends Controller
             'success' => true,
             'message' => 'User added successfully.',
             'user' => $user
-        ], 201);
+        ]);
     }
 }

@@ -126,7 +126,7 @@
             }
 
             sessionStorage.setItem('success_message', result.message);
-            window.location.href = "{{ route('admin.add-user') }}";
+            window.location.href = "{{ route('admin.manage-users') }}";
 
         } catch (error) {
             console.error('Registration error:', error);
