@@ -63,6 +63,9 @@
     </main>
 
 <script>
+    const apiKey = "{{ config('services.my_api.api_key') }}";
+    const origin = "{{ config('services.my_api.origin') }}";
+
     document.getElementById('loginForm').addEventListener('submit', async function (event) {
         event.preventDefault();
 
@@ -83,7 +86,9 @@
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                    'X-API-KEY': apiKey,
+                    'X-MY-ORIGIN' : origin
                 },
                 body: formData,
                 credentials: 'same-origin'
