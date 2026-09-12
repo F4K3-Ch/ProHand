@@ -425,7 +425,7 @@ class TaskerController extends Controller
                 'method' => Str::title($history->payment_method),
                 'status' => Str::title($history->payment_status),
                 'raw_status' => $history->payment_status,
-                'status_class' => 'status-field status-' . $history->payment->status,
+                'status_class' => 'status-field status-' . $history->payment_status,
                 'amount' => $history->payment_amount,
                 'paid_at' => $history->payment_paid_at
                     ? Carbon::parse($history->payment_paid_at)->timezone('Asia/Manila')->format('M d, Y h:i A')

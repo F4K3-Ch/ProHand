@@ -75,6 +75,8 @@
                     <select name="payment_method" id="payment_method" required>
                         <option value="" disabled selected>Select a payment method</option>
                         <option value="cash">Cash</option>
+                        <option value="gcash" disabled>GCash</option>
+                        <option value="card" disabled>Card</option>
                     </select>
                 </div>
 

@@ -683,7 +683,7 @@ class AdminController extends Controller
     {
         $admin = $request->user();
 
-        $errand = Errand::with('attachment')
+        $errand = Errand::with(['attachment', 'payment'])
             ->where('id', $id)
             ->first();
 

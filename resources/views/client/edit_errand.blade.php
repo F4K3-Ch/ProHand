@@ -63,6 +63,16 @@
                 </div>
 
                 <div class="edit-errand-input-box">
+                    <label for="payment_method">Payment Method</label>
+                    <select name="payment_method" id="payment_method" required>
+                        <option value="" disabled>Select a payment method</option>
+                        <option value="cash">Cash</option>
+                        <option value="gcash" disabled>GCash</option>
+                        <option value="card" disabled>Card</option>
+                    </select>
+                </div>
+
+                <div class="edit-errand-input-box">
                     <label for="contact">Contact</label>
                     <textarea name="contact" id="contact" placeholder="Phone, email, social media..." required></textarea>
                 </div>
@@ -125,7 +135,6 @@
             
             const form = document.getElementById('edit-errand-form');
             const fileInput = document.getElementById('attachment');
-            const errorElement = document.getElementById('errorElement');
             const errandSpinner = document.getElementById('errandSpinner');
             const updateErrandButton = document.getElementById('updateErrandButton');
 
@@ -173,6 +182,7 @@
                 document.getElementById('description').value = errand.description || '';
                 document.getElementById('location').value = errand.location || '';
                 document.getElementById('fee').value = errand.raw_fee ?? '';
+                document.getElementById('payment_method').value = errand.payment ? errand.payment.method.toLowerCase() : '';
                 document.getElementById('contact').value = errand.contact || '';
 
                 if (errand.raw_deadline && errand.raw_deadline !== 'Not Set') {

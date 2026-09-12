@@ -423,7 +423,7 @@ class ClientController extends Controller
                 'method' => Str::title($history->payment_method),
                 'status' => Str::title($history->payment_status),
                 'raw_status' => $history->payment_status,
-                'status_class' => 'status-field status-' . $history->payment->status,
+                'status_class' => 'status-field status-' . $history->payment_status,
                 'amount' => $history->payment_amount,
                 'paid_at' => $history->payment_paid_at
                     ? Carbon::parse($history->payment_paid_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
@@ -441,21 +441,21 @@ class ClientController extends Controller
     {
         $clientId = $request->user()->id;
 
-        $errand = Errand::with('attachment')
+        $errand = Errand::with(['attachment', 'payment'])
             ->where('id', $id)
             ->where('client_id', $clientId)
             ->first();
 
         if (!$errand) {
             return response()->json([
-                'success' => false, 
+                'success' => false,
                 'message' => 'Errand not found.'
             ], 404);
         }
 
         if (strtolower($errand->status) !== 'pending') {
             return response()->json([
-                'success' => false, 
+                'success' => false,
                 'message' => 'Only pending errands can be edited.'
             ], 403);
         }
@@ -465,6 +465,7 @@ class ClientController extends Controller
             'category' => ['required', 'in:delivery,moving,cleaning,repair,grocery,laundry,project,other'],
             'description' => ['required', 'string'],
             'fee' => ['required', 'numeric', 'min:0'],
+            'payment_method' => ['required', 'in:cash,gcash,card'],
             'deadline' => ['required', 'date'],
             'location' => ['required', 'string', 'max:200'],
             'contact' => ['required', 'string'],
@@ -472,46 +473,69 @@ class ClientController extends Controller
             'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,gif,docx', 'max:10240'],
         ]);
 
-        $errand->fill([
-            'title' => $validated['title'],
-            'category' => $validated['category'],
-            'description' => $validated['description'],
-            'fee' => $validated['fee'],
-            'deadline' => $validated['deadline'],
-            'location' => $validated['location'],
-            'contact' => $validated['contact'],
-        ]);
+        DB::beginTransaction();
 
-        // Handle attachment removal
-        if ($request->filled('remove_current_file') && $errand->attachment) {
-            Storage::disk('public')->delete($errand->attachment->file_path);
-            $errand->attachment()->delete();
-        }
+        try {
+            $errand->update([
+                'title' => $validated['title'],
+                'category' => $validated['category'],
+                'description' => $validated['description'],
+                'fee' => $validated['fee'],
+                'deadline' => $validated['deadline'],
+                'location' => $validated['location'],
+                'contact' => $validated['contact'],
+            ]);
 
-        // Handle new attachment upload / replacement
-        if ($request->hasFile('attachment')) {
-            if ($errand->attachment) {
+            if ($errand->payment) {
+                if ($errand->payment->status !== 'pending') {
+                    throw new \Exception('Payment can no longer be changed.');
+                }
+
+                $errand->payment->update([
+                    'amount' => $validated['fee'],
+                    'method' => $validated['payment_method'],
+                ]);
+            }
+
+            if ($request->filled('remove_current_file') && $errand->attachment) {
                 Storage::disk('public')->delete($errand->attachment->file_path);
                 $errand->attachment()->delete();
             }
 
-            $file = $request->file('attachment');
-            $path = $file->store('uploads/attachments', 'public');
+            if ($request->hasFile('attachment')) {
+                if ($errand->attachment) {
+                    Storage::disk('public')->delete($errand->attachment->file_path);
+                    $errand->attachment()->delete();
+                }
 
-            ErrandAttachment::create([
-                'errand_id' => $errand->id,
-                'file_path' => $path,
-                'original_name' => $file->getClientOriginalName(),
+                $file = $request->file('attachment');
+                $path = $file->store('uploads/attachments', 'public');
+
+                ErrandAttachment::create([
+                    'errand_id' => $errand->id,
+                    'file_path' => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                ]);
+            }
+
+            $errand->touch();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Errand updated successfully.',
+                'errand' => $errand->load(['attachment', 'payment']),
             ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 422);
         }
-
-        $errand->touch(); 
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Errand updated successfully.',
-            'errand' => $errand->load('attachment'),
-        ]);
     }
 
     public function destroyErrand(Request $request, $id)
