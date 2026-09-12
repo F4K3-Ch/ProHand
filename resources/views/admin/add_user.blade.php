@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'User Profile - ProHand')
+@section('title', 'Add User - ProHand')
 
 @section('sidebar')
     @include('layouts.sidebar.admin')
@@ -50,7 +50,7 @@
                 <div class="add-user-input-box">
                     <label>Role</label>
                     <select name="role" id="role" required>
-                        <option value="">Select Role</option>
+                        <option value="" disabled selected>Select Role</option>
                         <option value="admin">Admin</option>
                         <option value="tasker">Tasker</option>
                         <option value="client">Client</option>

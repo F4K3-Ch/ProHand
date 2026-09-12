@@ -73,6 +73,22 @@
 
                 <div class="group-info-box">
                     <div class="info-box">
+                        <label>Payment Method</label>
+                        <span id="payment-method">Loading...</span>
+                    </div>
+                    <div class="info-box">
+                        <label>Payment Status</label>
+                        <span id="payment-status" class="status-field">Loading...</span>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <label>Paid At</label>
+                    <span id="payment-paid-at">Loading...</span>
+                </div>
+
+                <div class="group-info-box">
+                    <div class="info-box">
                         <label>Created At</label>
                         <span id="errand-created-at">Loading...</span>
                     </div>
@@ -135,7 +151,11 @@
                     </button>
 
                     <button type="button" id="completeErrandBtn" class="btn-complete-errand" style="display: none;">
-                        <i class="fa-solid fa-check"></i> Mark as Completed
+                        <i class="fa-solid fa-check"></i> Mark as Finished
+                    </button>
+
+                    <button type="button" id="confirmCashBtn" class="btn-complete-errand" style="display: none;">
+                        <i class="fa-solid fa-money-bill-wave"></i> Confirm Cash Received
                     </button>
 
                     <span class="descriptive-status-badge" id="pendingCancelBadge" style="display: none;">
@@ -146,9 +166,15 @@
                         <i class="fa-solid fa-hand-holding-hand"></i>Request Cancel
                     </button>
 
-                    <span id="awaitingConfirmationBadge" class="descriptive-status-badge" style="display: none;">
-                        <i class="fa-solid fa-spinner fa-spin"></i> Awaiting Client or Admin Confirmation
-                    </span>
+                    <div class="badge-button-column" id="paymentContainer" style="display: none;">
+                        <span class="descriptive-status-badge" id="cashPaymentConfirmedBadge" style="display: none;">
+                            <i class="fa-solid fa-circle-check"></i> Cash payment has been confirmed.
+                        </span>
+
+                        <span class="descriptive-status-badge" id="awaitingClientConfirmationBadge" style="display: none;">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Awaiting client confirmation
+                        </span>
+                    </div>
 
                     <span class="descriptive-status-badge" id="disputeBadge"  style="display: none;">
                         <i class="fa-solid fa-triangle-exclamation"></i> The client raised a dispute on your submission. An admin is reviewing the case and will contact you shortly.
@@ -252,11 +278,18 @@
                 document.getElementById('errand-location').textContent = errand.location;
                 document.getElementById('errand-contact').textContent = errand.contact;
                 document.getElementById('errand-fee').textContent = errand.fee;
-                
+
                 const statusElement = document.getElementById('errand-status');
                 statusElement.textContent = errand.status;
                 statusElement.className = errand.status_class;
 
+                document.getElementById('payment-method').textContent = errand.payment.method;
+
+                const paymentStatusElement = document.getElementById('payment-status');
+                paymentStatusElement.textContent = errand.payment.status;
+                paymentStatusElement.className = errand.payment.status_class;
+
+                document.getElementById('payment-paid-at').textContent = errand.payment.paid_at;
                 document.getElementById('errand-created-at').textContent = errand.created_at;
                 document.getElementById('errand-updated-at').textContent = errand.updated_at;
                 document.getElementById('errand-accepted-at').textContent = errand.accepted_at;
@@ -449,8 +482,8 @@
                         pendingCancelBadge.style.display = 'none';
 
                         completeErrandBtn.addEventListener('click', async function() {
-                            const customTitle = 'Mark Errand as Completed';
-                            const customMessage = 'Are you sure you want to mark errand #' + errand.id + ' ("' + errand.title + '") as completed? The client will be asked to confirm the completion.';
+                            const customTitle = 'Mark Errand as Finished';
+                            const customMessage = 'Are you sure you want to mark errand #' + errand.id + ' ("' + errand.title + '") as finished? The errand will then await client confirmation and cash payment.';
                             const isConfirmed = await showConfirmation(customTitle, customMessage);
 
                             if (!isConfirmed) return;
@@ -471,13 +504,13 @@
 
                                 if (!response.ok || !result.success) {
                                     throw new Error(
-                                        result.message || 'Failed to mark errand as completed.'
+                                        result.message || 'Failed to mark errand as finished.'
                                     );
                                 }
 
                                 sessionStorage.setItem(
                                     'success_message',
-                                    result.message || 'Errand marked as completed.'
+                                    result.message || 'Errand marked as finished.'
                                 );
 
                                 window.location.href = window.location.href;
@@ -536,8 +569,59 @@
                     }
 
                 } else if (errand.raw_status === 'awaiting_confirmation') {
-                    const awaitingConfirmationBadge = document.getElementById('awaitingConfirmationBadge');
-                    awaitingConfirmationBadge.style.display = 'flex';
+                    const confirmCashBtn = document.getElementById('confirmCashBtn');
+                    const paymentContainer = document.getElementById('paymentContainer');
+                    const awaitingClientConfirmationBadge = document.getElementById('awaitingClientConfirmationBadge');
+                    const cashPaymentConfirmedBadge = document.getElementById('cashPaymentConfirmedBadge');
+
+                    paymentContainer.style.display = 'flex';
+
+                    if (errand.payment.raw_status === 'pending') {
+                        confirmCashBtn.style.display = 'flex';
+
+                        confirmCashBtn.addEventListener('click', async function() {
+                            const customTitle = 'Confirm Cash Received';
+                            const customMessage = 'Confirm that you have received the agreed cash payment of ' + errand.payment.amount + ' for errand #' + errand.id + ' ("' + errand.title + '").';
+
+                            const isConfirmed = await showConfirmation(customTitle, customMessage);
+
+                            if (!isConfirmed) return;
+
+                            try {
+                                const response = await fetch('/api/tasker/errands/' + errand.id + '/confirm-cash', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN': origin
+                                    },
+                                    credentials: 'same-origin'
+                                });
+
+                                const result = await response.json();
+
+                                if (!response.ok || !result.success) {
+                                    throw new Error(result.message || 'Failed to confirm cash payment.');
+                                }
+
+                                sessionStorage.setItem(
+                                    'success_message',
+                                    result.message || 'Cash payment confirmed successfully.'
+                                );
+
+                                window.location.href = window.location.href;
+
+                            } catch (error) {
+                                console.error('Error:', error);
+                                displayGlobalError(error.message);
+                            }
+                        });
+
+                    } else if (errand.payment.raw_status === 'paid') {
+                        awaitingClientConfirmationBadge.style.display = 'flex';
+                        cashPaymentConfirmedBadge.style.display = 'flex';
+                    }
                 } else if (errand.raw_status === 'dispute') {
                     const disputeBadge = document.getElementById('disputeBadge');
                     disputeBadge.style.display = 'flex';

@@ -18,6 +18,13 @@ return new class extends Migration
             $table->enum('category', ['delivery', 'moving', 'cleaning', 'repair', 'grocery', 'laundry', 'project', 'other']);
             $table->text('description')->nullable();
             $table->decimal('fee', 10, 2)->default(0.00);
+
+            $table->string('payment_method')->nullable();
+            $table->decimal('payment_amount', 10, 2)->nullable();
+            $table->string('payment_status')->nullable();
+            $table->string('payment_reference')->nullable();
+            $table->timestamp('payment_paid_at')->nullable();
+
             $table->dateTime('deadline');
             $table->string('location', 200);
             $table->text('contact');

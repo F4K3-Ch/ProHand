@@ -71,6 +71,14 @@
                 </div>
 
                 <div class="create-errand-input-box">
+                    <label for="payment_method">Payment Method</label>
+                    <select name="payment_method" id="payment_method" required>
+                        <option value="" disabled selected>Select a payment method</option>
+                        <option value="cash">Cash</option>
+                    </select>
+                </div>
+
+                <div class="create-errand-input-box">
                     <label for="contact">Contact</label>
                     <textarea name="contact" id="contact" placeholder="Phone number, email, or preferred communication channels..." required></textarea>
                 </div>

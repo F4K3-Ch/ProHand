@@ -1301,6 +1301,12 @@ body {
     border-color: rgba(250, 204, 21, 0.3);
 }
 
+.info-box span.status-field.status-paid {
+    background-color: rgba(22, 163, 74, 0.15);
+    color: #16a34a;
+    border-color: rgba(22, 163, 74, 0.3);
+}
+
 .info-box span.status-field.status-accepted {
     background-color: rgba(59, 130, 246, 0.15);  
     color: #3b82f6;     

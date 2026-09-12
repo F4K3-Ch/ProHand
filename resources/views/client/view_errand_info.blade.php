@@ -73,6 +73,22 @@
 
                 <div class="group-info-box">
                     <div class="info-box">
+                        <label>Payment Method</label>
+                        <span id="payment-method">Loading...</span>
+                    </div>
+                    <div class="info-box">
+                        <label>Payment Status</label>
+                        <span id="payment-status" class="status-field">Loading...</span>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <label>Paid At</label>
+                    <span id="payment-paid-at">Loading...</span>
+                </div>
+
+                <div class="group-info-box">
+                    <div class="info-box">
                         <label>Created At</label>
                         <span id="errand-created-at">Loading...</span>
                     </div>
@@ -151,6 +167,18 @@
                         </button>
                         <span class="descriptive-status-badge" id="pendingCancelBadge" style="display: none;">
                             <i class="fa-solid fa-spinner fa-spin"></i>Waiting for Admin Decision on your Cancellation request...
+                        </span>
+                    </div>
+
+                    <div class="badge-button-column" id="paymentContainer" style="display: none;">
+                        <span class="descriptive-status-badge" id="paymentPendingBadge" style="display: none;">
+                            <i class="fa-solid fa-money-bill-wave"></i>
+                                Your errand has been completed. Please pay the agreed cash amount to the Tasker and wait for them to confirm receipt.
+                        </span>
+
+                        <span class="descriptive-status-badge" id="paymentPaidBadge" style="display: none;">
+                            <i class="fa-solid fa-circle-check"></i>
+                            Payment has been confirmed by the Tasker.
                         </span>
                     </div>
 
@@ -258,11 +286,18 @@
                 document.getElementById('errand-location').textContent = errand.location;
                 document.getElementById('errand-contact').textContent = errand.contact;
                 document.getElementById('errand-fee').textContent = errand.fee;
-                
+
                 const statusElement = document.getElementById('errand-status');
                 statusElement.textContent = errand.status;
                 statusElement.className = errand.status_class;
 
+                document.getElementById('payment-method').textContent = errand.payment.method;
+
+                const paymentStatusElement = document.getElementById('payment-status');
+                paymentStatusElement.textContent = errand.payment.status;
+                paymentStatusElement.className = errand.payment.status_class;
+
+                document.getElementById('payment-paid-at').textContent = errand.payment.paid_at;
                 document.getElementById('errand-created-at').textContent = errand.created_at;
                 document.getElementById('errand-updated-at').textContent = errand.updated_at;
                 document.getElementById('errand-accepted-at').textContent = errand.accepted_at;
@@ -441,9 +476,19 @@
                 } else if (errand.raw_status === 'awaiting_confirmation') {
                     const confirmCompletionBtn = document.getElementById('confirmCompletionBtn');
                     const disputeErrandBtn = document.getElementById('disputeErrandBtn');
+                    const paymentContainer = document.getElementById('paymentContainer');
+                    const paymentPendingBadge = document.getElementById('paymentPendingBadge');
+                    const paymentPaidBadge = document.getElementById('paymentPaidBadge');
 
-                    confirmCompletionBtn.style.display = 'flex';
                     disputeErrandBtn.style.display = 'flex';
+                    paymentContainer.style.display = 'flex';
+
+                    if (errand.payment && errand.payment.raw_status === 'paid') {
+                        paymentPaidBadge.style.display = 'flex';
+                        confirmCompletionBtn.style.display = 'flex';
+                    } else {
+                        paymentPendingBadge.style.display = 'flex';
+                    }
 
                     confirmCompletionBtn.addEventListener('click', async function() {
                         const customTitle = 'Confirm Completion';

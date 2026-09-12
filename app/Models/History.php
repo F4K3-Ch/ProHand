@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class History extends Model
 {
     protected $table = 'history';
-    public $timestamps = true; 
+    public $timestamps = true;
 
     protected $fillable = [
         'errand_id',
@@ -16,6 +16,11 @@ class History extends Model
         'category',
         'description',
         'fee',
+        'payment_method',
+        'payment_amount',
+        'payment_status',
+        'payment_reference',
+        'payment_paid_at',
         'deadline',
         'location',
         'contact',
@@ -43,17 +48,19 @@ class History extends Model
     ];
 
     protected $casts = [
-        'deadline'       => 'datetime',
-        'created_at'     => 'datetime',
-        'accepted_at'    => 'datetime',
-        'in_progress_at'  => 'datetime',
-        'finished_at'   => 'datetime',
-        'fee'            => 'decimal:2',
+        'deadline' => 'datetime',
+        'created_at' => 'datetime',
+        'accepted_at' => 'datetime',
+        'in_progress_at' => 'datetime',
+        'finished_at' => 'datetime',
+        'payment_paid_at' => 'datetime',
+        'fee' => 'decimal:2',
+        'payment_amount' => 'decimal:2',
         'tasker_deleted' => 'boolean',
         'client_deleted' => 'boolean',
     ];
 
-    public function attachment(): HasOne 
+    public function attachment(): HasOne
     {
         return $this->hasOne(HistoryAttachment::class, 'history_errand_id');
     }

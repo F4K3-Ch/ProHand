@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Payment;
 use App\Models\User;
 use App\Models\Notification;
 use App\Models\Errand;
@@ -214,48 +215,71 @@ class ClientController extends Controller
             'category' => ['required', 'in:delivery,moving,cleaning,repair,grocery,laundry,project,other'],
             'description' => ['required', 'string'],
             'fee' => ['required', 'numeric', 'min:0'],
+            'payment_method' => ['required', 'in:cash'],
             'deadline' => ['required', 'date', 'after:now'],
             'location' => ['required', 'string', 'max:200'],
             'contact' => ['required', 'string'],
             'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,gif,docx', 'max:10240'],
         ]);
 
-        $errand = Errand::create([
-            'client_id' => $request->user()->id,
-            'title' => $validated['title'],
-            'category' => $validated['category'],
-            'description' => $validated['description'],
-            'fee' => $validated['fee'],
-            'deadline' => $validated['deadline'],
-            'location' => $validated['location'],
-            'contact' => $validated['contact'],
-            'status' => 'pending',
-        ]);
+        DB::beginTransaction();
 
-        if ($request->hasFile('attachment')) {
-            $file = $request->file('attachment');
-
-            $path = $file->store('uploads/attachments', 'public');
-
-            ErrandAttachment::create([
-                'errand_id' => $errand->id,
-                'file_path' => $path,
-                'original_name' => $file->getClientOriginalName(),
+        try {
+            $errand = Errand::create([
+                'client_id' => $request->user()->id,
+                'title' => $validated['title'],
+                'category' => $validated['category'],
+                'description' => $validated['description'],
+                'fee' => $validated['fee'],
+                'deadline' => $validated['deadline'],
+                'location' => $validated['location'],
+                'contact' => $validated['contact'],
+                'status' => 'pending',
             ]);
-        }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Errand created successfully.',
-            'errand' => $errand->load('attachment'),
-        ], 201);
+            Payment::create([
+                'errand_id' => $errand->id,
+                'client_id' => $request->user()->id,
+                'amount' => $validated['fee'],
+                'method' => $validated['payment_method'],
+                'status' => 'pending',
+            ]);
+
+            if ($request->hasFile('attachment')) {
+                $file = $request->file('attachment');
+
+                $path = $file->store('uploads/attachments', 'public');
+
+                ErrandAttachment::create([
+                    'errand_id' => $errand->id,
+                    'file_path' => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Errand created successfully.',
+                'errand' => $errand->load('attachment', 'payment'),
+            ], 201);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function getErrandDetails(Request $request, $id)
     {
         $clientId = $request->user()->id;
 
-        $errand = Errand::with(['attachment', 'tasker'])
+        $errand = Errand::with(['attachment', 'tasker', 'payment'])
             ->where('id', $id)
             ->where('client_id', $clientId)
             ->first();
@@ -312,6 +336,17 @@ class ClientController extends Controller
                     'profile_picture' => $errand->tasker->profile_picture
                         ? Storage::url($errand->tasker->profile_picture)
                         : asset('storage/uploads/profile_pictures/default.jpg')
+                ] : null,
+
+                'payment' => $errand->payment ? [
+                    'method' => Str::title($errand->payment->method),
+                    'status' => Str::title($errand->payment->status),
+                    'raw_status' => $errand->payment->status,
+                    'status_class' => 'status-field status-' . $errand->payment->status,
+                    'amount' => $errand->payment->amount,
+                    'paid_at' => $errand->payment->paid_at
+                        ? Carbon::parse($errand->payment->paid_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
+                        : 'Not paid yet',
                 ] : null,
             ];
 
@@ -382,6 +417,17 @@ class ClientController extends Controller
                 'profile_picture' => $history->tasker_profile_picture
                     ? Storage::url($history->tasker_profile_picture)
                     : asset('storage/uploads/history/profile_pictures/default.jpg')
+            ] : null,
+
+            'payment' => $history->payment_method ? [
+                'method' => Str::title($history->payment_method),
+                'status' => Str::title($history->payment_status),
+                'raw_status' => $history->payment_status,
+                'status_class' => 'status-field status-' . $history->payment->status,
+                'amount' => $history->payment_amount,
+                'paid_at' => $history->payment_paid_at
+                    ? Carbon::parse($history->payment_paid_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
+                    : 'Not paid yet',
             ] : null,
         ];
 
@@ -472,7 +518,7 @@ class ClientController extends Controller
     {
         $clientId = $request->user()->id;
 
-        $errand = Errand::with('attachment')
+        $errand = Errand::with(['attachment', 'payment'])
             ->where('id', $id)
             ->where('client_id', $clientId)
             ->first();
@@ -572,7 +618,7 @@ class ClientController extends Controller
     {
         $client = $request->user();
 
-        $errand = Errand::with('attachment')
+        $errand = Errand::with(['attachment', 'payment'])
             ->where('id', $id)
             ->where('client_id', $client->id)
             ->where('status', 'awaiting_confirmation')
@@ -585,10 +631,21 @@ class ClientController extends Controller
             ], 404);
         }
 
-        $tasker = $errand->tasker_id ? User::find($errand->tasker_id) : null;
+        $payment = $errand->payment;
+
+        if (!$payment || $payment->status !== 'paid') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment must be confirmed before completing the errand.'
+            ], 422);
+        }
+
+        $tasker = $errand->tasker_id
+            ? User::find($errand->tasker_id)
+            : null;
 
         try {
-            $history = DB::transaction(function () use ($errand, $client, $tasker) {
+            $history = DB::transaction(function () use ($errand, $client, $tasker, $payment) {
 
                 $history = History::create([
                     'errand_id' => $errand->id,
@@ -596,6 +653,13 @@ class ClientController extends Controller
                     'category' => $errand->category,
                     'description' => $errand->description,
                     'fee' => $errand->fee,
+
+                    'payment_method' => $payment->method,
+                    'payment_amount' => $payment->amount,
+                    'payment_status' => $payment->status,
+                    'payment_reference' => $payment->reference,
+                    'payment_paid_at' => $payment->paid_at,
+
                     'deadline' => $errand->deadline,
                     'location' => $errand->location,
                     'contact' => $errand->contact,
@@ -631,7 +695,9 @@ class ClientController extends Controller
                 ) {
                     $extension = pathinfo($client->profile_picture, PATHINFO_EXTENSION);
 
-                    $clientProfilePicture = 'uploads/history/profile_pictures/client_' . $history->errand_id . '.' . $extension;
+                    $clientProfilePicture =
+                        'uploads/history/profile_pictures/client_' .
+                        $history->errand_id . '.' . $extension;
 
                     Storage::disk('public')->copy(
                         $client->profile_picture,
@@ -647,7 +713,9 @@ class ClientController extends Controller
                 ) {
                     $extension = pathinfo($tasker->profile_picture, PATHINFO_EXTENSION);
 
-                    $taskerProfilePicture = 'uploads/history/profile_pictures/tasker_' . $history->errand_id . '.' . $extension;
+                    $taskerProfilePicture =
+                        'uploads/history/profile_pictures/tasker_' .
+                        $history->errand_id . '.' . $extension;
 
                     Storage::disk('public')->copy(
                         $tasker->profile_picture,
@@ -689,13 +757,24 @@ class ClientController extends Controller
 
                 $errand_id = $errand->id;
                 $errand_title = $errand->title;
-                
+
                 $client_id = $client->id;
-                $client_full_name = trim("{$client->first_name} " . ($client->middle_name ? "{$client->middle_name} " : "") . "{$client->last_name}");
+
+                $client_full_name = trim(
+                    "{$client->first_name} " .
+                    ($client->middle_name ? "{$client->middle_name} " : "") .
+                    "{$client->last_name}"
+                );
 
                 $tasker_id = $errand->tasker_id;
-                $tasker = User::find($tasker_id);
-                $tasker_full_name = $tasker ? trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}") : 'Tasker';
+
+                $tasker_full_name = $tasker
+                    ? trim(
+                        "{$tasker->first_name} " .
+                        ($tasker->middle_name ? "{$tasker->middle_name} " : "") .
+                        "{$tasker->last_name}"
+                    )
+                    : 'None';
 
                 $tasker_msg = "Your Assigned Errand: \"{$errand_title}\" (ID: {$errand_id}) has been confirmed as completed by Client: \"{$client_full_name}\" (ID: {$client_id}) and has been moved to history.";
                 $admin_msg = "Errand Completed | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). The client confirmed the errand as completed and it has been transferred to history.";
@@ -737,6 +816,7 @@ class ClientController extends Controller
                 'message' => 'Errand completed and moved to history successfully.',
                 'history_id' => $history->id,
             ]);
+
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
