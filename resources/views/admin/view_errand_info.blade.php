@@ -73,6 +73,22 @@
 
                 <div class="group-info-box">
                     <div class="info-box">
+                        <label>Payment Method</label>
+                        <span id="payment-method">Loading...</span>
+                    </div>
+                    <div class="info-box">
+                        <label>Payment Status</label>
+                        <span id="payment-status" class="status-field">Loading...</span>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <label>Paid At</label>
+                    <span id="payment-paid-at">Loading...</span>
+                </div>
+
+                <div class="group-info-box">
+                    <div class="info-box">
                         <label>Created At</label>
                         <span id="errand-created-at">Loading...</span>
                     </div>
@@ -147,6 +163,10 @@
 
                     <button type="button" id="failDisputeBtn" class="btn-delete" style="display:none;">
                         <i class="fa-solid fa-circle-xmark"></i> Mark as Failed
+                    </button>
+
+                    <button type="button" id="failRefundBtn" class="btn-delete" style="display:none;">
+                        <i class="fa-solid fa-money-bill-transfer"></i> Mark as Failed & Refund
                     </button>
 
                     <button type="button" id="cancelBtn" class="btn-cancel" style="display: none;">
@@ -356,11 +376,18 @@
                 document.getElementById('errand-location').textContent = errand.location;
                 document.getElementById('errand-contact').textContent = errand.contact;
                 document.getElementById('errand-fee').textContent = errand.fee;
-                
+
                 const statusElement = document.getElementById('errand-status');
                 statusElement.textContent = errand.status;
                 statusElement.className = errand.status_class;
 
+                document.getElementById('payment-method').textContent = errand.payment.method;
+
+                const paymentStatusElement = document.getElementById('payment-status');
+                paymentStatusElement.textContent = errand.payment.status;
+                paymentStatusElement.className = errand.payment.status_class;
+
+                document.getElementById('payment-paid-at').textContent = errand.payment.paid_at;
                 document.getElementById('errand-created-at').textContent = errand.created_at;
                 document.getElementById('errand-updated-at').textContent = errand.updated_at;
                 document.getElementById('errand-accepted-at').textContent = errand.accepted_at;
@@ -551,6 +578,7 @@
                     });
                     
                 } else if (errand.raw_status === 'accepted') {
+                    const cancelBtn = document.getElementById('cancelBtn');
                     cancelBtn.style.display = 'flex';
                     cancelBtn.addEventListener('click', async function(){
                         const customTitle = 'Confirm Cancellation';
@@ -692,15 +720,17 @@
                 } else if (errand.raw_status === 'dispute') {
                     const completeDisputeBtn = document.getElementById('completeDisputeBtn');
                     const failDisputeBtn = document.getElementById('failDisputeBtn');
+                    const failRefundBtn = document.getElementById('failRefundBtn');
 
                     completeDisputeBtn.style.display = 'flex';
-                    completeDisputeBtn.addEventListener('click', async function(){
+
+                    completeDisputeBtn.addEventListener('click', async function() {
                         const customTitle = 'Confirm Completion';
                         const customMessage = 'Mark this disputed errand as "Completed"? This will resolve the dispute and finish the errand. This action cannot be undone.';
                         const isConfirmed = await showConfirmation(customTitle, customMessage);
-                        
-                        if(!isConfirmed) return;
-                        
+
+                        if (!isConfirmed) return;
+
                         try {
                             const response = await fetch('/api/admin/errands/' + errand.id + '/completed', {
                                 method: 'POST',
@@ -708,58 +738,110 @@
                                     'Accept': 'application/json',
                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                                     'X-API-KEY': apiKey,
-                                    'X-MY-ORIGIN' : origin
+                                    'X-MY-ORIGIN': origin
                                 },
                                 credentials: 'same-origin'
                             });
 
                             const result = await response.json();
-                            if(!response.ok || !result.success){
+
+                            if (!response.ok || !result.success) {
                                 throw new Error(result.message);
                             }
 
                             sessionStorage.setItem('success_message', result.message);
                             window.location.href = '{{ route("admin.history") }}';
 
-                        } catch(error) {
+                        } catch (error) {
                             console.error('Error:', error);
                             displayGlobalError(error.message);
                         }
                     });
 
-                    failDisputeBtn.style.display = 'flex';
-                    failDisputeBtn.addEventListener('click', async function(){
-                        const customTitle = 'Confirm Failure';
-                        const customMessage = 'Mark this disputed errand as "Failed"? This will resolve the dispute and mark the errand as failed. This action cannot be undone.';
-                        const isConfirmed = await showConfirmation(customTitle, customMessage);
-                        
-                        if(!isConfirmed) return;
-                        
-                        try {
-                            const response = await fetch('/api/admin/errands/' + errand.id + '/failed', {
-                                method: 'POST',
-                                headers: {
-                                    'Accept': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                                    'X-API-KEY': apiKey,
-                                    'X-MY-ORIGIN' : origin
-                                },
-                                credentials: 'same-origin'
-                            });
+                    const paymentStatus = errand.payment ? errand.payment.raw_status : 'pending';
 
-                            const result = await response.json();
-                            if(!response.ok || !result.success){
-                                throw new Error(result.message);
+                    if (paymentStatus === 'paid') {
+                        failRefundBtn.style.display = 'flex';
+
+                        failRefundBtn.addEventListener('click', async function() {
+                            const customTitle = 'Confirm Failure & Refund';
+                            const customMessage = 'Mark this disputed errand as "Failed" and refund the paid amount to the Client? This action cannot be undone.';
+                            const isConfirmed = await showConfirmation(customTitle, customMessage);
+
+                            if (!isConfirmed) return;
+
+                            try {
+                                const response = await fetch('/api/admin/errands/' + errand.id + '/failed', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN': origin
+                                    },
+                                    body: JSON.stringify({
+                                        refund: true
+                                    }),
+                                    credentials: 'same-origin'
+                                });
+
+                                const result = await response.json();
+
+                                if (!response.ok || !result.success) {
+                                    throw new Error(result.message);
+                                }
+
+                                sessionStorage.setItem('success_message', result.message);
+                                window.location.href = '{{ route("admin.history") }}';
+
+                            } catch (error) {
+                                console.error('Error:', error);
+                                displayGlobalError(error.message);
                             }
+                        });
 
-                            sessionStorage.setItem('success_message', result.message);
-                            window.location.href = '{{ route("admin.history") }}';
+                    } else {
+                        failDisputeBtn.style.display = 'flex';
 
-                        } catch(error) {
-                            console.error('Error:', error);
-                            displayGlobalError(error.message);
-                        }
-                    });
+                        failDisputeBtn.addEventListener('click', async function() {
+                            const customTitle = 'Confirm Failure';
+                            const customMessage = 'Mark this disputed errand as "Failed"? Since the payment has not been paid, no refund is required. This action cannot be undone.';
+                            const isConfirmed = await showConfirmation(customTitle, customMessage);
+
+                            if (!isConfirmed) return;
+
+                            try {
+                                const response = await fetch('/api/admin/errands/' + errand.id + '/failed', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN': origin
+                                    },
+                                    body: JSON.stringify({
+                                        refund: false
+                                    }),
+                                    credentials: 'same-origin'
+                                });
+
+                                const result = await response.json();
+
+                                if (!response.ok || !result.success) {
+                                    throw new Error(result.message);
+                                }
+
+                                sessionStorage.setItem('success_message', result.message);
+                                window.location.href = '{{ route("admin.history") }}';
+
+                            } catch (error) {
+                                console.error('Error:', error);
+                                displayGlobalError(error.message);
+                            }
+                        });
+                    }
                 } else if (errand.raw_status === 'completed' || errand.raw_status === 'failed') {
                     const deleteBtn = document.getElementById('deleteErrandBtn');
                     deleteBtn.style.display = 'flex';

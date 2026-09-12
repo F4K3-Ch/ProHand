@@ -269,7 +269,7 @@ class AdminController extends Controller
 
     public function getErrandDetails($id)
     {
-        $errand = Errand::with(['attachment', 'client', 'tasker'])
+        $errand = Errand::with(['attachment', 'client', 'tasker', 'payment'])
             ->where('id', $id)
             ->first();
 
@@ -338,6 +338,17 @@ class AdminController extends Controller
                     'profile_picture' => $errand->tasker->profile_picture
                         ? Storage::url($errand->tasker->profile_picture)
                         : asset('storage/uploads/profile_pictures/default.jpg')
+                ] : null,
+
+                'payment' => $errand->payment ? [
+                    'method' => Str::title($errand->payment->method),
+                    'status' => Str::title($errand->payment->status),
+                    'raw_status' => $errand->payment->status,
+                    'status_class' => 'status-field status-' . $errand->payment->status,
+                    'amount' => $errand->payment->amount,
+                    'paid_at' => $errand->payment->paid_at
+                        ? Carbon::parse($errand->payment->paid_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
+                        : 'Not paid yet',
                 ] : null,
             ];
 
@@ -420,6 +431,17 @@ class AdminController extends Controller
                 'profile_picture' => $history->tasker_profile_picture
                     ? Storage::url($history->tasker_profile_picture)
                     : asset('storage/uploads/history/profile_pictures/default.jpg')
+            ] : null,
+
+            'payment' => $history->payment_method ? [
+                'method' => Str::title($history->payment_method),
+                'status' => Str::title($history->payment_status),
+                'raw_status' => $history->payment_status,
+                'status_class' => 'status-field status-' . $history->payment_status,
+                'amount' => $history->payment_amount,
+                'paid_at' => $history->payment_paid_at
+                    ? Carbon::parse($history->payment_paid_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
+                    : 'Not paid yet',
             ] : null,
         ];
 
@@ -751,7 +773,7 @@ class AdminController extends Controller
     {
         $admin = $request->user();
 
-        $errand = Errand::with('attachment')
+        $errand = Errand::with(['attachment', 'payment'])
             ->where('id', $id)
             ->whereIn('status', ['awaiting_confirmation', 'dispute'])
             ->first();
@@ -763,11 +785,22 @@ class AdminController extends Controller
             ], 404);
         }
 
+        $payment = $errand->payment;
+
+        if (!$payment || $payment->status !== 'paid') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment must be confirmed before completing the errand.'
+            ], 422);
+        }
+
         $client = User::find($errand->client_id);
-        $tasker = $errand->tasker_id ? User::find($errand->tasker_id) : null;
+        $tasker = $errand->tasker_id
+            ? User::find($errand->tasker_id)
+            : null;
 
         try {
-            $history = DB::transaction(function () use ($errand, $admin, $client, $tasker) {
+            $history = DB::transaction(function () use ($errand, $admin, $client, $tasker, $payment) {
 
                 $history = History::create([
                     'errand_id' => $errand->id,
@@ -775,6 +808,13 @@ class AdminController extends Controller
                     'category' => $errand->category,
                     'description' => $errand->description,
                     'fee' => $errand->fee,
+
+                    'payment_method' => $payment->method,
+                    'payment_amount' => $payment->amount,
+                    'payment_status' => $payment->status,
+                    'payment_reference' => $payment->reference,
+                    'payment_paid_at' => $payment->paid_at,
+
                     'deadline' => $errand->deadline,
                     'location' => $errand->location,
                     'contact' => $errand->contact,
@@ -810,7 +850,10 @@ class AdminController extends Controller
                     Storage::disk('public')->exists($client->profile_picture)
                 ) {
                     $extension = pathinfo($client->profile_picture, PATHINFO_EXTENSION);
-                    $clientProfilePicture = 'uploads/history/profile_pictures/client_' . $history->errand_id . '.' . $extension;
+
+                    $clientProfilePicture =
+                        'uploads/history/profile_pictures/client_' .
+                        $history->errand_id . '.' . $extension;
 
                     Storage::disk('public')->copy(
                         $client->profile_picture,
@@ -825,7 +868,10 @@ class AdminController extends Controller
                     Storage::disk('public')->exists($tasker->profile_picture)
                 ) {
                     $extension = pathinfo($tasker->profile_picture, PATHINFO_EXTENSION);
-                    $taskerProfilePicture = 'uploads/history/profile_pictures/tasker_' . $history->errand_id . '.' . $extension;
+
+                    $taskerProfilePicture =
+                        'uploads/history/profile_pictures/tasker_' .
+                        $history->errand_id . '.' . $extension;
 
                     Storage::disk('public')->copy(
                         $tasker->profile_picture,
@@ -867,21 +913,38 @@ class AdminController extends Controller
 
                 $errand_id = $errand->id;
                 $errand_title = $errand->title;
-                
-                $admin_full_name = trim("{$admin->first_name} " . ($admin->middle_name ? "{$admin->middle_name} " : "") . "{$admin->last_name}");
-                
+
+                $admin_full_name = trim(
+                    "{$admin->first_name} " .
+                    ($admin->middle_name ? "{$admin->middle_name} " : "") .
+                    "{$admin->last_name}"
+                );
+
                 $client_id = $errand->client_id;
-                $client_full_name = trim("{$client->first_name} " . ($client->middle_name ? "{$client->middle_name} " : "") . "{$client->last_name}");
+
+                $client_full_name = $client
+                    ? trim(
+                        "{$client->first_name} " .
+                        ($client->middle_name ? "{$client->middle_name} " : "") .
+                        "{$client->last_name}"
+                    )
+                    : 'Client';
 
                 $tasker_id = $errand->tasker_id;
-                $tasker_full_name = $tasker ? trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}") : 'Tasker';
 
+                $tasker_full_name = $tasker
+                    ? trim(
+                        "{$tasker->first_name} " .
+                        ($tasker->middle_name ? "{$tasker->middle_name} " : "") .
+                        "{$tasker->last_name}"
+                    )
+                    : 'Tasker';
 
                 if ($errand->status === 'dispute') {
                     $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been resolved and marked as completed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and moved to history.";
                     $tasker_msg = "Your Assigned Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been resolved and marked as completed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and moved to history.";
                     $admin_msg = "Errand Dispute Marked Complete | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Marked Complete by Admin: \"{$admin_full_name}\" (ID: {$admin->id}). Transferred to history.";
-                } else {
+                } else { 
                     $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) has been confirmed as completed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and has been moved to history.";
                     $tasker_msg = "Your Assigned Errand: \"{$errand_title}\" (ID: {$errand_id}) has been confirmed as completed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and has been moved to history.";
                     $admin_msg = "Errand Confirmed Completed | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Confirmed Complete by Admin: \"{$admin_full_name}\" (ID: {$admin->id}). Transferred to history.";
@@ -913,7 +976,10 @@ class AdminController extends Controller
                     ]);
                 }
 
-                $otherAdmins = User::where('role', 'admin')->where('id', '!=', $admin->id)->get();
+                $otherAdmins = User::where('role', 'admin')
+                    ->where('id', '!=', $admin->id)
+                    ->get();
+
                 foreach ($otherAdmins as $adm) {
                     Notification::create([
                         'user_id' => $adm->id,
@@ -934,6 +1000,7 @@ class AdminController extends Controller
                 'message' => 'Errand completed and moved to history successfully.',
                 'history_id' => $history->id,
             ]);
+
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
@@ -945,8 +1012,9 @@ class AdminController extends Controller
     public function updateFailed(Request $request, $id)
     {
         $admin = $request->user();
+        $should_refund = $request->boolean('refund');
 
-        $errand = Errand::with('attachment')
+        $errand = Errand::with(['attachment', 'payment'])
             ->where('id', $id)
             ->where('status', 'dispute')
             ->first();
@@ -958,11 +1026,48 @@ class AdminController extends Controller
             ], 404);
         }
 
+        $payment = $errand->payment;
+
+        if (!$payment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment record not found.'
+            ], 422);
+        }
+
+        if ($should_refund && $payment->status !== 'paid') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only paid errands can be marked as failed with a refund.'
+            ], 422);
+        }
+
+        if (!$should_refund && $payment->status === 'paid') {
+            return response()->json([
+                'success' => false,
+                'message' => 'This errand has already been paid. Use the failed and refund action instead.'
+            ], 422);
+        }
+
         $client = User::find($errand->client_id);
-        $tasker = $errand->tasker_id ? User::find($errand->tasker_id) : null;
+        $tasker = $errand->tasker_id
+            ? User::find($errand->tasker_id)
+            : null;
 
         try {
-            $history = DB::transaction(function () use ($errand, $admin, $client, $tasker) {
+            $history = DB::transaction(function () use (
+                $errand,
+                $admin,
+                $client,
+                $tasker,
+                $payment,
+                $should_refund,
+            ) {
+                if ($should_refund) {
+                    $payment->update([
+                        'status' => 'refunded',
+                    ]);
+                }
 
                 $history = History::create([
                     'errand_id' => $errand->id,
@@ -970,6 +1075,13 @@ class AdminController extends Controller
                     'category' => $errand->category,
                     'description' => $errand->description,
                     'fee' => $errand->fee,
+
+                    'payment_method' => $payment->method,
+                    'payment_amount' => $payment->amount,
+                    'payment_status' => $payment->status,
+                    'payment_reference' => $payment->reference,
+                    'payment_paid_at' => $payment->paid_at,
+
                     'deadline' => $errand->deadline,
                     'location' => $errand->location,
                     'contact' => $errand->contact,
@@ -995,8 +1107,8 @@ class AdminController extends Controller
                     'finished_at' => Carbon::now(),
                 ]);
 
-                $clientProfilePicture = 'uploads/history/profile_pictures/default.jpg';
-                $taskerProfilePicture = 'uploads/history/profile_pictures/default.jpg';
+                $client_profile_picture = 'uploads/history/profile_pictures/default.jpg';
+                $tasker_profile_picture = 'uploads/history/profile_pictures/default.jpg';
 
                 if (
                     $client &&
@@ -1005,11 +1117,14 @@ class AdminController extends Controller
                     Storage::disk('public')->exists($client->profile_picture)
                 ) {
                     $extension = pathinfo($client->profile_picture, PATHINFO_EXTENSION);
-                    $clientProfilePicture = 'uploads/history/profile_pictures/client_' . $history->errand_id . '.' . $extension;
+
+                    $client_profile_picture =
+                        'uploads/history/profile_pictures/client_' .
+                        $history->errand_id . '.' . $extension;
 
                     Storage::disk('public')->copy(
                         $client->profile_picture,
-                        $clientProfilePicture
+                        $client_profile_picture
                     );
                 }
 
@@ -1020,17 +1135,20 @@ class AdminController extends Controller
                     Storage::disk('public')->exists($tasker->profile_picture)
                 ) {
                     $extension = pathinfo($tasker->profile_picture, PATHINFO_EXTENSION);
-                    $taskerProfilePicture = 'uploads/history/profile_pictures/tasker_' . $history->errand_id . '.' . $extension;
+
+                    $tasker_profile_picture =
+                        'uploads/history/profile_pictures/tasker_' .
+                        $history->errand_id . '.' . $extension;
 
                     Storage::disk('public')->copy(
                         $tasker->profile_picture,
-                        $taskerProfilePicture
+                        $tasker_profile_picture
                     );
                 }
 
                 $history->update([
-                    'client_profile_picture' => $clientProfilePicture,
-                    'tasker_profile_picture' => $taskerProfilePicture,
+                    'client_profile_picture' => $client_profile_picture,
+                    'tasker_profile_picture' => $tasker_profile_picture,
                 ]);
 
                 $attachment = $errand->attachment;
@@ -1041,18 +1159,18 @@ class AdminController extends Controller
                         PATHINFO_EXTENSION
                     );
 
-                    $historyPath =
+                    $history_path =
                         'uploads/history/attachments/' .
                         Str::uuid() . '.' . $extension;
 
                     Storage::disk('public')->copy(
                         $attachment->file_path,
-                        $historyPath
+                        $history_path
                     );
 
                     HistoryAttachment::create([
                         'history_errand_id' => $history->id,
-                        'file_path' => $historyPath,
+                        'file_path' => $history_path,
                         'original_name' => $attachment->original_name,
                         'uploaded_at' => $attachment->uploaded_at,
                     ]);
@@ -1062,16 +1180,46 @@ class AdminController extends Controller
 
                 $errand_id = $errand->id;
                 $errand_title = $errand->title;
-                
-                $admin_full_name = trim("{$admin->first_name} " . ($admin->middle_name ? "{$admin->middle_name} " : "") . "{$admin->last_name}");
+
+                $admin_id = $admin->id;
+                $admin_full_name = trim(
+                    "{$admin->first_name} " .
+                    ($admin->middle_name ? "{$admin->middle_name} " : "") .
+                    "{$admin->last_name}"
+                );
+
                 $client_id = $errand->client_id;
+                $client_full_name = $client
+                    ? trim(
+                        "{$client->first_name} " .
+                        ($client->middle_name ? "{$client->middle_name} " : "") .
+                        "{$client->last_name}"
+                    )
+                    : 'Client';
+
                 $tasker_id = $errand->tasker_id;
+                $tasker_full_name = $tasker
+                    ? trim(
+                        "{$tasker->first_name} " .
+                        ($tasker->middle_name ? "{$tasker->middle_name} " : "") .
+                        "{$tasker->last_name}"
+                    )
+                    : 'Tasker';
 
-                $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been marked as failed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and moved to history.";
-                $tasker_msg = "Your Assigned Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been marked as failed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and moved to history.";
-                $admin_msg = "Errand Dispute Marked Failed | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Marked Failed by Admin: \"{$admin_full_name}\" (ID: {$admin->id}). Transferred to history.";
+                $payment_message = $should_refund
+                    ? ' The paid amount has been marked as refunded.'
+                    : '';
 
-                $notif_type = "errand";
+                $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been marked as failed by Administrator: \"{$admin_full_name}\" (ID: {$admin_id}) and moved to history.{$payment_message}";
+
+                $tasker_msg = "Your Assigned Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been marked as failed by Administrator: \"{$admin_full_name}\" (ID: {$admin_id}) and moved to history.{$payment_message}";
+
+                $admin_msg =
+                    "Errand Dispute Marked Failed" .
+                    ($should_refund ? " & Refunded" : "") .
+                    " | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Marked Failed by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). Transferred to history.";
+
+                $notif_type = 'errand';
 
                 $client_link = route('client.view-errand', ['id' => $errand_id]) . '?from=notifications';
                 $tasker_link = route('tasker.view-errand', ['id' => $errand_id]) . '?from=notifications';
@@ -1097,10 +1245,13 @@ class AdminController extends Controller
                     ]);
                 }
 
-                $otherAdmins = User::where('role', 'admin')->where('id', '!=', $admin->id)->get();
-                foreach ($otherAdmins as $adm) {
+                $other_admins = User::where('role', 'admin')
+                    ->where('id', '!=', $admin_id)
+                    ->get();
+
+                foreach ($other_admins as $other_admin) {
                     Notification::create([
-                        'user_id' => $adm->id,
+                        'user_id' => $other_admin->id,
                         'type' => $notif_type,
                         'message' => $admin_msg,
                         'link' => $admin_link,
@@ -1115,9 +1266,12 @@ class AdminController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Errand marked as failed and moved to history successfully.',
+                'message' => $should_refund
+                    ? 'Errand marked as failed, payment refunded, and moved to history successfully.'
+                    : 'Errand marked as failed and moved to history successfully.',
                 'history_id' => $history->id,
             ]);
+
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
