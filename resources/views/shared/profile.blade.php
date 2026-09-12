@@ -225,6 +225,19 @@
                     window.location.href = "{{ route('profile.change-password') }}";
                 });
             }
+
+            const deleteAccountBtn = document.getElementById('btn-delete-account');
+            if (deleteAccountBtn) {
+                deleteAccountBtn.addEventListener('click', async function() {
+                    const customTitle = 'Confirm Account Deletion';
+                    const customMessage = 'Are you sure you want to delete your account? Your account and associated data will be permanently deleted.';
+                    const isConfirmed = await showConfirmation(customTitle, customMessage);
+
+                    if (!isConfirmed) return;
+
+                    console.log('Delete account confirmed.');
+                });
+            }
         });
     </script>
 @endpush

@@ -124,6 +124,7 @@
             const photoModal = document.getElementById('profilePhotoModal');
             const modalImg = document.getElementById('modalProfileImage');
             const closePhotoBtn = document.getElementById('closePhotoModal');
+            let user;
 
             profilePhoto.addEventListener('click', function () {
                 if (profilePhoto.src) {
@@ -136,10 +137,10 @@
 
             function closeModalFunc() {
                 photoModal.classList.remove('active');
-                document.body.style.overflow = ''; 
+                document.body.style.overflow = '';
                 setTimeout(() => {
                     photoModal.style.display = 'none';
-                }, 300); 
+                }, 300);
             }
 
             closePhotoBtn.addEventListener('click', closeModalFunc);
@@ -156,7 +157,7 @@
                     headers: {
                         'Accept': 'application/json',
                         'X-API-KEY': apiKey,
-                        'X-MY-ORIGIN' : origin
+                        'X-MY-ORIGIN': origin
                     },
                     credentials: 'same-origin',
                 });
@@ -169,7 +170,7 @@
                     );
                 }
 
-                const user = result.user;
+                user = result.user;
 
                 document.getElementById('profile-id').textContent = user.id;
                 document.getElementById('profile-email').textContent = user.email;
@@ -207,6 +208,29 @@
                     error.message || 'Unable to load profile information.';
 
                 errorMessage.style.display = 'block';
+            }
+
+            const deleteAccountBtn = document.getElementById('btn-delete-account');
+
+            if (deleteAccountBtn) {
+                deleteAccountBtn.addEventListener('click', async function() {
+                    if (!user) return;
+
+                    const fullName = user.first_name +
+                        (user.middle_name ? ' ' + user.middle_name : '') +
+                        ' ' + user.last_name;
+
+                    const customTitle = 'Confirm Account Deletion';
+                    const customMessage = 'Are you sure you want to delete the account of "' +
+                        fullName + '" (ID: ' + user.id +
+                        ')? The account and associated data will be permanently deleted.';
+
+                    const isConfirmed = await showConfirmation(customTitle, customMessage);
+
+                    if (!isConfirmed) return;
+
+                    console.log('Delete account confirmed.');
+                });
             }
         });
     </script>

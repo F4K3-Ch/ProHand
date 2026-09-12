@@ -1307,6 +1307,12 @@ body {
     border-color: rgba(22, 163, 74, 0.3);
 }
 
+.info-box span.status-field.status-refunded {
+    background-color: rgba(20, 184, 166, 0.15);
+    color: #14b8a6;
+    border-color: rgba(20, 184, 166, 0.3);
+}
+
 .info-box span.status-field.status-accepted {
     background-color: rgba(59, 130, 246, 0.15);  
     color: #3b82f6;     
