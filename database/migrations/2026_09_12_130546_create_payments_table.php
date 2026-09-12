@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('tasker_id')->nullable()->constrained('users')->nullOnDelete();
             $table->decimal('amount', 10, 2);
             $table->enum('method', ['cash', 'gcash', 'card'])->default('cash');
-            $table->enum('status', ['pending', 'paid', 'failed', 'refunded'])->default('pending');
+            $table->enum('status', ['pending', 'paid', 'unpaid', 'refunded'])->default('pending');
             $table->string('reference')->nullable();
             $table->timestamp('paid_at')->nullable();
             $table->timestamps();

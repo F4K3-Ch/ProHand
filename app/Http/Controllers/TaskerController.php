@@ -429,7 +429,7 @@ class TaskerController extends Controller
                 'amount' => $history->payment_amount,
                 'paid_at' => $history->payment_paid_at
                     ? Carbon::parse($history->payment_paid_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
-                    : 'Not paid yet',
+                    : 'None',
             ] : null,
         ];
 

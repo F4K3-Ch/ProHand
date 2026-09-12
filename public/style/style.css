@@ -1308,9 +1308,15 @@ body {
 }
 
 .info-box span.status-field.status-refunded {
-    background-color: rgba(20, 184, 166, 0.15);
-    color: #14b8a6;
-    border-color: rgba(20, 184, 166, 0.3);
+    background-color: rgba(251, 146, 60, 0.15); 
+    color: #fb923c;
+    border-color: rgba(251, 146, 60, 0.3);
+}
+
+.info-box span.status-field.status-unpaid {
+    background-color: rgba(107, 114, 128, 0.12); 
+    color: #6b7280;
+    border-color: rgba(107, 114, 128, 0.3);
 }
 
 .info-box span.status-field.status-accepted {

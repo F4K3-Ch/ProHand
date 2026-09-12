@@ -368,7 +368,8 @@
                             }
 
                             sessionStorage.setItem('success_message', result.message);
-                            window.location.href = '{{ route("tasker.dashboard") }}';
+                            // window.location.href = '{{ route("tasker.dashboard") }}';
+                            window.location.href = '/tasker/view-errand/' + errand.id + '?from=tasker.dashboard';
 
                         } catch (error) {
                             console.error('Error:', error);

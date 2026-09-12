@@ -441,7 +441,7 @@ class AdminController extends Controller
                 'amount' => $history->payment_amount,
                 'paid_at' => $history->payment_paid_at
                     ? Carbon::parse($history->payment_paid_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
-                    : 'Not paid yet',
+                    : 'None',
             ] : null,
         ];
 
@@ -1071,6 +1071,10 @@ class AdminController extends Controller
                 if ($should_refund) {
                     $payment->update([
                         'status' => 'refunded',
+                    ]);
+                } else {
+                    $payment->update([
+                        'status' => 'unpaid',
                     ]);
                 }
 
