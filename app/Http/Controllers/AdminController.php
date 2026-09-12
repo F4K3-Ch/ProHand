@@ -787,10 +787,10 @@ class AdminController extends Controller
 
         $payment = $errand->payment;
 
-        if (!$payment || $payment->status !== 'paid') {
+        if (!$payment) {
             return response()->json([
                 'success' => false,
-                'message' => 'Payment must be confirmed before completing the errand.'
+                'message' => 'Payment record not found.'
             ], 422);
         }
 
@@ -801,6 +801,11 @@ class AdminController extends Controller
 
         try {
             $history = DB::transaction(function () use ($errand, $admin, $client, $tasker, $payment) {
+
+                $payment->update([
+                    'status' => 'paid',
+                    'paid_at' => $payment->paid_at ?? Carbon::now(),
+                ]);
 
                 $history = History::create([
                     'errand_id' => $errand->id,
