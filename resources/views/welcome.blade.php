@@ -22,7 +22,6 @@
         <div class="nav-actions">
             <button type="button" id="landingThemeToggle" class="landing-theme-toggle">
                 <i class="fa-solid fa-moon"></i>
-                <span>Dark Mode</span>
             </button>
             <a href="/login" class="login-btn">Login</a>
             <a href="/register" class="register-btn">Register</a>
@@ -93,8 +92,8 @@
         const dark = html.getAttribute('data-theme') === 'dark';
 
         themeToggle.innerHTML = dark
-            ? '<i class="fa-solid fa-sun"></i><span>Light Mode</span>'
-            : '<i class="fa-solid fa-moon"></i><span>Dark Mode</span>';
+            ? '<i class="fa-solid fa-sun"></i>'
+            : '<i class="fa-solid fa-moon"></i>';
     }
 
     updateThemeButton();
