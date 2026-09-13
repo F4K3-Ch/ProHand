@@ -9,7 +9,7 @@
     <title>ProHand</title>
     <script>
         const savedTheme = localStorage.getItem('theme');
-        document.documentElement.setAttribute('data-theme', savedTheme === 'dark' ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
     </script>
 </head>
 <body class="landing-page">

@@ -1,9 +1,13 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script>
+        const savedTheme = localStorage.getItem('theme');
+        document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
+    </script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ asset('img/ProHand(Adapt).png') }}">
     <link rel="stylesheet" href="{{ asset('style/style.css') }}">
@@ -77,7 +81,7 @@
 
         if (themeToggle) {
             const savedTheme = localStorage.getItem('theme');
-            const theme = savedTheme === 'dark' ? 'dark' : 'light';
+            const theme = savedTheme || 'dark';
 
             html.setAttribute('data-theme', theme);
 
