@@ -7,7 +7,6 @@
     outline: none;
     scroll-behavior: smooth;
     
-    /* Proper Modern Font Stack */
     font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
 
     /* The "Anti-Pixel" Smoothness Fix */
@@ -3617,7 +3616,7 @@ select[name="role"] option[value="client"] {
 
 .user-details-container h2 {
     font-size: 0.9rem;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--color-text);
     margin: 0;
     padding-bottom: 7px;
@@ -5878,7 +5877,7 @@ select[name="role"] option[value="client"] {
 
     .user-details-container h2 {
         font-size: 0.78rem;
-        font-weight: 600;
+        font-weight: 500;
         padding-bottom: 5px;
     }
 
