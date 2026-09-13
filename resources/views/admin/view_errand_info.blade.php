@@ -14,16 +14,18 @@
     <main class="view-main" data-errand-id="{{ $id }}">
         <div class="info-container">
             <div class="errand-details-container">
-                <!-- Card Header / Top Bar -->
+
+                <div class="errand-info-header">
+                    <h2><i class="fa-solid fa-circle-info"></i> Errand Info</h2>
+                </div>
+
                 <div class="errand-card-top">
                     <span class="errand-id-badge">ID: <span id="errand-id">Loading...</span></span>
                     <span id="errand-status">Loading...</span>
                 </div>
 
-                <!-- Title -->
                 <h1 class="errand-title" id="errand-title">Loading...</h1>
 
-                <!-- Success/Error Messages -->
                 <div class="view-main-error-success-message">
                     @if(session('success'))
                         <p class="success" id="sessionSuccessMessage">{{ session('success') }}</p>
@@ -35,7 +37,6 @@
                     <p class="error" id="errorMessageText" style="display:none;"></p>
                 </div>
 
-                <!-- Details Grid/List -->
                 <div class="errand-meta-list">
                     <div class="detail-row">
                         <span><i class="fa-solid fa-folder-open"></i> Category</span>
@@ -87,7 +88,6 @@
                     </div>
                 </div>
 
-                <!-- Text Areas (Description & Contact) -->
                 <div class="errand-text-sections">
                     <div class="text-section-box">
                         <label><i class="fa-solid fa-align-left"></i> Description</label>
@@ -99,7 +99,6 @@
                     </div>
                 </div>
 
-                <!-- Attachments -->
                 <div class="errand-attachment-section">
                     <label><i class="fa-solid fa-paperclip"></i> Attachment</label>
                     <div id="errand-attachment">
@@ -118,9 +117,7 @@
                     </div>
                 </div>
 
-                <!-- Users Section -->
                 <div class="users-container" id="users-container">
-                    <!-- Posted By -->
                     <div class="user-details-container">
                         <h2>Posted By</h2>
                         <div class="user-main-content">
@@ -154,7 +151,6 @@
                         </div>
                     </div>
 
-                    <!-- Accepted By -->
                     <div class="user-details-container" id="tasker-container" style="display:none;">
                         <h2>Accepted By</h2>
                         <div class="user-main-content">
@@ -189,7 +185,6 @@
                     </div>
                 </div>
 
-                <!-- Action Buttons Footer -->
                 <div class="info-bot-btn">
                     <button type="button" id="deleteErrandBtn" class="btn-delete" style="display: none;">
                         <i class="fa-solid fa-trash"></i> Delete Errand

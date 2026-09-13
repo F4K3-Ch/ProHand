@@ -14,7 +14,7 @@
 
     <main class="view-main">
         <div class="edit-profile-container">
-            <h1>Edit Profile</h1>
+            <h1><i class="fa-solid fa-user-pen"></i> Edit Profile</h1>
 
             <div class="view-main-error-success-message">
                 <p class="error" id="error-message" style="display: none;"></p>
@@ -23,60 +23,44 @@
 
             <form id="edit-profile-form" enctype="multipart/form-data">
                 @csrf
-                
+
                 <div class="profile-photo-section">
                     <div class="photo-wrapper">
-                        <img
-                            id="profile-preview-photo"
-                            class="profile-preview-photo"
-                            src=""
-                            alt="Profile Picture"
-                            style="display: none;"
-                        >
-                        
-                        <div
-                            id="profile-photo-spinner"
-                            class="circle-spinner profile-avatar-spinner"
-                        ></div>
+                        <img id="profile-preview-photo" class="profile-preview-photo" src="" alt="Profile Picture" style="display: none;">
+                        <div id="profile-photo-spinner" class="circle-spinner profile-avatar-spinner"></div>
                     </div>
 
                     <div class="photo-action-buttons">
-                        <label for="profile_picture" class="btn-upload-file">
-                            <i class="fa-solid fa-camera"></i> Change Photo
-                        </label>
+                        <label for="profile_picture" class="btn-upload-file"><i class="fa-solid fa-camera"></i> Change Photo</label>
                         <input type="file" id="profile_picture" name="profile_picture" accept="image/*">
-
-                        <button type="button" id="btn-remove-photo" class="btn-remove-file">
-                            <i class="fa-solid fa-trash"></i> Remove
-                        </button>
+                        <button type="button" id="btn-remove-photo" class="btn-remove-file"><i class="fa-solid fa-trash"></i> Remove</button>
                     </div>
                 </div>
 
                 <div class="profile-bot-container">
                     <div class="edit-profile-input-box">
-                        <label>Last Name</label>
+                        <label for="profile-last-name"><i class="fa-solid fa-signature"></i> Last Name</label>
                         <input type="text" id="profile-last-name" name="last_name" class="form-input" required>
                     </div>
 
                     <div class="edit-profile-input-box">
-                        <label>First Name</label>
+                        <label for="profile-first-name"><i class="fa-solid fa-signature"></i> First Name</label>
                         <input type="text" id="profile-first-name" name="first_name" class="form-input" required>
                     </div>
 
                     <div class="edit-profile-input-box">
-                        <label>Middle Name</label>
+                        <label for="profile-middle-name"><i class="fa-solid fa-signature"></i> Middle Name</label>
                         <input type="text" id="profile-middle-name" name="middle_name" class="form-input">
                     </div>
 
                     <div class="edit-profile-input-box">
-                        <label>Contact Number</label>
+                        <label for="profile-contact-number"><i class="fa-solid fa-phone"></i> Contact Number</label>
                         <input type="text" id="profile-contact-number" name="contact_number" class="form-input" required>
                     </div>
 
                     <div class="profile-bot-btn">
                         <button type="submit" id="btn-save-profile" class="btn-edit-profile">
-                            <i class="fa-solid fa-check"></i>
-                            Save Changes
+                            <i class="fa-solid fa-check"></i> Save Changes
                             <div class="circle-spinner" id="profileSpinner" style="display: none;"></div>
                         </button>
                     </div>

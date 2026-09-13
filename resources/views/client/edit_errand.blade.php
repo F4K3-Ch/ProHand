@@ -13,7 +13,7 @@
 
     <main class="view-main" data-errand-id="{{ $id }}">
         <div class="edit-errand-container">
-            <h1>Edit Errand</h1>
+            <h1><i class="fa-solid fa-pen-to-square"></i> Edit Errand</h1>
 
             <div class="view-main-error-success-message">
                 <p class="error" id="errorMessageText" style="display: none;"></p>

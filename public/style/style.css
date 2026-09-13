@@ -1290,6 +1290,7 @@ body {
 .role-badge {
     color: var(--color-text);
     font-size: 1rem;
+    font-weight: 600;
     padding: 4px;
     border-radius: 3px;
 }
@@ -1669,9 +1670,9 @@ body {
 
 /* Fee styling with requested green box and text color */
 .errand-card-details strong.errand-fee {
-    background-color: rgba(22, 163, 74, 0.12);
-    color: #16a34a;
-    font-weight: 700;
+    background-color: rgba(22, 163, 74, 0.15); 
+    color: #16a34a;   
+    font-weight: 600;
     padding: 3px 8px;
     border-radius: 6px;
     font-size: 0.85rem;
@@ -2290,28 +2291,216 @@ body {
     background-color: var(--color-btn-hover-bg);
 }
 
-/* Profile Info Container */
+/* Profile */
 .profile-info-container {
+    width: 100%;
+    max-width: 620px;
+    margin: 0 auto;
+}
+
+.profile-container {
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 18px;
     display: flex;
-    flex-wrap: wrap;
-    flex-direction: row;
-    justify-content: center;
-    align-items: stretch; 
-    gap: 10px;
-    max-width: 1010px;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.profile-card-header {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 11px;
+}
+
+.profile-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.profile-title i {
+    color: var(--color-span);
+}
+
+.profile-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+}
+
+.profile-card-layout {
+    display: flex;
+    align-items: center;
+    gap: 14px;
     width: 100%;
 }
 
-/* Profile Container and Tasker Errand Metrics */
-.profile-container,
-.tasker-errand-metrics {
-    flex: 1;
-    background-color: var(--color-card-bg);
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    max-width: 500px;
+.profile-image-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.profile-image-wrapper {
+    width: 190px;
+    height: 190px;
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    background-color: var(--color-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.profile-image {
     width: 100%;
-    padding: 20px;
+    height: 100%;
+    border: none;
+    border-radius: 0;
+    object-fit: cover;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.profile-image:hover {
+    transform: scale(1.04);
+}
+
+.profile-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    gap: 10px;
+    padding: 7px 10px;
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.profile-info-row > span:first-child {
+    color: var(--color-sec-text);
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.profile-info-row > span:first-child i {
+    color: var(--color-span);
+    width: 14px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.profile-value {
+    color: var(--color-text);
+    font-size: 0.9rem;
+    font-weight: 600;
+    max-width: 65%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: right;
+}
+
+.profile-extra-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+}
+
+.profile-info-row span.role-field {
+    padding: 3px 8px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    font-weight: 600;
+}
+
+/* Force override browser native user-agent styles on readonly inputs using attribute selectors */
+.profile-info-row span.role-field.role-admin {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.profile-info-row span.role-field.role-tasker {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.profile-info-row span.role-field.role-client {
+    background-color: rgba(22, 163, 74, 0.15);
+    color: #16a34a;
+    border-color: rgba(22, 163, 74, 0.3);
+}
+
+.profile-extra-info .profile-info-row {
+    padding: 8px 11px;
+}
+
+.profile-extra-info .profile-info-row > span:first-child {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.profile-extra-info .profile-info-row > span:first-child i {
+    font-size: 0.9rem;
+}
+
+.profile-extra-info .profile-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.profile-bot-btn {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    width: 100%;
+    margin-top: 4px;
+}
+
+.profile-bot-btn button {
+    flex: 1;
+    min-width: 140px;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    color: var(--color-btn-text);
+    font-size: 0.94rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
 }
 
 .tasker-errand-metrics h3{
@@ -2423,25 +2612,6 @@ body {
     font-weight: 600; /* Makes the role value stand out slightly more than normal fields */
 }
 
-/* Force override browser native user-agent styles on readonly inputs using attribute selectors */
-.profile-box span.role-field.role-admin {
-    background-color: rgba(239, 68, 68, 0.15);
-    color: #ef4444;
-    border-color: rgba(239, 68, 68, 0.3);
-}
-
-.profile-box span.role-field.role-tasker {
-    background-color: rgba(59, 130, 246, 0.15);
-    color: #3b82f6;
-    border-color: rgba(59, 130, 246, 0.3);
-}
-
-.profile-box span.role-field.role-client {
-    background-color: rgba(22, 163, 74, 0.15);
-    color: #16a34a;
-    border-color: rgba(22, 163, 74, 0.3);
-}
-
 /* Bottom buttons */
 .profile-bot-btn {
     display: flex;
@@ -2542,28 +2712,78 @@ body {
 .edit-profile-container {
     background-color: var(--color-card-bg);
     border: 1px solid var(--color-border);
-    border-radius: 6px;
-    padding: 20px;
+    border-radius: 12px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
     max-width: 500px;
     width: 100%;
     margin: 0 auto;
     box-shadow: var(--shadow-default);
+    box-sizing: border-box;
 }
 
 .edit-profile-container h1 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 11px;
+    margin: 0;
     color: var(--color-text);
-    font-size: 1.7rem;
-    font-weight: 600;
-    margin-bottom: 3px;
-    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-align: left;
+}
+
+.edit-profile-container h1 i {
+    color: var(--color-span);
+}
+
+.edit-profile-container .profile-photo-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.edit-profile-container .photo-wrapper {
+    width: 190px;
+    height: 190px;
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    background-color: var(--color-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.edit-profile-container .photo-wrapper .profile-preview-photo {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 0 !important;
+    object-fit: cover;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.edit-profile-container .photo-wrapper .profile-preview-photo:hover {
+    transform: scale(1.04);
 }
 
 .photo-action-buttons {
     display: flex;
+    justify-content: center;
+    align-items: center;
     gap: 10px;
     margin-top: 10px;
     flex-wrap: wrap;
-    justify-content: center;
 }
 
 .btn-upload-file,
@@ -2576,6 +2796,7 @@ body {
     font-weight: 500;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 5px;
     cursor: pointer;
     border: none;
@@ -2599,6 +2820,12 @@ input[type="file"]#profile_picture {
     display: none;
 }
 
+.profile-bot-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
 .edit-profile-input-box {
     display: flex;
     flex-direction: column;
@@ -2611,6 +2838,13 @@ input[type="file"]#profile_picture {
     color: var(--color-text);
     font-size: 0.9rem;
     font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.edit-profile-input-box label i {
+    color: var(--color-span);
+    margin-right: 5px;
 }
 
 .edit-profile-input-box input {
@@ -2626,11 +2860,33 @@ input[type="file"]#profile_picture {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    box-sizing: border-box;
 }
 
 .edit-profile-input-box input:focus {
     border-color: var(--color-input-focus-border);
     box-shadow: var(--shadow-input-focus);
+}
+
+.edit-profile-container .profile-bot-btn {
+    display: flex;
+    width: 100%;
+    margin-top: 2px;
+}
+
+.edit-profile-container .profile-bot-btn button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    color: var(--color-btn-text);
+    font-size: 0.94rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
 }
 
 .edit-profile-container .btn-edit-profile {
@@ -2655,11 +2911,20 @@ input[type="file"]#profile_picture {
 }
 
 .change-password-container h1 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 11px;
+    margin: 0 0 5px;
     color: var(--color-text);
-    font-size: 1.7rem;
-    font-weight: 600;
-    text-align: center;
-    margin-bottom: 5px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-align: left;
+}
+
+.change-password-container h1 i {
+    color: var(--color-span);
 }
 
 .change-password-error-success-message {
@@ -3039,6 +3304,27 @@ select[name="role"] option[value="client"] {
     margin: 0 auto;
 }
 
+.errand-info-header {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 11px;
+}
+
+.errand-info-header h2 {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.errand-info-header h2 i {
+    color: var(--color-span);
+}
+
 /* Compact Detailed Card Styling */
 .errand-details-container {
     background-color: var(--color-card-bg);
@@ -3058,7 +3344,7 @@ select[name="role"] option[value="client"] {
 }
 
 .errand-details-container .errand-id-badge {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 700;
     padding: 3px 8px;
     border-radius: 6px;
@@ -3067,7 +3353,8 @@ select[name="role"] option[value="client"] {
 }
 
 .errand-details-container .errand-card-top span.status-field {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
+    font-weight: 600;
     padding: 4px;
     border-radius: 3px;
 }
@@ -3130,15 +3417,15 @@ select[name="role"] option[value="client"] {
 }
 
 .errand-details-container .detail-row span.status-field {
-    font-weight: 700;
+    font-weight: 600;
     padding: 2px 6px;
     border-radius: 4px;
 }
 
 .errand-details-container .detail-row strong.errand-fee {
-    background-color: rgba(22, 163, 74, 0.12);
-    color: #16a34a;
-    font-weight: 700;
+    background-color: rgba(22, 163, 74, 0.15); 
+    color: #16a34a;   
+    font-weight: 600;
     padding: 2px 6px;
     border-radius: 4px;
 }
@@ -3333,12 +3620,239 @@ select[name="role"] option[value="client"] {
     color: #ffffff;
 }
 
+/* Individual Utility Button Settings */
+.btn-approve-release, 
+.btn-deny-release {
+    width: 100%;
+    padding: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: background 0.2s ease;
+}
+
 .btn-approve-release {
-    background-color: #238636;
+    background-color: #e67e22;
+    color: var(--color-btn-text);
+    gap: 5px;
+}
+
+.btn-approve-release:hover {
+    background-color: #d35400;
 }
 
 .btn-deny-release {
-    background-color: #da3633;
+    background-color: #e74c3c;
+    color: var(--color-btn-text);
+    gap: 5px;
+}
+
+.btn-deny-release:hover {
+    background-color: #c0392b;
+}
+
+/* Bottom buttons */
+.info-bot-btn {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    flex-wrap: wrap;           /* allow wrapping on small screens */
+    gap: 12px;
+    width: 100%;
+}
+
+/* Treat both links and forms the same */
+.info-bot-btn a,
+.info-bot-btn form {
+    flex: 1; 
+    min-width: 140px;  /* optional: prevents buttons from getting too tiny */
+    display: flex;
+}
+
+/* Buttons inside links or forms */
+.info-bot-btn a,
+.info-bot-btn button,
+.info-bot-btn form button {
+    color: var(--color-btn-text);
+    flex: 1;                   /* fill parent container */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    border: none;
+    width: 100%;
+}
+
+.badge-button-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+/* Base style for any descriptive status badge */
+.info-bot-btn .descriptive-status-badge {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 11px 16px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    text-align: center;
+    cursor: default;
+    width: 100%;
+    line-height: 1.4;
+}
+
+.info-bot-btn .descriptive-status-badge i {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+/* Default / Fallback color scheme */
+.info-bot-btn .descriptive-status-badge {
+    background-color: color-mix(in srgb, #F59E0B 15%, var(--color-card-bg));
+    color: #F59E0B;
+    border: 1px solid color-mix(in srgb, #F59E0B 40%, var(--color-border));
+}
+
+/* SEPARATE STYLE: Custom look specifically for #waitingToStartBadge (e.g., Indigo/Blue theme) */
+.info-bot-btn #waitingToStartBadge {
+    background-color: color-mix(in srgb, #3B82F6 15%, var(--color-card-bg));
+    color: #3B82F6;
+    border: 1px solid color-mix(in srgb, #3B82F6 40%, var(--color-border));
+}
+
+.info-bot-btn #paymentPendingBadge {
+    background-color: rgba(147, 51, 234, 0.15); 
+    color: #9333ea;                             
+    border-color: rgba(147, 51, 234, 0.3);
+}
+
+.info-bot-btn #paymentPaidBadge {
+    background-color: rgba(22, 163, 74, 0.15); 
+    color: #16a34a;    
+    border: 1px solid rgba(22, 163, 74, 0.3);
+}
+
+.info-bot-btn #cashPaymentConfirmedBadge {
+    background-color: rgba(22, 163, 74, 0.15); 
+    color: #16a34a;    
+    border: 1px solid rgba(22, 163, 74, 0.3);
+}
+
+.info-bot-btn #disputeBadge {
+    background-color: rgba(220, 38, 38, 0.15); 
+    color: #dc2626;    
+    border: 1px solid rgba(220, 38, 38, 0.3);
+}
+
+/* Shared base styling */
+.info-bot-btn select,
+.info-bot-btn .btn-update {
+    padding: 9px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* LEFT item (select): only left corners rounded */
+.info-bot-btn select {
+    background-color: var(--color-card-bg);
+    color: var(--color-text);
+    border: 1px solid var(--color-input-border);
+    flex: 1;
+    border-radius: 6px 0 0 6px;
+}
+
+/* RIGHT item (Update button): only right corners rounded */
+.info-bot-btn .btn-update {
+    border-radius: 0 6px 6px 0;
+}
+
+.info-bot-btn .btn-edit-errand {
+    background-color: #3B82F6;
+    transition: all 0.2s ease;
+    gap: 5px;
+}
+
+.info-bot-btn .btn-edit-errand:hover {
+    background-color: #2563EB;
+}
+
+.info-bot-btn .btn-edit-errand-disabled:disabled {
+    background-color: #D1D5DB;
+    color: #9CA3AF;
+    cursor: not-allowed;
+    opacity: 0.7;
+    gap: 5px;
+}
+
+.btn-start-errand,
+.btn-update {
+    background-color: #F59E0B;
+    transition: all 0.2s ease;
+    gap: 5px;
+}
+
+.btn-start-errand:hover,
+.btn-update:hover {
+    background-color: #D97706;
+}
+
+.btn-complete-errand {
+    background-color: #28a745;
+    transition: all 0.2s ease;
+    gap: 5px;
+}
+
+.btn-complete-errand:hover {
+    background-color: #218838;
+}
+
+.btn-confirm-completion {
+    background-color: #28a745;
+    transition: all 0.2s ease;
+    gap: 5px;
+}
+
+.btn-confirm-completion:hover {
+    background-color: #218838;
+}
+
+.btn-dispute {
+    background-color: #dc2626;
+    transition: all 0.2s ease;
+    gap: 5px;
+}
+
+.btn-dispute:hover {
+    background-color: #b91c1c;
+}
+
+.info-bot-btn select option[value="completed"] {
+    background-color: rgba(22, 163, 74, 0.15); 
+    color: #16a34a;     
+}
+
+.info-bot-btn select option[value="failed"] {
+    background-color: rgba(220, 38, 38, 0.15); 
+    color: #dc2626;          
 }
 
 /* Each data box */
@@ -3376,24 +3890,6 @@ select[name="role"] option[value="client"] {
     box-sizing: border-box;
 }
 
-.errand-details-container .info-box .text-area {
-    background-color: var(--color-input-bg);
-    color: var(--color-sec-text);
-    border: 1px solid var(--color-input-border);
-    width: 100%;
-    min-height: 90px;
-    padding: 6px 8px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    outline: none;
-    
-    /* Preserves line breaks, spaces, and multi-line steps */
-    white-space: pre-wrap;
-    word-break: break-word;
-    overflow-wrap: break-word;
-}
-
 /* Groups Input */
 .group-info-box {
     display: flex;
@@ -3418,79 +3914,6 @@ select[name="role"] option[value="client"] {
     width: 100%;
     margin-bottom: 5px;
     flex-wrap: wrap; /* Wraps cleanly on tiny mobile screens */
-}
-
-/* Ensure the alert box scales nicely inside the flex row context */
-.user-cancellation-alert-box {
-    flex: 1;
-    min-width: 180px;
-    border: 1px dashed #e74c3c;
-    padding: 12px;
-    border-radius: 6px;
-    background-color: rgba(231, 76, 60, 0.05);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-/* Maintain clean top/bottom margins on text */
-.user-cancellation-alert-box .alert-title {
-    color: #c0392b;
-    font-size: 0.8rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    text-align: center;
-}
-
-/* Grid/Flex for layout control */
-.alert-action-buttons {
-    display: flex;
-    flex-direction: column; /* Stack buttons vertically next to the picture */
-    gap: 6px;
-    width: 100%;
-}
-
-.alert-action-buttons form {
-    width: 100%;
-}
-
-/* Individual Utility Button Settings */
-.btn-approve-release, 
-.btn-deny-release {
-    width: 100%;
-    padding: 8px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    transition: background 0.2s ease;
-}
-
-.btn-approve-release {
-    background-color: #e67e22;
-    color: var(--color-btn-text);
-    gap: 5px;
-}
-
-.btn-approve-release:hover {
-    background-color: #d35400;
-}
-
-.btn-deny-release {
-    background-color: #e74c3c;
-    color: var(--color-btn-text);
-    gap: 5px;
-}
-
-.btn-deny-release:hover {
-    background-color: #c0392b;
 }
 
 .split-payment-container {
@@ -3659,168 +4082,6 @@ select[name="role"] option[value="client"] {
     font-weight: 400;
     margin: 0;
     font-style: italic; /* Visually communicates empty state */
-}
-
-/* Bottom buttons */
-.info-bot-btn {
-    margin-top: 15px;
-    display: flex;
-    justify-content: center;
-    flex-direction: row;
-    flex-wrap: wrap;           /* allow wrapping on small screens */
-    gap: 12px;
-    width: 100%;
-}
-
-/* Treat both links and forms the same */
-.info-bot-btn a,
-.info-bot-btn form {
-    flex: 1; 
-    min-width: 140px;  /* optional: prevents buttons from getting too tiny */
-    display: flex;
-}
-
-/* Buttons inside links or forms */
-.info-bot-btn a,
-.info-bot-btn button,
-.info-bot-btn form button {
-    color: var(--color-btn-text);
-    flex: 1;                   /* fill parent container */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    text-align: center;
-    cursor: pointer;
-    border: none;
-    width: 100%;
-}
-
-.badge-button-column {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-}
-
-.info-bot-btn .descriptive-status-badge {
-    background-color: color-mix(in srgb, #F59E0B 15%, var(--color-card-bg));
-    color: #F59E0B;
-    border: 1px solid color-mix(in srgb, #F59E0B 40%, var(--color-border));
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    text-align: center;
-    cursor: default;
-    width: 100%;
-    line-height: 1.4;
-}
-
-.info-bot-btn .descriptive-status-badge i {
-    font-size: 1.1rem;
-    flex-shrink: 0;
-}
-
-/* Shared base styling */
-.info-bot-btn select,
-.info-bot-btn .btn-update {
-    padding: 9px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-/* LEFT item (select): only left corners rounded */
-.info-bot-btn select {
-    background-color: var(--color-card-bg);
-    color: var(--color-text);
-    border: 1px solid var(--color-input-border);
-    flex: 1;
-    border-radius: 6px 0 0 6px;
-}
-
-/* RIGHT item (Update button): only right corners rounded */
-.info-bot-btn .btn-update {
-    border-radius: 0 6px 6px 0;
-}
-
-.info-bot-btn .btn-edit-errand {
-    background-color: #3B82F6;
-    transition: all 0.2s ease;
-    gap: 5px;
-}
-
-.info-bot-btn .btn-edit-errand:hover {
-    background-color: #2563EB;
-}
-
-.info-bot-btn .btn-edit-errand-disabled:disabled {
-    background-color: #D1D5DB;
-    color: #9CA3AF;
-    cursor: not-allowed;
-    opacity: 0.7;
-    gap: 5px;
-}
-
-.btn-start-errand,
-.btn-update {
-    background-color: #F59E0B;
-    transition: all 0.2s ease;
-    gap: 5px;
-}
-
-.btn-start-errand:hover,
-.btn-update:hover {
-    background-color: #D97706;
-}
-
-.btn-complete-errand {
-    background-color: #28a745;
-    transition: all 0.2s ease;
-    gap: 5px;
-}
-
-.btn-complete-errand:hover {
-    background-color: #218838;
-}
-
-.btn-confirm-completion {
-    background-color: #28a745;
-    transition: all 0.2s ease;
-    gap: 5px;
-}
-
-.btn-confirm-completion:hover {
-    background-color: #218838;
-}
-
-.btn-dispute {
-    background-color: #dc2626;
-    transition: all 0.2s ease;
-    gap: 5px;
-}
-
-.btn-dispute:hover {
-    background-color: #b91c1c;
-}
-
-.info-bot-btn select option[value="completed"] {
-    background-color: rgba(22, 163, 74, 0.15); 
-    color: #16a34a;     
-}
-
-.info-bot-btn select option[value="failed"] {
-    background-color: rgba(220, 38, 38, 0.15); 
-    color: #dc2626;          
 }
 
 /* Container Panel layout configuration */
@@ -3994,17 +4255,26 @@ select[name="role"] option[value="client"] {
     border: 1px solid var(--color-border);
     max-width: 550px;
     width: 100%;
-    padding: 20px; /* vertical horizontal */
+    padding: 20px;
     border-radius: 6px;
     text-align: center;
 }
 
 .edit-errand-container h1 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 11px;
+    margin: 0 0 5px;
     color: var(--color-text);
-    font-size: 1.5rem;
-    font-weight: 600;
-    text-align: center;
-    margin-bottom: 5px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-align: left;
+}
+
+.edit-errand-container h1 i {
+    color: var(--color-span);
 }
 
 .edit-errand-input-box {
@@ -4782,40 +5052,87 @@ select[name="role"] option[value="client"] {
         margin-top: 121px; /* Ensures full viewport clearance on tight smartphone screens */
     }
 
+    .notifications-contents {
+        padding: 7px;
+        border-radius: 6px;
+    }
+
     .notif-contents-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
-        text-align: center;
+        margin-bottom: 7px;
+        gap: 7px;
+    }
+
+    .notif-contents-header h3 {
+        font-size: 0.9rem;
+        font-weight: 600;
     }
 
     .btn-delete-all {
-        width: 100%; /* Spreads the delete-all button across the screen layout width for easier touch control */
-        padding: 8px 12px;
+        font-size: 0.7rem;
+        padding: 5px 7px;
+        border-radius: 4px;
+    }
+
+    .notifications-list {
+        padding: 0;
+        margin: 0;
     }
 
     .notification-card {
+        position: relative;
         flex-direction: column;
         align-items: stretch;
-        gap: 15px;
-        padding: 15px;
+        padding: 8px;
+        padding-bottom: 30px;
+        margin-bottom: 5px;
+        gap: 7px;
+        border-radius: 6px;
     }
 
     .notif-message {
-        text-align: left;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .notif-message h3 {
+        margin-bottom: 3px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .notif-message p {
+        font-size: 0.72rem;
+        font-weight: 400;
+        line-height: 1.35;
+    }
+
+    .notif-message small.notification-date {
+        position: absolute;
+        left: 8px;
+        bottom: 7px;
+        font-size: 0.62rem;
+        font-weight: 400;
     }
 
     .notification-buttons {
-        width: 100%;
-        justify-content: flex-end; /* Aligns card management controls neatly onto the card floor edge layout */
-        padding-top: 12px;
+        position: absolute;
+        right: 8px;
+        bottom: 5px;
+        display: flex;
+        gap: 5px;
+        justify-content: flex-end;
+        align-items: center;
     }
 
     .notification-buttons button,
     .notification-buttons a {
-        flex: 1; /* Makes View and Delete buttons take equal balance properties across available card lanes */
-        text-align: center;
-        padding: 8px 12px;
+        font-size: 0.68rem;
+        padding: 5px 8px;
+        border-radius: 4px;
+    }
+
+    .no-found-notif {
+        font-size: 0.9rem;
     }
 
     /* View Main */
@@ -4833,117 +5150,336 @@ select[name="role"] option[value="client"] {
     }
 
     .info-container {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .errand-details-container,
-    .users-container,
-    .tasker-details-container,
-    .client-details-container {
         max-width: 100%;
     }
 
+    .errand-details-container {
+        padding: 10px;
+        gap: 8px;
+        border-radius: 8px;
+    }
+
+    .errand-details-container .errand-id-badge {
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 2px 6px;
+    }
+
+    .errand-details-container .errand-card-top span.status-field,
+    .errand-details-container .errand-card-top > span:last-child {
+        font-size: 0.8rem;
+        font-weight: 500;
+        padding: 3px;
+    }
+
+    .errand-details-container .errand-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        padding-bottom: 7px;
+    }
+
+    .errand-meta-list {
+        gap: 5px;
+        font-size: 0.75rem;
+    }
+
+    .errand-details-container .detail-row {
+        gap: 6px;
+        padding: 5px 7px;
+        border-radius: 5px;
+    }
+
+    .errand-details-container .detail-row span:first-child {
+        gap: 4px;
+        font-size: 0.72rem;
+        font-weight: 400;
+    }
+
+    .errand-details-container .detail-row span:first-child i {
+        width: 12px;
+        font-size: 0.7rem;
+    }
+
+    .errand-details-container .detail-row .errand-val {
+        font-size: 0.72rem;
+        font-weight: 500;
+        max-width: 58%;
+    }
+
+    .errand-details-container .detail-row span.status-field,
+    .errand-details-container .detail-row strong.errand-fee {
+        font-size: 0.72rem;
+        font-weight: 500;
+        padding: 2px 5px;
+    }
+
+    .errand-text-sections,
+    .errand-attachment-section {
+        gap: 5px;
+    }
+
+    .text-section-box,
+    .errand-attachment-section {
+        padding: 7px 8px;
+        border-radius: 5px;
+    }
+
+    .text-section-box label,
+    .errand-attachment-section label {
+        font-size: 0.75rem;
+        font-weight: 400;
+        gap: 5px;
+        margin-bottom: 3px;
+    }
+
+    .text-area {
+        font-size: 0.75rem;
+        font-weight: 400;
+    }
+
+    /* User Card */
+    .users-container {
+        gap: 7px;
+    }
+
+    .user-details-container {
+        padding: 8px;
+        gap: 7px;
+        border-radius: 6px;
+    }
+
+    .user-details-container h2 {
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding-bottom: 5px;
+    }
+
+    .user-main-content {
+        gap: 7px;
+    }
+
+    .user-profile-card-layout {
+        gap: 8px;
+    }
+
+    .photo-wrapper {
+        width: 52px;
+        height: 52px;
+    }
+
+    .user-info-rows {
+        gap: 4px;
+    }
+
+    .user-details-container .detail-row {
+        gap: 6px;
+        padding: 3px 6px;
+        border-radius: 4px;
+    }
+
+    .user-details-container .detail-row span:first-child {
+        font-size: 0.67rem;
+        font-weight: 400;
+    }
+
+    .user-details-container .detail-row .errand-val {
+        font-size: 0.67rem;
+        font-weight: 500;
+        max-width: 62%;
+    }
+
+    /* Cancellation Box */
+    .user-cancellation-alert-box {
+        padding: 6px;
+        gap: 5px;
+        border-radius: 5px;
+    }
+
+    .alert-title {
+        font-size: 0.65rem;
+        font-weight: 500;
+        gap: 4px;
+    }
+
+    .alert-action-buttons {
+        gap: 5px;
+    }
+
+    .alert-action-buttons button,
+    .btn-approve-release,
+    .btn-deny-release {
+        padding: 5px;
+        font-size: 0.65rem;
+        font-weight: 500;
+    }
+
+    /* Bottom Buttons */
+    .info-bot-btn {
+        margin-top: 8px;
+        gap: 7px;
+    }
+
+    .info-bot-btn a,
+    .info-bot-btn form {
+        min-width: 110px;
+    }
+
+    .info-bot-btn a,
+    .info-bot-btn button,
+    .info-bot-btn form button {
+        padding: 7px;
+        font-size: 0.72rem;
+        font-weight: 500;
+        border-radius: 5px;
+    }
+
+    .badge-button-column {
+        gap: 6px;
+    }
+
+    .info-bot-btn .descriptive-status-badge {
+        gap: 6px;
+        padding: 7px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-weight: 400;
+        line-height: 1.3;
+    }
+
+    .info-bot-btn .descriptive-status-badge i {
+        font-size: 0.8rem;
+    }
+
+    .info-bot-btn select,
+    .info-bot-btn .btn-update {
+        padding: 7px;
+        font-size: 0.72rem;
+        font-weight: 500;
+    }
+
+    .info-bot-btn .btn-edit-errand {
+        gap: 4px;
+    }
+
+    .btn-start-errand,
+    .btn-update,
+    .btn-complete-errand,
+    .btn-confirm-completion,
+    .btn-dispute {
+        gap: 4px;
+    }
+
     .profile-info-container {
+        max-width: 100%;
+    }
+
+    .profile-container {
+        padding: 10px;
+        gap: 9px;
+        border-radius: 8px;
+    }
+
+    .profile-card-header {
+        padding-bottom: 7px;
+    }
+
+    .profile-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        gap: 5px;
+    }
+
+    .profile-card-content {
+        gap: 8px;
+    }
+
+    .profile-card-layout {
         flex-direction: column;
-        align-items: center;
-        width: 100%;
+        align-items: stretch;
+        gap: 8px;
     }
 
-    .profile-container,
-    .tasker-errand-metrics {
-        max-width: 100%; /* Spreads profile card completely across mobile layouts */
+    .profile-image-area {
         width: 100%;
-        padding: 16px; /* Tightens padding to maximize space for inputs */
-        box-sizing: border-box;
+        justify-content: center;
     }
 
-    .group-profile-box {
-        flex-direction: column; /* Stacks layout elements cleanly into simple single column grids */
-        gap: 0; /* Prevents double margin gaps when fields group into vertical lanes */
+    .profile-image-wrapper {
+        width: 190px;
+        height: 190px;
+        border-radius: 7px;
     }
 
-    .group-profile-box .profile-box {
+    .profile-info-list {
         width: 100%;
-        min-width: 100%;
+        gap: 5px;
+    }
+
+    .profile-info-row {
+        gap: 7px;
+        padding: 6px 8px;
+        border-radius: 5px;
+    }
+
+    .profile-info-row > span:first-child {
+        font-size: 0.74rem;
+        font-weight: 500;
+        gap: 5px;
+    }
+
+    .profile-info-row > span:first-child i {
+        width: 12px;
+        font-size: 0.72rem;
+    }
+
+    .profile-value {
+        font-size: 0.74rem;
+        font-weight: 500;
+        max-width: 62%;
+    }
+
+    .profile-info-row span.role-field {
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+
+    .profile-extra-info {
+        gap: 5px;
+    }
+
+    .profile-extra-info .profile-info-row {
+        padding: 6px 8px;
+    }
+
+    .profile-extra-info .profile-info-row > span:first-child {
+        font-size: 0.76rem;
+        font-weight: 500;
+    }
+
+    .profile-extra-info .profile-info-row > span:first-child i {
+        font-size: 0.72rem;
+    }
+
+    .profile-extra-info .profile-value {
+        font-size: 0.76rem;
+        font-weight: 500;
     }
 
     .profile-bot-btn {
-        flex-direction: column; /* Safely stacks critical action choices vertically on mobile screens */
-        gap: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
         width: 100%;
-        margin-top: 10px;
+        margin-top: 2px;
     }
 
-    .profile-bot-btn a,
-    .profile-bot-btn form,
     .profile-bot-btn button {
-        width: 100% !important;
-        flex: none !important; /* Breaks rigid horizontal layout weight thresholds */
-        min-width: 0;
-    }
-
-    .info-bot-btn {
-        display: flex;
-        justify-content: center;
-        flex-direction: column;
-        flex-wrap: wrap;           /* allow wrapping on small screens */
-        gap: 12px;
         width: 100%;
-    }
-
-    .status-title-orange {
-        font-size: 1.3rem;
-    }
-
-    .payment-verification-panel.status-title-completed .payment-status-header {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 8px;
-        margin: 20px 5px;
-        text-align: center;
-    }
-
-    .payment-verification-panel.status-title-completed h2.status-title-green.status-title-completed {
-        font-size: 1.3rem;
-    }
-
-    .split-payment-container {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    /* 2. Dissolve the sub-panel container divs so their children can be sorted globally */
-    .payment-action-panel,
-    .payment-info-panel {
-        display: contents;
-    }
-
-    /* 3. Drop desktop margin constraints */
-    .payment-right-upload {
-        margin-top: 0;
-    }
-
-    .alert-text {
-        text-align: center;
-    }
-
-    /* 4. Sequentially arrange the elements from top-to-bottom using order properties */
-    .payment-qr-frame {
-        order: 1;    /* 1st: QR Code image frame box stays at the very top */
-        align-self: center;
-    }
-
-    .payment-text-details {
-        order: 2;    /* 2nd: Text instructions description text block */
-    }
-
-    .payment-right-upload {
-        order: 3;    /* 3rd: The upload input file form element box */
-    }
-
-    .btn-submit-proof {
-        order: 4;    /* 4th: The green payment submit action button at the absolute bottom */
+        min-width: 0;
+        padding: 8px;
+        font-size: 0.74rem;
+        font-weight: 600;
+        border-radius: 5px;
+        gap: 5px;
     }
 }

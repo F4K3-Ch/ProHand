@@ -14,7 +14,7 @@
 
     <main class="view-main">
         <div class="change-password-container">
-            <h1>Change Password</h1>
+            <h1><i class="fa-solid fa-key"></i> Change Password</h1>
 
             <div class="view-main-error-success-message">
                 <p class="success" id="successMessageText" style="display: none;"></p>

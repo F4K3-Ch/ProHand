@@ -14,80 +14,80 @@
     <main class="view-main" data-user-id="{{ $id }}">
         <div class="profile-info-container">
             <div class="profile-container">
-                <h1>User Profile</h1>
-
+                <div class="profile-card-header">
+                    <span class="profile-title">
+                        <i class="fa-solid fa-user"></i>
+                        User Profile
+                    </span>
+                </div>
                 <div class="view-main-error-success-message">
                     @if(session('success'))
                         <p class="success" id="sessionSuccessMessage">{{ session('success') }}</p>
                     @endif
-
                     @if(session('error'))
                         <p class="error" id="sessionErrorMessage">{{ session('error') }}</p>
                     @endif
-
-                    <p class="success" id="successMessageText" style="display: none;"></p>
-                    <p class="error" id="errorMessageText" style="display: none;"></p>
+                    <p class="success" id="successMessageText" style="display:none;"></p>
+                    <p class="error" id="errorMessageText" style="display:none;"></p>
                 </div>
 
-                <div class="profile-photo-section">
-                    <div class="photo-wrapper">
-                        <img
-                            id="profile-preview-photo"
-                            class="profile-preview-photo"
-                            src=""
-                            alt="Profile Picture"
-                            style="display: none;"
-                        >
+                <div class="profile-card-content">
+                    <div class="profile-card-layout">
+                        <div class="profile-image-area">
+                            <div class="profile-image-wrapper">
+                                <img id="profile-preview-photo"
+                                    class="profile-image"
+                                    src=""
+                                    alt="Profile Picture"
+                                    style="display:none;">
 
-                        <div
-                            id="profile-photo-spinner"
-                            class="circle-spinner"
-                            style="width: 110px; height: 110px; border-width: 4px;"
-                        ></div>
-                    </div>
-                </div>
-
-                <div class="profile-bot-container">
-                    <div class="profile-box">
-                        <label>ID</label>
-                        <span id="profile-id">Loading...</span>
-                    </div>
-
-                    <div class="profile-box">
-                        <label>Email</label>
-                        <span id="profile-email">Loading...</span>
-                    </div>
-
-                    <div class="group-profile-box">
-                        <div class="profile-box">
-                            <label>Last Name</label>
-                            <span id="profile-last-name">Loading...</span>
+                                <div id="profile-photo-spinner"
+                                    class="circle-spinner"
+                                    style="width:35px;height:35px;border-width:3px;"></div>
+                            </div>
                         </div>
 
-                        <div class="profile-box">
-                            <label>First Name</label>
-                            <span id="profile-first-name">Loading...</span>
-                        </div>
-
-                        <div class="profile-box">
-                            <label>Middle Name</label>
-                            <span id="profile-middle-name">Loading...</span>
+                        <div class="profile-info-list">
+                            <div class="profile-info-row">
+                                <span><i class="fa-solid fa-id-card"></i> User ID</span>
+                                <span id="profile-id" class="profile-value">Loading...</span>
+                            </div>
+                            <div class="profile-info-row">
+                                <span><i class="fa-solid fa-envelope"></i> Email</span>
+                                <span id="profile-email" class="profile-value">Loading...</span>
+                            </div>
+                            <div class="profile-info-row">
+                                <span><i class="fa-solid fa-user"></i> Name</span>
+                                <span id="profile-name" class="profile-value">Loading...</span>
+                            </div>
+                            <div class="profile-info-row">
+                                <span><i class="fa-solid fa-user-tag"></i> Role</span>
+                                <span id="profile-role" class="profile-value role-field">Loading...</span>
+                            </div>
+                            <div class="profile-info-row">
+                                <span><i class="fa-solid fa-phone"></i> Contact Number</span>
+                                <span id="profile-contact-number" class="profile-value">Loading...</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="profile-box">
-                        <label>Role</label>
-                        <span id="profile-role" class="role-field">Loading...</span>
-                    </div>
-
-                    <div class="profile-box">
-                        <label>Contact Number</label>
-                        <span id="profile-contact-number">Loading...</span>
-                    </div>
-
-                    <div class="profile-box">
-                        <label>Created At</label>
-                        <span id="profile-created-at">Loading...</span>
+                    <div class="profile-extra-info">
+                        <div class="profile-info-row">
+                            <span><i class="fa-solid fa-signature"></i> Last Name</span>
+                            <span id="profile-last-name" class="profile-value">Loading...</span>
+                        </div>
+                        <div class="profile-info-row">
+                            <span><i class="fa-solid fa-signature"></i> First Name</span>
+                            <span id="profile-first-name" class="profile-value">Loading...</span>
+                        </div>
+                        <div class="profile-info-row">
+                            <span><i class="fa-solid fa-signature"></i> Middle Name</span>
+                            <span id="profile-middle-name" class="profile-value">Loading...</span>
+                        </div>
+                        <div class="profile-info-row">
+                            <span><i class="fa-solid fa-calendar-plus"></i> Created At</span>
+                            <span id="profile-created-at" class="profile-value">Loading...</span>
+                        </div>
                     </div>
 
                     <div class="profile-bot-btn">
@@ -95,7 +95,9 @@
                             <i class="fa-regular fa-trash-can"></i>
                             Delete Account
                         </button>
-                        <p id="admin-restricted-msg" style="display: none;">Admin accounts cannot be edited or deleted.</p>
+                        <p id="admin-restricted-msg" style="display:none;">
+                            Admin accounts cannot be edited or deleted.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -174,6 +176,7 @@
 
                 document.getElementById('profile-id').textContent = user.id;
                 document.getElementById('profile-email').textContent = user.email;
+                document.getElementById('profile-name').textContent = user.full_name;
                 document.getElementById('profile-last-name').textContent = user.last_name;
                 document.getElementById('profile-first-name').textContent = user.first_name;
                 document.getElementById('profile-middle-name').textContent = user.middle_name || '-';

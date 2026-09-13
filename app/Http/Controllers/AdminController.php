@@ -1403,6 +1403,11 @@ class AdminController extends Controller
                 'first_name' => $user->first_name,
                 'middle_name' => $user->middle_name ?? '',
                 'last_name' => $user->last_name,
+                'full_name' => trim(
+                    $user->first_name . ' ' .
+                    ($user->middle_name ? $user->middle_name . ' ' : '') .
+                    $user->last_name
+                ),
                 'role' => $user->role,
                 'formatted_role' => Str::ucfirst(strtolower($user->role)),
                 'role_class' => 'role-' . strtolower($user->role),
