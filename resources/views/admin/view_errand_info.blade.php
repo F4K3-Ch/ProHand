@@ -125,7 +125,7 @@
                                 <div class="profile-photo-section">
                                     <div class="photo-wrapper">
                                         <img id="client-profile-photo" class="profile-preview-photo" src="" alt="Profile Picture" style="display:none;">
-                                        <div id="client-profile-photo-spinner" class="circle-spinner" style="width:35px;height:35px;border-width:3px;"></div>
+                                        <div id="client-profile-photo-spinner" class="circle-spinner"></div>
                                     </div>
                                 </div>
                                 <div class="user-info-rows">
@@ -158,7 +158,7 @@
                                 <div class="profile-photo-section">
                                     <div class="photo-wrapper">
                                         <img id="tasker-profile-photo" class="profile-preview-photo" src="" alt="Profile Picture" style="display:none;">
-                                        <div id="tasker-profile-photo-spinner" class="circle-spinner" style="width:35px;height:35px;border-width:3px;"></div>
+                                        <div id="tasker-profile-photo-spinner" class="circle-spinner"></div>
                                     </div>
                                 </div>
                                 <div class="user-info-rows">
