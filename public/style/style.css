@@ -134,8 +134,8 @@
 .circle-spinner {
     width: 18px;
     height: 18px;
-    border: 2px solid var(--color-span);
-    border-top-color: transparent;
+    border: 3px solid var(--color-border);
+    border-top-color: var(--color-span);
     border-radius: 50%;
     animation: circleRotate 0.6s linear infinite;
     display: inline-block;
@@ -1295,61 +1295,71 @@ body {
 }
 
 /* Force override browser native user-agent styles on readonly inputs using attribute selectors */
-.info-box span.status-field.status-pending {
+.info-box span.status-field.status-pending,
+.detail-row span.status-field.status-pending {
     background-color: rgba(250, 204, 21, 0.15);  
     color: #facc15;
     border-color: rgba(250, 204, 21, 0.3);
 }
 
-.info-box span.status-field.status-paid {
+.info-box span.status-field.status-paid,
+.detail-row span.status-field.status-paid {
     background-color: rgba(22, 163, 74, 0.15);
     color: #16a34a;
     border-color: rgba(22, 163, 74, 0.3);
 }
 
-.info-box span.status-field.status-refunded {
+.info-box span.status-field.status-refunded,
+.detail-row span.status-field.status-refunded {
     background-color: rgba(251, 146, 60, 0.15); 
     color: #fb923c;
     border-color: rgba(251, 146, 60, 0.3);
 }
 
-.info-box span.status-field.status-unpaid {
+.info-box span.status-field.status-unpaid,
+.detail-row span.status-field.status-unpaid {
     background-color: rgba(107, 114, 128, 0.12); 
     color: #6b7280;
     border-color: rgba(107, 114, 128, 0.3);
 }
 
-.info-box span.status-field.status-accepted {
+.info-box span.status-field.status-accepted,
+.detail-row span.status-field.status-accepted {
     background-color: rgba(59, 130, 246, 0.15);  
     color: #3b82f6;     
     border-color: rgba(59, 130, 246, 0.3);
 }
 
-.info-box span.status-field.status-in_progress {
+.info-box span.status-field.status-in_progress,
+.detail-row span.status-field.status-in_progress {
     background-color: rgba(251, 146, 60, 0.15); 
     color: #fb923c;
     border-color: rgba(251, 146, 60, 0.3);
 }
 
-.info-box span.status-field.status-awaiting_confirmation {
+.info-box span.status-field.status-awaiting_confirmation,
+.detail-row span.status-field.status-awaiting_confirmation {
     background-color: rgba(147, 51, 234, 0.15); 
     color: #9333ea;                             
     border-color: rgba(147, 51, 234, 0.3);
 }
 
-.info-box span.status-field.status-dispute {
+.info-box span.status-field.status-dispute,
+.detail-row span.status-field.status-dispute {
     background-color: rgba(239, 68, 68, 0.15); 
     color: #ef4444;                             
     border-color: rgba(239, 68, 68, 0.3);
 }
 
-.info-box span.status-field.status-completed {
+.info-box span.status-field.status-completed,
+.detail-row span.status-field.status-completed {
     background-color: rgba(22, 163, 74, 0.15); 
-    color: #16a34a;     
+    color: #16a34a;    
     border-color: rgba(22, 163, 74, 0.3);
 }
 
-.info-box span.status-field.status-failed {
+.info-box span.status-field.status-failed,
+.detail-row span.status-field.status-failed {
     background-color: rgba(220, 38, 38, 0.15); 
     color: #dc2626;                             
     border-color: rgba(220, 38, 38, 0.3);
@@ -2354,45 +2364,6 @@ body {
     border-radius: 6px;
 }
 
-/* Profile Photo Section */
-.profile-photo-section {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
-}
-
-.photo-wrapper {
-    border: 3px solid var(--color-border);
-    position: relative;
-    width: 150px;
-    height: 150px;
-    border-radius: 6px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    background-color: var(--color-bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s ease;
-}
-
-.profile-photo-section .profile-preview-photo {
-    border: 3px solid var(--color-border);
-    width: 150px;                /* Fixed width for photo box */
-    height: 150px;               /* Fixed height for photo box */
-    border-radius: 6px;
-    transition: transform 0.2s ease;
-    object-fit: cover;           /* Crop and maintain aspect ratio */
-    cursor: pointer;
-}
-
-.profile-photo-section img:hover {
-    transform: scale(1.03);
-}
-
 /* Bottom profile container */
 .profile-bot-container {
     display: flex;
@@ -3062,100 +3033,312 @@ select[name="role"] option[value="client"] {
 }
 
 /* View Details Errand */
-/* Info Container */
 .info-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Compact Detailed Card Styling */
+.errand-details-container {
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 16px;
     display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 10px;
-    max-width: 1110px;
+    flex-direction: column;
+    gap: 12px;
     width: 100%;
 }
-.errand-details-container,
-.users-container,
-.tasker-details-container,
-.client-details-container {
-    flex: 1;                    /* Each takes equal share of the available space */
-    display: flex;              /* Optional: for internal alignment */
-    flex-direction: column;     /* Keep inner content stacked vertically */
-    max-width: 550px;
-    width: 100%;   /* same fixed width */
+
+.errand-details-container .errand-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.errand-details-container .errand-id-badge {
+    font-size: 1.2rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.errand-details-container .errand-card-top span.status-field {
+    font-size: 1.2rem;
+    padding: 4px;
+    border-radius: 3px;
+}
+
+.errand-details-container .errand-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0;
+    letter-spacing: -0.01em;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 10px;
+}
+
+.errand-meta-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-size: 0.9rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.errand-details-container .detail-row {
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+    background-color: var(--color-bg);
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+}
+
+.errand-details-container .detail-row span:first-child {
+    color: var(--color-sec-text);
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.errand-details-container .detail-row span:first-child i {
+    color: var(--color-span);
+    width: 14px;
+    text-align: center;
+    opacity: 0.85;
+}
+
+.errand-details-container .detail-row .errand-val {
+    color: var(--color-text);
+    font-weight: 600;
+    max-width: 55%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: right;
+}
+
+.errand-details-container .detail-row span.status-field {
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.errand-details-container .detail-row strong.errand-fee {
+    background-color: rgba(22, 163, 74, 0.12);
+    color: #16a34a;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.errand-text-sections,
+.errand-attachment-section {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.text-section-box,
+.errand-attachment-section {
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 8px 10px;
+}
+
+.text-section-box label,
+.errand-attachment-section label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-sec-text);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 4px;
+}
+
+.text-section-box label i,
+.errand-attachment-section label i {
+    color: var(--color-span);
+}
+
+.text-area {
+    font-size: 0.9rem;
+    color: var(--color-text);
+    word-break: break-word;
+    white-space: pre-wrap;
 }
 
 .users-container {
     display: flex;
-    flex-direction: column;    
-    justify-content: space-between; 
-    align-items: stretch;
+    flex-direction: column;
     gap: 10px;
+    width: 100%;
 }
 
 .user-details-container {
-    flex: 1;
-}
-
-/* Not Accepted Yet */
-.not-accepted-yet {
-    color: var(--color-text);
-    font-size: 2rem;
-    display: flex;
-    justify-content: center;   /* horizontal centering */
-    align-items: center;       /* vertical centering */
-    text-align: center;
-    height: 100%;              /* fill the height of the parent .user-details-container */
-    width: 100%;               /* fill the width as well */
-    font-weight: 500;
-}
-
-.errand-details-container,
-.user-details-container,
-.tasker-details-container,
-.client-details-container {
-    background-color: var(--color-card-bg);
-    border: 1px solid var(--color-border);
-    padding: 20px;
-    border-radius: 6px;
-}
-
-/* Title */
-.info-container h1 {
-    color: var(--color-text);
-    font-size: 1.5rem;
-    font-weight: 600;
-    text-align: center;
-    margin-bottom: 5px;
-}
-
-/* User Profile Photo */
-.user-profile-photo {
-    border: 3px solid var(--color-border);
-    position: relative;
-    width: 150px;
-    height: 150px;
-    border-radius: 6px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.user-details-container h2 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0;
+    padding-bottom: 7px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.user-main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.user-profile-card-layout {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.profile-photo-section {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.2s ease;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
+    flex-shrink: 0;
 }
 
-.user-profile-photo img {
-    border: 3px solid var(--color-border);
-    width: 120px;                /* Fixed width for photo box */
-    height: 120px;               /* Fixed height for photo box */
+.photo-wrapper {
+    width: 68px;
+    height: 68px;
+    border: 2px solid var(--color-border);
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    background-color: var(--color-card-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.profile-photo-section .profile-preview-photo {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.profile-photo-section img:hover {
+    transform: scale(1.04);
+}
+
+.user-info-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    min-width: 0;
+}
+
+.user-details-container .detail-row {
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    gap: 10px;
+    padding: 4px 8px;
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.user-details-container .detail-row span:first-child {
+    color: var(--color-sec-text);
+    font-size: 0.78rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.user-details-container .detail-row .errand-val {
+    color: var(--color-text);
+    font-size: 0.78rem;
+    font-weight: 600;
+    max-width: 65%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: right;
+}
+
+.user-cancellation-alert-box {
+    background-color: rgba(210, 153, 34, 0.12);
+    border: 1px solid rgba(210, 153, 34, 0.35);
     border-radius: 6px;
-    transition: transform 0.2s ease;
-    object-fit: cover;           /* Crop and maintain aspect ratio */
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.user-profile-photo img:hover {
-    transform: scale(1.03);
+.alert-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #e3b341;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.alert-action-buttons {
+    display: flex;
+    gap: 6px;
+}
+
+.alert-action-buttons button {
+    padding: 5px 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    color: #ffffff;
+}
+
+.btn-approve-release {
+    background-color: #238636;
+}
+
+.btn-deny-release {
+    background-color: #da3633;
 }
 
 /* Each data box */

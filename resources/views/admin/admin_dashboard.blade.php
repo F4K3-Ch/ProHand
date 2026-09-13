@@ -139,7 +139,7 @@
         <div class="errand-post-card">
             <div class="errand-card-top">
                 <span class="errand-id-badge">ID: <span class="errand-id"></span></span>
-                <span class="errand-status"></span>
+                <span class="errand-status status-field"></span>
             </div>
             <h4 class="errand-title"></h4>
             <div class="errand-card-details">

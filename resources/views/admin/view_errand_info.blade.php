@@ -14,319 +14,204 @@
     <main class="view-main" data-errand-id="{{ $id }}">
         <div class="info-container">
             <div class="errand-details-container">
-                <h1>Errand Details</h1>
+                <!-- Card Header / Top Bar -->
+                <div class="errand-card-top">
+                    <span class="errand-id-badge">ID: <span id="errand-id">Loading...</span></span>
+                    <span id="errand-status">Loading...</span>
+                </div>
 
+                <!-- Title -->
+                <h1 class="errand-title" id="errand-title">Loading...</h1>
+
+                <!-- Success/Error Messages -->
                 <div class="view-main-error-success-message">
                     @if(session('success'))
                         <p class="success" id="sessionSuccessMessage">{{ session('success') }}</p>
                     @endif
-
                     @if(session('error'))
                         <p class="error" id="sessionErrorMessage">{{ session('error') }}</p>
                     @endif
-
                     <p class="success" id="successMessageText" style="display:none;"></p>
                     <p class="error" id="errorMessageText" style="display:none;"></p>
                 </div>
 
-                <div class="group-info-box">
-                    <div class="info-box">
-                        <label>Errand ID</label>
-                        <span id="errand-id">Loading...</span>
+                <!-- Details Grid/List -->
+                <div class="errand-meta-list">
+                    <div class="detail-row">
+                        <span><i class="fa-solid fa-folder-open"></i> Category</span>
+                        <span id="errand-category" class="errand-val">Loading...</span>
                     </div>
-                    <div class="info-box">
-                        <label>Category</label>
-                        <span id="errand-category">Loading...</span>
+                    <div class="detail-row">
+                        <span><i class="fa-solid fa-location-dot"></i> Location</span>
+                        <span id="errand-location" class="errand-val">Loading...</span>
                     </div>
-                </div>
-
-                <div class="info-box">
-                    <label>Title</label>
-                    <span id="errand-title">Loading...</span>
-                </div>
-
-                <div class="info-box">
-                    <label>Description</label>
-                    <div id="errand-description" class="text-area">Loading...</div>
-                </div>
-
-                <div class="info-box">
-                    <label>Location</label>
-                    <span id="errand-location">Loading...</span>
-                </div>
-
-                <div class="info-box">
-                    <label>Contact</label>
-                    <div id="errand-contact" class="text-area">Loading...</div>
-                </div>
-
-                <div class="group-info-box">
-                    <div class="info-box">
-                        <label>Fee</label>
-                        <span id="errand-fee">Loading...</span>
+                    <div class="detail-row">
+                        <span><i class="fa-solid fa-peso-sign"></i> Fee</span>
+                        <strong id="errand-fee" class="errand-fee">Loading...</strong>
                     </div>
-                    <div class="info-box">
-                        <label>Status</label>
-                        <span id="errand-status" class="status-field">Loading...</span>
+                    <div class="detail-row">
+                        <span><i class="fa-solid fa-credit-card"></i> Payment Method</span>
+                        <span id="payment-method" class="errand-val">Loading...</span>
                     </div>
-                </div>
-
-                <div class="group-info-box">
-                    <div class="info-box">
-                        <label>Payment Method</label>
-                        <span id="payment-method">Loading...</span>
-                    </div>
-                    <div class="info-box">
-                        <label>Payment Status</label>
+                    <div class="detail-row">
+                        <span><i class="fa-solid fa-wallet"></i> Payment Status</span>
                         <span id="payment-status" class="status-field">Loading...</span>
                     </div>
-                </div>
-
-                <div class="info-box">
-                    <label>Paid At</label>
-                    <span id="payment-paid-at">Loading...</span>
-                </div>
-
-                <div class="group-info-box">
-                    <div class="info-box">
-                        <label>Created At</label>
-                        <span id="errand-created-at">Loading...</span>
+                    <div class="detail-row">
+                        <span><i class="fa-solid fa-calendar-check"></i> Paid At</span>
+                        <span id="payment-paid-at" class="errand-val">Loading...</span>
                     </div>
-                    <div class="info-box">
-                        <label>Last Updated</label>
-                        <span id="errand-updated-at">Loading...</span>
+                    <div class="detail-row">
+                        <span><i class="fa-solid fa-calendar-plus"></i> Created At</span>
+                        <span id="errand-created-at" class="errand-val">Loading...</span>
                     </div>
-                </div>
-
-                <div class="group-info-box">
-                    <div class="info-box">
-                        <label>Accepted At</label>
-                        <span id="errand-accepted-at">Loading...</span>
+                    <div class="detail-row">
+                        <span><i class="fa-solid fa-clock"></i> Deadline</span>
+                        <span id="errand-deadline" class="errand-val">Loading...</span>
                     </div>
-                    <div class="info-box">
-                        <label>In Progress At</label>
-                        <span id="errand-in-progress-at">Loading...</span>
+                    <div class="detail-row">
+                        <span><i class="fa-solid fa-rotate"></i> Last Updated</span>
+                        <span id="errand-updated-at" class="errand-val">Loading...</span>
                     </div>
-                </div>
-
-                <div class="group-info-box">
-                    <div class="info-box">
-                        <label>Deadline</label>
-                        <span id="errand-deadline">Loading...</span>
+                    <div class="detail-row">
+                        <span><i class="fa-solid fa-user-check"></i> Accepted At</span>
+                        <span id="errand-accepted-at" class="errand-val">Loading...</span>
                     </div>
-                    <div class="info-box">
-                        <label>Finished At</label>
-                        <span id="errand-finished-at">Loading...</span>
+                    <div class="detail-row">
+                        <span><i class="fa-solid fa-person-running"></i> In Progress At</span>
+                        <span id="errand-in-progress-at" class="errand-val">Loading...</span>
+                    </div>
+                    <div class="detail-row">
+                        <span><i class="fa-solid fa-flag-checkered"></i> Finished At</span>
+                        <span id="errand-finished-at" class="errand-val">Loading...</span>
                     </div>
                 </div>
 
-                <div class="group-info-box">
-                    <div class="info-box">
-                        <label>Attachment</label>
-                        <div id="errand-attachment">
-                            <div class="attachment-item" style="display:none;">
-                                <a href="#" target="_blank" class="attachment-name" title="Preview File">
-                                    <i class="fa-solid fa-file"></i>
-                                    <span class="attachment-filename"></span>
-                                </a>
+                <!-- Text Areas (Description & Contact) -->
+                <div class="errand-text-sections">
+                    <div class="text-section-box">
+                        <label><i class="fa-solid fa-align-left"></i> Description</label>
+                        <div id="errand-description" class="text-area">Loading...</div>
+                    </div>
+                    <div class="text-section-box">
+                        <label><i class="fa-solid fa-address-book"></i> Contact</label>
+                        <div id="errand-contact" class="text-area">Loading...</div>
+                    </div>
+                </div>
 
-                                <a href="#" class="btn-download" download>
-                                    <i class="fa-solid fa-download"></i>
-                                    Download
-                                </a>
+                <!-- Attachments -->
+                <div class="errand-attachment-section">
+                    <label><i class="fa-solid fa-paperclip"></i> Attachment</label>
+                    <div id="errand-attachment">
+                        <div class="attachment-item" style="display:none;">
+                            <a href="#" target="_blank" class="attachment-name" title="Preview File">
+                                <i class="fa-solid fa-file"></i>
+                                <span class="attachment-filename"></span>
+                            </a>
+                            <a href="#" class="btn-download" download>
+                                <i class="fa-solid fa-download"></i> Download
+                            </a>
+                        </div>
+                        <div class="no-attachments">
+                            <p class="no-attachment">None</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Section -->
+                <div class="users-container" id="users-container">
+                    <!-- Posted By -->
+                    <div class="user-details-container">
+                        <h2>Posted By</h2>
+                        <div class="user-main-content">
+                            <div class="user-profile-card-layout">
+                                <div class="profile-photo-section">
+                                    <div class="photo-wrapper">
+                                        <img id="client-profile-photo" class="profile-preview-photo" src="" alt="Profile Picture" style="display:none;">
+                                        <div id="client-profile-photo-spinner" class="circle-spinner" style="width:35px;height:35px;border-width:3px;"></div>
+                                    </div>
+                                </div>
+                                <div class="user-info-rows">
+                                    <div class="detail-row"><span>User ID</span> <span id="client-id" class="errand-val">Loading...</span></div>
+                                    <div class="detail-row"><span>Email</span> <span id="client-email" class="errand-val">Loading...</span></div>
+                                    <div class="detail-row"><span>Name</span> <span id="client-name" class="errand-val">Loading...</span></div>
+                                    <div class="detail-row"><span>Contact Number</span> <span id="client-contact-number" class="errand-val">Loading...</span></div>
+                                </div>
                             </div>
+                            <div class="user-cancellation-alert-box" id="client-cancellation-box" style="display:none;">
+                                <p class="alert-title">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> Requesting Cancellation
+                                </p>
+                                <div class="alert-action-buttons">
+                                    <button type="button" class="btn-approve-release" data-requester="client">
+                                        <i class="fa-solid fa-user-minus"></i> Approve
+                                    </button>
+                                    <button type="button" class="btn-deny-release" data-requester="client">
+                                        <i class="fa-solid fa-user-check"></i> Deny
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                            <div class="no-attachments">
-                                <p class="no-attachment">None</p>
+                    <!-- Accepted By -->
+                    <div class="user-details-container" id="tasker-container" style="display:none;">
+                        <h2>Accepted By</h2>
+                        <div class="user-main-content">
+                            <div class="user-profile-card-layout">
+                                <div class="profile-photo-section">
+                                    <div class="photo-wrapper">
+                                        <img id="tasker-profile-photo" class="profile-preview-photo" src="" alt="Profile Picture" style="display:none;">
+                                        <div id="tasker-profile-photo-spinner" class="circle-spinner" style="width:35px;height:35px;border-width:3px;"></div>
+                                    </div>
+                                </div>
+                                <div class="user-info-rows">
+                                    <div class="detail-row"><span>User ID</span> <span id="tasker-id" class="errand-val">Loading...</span></div>
+                                    <div class="detail-row"><span>Email</span> <span id="tasker-email" class="errand-val">Loading...</span></div>
+                                    <div class="detail-row"><span>Name</span> <span id="tasker-name" class="errand-val">Loading...</span></div>
+                                    <div class="detail-row"><span>Contact Number</span> <span id="tasker-contact-number" class="errand-val">Loading...</span></div>
+                                </div>
+                            </div>
+                            <div class="user-cancellation-alert-box" id="tasker-cancellation-box" style="display:none;">
+                                <p class="alert-title">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> Requesting Cancellation
+                                </p>
+                                <div class="alert-action-buttons">
+                                    <button type="button" class="btn-approve-release" data-requester="tasker">
+                                        <i class="fa-solid fa-user-minus"></i> Approve
+                                    </button>
+                                    <button type="button" class="btn-deny-release" data-requester="tasker">
+                                        <i class="fa-solid fa-user-check"></i> Deny
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- Action Buttons Footer -->
                 <div class="info-bot-btn">
                     <button type="button" id="deleteErrandBtn" class="btn-delete" style="display: none;">
                         <i class="fa-solid fa-trash"></i> Delete Errand
                     </button>
-
                     <span id="performingBadge" class="descriptive-status-badge" style="display:none;">
-                        <i class="fa-solid fa-spinner fa-spin"></i>
-                        Tasker is performing errand...
+                        <i class="fa-solid fa-spinner fa-spin"></i> Tasker is performing errand...
                     </span>
-
                     <button type="button" id="confirmCompletionBtn" class="btn-confirm-completion" style="display: none;">
                         <i class="fa-solid fa-check"></i> Confirm Completion
                     </button>
-
                     <button type="button" id="completeDisputeBtn" class="btn-approve" style="display:none;">
                         <i class="fa-solid fa-circle-check"></i> Mark as Completed
                     </button>
-
                     <button type="button" id="failDisputeBtn" class="btn-delete" style="display:none;">
                         <i class="fa-solid fa-circle-xmark"></i> Mark as Failed
                     </button>
-
                     <button type="button" id="failRefundBtn" class="btn-delete" style="display:none;">
                         <i class="fa-solid fa-money-bill-transfer"></i> Mark as Failed & Refund
                     </button>
-
                     <button type="button" id="cancelBtn" class="btn-cancel" style="display: none;">
                         <i class="fa-solid fa-triangle-exclamation"></i> Force Cancel
                     </button>
-                </div>
-            </div>
-
-            <div class="users-container" id="users-container">
-                <div class="user-details-container">
-                    <h1>Posted By</h1>
-
-                    <div class="user-header-row">
-                        <div class="profile-photo-section">
-                            <div class="photo-wrapper">
-                                <img
-                                    id="client-profile-photo"
-                                    class="profile-preview-photo"
-                                    src=""
-                                    alt="Profile Picture"
-                                    style="display:none;"
-                                >
-
-                                <div
-                                    id="client-profile-photo-spinner"
-                                    class="circle-spinner"
-                                    style="width:110px;height:110px;border-width:4px;"
-                                ></div>
-                            </div>
-                        </div>
-
-                        <div
-                            class="user-cancellation-alert-box"
-                            id="client-cancellation-box"
-                            style="display:none;"
-                        >
-                            <p class="alert-title">
-                                <i class="fa-solid fa-triangle-exclamation"></i>
-                                Requesting Cancellation
-                            </p>
-
-                            <div class="alert-action-buttons">
-                                <button
-                                    type="button"
-                                    class="btn-approve-release"
-                                    data-requester="client"
-                                >
-                                    <i class="fa-solid fa-user-minus"></i> Approve
-                                </button>
-
-                                <button
-                                    type="button"
-                                    class="btn-deny-release"
-                                    data-requester="client"
-                                >
-                                    <i class="fa-solid fa-user-check"></i> Deny
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="group-info-box">
-                        <div class="info-box">
-                            <label>User ID</label>
-                            <span id="client-id">Loading...</span>
-                        </div>
-
-                        <div class="info-box">
-                            <label>Email</label>
-                            <span id="client-email">Loading...</span>
-                        </div>
-                    </div>
-
-                    <div class="group-info-box">
-                        <div class="info-box">
-                            <label>Name</label>
-                            <span id="client-name">Loading...</span>
-                        </div>
-
-                        <div class="info-box">
-                            <label>Contact Number</label>
-                            <span id="client-contact-number">Loading...</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="user-details-container" id="tasker-container" style="display:none;">
-                    <h1>Accepted By</h1>
-
-                    <div class="user-header-row">
-                        <div class="profile-photo-section">
-                            <div class="photo-wrapper">
-                                <img
-                                    id="tasker-profile-photo"
-                                    class="profile-preview-photo"
-                                    src=""
-                                    alt="Profile Picture"
-                                    style="display:none;"
-                                >
-
-                                <div
-                                    class="circle-spinner"
-                                    style="width:110px;height:110px;border-width:4px;"
-                                ></div>
-                            </div>
-                        </div>
-
-                        <div
-                            class="user-cancellation-alert-box"
-                            id="tasker-cancellation-box"
-                            style="display:none;"
-                        >
-                            <p class="alert-title">
-                                <i class="fa-solid fa-triangle-exclamation"></i>
-                                Requesting Cancellation
-                            </p>
-
-                            <div class="alert-action-buttons">
-                                <button
-                                    type="button"
-                                    class="btn-approve-release"
-                                    data-requester="tasker"
-                                >
-                                    <i class="fa-solid fa-user-minus"></i> Approve
-                                </button>
-
-                                <button
-                                    type="button"
-                                    class="btn-deny-release"
-                                    data-requester="tasker"
-                                >
-                                    <i class="fa-solid fa-user-check"></i> Deny
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="group-info-box">
-                        <div class="info-box">
-                            <label>User ID</label>
-                            <span id="tasker-id">Loading...</span>
-                        </div>
-
-                        <div class="info-box">
-                            <label>Email</label>
-                            <span id="tasker-email">Loading...</span>
-                        </div>
-                    </div>
-
-                    <div class="group-info-box">
-                        <div class="info-box">
-                            <label>Name</label>
-                            <span id="tasker-name">Loading...</span>
-                        </div>
-
-                        <div class="info-box">
-                            <label>Contact Number</label>
-                            <span id="tasker-contact-number">Loading...</span>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -444,7 +329,7 @@
                 if (errand.tasker) {
                     const tasker = errand.tasker;
 
-                    taskerContainer.style.display = 'block';
+                    taskerContainer.style.display = 'flex';
 
                     document.getElementById('tasker-id').textContent = tasker.id;
                     document.getElementById('tasker-email').textContent = tasker.email;
