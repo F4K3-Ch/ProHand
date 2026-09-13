@@ -16,7 +16,7 @@
             <div class="errand-details-container">
 
                 <div class="errand-info-header">
-                    <h2><i class="fa-solid fa-circle-info"></i> Errand Info</h2>
+                    <h1><i class="fa-solid fa-circle-info"></i> Errand Info</h1>
                 </div>
 
                 <div class="errand-card-top">
@@ -24,7 +24,7 @@
                     <span id="errand-status">Loading...</span>
                 </div>
 
-                <h1 class="errand-title" id="errand-title">Loading...</h1>
+                <h2 class="errand-title" id="errand-title">Loading...</h2>
 
                 <div class="view-main-error-success-message">
                     @if(session('success'))
