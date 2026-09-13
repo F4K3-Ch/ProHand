@@ -4992,6 +4992,12 @@ select[name="role"] option[value="client"] {
         padding: 0 12px;
     }
 
+    .landing-theme-toggle {
+        padding: 6px 9px;
+        font-size: .68rem;
+        border-radius: 4px;
+    }
+
     .logo {
         gap: 6px;
     }
