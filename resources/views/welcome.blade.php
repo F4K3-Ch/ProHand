@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="{{ asset('style/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <title>ProHand</title>
+    <script>
+        const savedTheme = localStorage.getItem('theme');
+        document.documentElement.setAttribute('data-theme', savedTheme === 'dark' ? 'dark' : 'light');
+    </script>
 </head>
 <body class="landing-page">
 
@@ -16,6 +20,10 @@
             <p>Pro<span>Hand</span></p>
         </div>
         <div class="nav-actions">
+            <button type="button" id="landingThemeToggle" class="landing-theme-toggle">
+                <i class="fa-solid fa-moon"></i>
+                <span>Dark Mode</span>
+            </button>
             <a href="/login" class="login-btn">Login</a>
             <a href="/register" class="register-btn">Register</a>
         </div>
@@ -76,3 +84,27 @@
 
 </body>
 </html>
+
+<script>
+    const themeToggle = document.getElementById('landingThemeToggle');
+    const html = document.documentElement;
+
+    function updateThemeButton() {
+        const dark = html.getAttribute('data-theme') === 'dark';
+
+        themeToggle.innerHTML = dark
+            ? '<i class="fa-solid fa-sun"></i><span>Light Mode</span>'
+            : '<i class="fa-solid fa-moon"></i><span>Dark Mode</span>';
+    }
+
+    updateThemeButton();
+
+    themeToggle.addEventListener('click', function () {
+        const dark = html.getAttribute('data-theme') === 'dark';
+        const theme = dark ? 'light' : 'dark';
+
+        html.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        updateThemeButton();
+    });
+</script>

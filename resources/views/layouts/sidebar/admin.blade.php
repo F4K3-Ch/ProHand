@@ -47,6 +47,12 @@
                 </a>
             </li>
             <li>
+                <button type="button" id="themeToggle" class="theme-toggle">
+                    <i class="fa-solid fa-moon"></i>
+                    <span>Dark Mode</span>
+                </button>
+            </li>
+            <li>
                 <button type="button" id="logoutButton" class="logout-button">
                     <i class="fa-solid fa-right-from-bracket"></i> 
                     Logout

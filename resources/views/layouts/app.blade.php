@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -71,6 +71,35 @@
         // Shared API access credentials used by all API requests
         const apiKey = "{{ config('services.my_api.api_key') }}";
         const origin = "{{ config('services.my_api.origin') }}";
+
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+
+        if (themeToggle) {
+            const savedTheme = localStorage.getItem('theme');
+            const theme = savedTheme === 'dark' ? 'dark' : 'light';
+
+            html.setAttribute('data-theme', theme);
+
+            const updateThemeButton = () => {
+                const dark = html.getAttribute('data-theme') === 'dark';
+
+                themeToggle.innerHTML = dark
+                    ? '<i class="fa-solid fa-sun"></i><span>Light Mode</span>'
+                    : '<i class="fa-solid fa-moon"></i><span>Dark Mode</span>';
+            };
+
+            updateThemeButton();
+
+            themeToggle.addEventListener('click', function () {
+                const dark = html.getAttribute('data-theme') === 'dark';
+                const theme = dark ? 'light' : 'dark';
+
+                html.setAttribute('data-theme', theme);
+                localStorage.setItem('theme', theme);
+                updateThemeButton();
+            });
+        }
 
         // Global unread notification badge fetcher
         document.addEventListener('DOMContentLoaded', async function () {

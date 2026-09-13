@@ -7,8 +7,17 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('style/style.css') }}">
     <title>Register for ProHand</title>
+    <script>
+        const savedTheme = localStorage.getItem('theme');
+        document.documentElement.setAttribute('data-theme', savedTheme === 'dark' ? 'dark' : 'light');
+    </script>
 </head>
 <body class="register-page">
+
+    <button type="button" id="themeToggle" class="auth-theme-toggle">
+        <i class="fa-solid fa-moon"></i>
+        <span>Dark Mode</span>
+    </button>
 
     <a href="{{ url('/') }}" class="btn-back-auth">
         <i class="fa-solid fa-arrow-left"></i>
@@ -145,6 +154,28 @@
             registerButton.disabled = false;
             registerSpinner.style.display = 'none';
         }
+    });
+
+    const themeToggle = document.getElementById('themeToggle');
+    const html = document.documentElement;
+
+    function updateThemeButton() {
+        const dark = html.getAttribute('data-theme') === 'dark';
+
+        themeToggle.innerHTML = dark
+            ? '<i class="fa-solid fa-sun"></i><span>Light Mode</span>'
+            : '<i class="fa-solid fa-moon"></i><span>Dark Mode</span>';
+    }
+
+    updateThemeButton();
+
+    themeToggle.addEventListener('click', function () {
+        const dark = html.getAttribute('data-theme') === 'dark';
+        const theme = dark ? 'light' : 'dark';
+
+        html.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        updateThemeButton();
     });
 </script>
 

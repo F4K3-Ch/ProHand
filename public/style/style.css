@@ -20,83 +20,60 @@
     Theme Variables
 =========================== */
 /* Light Mode */
-:root {
+:root,
+[data-theme="light"] {
     --color-bg: #f5f5f5;
     --color-card-bg: #ffffff;
     --color-input-bg: #fafafa;
-
     --color-text: #24292e;
     --color-sec-text: #555;
     --color-span: #3B82F6;
-
     --color-border: #cfcfcf;
     --color-input-border: #d1d5da;
-
     --color-input-focus-border: #0366d6;
     --shadow-input-focus: 0 0 0 3px rgba(3, 102, 214, 0.2);
-
     --color-link: #0366d6;
     --color-link-hover: #555;
-
     --color-btn-bg: #24292e;
     --color-btn-text: #ffffff;
     --color-btn-hover-bg: #444c56;
-
     --color-table-th: #24292e;
     --color-table-text: #ffffff;
-
     --color-icon-fill: #24292e;
     --color-icon-stroke: #24292e;
-
-    --shadow-default:
-        0 4px 12px rgba(0,0,0,0.1),
-        0 2px 4px rgba(0,0,0,0.06);
-    
-    --sidebar-link-hover-bg: rgba(0, 0, 0, 0.05);
+    --shadow-default: 0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06);
+    --sidebar-link-hover-bg: rgba(0,0,0,0.05);
     --sidebar-link-hover-blur: 4px;
-
-    --scrollbar-track: #f5f5f5; 
-    --scrollbar-thumb: #24292e; 
-    --scrollbar-thumb-hover: #444c56;  
+    --scrollbar-track: #f5f5f5;
+    --scrollbar-thumb: #24292e;
+    --scrollbar-thumb-hover: #444c56;
 }
 
 /* Dark Mode */
-:root {
+[data-theme="dark"] {
     --color-bg: #1a1a1a;
     --color-card-bg: #222222;
     --color-input-bg: #1e1e1e;
-
     --color-text: #f1f1f1;
     --color-sec-text: #C7CBD1;
     --color-span: #3B82F6;
-
     --color-border: #3a3a3a;
     --color-input-border: #4a4a4a;
-
     --color-input-focus-border: #58a6ff;
-    --shadow-input-focus: 0 0 0 3px rgba(56, 139, 253, 0.3);
-
+    --shadow-input-focus: 0 0 0 3px rgba(56,139,253,0.3);
     --color-link: #58a6ff;
     --color-link-hover: #ddd;
-
     --color-btn-bg: #444c56;
     --color-btn-text: #ffffff;
     --color-btn-hover-bg: #5a636e;
-
     --color-table-th: #444c56;
     --color-table-text: #ffffff;
-
     --color-icon-fill: #ffffff;
     --color-icon-stroke: #ffffff;
-
-    --shadow-default:
-        0 4px 12px rgba(0,0,0,0.4),
-        0 2px 4px rgba(0,0,0,0.3);
-
-    --sidebar-link-hover-bg: rgba(255, 255, 255, 0.08);
+    --shadow-default: 0 4px 12px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3);
+    --sidebar-link-hover-bg: rgba(255,255,255,0.08);
     --sidebar-link-hover-blur: 4px;
-
-    --scrollbar-track: #1a1a1a; 
+    --scrollbar-track: #1a1a1a;
     --scrollbar-thumb: #444c56;
     --scrollbar-thumb-hover: #5a636e;
 }
@@ -348,6 +325,33 @@ span {
     z-index: 1000;
     border-bottom: 1px solid var(--color-border);
     box-sizing: border-box;
+}
+
+.landing-theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    background: var(--color-card-bg);
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+.landing-theme-toggle:hover {
+    background-color: var(--sidebar-link-hover-bg);
+}
+
+.landing-theme-toggle i {
+    color: var(--color-icon-fill);
+}
+
+.landing-theme-toggle span {
+    color: inherit;
 }
 
 .logo {
@@ -639,6 +643,39 @@ span {
 }
 
 /* ===========================
+    Auth Theme Toggle
+=========================== */
+.auth-theme-toggle {
+    position:absolute;
+    top:20px;
+    right:20px;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    padding:8px 12px;
+    border:1px solid var(--color-border);
+    border-radius:6px;
+    background-color:var(--color-card-bg);
+    color:var(--color-text);
+    font-family:inherit;
+    font-size:.82rem;
+    cursor:pointer;
+    transition:all .1s ease;
+}
+
+.auth-theme-toggle:hover {
+    background-color:var(--sidebar-link-hover-bg);
+}
+
+.auth-theme-toggle i {
+    color:var(--color-icon-fill);
+}
+
+.auth-theme-toggle span {
+    color:inherit;
+}
+
+/* ===========================
     Register Page
 =========================== */
 .register-page {
@@ -918,6 +955,25 @@ span {
 
     bottom: 0;
     height: 100%;    
+}
+
+/* ===========================
+    Theme Toggle
+=========================== */
+.theme-toggle {
+    color: var(--color-text);
+}
+
+.theme-toggle:hover {
+    background-color: var(--sidebar-link-hover-bg);
+}
+
+.theme-toggle i {
+    color: var(--color-icon-fill);
+}
+
+.theme-toggle span {
+    color: inherit;
 }
 
 /* ===========================
