@@ -3262,9 +3262,9 @@ select[name="role"] option[value="client"] {
 .create-errand-container {
     background-color: var(--color-card-bg);
     border: 1px solid var(--color-border);
-    max-width: 500px;
+    max-width: 550px;
     width: 100%;
-    padding: 20px; 
+    padding: 20px;
     border-radius: 6px;
     text-align: left;
 }
@@ -3484,12 +3484,12 @@ select[name="role"] option[value="client"] {
 .errand-details-container .errand-card-top span.status-field {
     font-size: 1.15rem;
     font-weight: 600;
-    padding: 4px;
-    border-radius: 3px;
+    padding: 4px 7px;
+    border-radius: 4px;
 }
 
 .errand-details-container .errand-title {
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     font-weight: 700;
     color: var(--color-text);
     margin: 0;
@@ -5612,7 +5612,7 @@ select[name="role"] option[value="client"] {
 
     .errand-details-container .errand-card-top span.status-field,
     .errand-details-container .errand-card-top > span:last-child {
-        font-size: 1.15rem;
+        font-size: 0.9rem;
         font-weight: 600;
         padding: 3px;
     }

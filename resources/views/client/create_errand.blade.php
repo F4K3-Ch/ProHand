@@ -32,7 +32,7 @@
 
                 <div class="create-errand-input-box">
                     <label for="title">Title</label>
-                    <input type="text" name="title" id="title" placeholder="e.g., Pick up documents from downtown office" required>
+                    <input type="text" name="title" id="title" placeholder="e.g., Pick up, Deliver, etc." required>
                 </div>
 
                 <div class="create-errand-input-box">
@@ -67,7 +67,7 @@
 
                 <div class="create-errand-input-box">
                     <label for="fee">Fee (₱)</label>
-                    <input type="number" step="0.01" min="0" name="fee" id="fee" placeholder="0.00" required>
+                    <input type="number" step="0.01" min="0" name="fee" id="fee" placeholder="e.g., 150.00" required>
                 </div>
 
                 <div class="create-errand-input-box">
