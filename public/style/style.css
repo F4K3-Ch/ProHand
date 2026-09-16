@@ -3429,8 +3429,7 @@ select[name="role"] option[value="client"] {
 /* View Details Errand */
 .info-container {
     width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
+    max-width: 550px;
 }
 
 .errand-info-header {
@@ -5136,19 +5135,105 @@ select[name="role"] option[value="client"] {
         font-size: .65rem;
     }
 
-    /* Register */
+    .auth-theme-toggle {
+        top:12px;
+        right:12px;
+        gap:5px;
+        padding:7px 9px;
+        font-size:.75rem;
+    }
+
     .register-page {
-        padding: 80px 20px 40px; /* Leave space at the top so the back button never overlaps cards */
+        padding:60px 12px 20px;
+        box-sizing:border-box;
     }
 
-    .register-container {
-        min-height: auto; /* Remove hardcoded height to let card grow naturally with contents */
-        padding: 25px 20px;
+    .register-container,
+    .add-user-container {
+        max-width:100%;
+        min-height:auto;
+        padding:24px 18px;
+        border-radius:8px;
     }
 
-    /* Login */
+    .register-container h1 {
+        font-size:1.35rem;
+    }
+
+    .register-error-success-message p {
+        font-size:.85rem;
+    }
+
+    .register-input-box {
+        margin-bottom:9px;
+    }
+
+    .register-input-box label {
+        font-size:.88rem;
+    }
+
+    .register-input-box input {
+        padding:7px 8px;
+        font-size:.88rem;
+    }
+
+    .register-container .btn {
+        padding:9px;
+        font-size:.88rem;
+    }
+
+    .register-container .login-link {
+        margin-top:16px;
+        font-size:.88rem;
+    }
+
+    .login-wrapper {
+        padding:60px 15px 20px;
+        box-sizing:border-box;
+    }
+
+    .login-container {
+        max-width:100%;
+    }
+
+    .login-logo {
+        gap:8px;
+    }
+
+    .login-logo .logo-img {
+        width:60px;
+        height:60px;
+    }
+
     .login-logo h1 {
-        font-size: 1.4rem;
+        font-size:1.35rem;
+    }
+
+    .login-error-success-message p {
+        font-size:.9rem;
+    }
+
+    .login-input-box {
+        margin-bottom:13px;
+    }
+
+    .login-input-box label {
+        font-size:.88rem;
+    }
+
+    .login-input-box input {
+        padding:7px 8px;
+        font-size:.88rem;
+    }
+
+    .login-container .btn {
+        padding:9px;
+        font-size:.88rem;
+    }
+
+    .login-container .register-link {
+        margin-top:16px;
+        font-size:.88rem;
     }
 
     /* Sidebar */
