@@ -2,25 +2,32 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect()->route(Auth::user()->role . '.dashboard');
+    }
+
     return view('welcome');
 });
 
-Route::get('/login', function () {
-    return view('auth.login');
-})->name('login');
+Route::middleware('guest')->group(function () {
+    Route::get('/login', function () {
+        return view('auth.login');
+    })->name('login');
 
-Route::get('/register', function () {
-    return view('auth.register');
-})->name('register');
+    Route::get('/register', function () {
+        return view('auth.register');
+    })->name('register');
+});
 
 Route::middleware(['preventAccess'])->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/register', [AuthController::class, 'register']);
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'preventBackHistory'])->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 

@@ -82,6 +82,12 @@
     </div>
 
 <script>
+    window.addEventListener('pageshow', function (event) {
+        if (event.persisted) {
+            window.location.reload();
+        }
+    });
+    
     const apiKey = "{{ config('services.my_api.api_key') }}";
     const origin = "{{ config('services.my_api.origin') }}";
 

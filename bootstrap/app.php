@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use App\Http\Middleware\AccessMiddleware;
 use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\PreventBackHistory;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -18,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'preventAccess' => AccessMiddleware::class,
             'role' => RoleMiddleware::class,
+            'preventBackHistory' => PreventBackHistory::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
