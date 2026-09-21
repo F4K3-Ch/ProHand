@@ -39,7 +39,7 @@ class AuthController extends Controller
             ], 401);
         }
 
-        Auth::login($user, true);
+        Auth::login($user);
 
         $request->session()->regenerate();
 
@@ -85,7 +85,7 @@ class AuthController extends Controller
             'role' => 'client',
         ]);
 
-        Auth::login($user, true);
+        Auth::login($user);
 
         $request->session()->regenerate();
 
