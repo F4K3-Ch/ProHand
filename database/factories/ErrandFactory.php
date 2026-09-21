@@ -80,20 +80,18 @@ class ErrandFactory extends Factory
 
         $task = $this->faker->randomElement($bisayaTasks);
         $locations = [
-            'Poblacion, Hilongos, Leyte',
-            'Brgy. Bantay, Hilongos, Leyte',
             'Brgy. Talisay, Hilongos, Leyte',
-            'Brgy. Catmon, Hilongos, Leyte',
+            'Brgy. Tejero, Hilongos, Leyte',
+            'Brgy. Magnangoy, Hilongos, Leyte',
+            'Brgy. Naval, Hilongos, Leyte',
+            'Brgy. Santa Cruz, Hilongos, Leyte',
+            'Brgy. Owak, Hilongos, Leyte',
+            'Brgy. San Juan, Hilongos, Leyte',
+            'Brgy. Protection, Hilongos, Leyte',
+            'Brgy. Bung-aw, Hilongos, Leyte',
             'Brgy. Lamak, Hilongos, Leyte',
-            'Brgy. Liberty, Bato, Leyte',
-            'Poblacion, Bato, Leyte',
-            'Brgy. Naga, Bato, Leyte',
-            'Poblacion, Inopacan, Leyte',
-            'Brgy. Cabul-an, Inopacan, Leyte',
-            'Brgy. Esperanza, Inopacan, Leyte',
-            'Poblacion, Matalom, Leyte',
-            'Brgy. Elevado, Matalom, Leyte',
-            'Brgy. Santa Catalina, Matalom, Leyte',
+            'Brgy. Liberty, Hilongos, Leyte',
+            'Brgy. Lunang, Hilongos, Leyte',
         ];
 
         return [
