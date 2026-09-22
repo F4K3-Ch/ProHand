@@ -4517,7 +4517,6 @@ select[name="role"] option[value="client"] {
 
 /* Bottom buttons */
 .info-bot-btn {
-    margin-top: 15px;
     display: flex;
     justify-content: center;
     flex-direction: row;
