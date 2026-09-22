@@ -11,6 +11,12 @@
         <i class="fa-solid fa-arrow-left"></i> Back
     </a>
 
+    <div class="print-button-container">
+        <button type="button" id="printUserBtn" class="btn-print">
+            <i class="fa-solid fa-print"></i> Print
+        </button>
+    </div>
+
     <main class="view-main" data-user-id="{{ $id }}">
         <div class="profile-info-container">
             <div class="profile-container">
@@ -127,6 +133,14 @@
             const modalImg = document.getElementById('modalProfileImage');
             const closePhotoBtn = document.getElementById('closePhotoModal');
             let user;
+
+            const printUserBtn = document.getElementById('printUserBtn');
+
+            if (printUserBtn) {
+                printUserBtn.addEventListener('click', function () {
+                    window.print();
+                });
+            }
 
             profilePhoto.addEventListener('click', function () {
                 if (profilePhoto.src) {
