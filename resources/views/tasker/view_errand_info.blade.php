@@ -11,6 +11,12 @@
         <i class="fa-solid fa-arrow-left"></i> Back
     </a>
 
+    <div class="print-button-container">
+        <button type="button" id="printErrandBtn" class="btn-print">
+            <i class="fa-solid fa-print"></i> Print
+        </button>
+    </div>
+
     <main class="view-main" data-errand-id="{{ $id }}">
         <div class="info-container">
             <div class="errand-details-container">
@@ -237,6 +243,14 @@
                 setTimeout(() => { 
                     errorMessageText.style.display = 'none'; 
                 }, 5000);
+            }
+
+            const printErrandBtn = document.getElementById('printErrandBtn');
+
+            if (printErrandBtn) {
+                printErrandBtn.addEventListener('click', function () {
+                    window.print();
+                });
             }
 
             try {
