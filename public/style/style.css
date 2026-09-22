@@ -123,6 +123,7 @@
         margin: 0 auto !important;
         padding: 0 !important;
         background: #ffffff !important;
+        zoom: 0.6 !important;
     }
 
     .info-container > .errand-details-container {
@@ -456,12 +457,7 @@
     }
 
     .btn-download {
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 5px !important;
-        background-color: #28a745 !important;
-        color: #ffffff !important;
-        border: none !important;
+        display: none !important;
     }
 
     .no-attachments {
@@ -618,7 +614,6 @@
     }
 
     .info-bot-btn {
-        margin-top: 15px !important;
         width: 100% !important;
     }
 
