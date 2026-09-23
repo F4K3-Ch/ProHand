@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -39,6 +40,13 @@ class AuthController extends Controller
             ], 401);
         }
 
+        if (!$user->hasVerifiedEmail()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your email is not verified. Please register again to receive a new verification email.'
+            ], 403);
+        }
+        
         Auth::login($user);
 
         $request->session()->regenerate();
@@ -54,7 +62,7 @@ class AuthController extends Controller
     {
         $validated = $request->validate(
             [
-                'email' => ['required', 'email', 'max:100', 'unique:users,email'],
+                'email' => ['required', 'email', 'max:100'],
                 'first_name' => ['required', 'string', 'max:50'],
                 'middle_name' => ['nullable', 'string', 'max:50'],
                 'last_name' => ['required', 'string', 'max:50'],
@@ -62,7 +70,6 @@ class AuthController extends Controller
                 'contact_number' => ['required', 'string', 'max:20'],
             ],
             [
-                'email.unique' => 'This email is already registered.',
                 'email.required' => 'Please enter your email address.',
                 'email.email' => 'Please enter a valid email address.',
 
@@ -75,6 +82,33 @@ class AuthController extends Controller
             ]
         );
 
+        $existingUser = User::where('email', $validated['email'])->first();
+
+        if ($existingUser) {
+
+            if ($existingUser->hasVerifiedEmail()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This email is already registered.'
+                ], 409);
+            }
+
+            $existingUser->update([
+                'first_name' => $validated['first_name'],
+                'middle_name' => $validated['middle_name'] ?? null,
+                'last_name' => $validated['last_name'],
+                'password' => Hash::make($validated['password']),
+                'contact_number' => $validated['contact_number'],
+            ]);
+
+            event(new Registered($existingUser));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Registration successful. Please check your email to verify your account.'
+            ], 200);
+        }
+
         $user = User::create([
             'email' => $validated['email'],
             'first_name' => $validated['first_name'],
@@ -85,14 +119,11 @@ class AuthController extends Controller
             'role' => 'client',
         ]);
 
-        Auth::login($user);
-
-        $request->session()->regenerate();
+        event(new Registered($user));
 
         return response()->json([
             'success' => true,
-            'message' => 'Registration successful.',
-            'user' => $user
+            'message' => 'Registration successful. Please check your email to verify your account.'
         ], 201);
     }
 

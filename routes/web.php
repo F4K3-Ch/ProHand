@@ -2,7 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -11,6 +14,56 @@ Route::get('/', function () {
 
     return view('welcome');
 });
+
+Route::get('/email/verify', function () {
+    return view('auth.verify-email');
+})->name('verification.notice');
+
+Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
+    if (!URL::hasValidSignature($request)) {
+        abort(403, 'Invalid or expired verification link.');
+    }
+
+    $user = User::findOrFail($id);
+
+    if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+        abort(403, 'Invalid verification link.');
+    }
+
+    if (!$user->hasVerifiedEmail()) {
+        $user->markEmailAsVerified();
+    }
+
+    return redirect()->route('login')->with(
+        'success',
+        'Your email has been verified. You can now log in.'
+    );
+})->name('verification.verify');
+
+Route::post('/email/verification-notification', function (Request $request) {
+    $user = User::where('email', $request->email)->first();
+
+    if (!$user) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Email is not registered.'
+        ], 404);
+    }
+
+    if ($user->hasVerifiedEmail()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'This email is already verified.'
+        ], 400);
+    }
+
+    $user->sendEmailVerificationNotification();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'A new verification link has been sent to your email.'
+    ]);
+})->middleware(['throttle:6,1'])->name('verification.send');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', function () {

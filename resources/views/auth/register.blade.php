@@ -139,16 +139,9 @@
             }
 
             sessionStorage.setItem('success_message', result.message);
+            sessionStorage.setItem('verification_email', document.getElementById('email').value);
 
-            const role = result.user.role;
-
-            if (role === 'admin') {
-                window.location.href = '/admin/dashboard';
-            } else if (role === 'tasker') {
-                window.location.href = '/tasker/dashboard';
-            } else {
-                window.location.href = '/client/dashboard';
-            }
+            window.location.href = "{{ route('verification.notice') }}";
 
         } catch (error) {
             console.error('Registration error:', error);
