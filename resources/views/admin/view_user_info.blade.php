@@ -19,13 +19,9 @@
 
     <main class="view-main" data-user-id="{{ $id }}">
         <div class="profile-info-container">
-            <div class="profile-container">
-                <div class="profile-card-header">
-                    <span class="profile-title">
-                        <i class="fa-solid fa-user"></i>
-                        User Profile
-                    </span>
-                </div>
+            <div class="profile-container"> 
+                <h1><i class="fa-solid fa-user"></i>User Profile</h1>
+
                 <div class="view-main-error-success-message">
                     @if(session('success'))
                         <p class="success" id="sessionSuccessMessage">{{ session('success') }}</p>

@@ -68,6 +68,7 @@ class DefaultUserSeeder extends Seeder
         foreach ($default_users as $user) {
             User::create([
                 'email'          => $user['email'],
+                'email_verified_at' => now(),
                 'first_name'     => $user['first_name'],
                 'middle_name'    => $user['middle_name'],
                 'last_name'      => $user['last_name'],
