@@ -18,7 +18,7 @@ class AccessTokenSeeder extends Seeder
 
         AccessToken::create([
             'token' => $token,
-            'origin' => 'http://errandsystem.test'
+            'origin' => 'http://prohand.test'
         ]);
     }
 }
