@@ -170,19 +170,37 @@ class ProfileController extends Controller
                 Storage::disk('public')->delete($user->profile_picture);
             }
 
-            if ($user->role === 'tasker') {
-                $tasker_id = $user->id;
-                $tasker_full_name = trim(
-                    "{$user->first_name} " .
-                    ($user->middle_name ? "{$user->middle_name} " : "") .
-                    "{$user->last_name}"
-                );
+            $user_id = $user->id;
+            $user_full_name = trim(
+                "{$user->first_name} " .
+                ($user->middle_name ? "{$user->middle_name} " : "") .
+                "{$user->last_name}"
+            );
 
-                $admin_msg = "Tasker Account Deleted | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) deleted their own account.";
+            if ($user->role === 'tasker') {
+                $admin_msg = "Tasker Account Deleted | Tasker: \"{$user_full_name}\" (ID: {$user_id}) deleted their own account.";
 
                 $admins = User::where('role', 'admin')->get();
 
                 foreach ($admins as $admin) {
+                    Notification::create([
+                        'user_id' => $admin->id,
+                        'type' => 'system',
+                        'message' => $admin_msg,
+                        'link' => null,
+                        'is_read' => false,
+                    ]);
+                }
+            }
+
+            if ($user->role === 'admin') {
+                $admin_msg = "Admin Account Deleted | Admin: \"{$user_full_name}\" (ID: {$user_id}) deleted their own account.";
+
+                $otherAdmins = User::where('role', 'admin')
+                    ->where('id', '!=', $user_id)
+                    ->get();
+
+                foreach ($otherAdmins as $admin) {
                     Notification::create([
                         'user_id' => $admin->id,
                         'type' => 'system',
