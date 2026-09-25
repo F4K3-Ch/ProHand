@@ -222,6 +222,7 @@
             }
 
             const deleteAccountBtn = document.getElementById('btn-delete-account');
+
             if (deleteAccountBtn) {
                 deleteAccountBtn.addEventListener('click', async function() {
                     const customTitle = 'Confirm Account Deletion';
@@ -230,7 +231,35 @@
 
                     if (!isConfirmed) return;
 
-                    console.log('Delete account confirmed.');
+                    try {
+                        const response = await fetch('/api/profile/delete-account', {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'X-API-KEY': apiKey,
+                                'X-MY-ORIGIN': origin
+                            },
+                            credentials: 'same-origin'
+                        });
+
+                        const result = await response.json();
+
+                        if (!response.ok || !result.success) {
+                            throw result;
+                        }
+
+                        sessionStorage.setItem('success_message', result.message);
+                        window.location.href = "{{ route('login') }}";
+
+                    } catch (error) {
+                        console.error('Delete account error:', error);
+
+                        errorMessage.textContent =
+                            error.message || 'Unable to delete your account.';
+
+                        errorMessage.style.display = 'flex';
+                    }
                 });
             }
         });

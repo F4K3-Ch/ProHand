@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Models\Notification;
+use App\Models\Errand;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ProfileController extends Controller
 {
@@ -107,5 +112,106 @@ class ProfileController extends Controller
             'success' => true,
             'message' => 'Password updated successfully!'
         ]);
+    }
+
+    public function deleteAccount(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->role !== 'admin') {
+            $activeErrandExists = Errand::where(function ($query) use ($user) {
+                $query->where('client_id', $user->id)
+                    ->orWhere('tasker_id', $user->id);
+            })
+            ->whereIn('status', [
+                'accepted',
+                'in_progress',
+                'awaiting_confirmation',
+                'dispute'
+            ])
+            ->exists();
+
+            if ($activeErrandExists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You cannot delete your account while you have an active errand.'
+                ], 422);
+            }
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $errands = Errand::with(['attachment', 'payment'])
+                ->where(function ($query) use ($user) {
+                    $query->where('client_id', $user->id)
+                        ->orWhere('tasker_id', $user->id);
+                })
+                ->get();
+
+            foreach ($errands as $errand) {
+                if ($errand->attachment) {
+                    Storage::disk('public')->delete($errand->attachment->file_path);
+                    $errand->attachment()->delete();
+                }
+
+                if ($errand->payment) {
+                    $errand->payment->delete();
+                }
+
+                $errand->delete();
+            }
+
+            if (
+                $user->profile_picture &&
+                $user->profile_picture !== 'uploads/profile_pictures/default.jpg' &&
+                Storage::disk('public')->exists($user->profile_picture)
+            ) {
+                Storage::disk('public')->delete($user->profile_picture);
+            }
+
+            if ($user->role === 'tasker') {
+                $tasker_id = $user->id;
+                $tasker_full_name = trim(
+                    "{$user->first_name} " .
+                    ($user->middle_name ? "{$user->middle_name} " : "") .
+                    "{$user->last_name}"
+                );
+
+                $admin_msg = "Tasker Account Deleted | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) deleted their own account.";
+
+                $admins = User::where('role', 'admin')->get();
+
+                foreach ($admins as $admin) {
+                    Notification::create([
+                        'user_id' => $admin->id,
+                        'type' => 'system',
+                        'message' => $admin_msg,
+                        'link' => null,
+                        'is_read' => false,
+                    ]);
+                }
+            }
+
+            Auth::logout();
+            $user->delete();
+
+            DB::commit();
+
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Account deleted successfully.'
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to delete your account. Please try again.'
+            ], 500);
+        }
     }
 }

@@ -1300,7 +1300,7 @@ class AdminController extends Controller
 
         if (!$history) {
             return response()->json([
-                'success' => false, 
+                'success' => false,
                 'message' => 'History record not found.'
             ], 404);
         }
@@ -1310,6 +1310,27 @@ class AdminController extends Controller
 
         $errand_id = $history->errand_id;
         $history_title = $history->title;
+
+        $client_deleted = $history->client_deleted;
+        $tasker_deleted = $history->tasker_deleted;
+
+        $admin_full_name = trim(
+            "{$admin->first_name} " .
+            ($admin->middle_name ? "{$admin->middle_name} " : "") .
+            "{$admin->last_name}"
+        );
+
+        $client_full_name = trim(
+            "{$history->client_first_name} " .
+            ($history->client_middle_name ? "{$history->client_middle_name} " : "") .
+            "{$history->client_last_name}"
+        );
+
+        $tasker_full_name = trim(
+            "{$history->tasker_first_name} " .
+            ($history->tasker_middle_name ? "{$history->tasker_middle_name} " : "") .
+            "{$history->tasker_last_name}"
+        );
 
         if ($history->attachment) {
             Storage::disk('public')->delete($history->attachment->file_path);
@@ -1334,19 +1355,13 @@ class AdminController extends Controller
 
         $history->delete();
 
-        $admin_full_name = trim("{$admin->first_name} " . ($admin->middle_name ? "{$admin->middle_name} " : "") . "{$admin->last_name}");
-        $client = $client_id ? User::find($client_id) : null;
-        $tasker = $tasker_id ? User::find($tasker_id) : null;
-        $client_full_name = $client ? trim("{$client->first_name} " . ($client->middle_name ? "{$client->middle_name} " : "") . "{$client->last_name}") : 'N/A';
-        $tasker_full_name = $tasker ? trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}") : 'N/A';
-
         $client_msg = "Your History Errand: \"{$history_title}\" (ID: {$errand_id}) has been deleted by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
         $tasker_msg = "Your History Errand: \"{$history_title}\" (ID: {$errand_id}) has been deleted by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
         $admin_msg = "History Errand Deleted | Errand: \"{$history_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin->id}).";
 
-        $notif_type = "errand";
+        $notif_type = 'errand';
 
-        if ($client_id && $history->client_deleted === false) {
+        if ($client_id && !$client_deleted && User::where('id', $client_id)->exists()) {
             Notification::create([
                 'user_id' => $client_id,
                 'type' => $notif_type,
@@ -1356,7 +1371,7 @@ class AdminController extends Controller
             ]);
         }
 
-        if ($tasker_id && $history->tasker_deleted === false) {
+        if ($tasker_id && !$tasker_deleted && User::where('id', $tasker_id)->exists()) {
             Notification::create([
                 'user_id' => $tasker_id,
                 'type' => $notif_type,
@@ -1366,7 +1381,10 @@ class AdminController extends Controller
             ]);
         }
 
-        $otherAdmins = User::where('role', 'admin')->where('id', '!=', $admin->id)->get();
+        $otherAdmins = User::where('role', 'admin')
+            ->where('id', '!=', $admin->id)
+            ->get();
+
         foreach ($otherAdmins as $adm) {
             Notification::create([
                 'user_id' => $adm->id,
@@ -1425,7 +1443,7 @@ class AdminController extends Controller
     {
         $validated = $request->validate(
             [
-                'email' => ['required', 'email', 'max:100', 'unique:users,email'],
+                'email' => ['required', 'email', 'max:100'],
                 'first_name' => ['required', 'string', 'max:50'],
                 'middle_name' => ['nullable', 'string', 'max:50'],
                 'last_name' => ['required', 'string', 'max:50'],
@@ -1434,7 +1452,6 @@ class AdminController extends Controller
                 'contact_number' => ['required', 'string', 'max:20'],
             ],
             [
-                'email.unique' => 'This email is already registered.',
                 'email.required' => 'Please enter an email address.',
                 'email.email' => 'Please enter a valid email address.',
 
@@ -1449,19 +1466,47 @@ class AdminController extends Controller
             ]
         );
 
-        $user = User::create([
-            'email' => $validated['email'],
-            'first_name' => $validated['first_name'],
-            'middle_name' => $validated['middle_name'] ?? null,
-            'last_name' => $validated['last_name'],
-            'role' => strtolower($validated['role']),
-            'password' => Hash::make($validated['password']),
-            'contact_number' => $validated['contact_number'],
-        ]);
+        $existingUser = User::where('email', $validated['email'])->first();
 
-        event(new Registered($user));
+        if ($existingUser) {
+
+            if ($existingUser->hasVerifiedEmail()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This email is already registered.'
+                ], 409);
+            }
+
+            $existingUser->update([
+                'first_name' => $validated['first_name'],
+                'middle_name' => $validated['middle_name'] ?? null,
+                'last_name' => $validated['last_name'],
+                'role' => strtolower($validated['role']),
+                'password' => Hash::make($validated['password']),
+                'contact_number' => $validated['contact_number'],
+            ]);
+
+            event(new Registered($existingUser));
+
+            $user = $existingUser;
+
+        } else {
+
+            $user = User::create([
+                'email' => $validated['email'],
+                'first_name' => $validated['first_name'],
+                'middle_name' => $validated['middle_name'] ?? null,
+                'last_name' => $validated['last_name'],
+                'role' => strtolower($validated['role']),
+                'password' => Hash::make($validated['password']),
+                'contact_number' => $validated['contact_number'],
+            ]);
+
+            event(new Registered($user));
+        }
 
         $admin = $request->user();
+
         $admin_full_name = trim("{$admin->first_name} " . ($admin->middle_name ? "{$admin->middle_name} " : "") . "{$admin->last_name}");
         $new_user_full_name = trim("{$user->first_name} " . ($user->middle_name ? "{$user->middle_name} " : "") . "{$user->last_name}");
         $formatted_role = ucfirst($user->role);
@@ -1489,6 +1534,6 @@ class AdminController extends Controller
             'success' => true,
             'message' => 'User added successfully. A verification email has been sent to the user.',
             'user' => $user
-        ]);
+        ], $existingUser ? 200 : 201);
     }
 }
