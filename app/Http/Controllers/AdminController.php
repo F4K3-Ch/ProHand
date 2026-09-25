@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
@@ -1458,13 +1459,15 @@ class AdminController extends Controller
             'contact_number' => $validated['contact_number'],
         ]);
 
+        event(new Registered($user));
+
         $admin = $request->user();
         $admin_full_name = trim("{$admin->first_name} " . ($admin->middle_name ? "{$admin->middle_name} " : "") . "{$admin->last_name}");
         $new_user_full_name = trim("{$user->first_name} " . ($user->middle_name ? "{$user->middle_name} " : "") . "{$user->last_name}");
         $formatted_role = ucfirst($user->role);
 
         $admin_msg = "User Added | New User: \"{$new_user_full_name}\" (ID: {$user->id}, Role: {$formatted_role}) | Added by Admin: \"{$admin_full_name}\" (ID: {$admin->id}).";
-        
+
         $notif_type = "system";
         $admin_link = route('admin.view-user', ['id' => $user->id]) . '?from=notifications';
 
@@ -1484,7 +1487,7 @@ class AdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'User added successfully.',
+            'message' => 'User added successfully. A verification email has been sent to the user.',
             'user' => $user
         ]);
     }
