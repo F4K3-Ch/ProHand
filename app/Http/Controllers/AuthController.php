@@ -43,7 +43,7 @@ class AuthController extends Controller
         if (!$user->hasVerifiedEmail()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Your email is not verified. Please register again to receive a new verification email.'
+                'message' => 'Your email is not verified. Please register again using this email address to continue.'
             ], 403);
         }
         

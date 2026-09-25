@@ -35,6 +35,7 @@
 
                 <div class="login-error-success-message">
                     <div class="error-success-message">
+                        <p id="successElement" class="success" style="display:none;"></p>
                         <p id="errorElement" class="error" style="display:none;"></p>
                     </div>
                 </div>
@@ -77,6 +78,28 @@
             window.location.reload();
         }
     });
+
+    const successElement = document.getElementById('successElement');
+    const errorElement = document.getElementById('errorElement');
+
+    const urlParams = new URLSearchParams(window.location.search);
+
+    if (urlParams.get('verified') === '1') {
+        sessionStorage.setItem(
+            'success_message',
+            'Your email has been verified. You can now log in.'
+        );
+
+        window.history.replaceState({}, document.title, "{{ route('login') }}");
+    }
+
+    const successMessage = sessionStorage.getItem('success_message');
+
+    if (successMessage) {
+        successElement.textContent = successMessage;
+        successElement.style.display = 'flex';
+        sessionStorage.removeItem('success_message');
+    }
     
     const apiKey = "{{ config('services.my_api.api_key') }}";
     const origin = "{{ config('services.my_api.origin') }}";
@@ -124,7 +147,7 @@
                     errorElement.textContent = result.message || 'Login failed.';
                 }
 
-                errorElement.style.display = 'block';
+                errorElement.style.display = 'flex';
                 return;
             }
 

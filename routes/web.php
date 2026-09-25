@@ -34,13 +34,16 @@ Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) 
         $user->markEmailAsVerified();
     }
 
-    return redirect()->route('login')->with(
-        'success',
-        'Your email has been verified. You can now log in.'
-    );
+    return redirect()->route('login', [
+        'verified' => '1'
+    ]);
 })->name('verification.verify');
 
 Route::post('/email/verification-notification', function (Request $request) {
+    $request->validate([
+        'email' => ['required', 'email', 'max:100'],
+    ]);
+
     $user = User::where('email', $request->email)->first();
 
     if (!$user) {
@@ -63,7 +66,7 @@ Route::post('/email/verification-notification', function (Request $request) {
         'success' => true,
         'message' => 'A new verification link has been sent to your email.'
     ]);
-})->middleware(['throttle:6,1'])->name('verification.send');
+})->middleware(['preventAccess', 'throttle:6,1'])->name('verification.send');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', function () {
