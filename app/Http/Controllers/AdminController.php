@@ -343,13 +343,17 @@ class AdminController extends Controller
 
                 'payment' => $errand->payment ? [
                     'method' => Str::title($errand->payment->method),
-                    'status' => Str::title($errand->payment->status),
+                    'status' => Str::title(str_replace('_', ' ', $errand->payment->status)),
                     'raw_status' => $errand->payment->status,
                     'status_class' => 'status-field status-' . $errand->payment->status,
-                    'amount' => $errand->payment->amount,
+                    'amount' => '₱' . number_format($errand->payment->amount, 2),
                     'paid_at' => $errand->payment->paid_at
                         ? Carbon::parse($errand->payment->paid_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                         : 'Not paid yet',
+                    'proof' => $errand->payment->proof_path ? [
+                        'name' => basename($errand->payment->proof_path),
+                        'url' => Storage::url($errand->payment->proof_path)
+                    ] : null,
                 ] : null,
             ];
 
@@ -443,6 +447,10 @@ class AdminController extends Controller
                 'paid_at' => $history->payment_paid_at
                     ? Carbon::parse($history->payment_paid_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                     : 'None',
+                'proof' => $history->payment_proof_path ? [
+                    'name' => basename($history->payment_proof_path),
+                    'url' => Storage::url($history->payment_proof_path)
+                ] : null,
             ] : null,
         ];
 

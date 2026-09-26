@@ -191,14 +191,93 @@
                     </div>
                 </div>
 
+<div class="gcash-payment-container" id="paymentProofSection" style="display:none;">
+    <h1>
+        <i class="fa-solid fa-receipt"></i>
+        Payment Verification
+    </h1>
+
+    <div id="gcashPaymentForm" class="payment-verification-panel" style="display:none;">
+        <div class="payment-status-header">
+            <i class="fa-solid fa-receipt status-icon-orange"></i>
+            <h2 class="status-title-orange">Payment Receipt Submitted</h2>
+        </div>
+
+        <p class="payment-status-message">
+            <strong>This errand is currently pending, but a payment receipt has been submitted.</strong>
+            Please review the uploaded payment receipt before taking further action.
+        </p>
+
+        <div class="errand-attachment-section">
+            <label>
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+                Uploaded Payment Receipt
+            </label>
+
+            <div id="pendingPaymentProofAttachment">
+                <div class="attachment-item">
+                    <a href="#" target="_blank" class="attachment-name" id="pendingPaymentProofPreview" title="Preview Payment Receipt">
+                        <i class="fa-solid fa-file"></i>
+                        <span id="pendingPaymentProofFilename"></span>
+                    </a>
+
+                    <a href="#" class="btn-download" id="pendingPaymentProofDownload" download>
+                        <i class="fa-solid fa-download"></i>
+                        Download
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="paymentVerificationPanel" class="payment-verification-panel" style="display:none;">
+        <div class="payment-status-header">
+            <i class="fa-solid fa-receipt status-icon-orange"></i>
+            <h2 class="status-title-orange">Payment Receipt Submitted</h2>
+        </div>
+
+        <p class="payment-status-message">
+            <strong>Please review the uploaded payment receipt.</strong>
+            Accept the receipt if the payment details are valid or deny it if the receipt is invalid.
+        </p>
+
+        <div class="errand-attachment-section">
+            <label>
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+                Uploaded Payment Receipt
+            </label>
+
+            <div id="paymentProofAttachment">
+                <div class="attachment-item">
+                    <a href="#" target="_blank" class="attachment-name" id="paymentProofPreview" title="Preview Payment Receipt">
+                        <i class="fa-solid fa-file"></i>
+                        <span id="paymentProofFilename"></span>
+                    </a>
+
+                    <a href="#" class="btn-download" id="paymentProofDownload" download>
+                        <i class="fa-solid fa-download"></i>
+                        Download
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
                 <div class="info-bot-btn">
-                    <button type="button" id="deleteErrandBtn" class="btn-delete" style="display: none;">
+                    <button type="button" id="acceptPaymentProofBtn" class="btn-approve" style="display:none;">
+                        <i class="fa-solid fa-circle-check"></i> Accept Receipt
+                    </button>
+                    <button type="button" id="denyPaymentProofBtn" class="btn-cancel" style="display:none;">
+                        <i class="fa-solid fa-circle-xmark"></i> Deny Receipt
+                    </button>
+                    <button type="button" id="deleteErrandBtn" class="btn-delete" style="display:none;">
                         <i class="fa-solid fa-trash"></i> Delete Errand
                     </button>
                     <span id="performingBadge" class="descriptive-status-badge" style="display:none;">
                         <i class="fa-solid fa-spinner fa-spin"></i> Tasker is performing errand...
                     </span>
-                    <button type="button" id="confirmCompletionBtn" class="btn-confirm-completion" style="display: none;">
+                    <button type="button" id="confirmCompletionBtn" class="btn-confirm-completion" style="display:none;">
                         <i class="fa-solid fa-check"></i> Confirm Completion
                     </button>
                     <button type="button" id="completeDisputeBtn" class="btn-approve" style="display:none;">
@@ -210,7 +289,7 @@
                     <button type="button" id="failRefundBtn" class="btn-delete" style="display:none;">
                         <i class="fa-solid fa-money-bill-transfer"></i> Mark as Failed & Refund
                     </button>
-                    <button type="button" id="cancelBtn" class="btn-cancel" style="display: none;">
+                    <button type="button" id="cancelBtn" class="btn-cancel" style="display:none;">
                         <i class="fa-solid fa-triangle-exclamation"></i> Force Cancel
                     </button>
                 </div>
@@ -436,14 +515,35 @@
 
                 if (errand.raw_status === 'pending') {
                     const deleteBtn = document.getElementById('deleteErrandBtn');
+                    const paymentProofSection = document.getElementById('paymentProofSection');
+                    const gcashPaymentForm = document.getElementById('gcashPaymentForm');
+                    const paymentVerificationPanel = document.getElementById('paymentVerificationPanel');
+
+                    const pendingPaymentProofPreview = document.getElementById('pendingPaymentProofPreview');
+                    const pendingPaymentProofDownload = document.getElementById('pendingPaymentProofDownload');
+                    const pendingPaymentProofFilename = document.getElementById('pendingPaymentProofFilename');
 
                     deleteBtn.style.display = 'flex';
+                    paymentProofSection.style.display = 'none';
+                    gcashPaymentForm.style.display = 'none';
+                    paymentVerificationPanel.style.display = 'none';
+
+                    if (errand.payment && errand.payment.proof) {
+                        paymentProofSection.style.display = 'flex';
+                        gcashPaymentForm.style.display = 'flex';
+
+                        pendingPaymentProofFilename.textContent = errand.payment.proof.name;
+                        pendingPaymentProofPreview.href = errand.payment.proof.url;
+                        pendingPaymentProofDownload.href = errand.payment.proof.url;
+                        pendingPaymentProofDownload.setAttribute('download', errand.payment.proof.name);
+                    }
+
                     deleteBtn.addEventListener('click', async function() {
                         const customTitle = 'Confirm Deletion';
                         const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
                         const isConfirmed = await showConfirmation(customTitle, customMessage);
-                        
-                        if(!isConfirmed) return;
+
+                        if (!isConfirmed) return;
 
                         try {
                             const response = await fetch('/api/admin/errands/' + errand.id + '/delete', {
@@ -452,60 +552,170 @@
                                     'Accept': 'application/json',
                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                                     'X-API-KEY': apiKey,
-                                    'X-MY-ORIGIN' : origin
+                                    'X-MY-ORIGIN': origin
                                 },
                                 credentials: 'same-origin'
                             });
 
                             const result = await response.json();
-                            if(!response.ok || !result.success){
-                                throw new Error(result.message);
+
+                            if (!response.ok || !result.success) {
+                                throw new Error(result.message || 'Failed to delete errand.');
                             }
 
                             sessionStorage.setItem('success_message', result.message);
                             window.location.href = '{{ route("admin.dashboard") }}';
 
-                        } catch(error) {
+                        } catch (error) {
                             console.error('Error:', error);
                             displayGlobalError(error.message);
                         }
                     });
-                    
+                                    
                 } else if (errand.raw_status === 'accepted') {
-                    const cancelBtn = document.getElementById('cancelBtn');
-                    cancelBtn.style.display = 'flex';
-                    cancelBtn.addEventListener('click', async function(){
-                        const customTitle = 'Confirm Cancellation';
-                        const customMessage = 'Force-cancel this errand? The errand status will be reset back to "Pending" status.';
-                        const isConfirmed = await showConfirmation(customTitle, customMessage);
-                        
-                        if(!isConfirmed) return;
-                        
+                    const deleteBtn = document.getElementById('deleteErrandBtn');
+                    const paymentProofSection = document.getElementById('paymentProofSection');
+                    const gcashPaymentForm = document.getElementById('gcashPaymentForm');
+                    const paymentVerificationPanel = document.getElementById('paymentVerificationPanel');
+
+                    const paymentProofPreview = document.getElementById('paymentProofPreview');
+                    const paymentProofDownload = document.getElementById('paymentProofDownload');
+                    const paymentProofFilename = document.getElementById('paymentProofFilename');
+
+                    const acceptPaymentProofBtn = document.getElementById('acceptPaymentProofBtn');
+                    const denyPaymentProofBtn = document.getElementById('denyPaymentProofBtn');
+
+                    deleteBtn.style.display = 'flex';
+                    paymentProofSection.style.display = 'none';
+                    gcashPaymentForm.style.display = 'none';
+                    paymentVerificationPanel.style.display = 'none';
+
+                    acceptPaymentProofBtn.style.display = 'none';
+                    denyPaymentProofBtn.style.display = 'none';
+
+                    if (
+                        errand.payment &&
+                        errand.payment.method &&
+                        errand.payment.method.toLowerCase() === 'gcash' &&
+                        errand.payment.proof
+                    ) {
+                        paymentProofSection.style.display = 'flex';
+                        paymentVerificationPanel.style.display = 'flex';
+
+                        acceptPaymentProofBtn.style.display = 'flex';
+                        denyPaymentProofBtn.style.display = 'flex';
+
+                        paymentProofFilename.textContent = errand.payment.proof.name;
+                        paymentProofPreview.href = errand.payment.proof.url;
+                        paymentProofDownload.href = errand.payment.proof.url;
+                        paymentProofDownload.setAttribute('download', errand.payment.proof.name);
+                    }
+
+                    acceptPaymentProofBtn.addEventListener('click', async function() {
+                        const isConfirmed = await showConfirmation(
+                            'Accept Payment Receipt',
+                            'Are you sure you want to accept this payment receipt? The payment will be marked as paid and the errand will move to "In Progress".'
+                        );
+
+                        if (!isConfirmed) return;
+
                         try {
-                            const response = await fetch('/api/admin/errands/' + errand.id + '/reset-to-pending', {
+                            const response = await fetch('/api/admin/errands/' + errand.id + '/accept-payment-proof', {
                                 method: 'POST',
                                 headers: {
                                     'Accept': 'application/json',
                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                                     'X-API-KEY': apiKey,
-                                    'X-MY-ORIGIN' : origin
+                                    'X-MY-ORIGIN': origin
                                 },
                                 credentials: 'same-origin'
                             });
 
                             const result = await response.json();
-                            if(!response.ok || !result.success){
-                                throw new Error(result.message);
+
+                            if (!response.ok || !result.success) {
+                                throw new Error(result.message || 'Failed to accept payment receipt.');
                             }
 
                             sessionStorage.setItem('success_message', result.message);
                             window.location.href = window.location.href;
 
-                        } catch(error) {
+                        } catch (error) {
                             console.error('Error:', error);
                             displayGlobalError(error.message);
                         }
                     });
+
+                    denyPaymentProofBtn.addEventListener('click', async function() {
+                        const isConfirmed = await showConfirmation(
+                            'Deny Payment Receipt',
+                            'Are you sure you want to deny this payment receipt? The client will need to upload a new payment receipt.'
+                        );
+
+                        if (!isConfirmed) return;
+
+                        try {
+                            const response = await fetch('/api/admin/errands/' + errand.id + '/deny-payment-proof', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN': origin
+                                },
+                                credentials: 'same-origin'
+                            });
+
+                            const result = await response.json();
+
+                            if (!response.ok || !result.success) {
+                                throw new Error(result.message || 'Failed to deny payment receipt.');
+                            }
+
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.href = window.location.href;
+
+                        } catch (error) {
+                            console.error('Error:', error);
+                            displayGlobalError(error.message);
+                        }
+                    });
+
+                    deleteBtn.addEventListener('click', async function() {
+                        const isConfirmed = await showConfirmation(
+                            'Confirm Deletion',
+                            'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.'
+                        );
+
+                        if (!isConfirmed) return;
+
+                        try {
+                            const response = await fetch('/api/admin/errands/' + errand.id + '/delete', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN': origin
+                                },
+                                credentials: 'same-origin'
+                            });
+
+                            const result = await response.json();
+
+                            if (!response.ok || !result.success) {
+                                throw new Error(result.message || 'Failed to delete errand.');
+                            }
+
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.href = '{{ route("admin.dashboard") }}';
+
+                        } catch (error) {
+                            console.error('Error:', error);
+                            displayGlobalError(error.message);
+                        }
+                    });
+
                 } else if (errand.raw_status === 'in_progress') {
                     document.getElementById('performingBadge').style.display = 'flex';
                     cancelBtn.style.display = 'flex';

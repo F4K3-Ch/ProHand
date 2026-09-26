@@ -161,7 +161,10 @@
                 </div>
 
                 <div class="gcash-payment-container" id="gcashPaymentContainer" style="display:none;">
-                    <h1>Secure Payment</h1>
+                    <h1>
+                        <i class="fa-solid fa-wallet"></i>
+                        Secure Payment
+                    </h1>
 
                     <div id="gcashPaymentForm" class="split-payment-container" style="display:none;">
                         <div class="payment-action-panel">
