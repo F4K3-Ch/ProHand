@@ -191,15 +191,17 @@
                         Waiting for Admin Decision on your Cancellation request...
                     </span>
 
-                    <span class="descriptive-status-badge" id="waitingPaymentVerificationBadge" style="display:none;">
-                        <i class="fa-solid fa-hourglass-half"></i>
-                        Waiting for Admin Verification of Payment
-                    </span>
+                    <div class="badge-button-column" id="paymentContainer" style="display:none;">
+                        <span class="descriptive-status-badge" id="waitingPaymentVerificationBadge" style="display:none;">
+                            <i class="fa-solid fa-hourglass-half"></i>
+                            Waiting for Admin Verification of Payment
+                        </span>
 
-                    <span class="descriptive-status-badge" id="awaitingClientConfirmationBadge" style="display:none;">
-                        <i class="fa-solid fa-spinner fa-spin"></i>
-                        Awaiting client confirmation
-                    </span>
+                        <span class="descriptive-status-badge" id="awaitingClientConfirmationBadge" style="display:none;">
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                            Awaiting client confirmation
+                        </span>
+                    </div>
 
                     <button type="button" id="cancelRequestBtn" class="btn-cancel" style="display:none;">
                         <i class="fa-solid fa-hand-holding-hand"></i> Request Cancel
@@ -372,8 +374,6 @@
                 } else if (errand.raw_status === 'accepted') {
                     const paymentContainer = document.getElementById('paymentContainer');
                     const waitingPaymentVerificationBadge = document.getElementById('waitingPaymentVerificationBadge');
-                    const cancelRequestBtn = document.getElementById('cancelRequestBtn');
-                    const pendingCancelBadge = document.getElementById('pendingCancelBadge');
 
                     paymentContainer.style.display = 'flex';
 
@@ -528,7 +528,6 @@
 
                 } else if (errand.raw_status === 'awaiting_confirmation') {
                     const awaitingClientConfirmationBadge = document.getElementById('awaitingClientConfirmationBadge');
-                    awaitingClientConfirmationBadge.style.display = 'flex';
                 } else if (errand.raw_status === 'dispute') {
                     const disputeBadge = document.getElementById('disputeBadge');
                     disputeBadge.style.display = 'flex';
