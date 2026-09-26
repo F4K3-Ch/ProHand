@@ -11,7 +11,6 @@ class Payment extends Model
     use HasFactory;
 
     protected $table = 'payments';
-    public $timestamps = true;
 
     protected $fillable = [
         'errand_id',
@@ -21,16 +20,15 @@ class Payment extends Model
         'method',
         'status',
         'reference',
+        'proof_path',
+        'proof_submitted_at',
         'paid_at',
-        'created_at',
-        'updated_at'
     ];
 
     protected $casts = [
-        'amount'    => 'decimal:2',
-        'paid_at'   => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'amount' => 'decimal:2',
+        'proof_submitted_at' => 'datetime',
+        'paid_at' => 'datetime',
     ];
 
     public function errand(): BelongsTo

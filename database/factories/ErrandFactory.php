@@ -79,6 +79,7 @@ class ErrandFactory extends Factory
         ];
 
         $task = $this->faker->randomElement($bisayaTasks);
+
         $locations = [
             'Brgy. Talisay, Hilongos, Leyte',
             'Brgy. Tejero, Hilongos, Leyte',
@@ -118,9 +119,11 @@ class ErrandFactory extends Factory
                 'client_id' => $errand->client_id,
                 'tasker_id' => $errand->tasker_id,
                 'amount' => $errand->fee,
-                'method' => 'cash',
+                'method' => 'gcash',
                 'status' => 'pending',
                 'reference' => null,
+                'proof_path' => null,
+                'proof_submitted_at' => null,
                 'paid_at' => null,
             ]);
         });

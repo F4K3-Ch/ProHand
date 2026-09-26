@@ -26,6 +26,7 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
         Route::get('/client/history/history-errands', [ClientController::class, 'historyErrands']);
         Route::post('/client/create', [ClientController::class, 'createErrand']);
         Route::get('/client/errands/{id}', [ClientController::class, 'getErrandDetails']);
+        Route::post('/client/errands/{id}/payment-proof', [ClientController::class, 'submitPaymentProof']);
         Route::post('/client/errands/{id}/update', [ClientController::class, 'editErrand']);
         Route::post('/client/errands/{id}/delete', [ClientController::class, 'destroyErrand']);
         Route::post('/client/errands/{id}/dispute', [ClientController::class, 'markDispute']);

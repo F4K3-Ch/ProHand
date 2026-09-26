@@ -160,6 +160,80 @@
                     </div>
                 </div>
 
+                <div class="gcash-payment-container" id="gcashPaymentContainer" style="display:none;">
+                    <h1>Secure Payment</h1>
+
+                    <div id="gcashPaymentForm" class="split-payment-container" style="display:none;">
+                        <div class="payment-action-panel">
+                            <a href="{{ asset('img/gcash-full-qr.jpg') }}" target="_blank" title="Click to view full image">
+                                <img src="{{ asset('img/gcash-qr.jpg') }}" alt="GCash Merchant QR Code" class="payment-qr-img">
+                            </a>
+                        </div>
+
+                        <div class="payment-info-panel">
+                            <div class="payment-text-details">
+                                <p class="alert-text">
+                                    <strong>GCash Payment Instructions:</strong><br>
+                                    Scan the QR code or send the exact amount of
+                                    <strong id="gcashAmount">Loading...</strong>
+                                    to our GCash account to secure your tasker.
+                                </p>
+
+                                <p class="merchant-number">
+                                    <i class="fa-solid fa-mobile-screen"></i>
+                                    0994-221-5875
+                                </p>
+
+                                <span class="qr-hint-text">
+                                    <i class="fa-solid fa-qrcode"></i>
+                                    Tip: Save the QR to your gallery to scan via GCash App.
+                                </span>
+                            </div>
+
+                            <div class="info-box create-errand-input-box payment-right-upload">
+                                <label>Upload Receipt Image</label>
+                                <input type="file" id="paymentProof" accept=".jpg,.jpeg,.png">
+                                <small>Only PNG, JPG, or JPEG allowed. Max: 10 MB</small>
+                            </div>
+
+                            <button type="button" id="submitPaymentBtn" class="btn-submit-proof">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                                Submit Payment
+                                <div class="circle-spinner" id="paymentSpinner" style="display:none;"></div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="gcashReceipt" class="payment-verification-panel" style="display:none;">
+                        <div class="payment-status-header">
+                            <i id="gcashReceiptIcon" class="fa-solid fa-spinner fa-spin status-icon-orange"></i>
+                            <h2 id="gcashReceiptTitle" class="status-title-orange">Pending Admin Verification</h2>
+                        </div>
+
+                        <p id="gcashReceiptMessage" class="payment-status-message">
+                            <strong>Please wait until the admin checks your uploaded receipt.</strong>
+                            Once verified, your tasker will be notified immediately.
+                        </p>
+
+                        <div class="errand-attachment-section">
+                            <label><i class="fa-solid fa-file-invoice-dollar"></i> Your Uploaded Receipt</label>
+
+                            <div id="errand-attachment">
+                                <div class="attachment-item">
+                                    <a href="#" id="gcashReceiptPreview" target="_blank" class="attachment-name" title="Preview File">
+                                        <i class="fa-solid fa-file"></i>
+                                        <span id="gcashReceiptFilename">Loading...</span>
+                                    </a>
+
+                                    <a href="#" id="gcashReceiptDownload" class="btn-download" download>
+                                        <i class="fa-solid fa-download"></i> Download
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="info-bot-btn">
                     <a href="#" id="editErrandBtn" class="btn-edit-errand" style="display:none;">
                         <i class="fa-solid fa-pen"></i> Edit Errand
@@ -169,16 +243,9 @@
                         <i class="fa-solid fa-trash"></i> Delete Errand
                     </button>
 
-                    <div class="badge-button-column" id="acceptedBadgeContainer" style="display:none;">
-                        <span class="descriptive-status-badge" id="waitingToStartBadge" style="display:none;">
-                            <i class="fa-solid fa-spinner fa-spin"></i>
-                            Tasker has accepted this errand and is preparing to begin...
-                        </span>
-
-                        <button type="button" id="cancelAcceptedBtn" class="btn-cancel" style="display:none;">
-                            <i class="fa-solid fa-ban"></i> Cancel
-                        </button>
-                    </div>
+                    <button type="button" id="cancelAcceptedBtn" class="btn-cancel" style="display:none;">
+                        <i class="fa-solid fa-ban"></i> Cancel
+                    </button>
 
                     <div class="badge-button-column" id="inProgressBadgeContainer" style="display:none;">
                         <span class="descriptive-status-badge" id="performingBadge" style="display:none;">
@@ -193,18 +260,6 @@
                         <span class="descriptive-status-badge" id="pendingCancelBadge" style="display:none;">
                             <i class="fa-solid fa-spinner fa-spin"></i>
                             Waiting for Admin Decision on your Cancellation request...
-                        </span>
-                    </div>
-
-                    <div class="badge-button-column" id="paymentContainer" style="display:none;">
-                        <span class="descriptive-status-badge" id="paymentPendingBadge" style="display:none;">
-                            <i class="fa-solid fa-money-bill-wave"></i>
-                            Your errand has been completed. Please pay the agreed cash amount to the Tasker and wait for them to confirm receipt.
-                        </span>
-
-                        <span class="descriptive-status-badge" id="paymentPaidBadge" style="display:none;">
-                            <i class="fa-solid fa-circle-check"></i>
-                            Payment has been confirmed by the Tasker.
                         </span>
                     </div>
 
@@ -379,45 +434,76 @@
                         }
                     });
 
-                } else if (errand.raw_status === 'accepted') {
-                    const acceptedBadgeContainer = document.getElementById('acceptedBadgeContainer');
-                    acceptedBadgeContainer.style.display = 'flex';
-                    document.getElementById('waitingToStartBadge').style.display = 'flex';
-                    const cancelAcceptedBtn = document.getElementById('cancelAcceptedBtn');
-                    cancelAcceptedBtn.style.display = 'flex';
+} else if (errand.raw_status === 'accepted') {
+    const cancelAcceptedBtn = document.getElementById('cancelAcceptedBtn');
+    const gcashPaymentContainer = document.getElementById('gcashPaymentContainer');
+    const gcashPaymentForm = document.getElementById('gcashPaymentForm');
+    const gcashReceipt = document.getElementById('gcashReceipt');
 
-                    cancelAcceptedBtn.addEventListener('click', async function() {
-                        const customTitle = 'Confirm Cancellation';
-                        const customMessage = 'Are you sure you want to cancel this errand? It will return to "Pending" status.';
-                        const isConfirmed = await showConfirmation(customTitle, customMessage);
-                            
-                        if(!isConfirmed) return;
+    cancelAcceptedBtn.style.display = 'flex';
 
-                        try {
-                            const response = await fetch('/api/client/errands/' + errand.id + '/cancel', {
-                                method: 'POST',
-                                headers: {
-                                    'Accept': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                                    'X-API-KEY': apiKey,
-                                    'X-MY-ORIGIN' : origin
-                                },
-                                credentials: 'same-origin'
-                            });
+    if (errand.payment && errand.payment.method.toLowerCase() === 'gcash') {
+        gcashPaymentContainer.style.display = 'flex';
 
-                            const result = await response.json();
-                            if(!response.ok || !result.success){
-                                throw new Error(result.message);
-                            }
+        if (!errand.payment.proof) {
+            gcashPaymentForm.style.display = 'flex';
+            gcashReceipt.style.display = 'none';
 
-                            sessionStorage.setItem('success_message', result.message);
-                            window.location.href = window.location.href;
+            document.getElementById('gcashAmount').textContent =
+                errand.payment.amount;
 
-                        } catch(error) {
-                            console.error('Error:', error);
-                            displayGlobalError(error.message);
-                        }
-                    });
+        } else {
+            gcashPaymentForm.style.display = 'none';
+            gcashReceipt.style.display = 'flex';
+
+            gcashReceiptPreview.href = errand.payment.proof;
+            gcashReceiptDownload.href = errand.payment.proof;
+
+            const filename = errand.payment.proof.split('/').pop();
+
+            gcashReceiptFilename.textContent = filename;
+            gcashReceiptDownload.setAttribute('download', filename);
+        }
+    }
+
+    cancelAcceptedBtn.addEventListener('click', async function() {
+        const customTitle = 'Confirm Cancellation';
+        const customMessage =
+            'Are you sure you want to cancel this errand? It will return to "Pending" status.';
+
+        const isConfirmed = await showConfirmation(customTitle, customMessage);
+
+        if (!isConfirmed) return;
+
+        try {
+            const response = await fetch(
+                '/api/client/errands/' + errand.id + '/cancel',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                        'X-API-KEY': apiKey,
+                        'X-MY-ORIGIN': origin
+                    },
+                    credentials: 'same-origin'
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || 'Failed to cancel errand.');
+            }
+
+            sessionStorage.setItem('success_message', result.message);
+            window.location.href = window.location.href;
+
+        } catch (error) {
+            console.error('Error:', error);
+            displayGlobalError(error.message);
+        }
+    });
 
                 } else if (errand.raw_status === 'in_progress') {
                     const inProgressBadgeContainer = document.getElementById('inProgressBadgeContainer');
@@ -463,29 +549,20 @@
                     } else {
                         document.getElementById('pendingCancelBadge').style.display = 'flex';
                     }
+
                 } else if (errand.raw_status === 'awaiting_confirmation') {
                     const confirmCompletionBtn = document.getElementById('confirmCompletionBtn');
                     const disputeErrandBtn = document.getElementById('disputeErrandBtn');
-                    const paymentContainer = document.getElementById('paymentContainer');
-                    const paymentPendingBadge = document.getElementById('paymentPendingBadge');
-                    const paymentPaidBadge = document.getElementById('paymentPaidBadge');
 
+                    confirmCompletionBtn.style.display = 'flex';
                     disputeErrandBtn.style.display = 'flex';
-                    paymentContainer.style.display = 'flex';
-
-                    if (errand.payment && errand.payment.raw_status === 'paid') {
-                        paymentPaidBadge.style.display = 'flex';
-                        confirmCompletionBtn.style.display = 'flex';
-                    } else {
-                        paymentPendingBadge.style.display = 'flex';
-                    }
 
                     confirmCompletionBtn.addEventListener('click', async function() {
                         const customTitle = 'Confirm Completion';
                         const customMessage = 'Are you sure you want to confirm the completion of errand #' + errand.id + ' ("' + errand.title + '")? This action cannot be undone.';
                         const isConfirmed = await showConfirmation(customTitle, customMessage);
-                        
-                        if(!isConfirmed) return;
+
+                        if (!isConfirmed) return;
 
                         try {
                             const response = await fetch('/api/client/errands/' + errand.id + '/completed', {
@@ -494,20 +571,21 @@
                                     'Accept': 'application/json',
                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                                     'X-API-KEY': apiKey,
-                                    'X-MY-ORIGIN' : origin
+                                    'X-MY-ORIGIN': origin
                                 },
                                 credentials: 'same-origin'
                             });
 
                             const result = await response.json();
-                            if(!response.ok || !result.success){
+
+                            if (!response.ok || !result.success) {
                                 throw new Error(result.message);
                             }
 
                             sessionStorage.setItem('success_message', result.message);
                             window.location.href = '{{ route("client.history") }}';
 
-                        } catch(error) {
+                        } catch (error) {
                             console.error('Error:', error);
                             displayGlobalError(error.message);
                         }
@@ -517,8 +595,8 @@
                         const customTitle = 'Dispute Errand';
                         const customMessage = 'Are you sure you want to dispute errand #' + errand.id + ' ("' + errand.title + '")? This action will notify the Admin for review.';
                         const isConfirmed = await showConfirmation(customTitle, customMessage);
-                        
-                        if(!isConfirmed) return;
+
+                        if (!isConfirmed) return;
 
                         try {
                             const response = await fetch('/api/client/errands/' + errand.id + '/dispute', {
@@ -527,20 +605,21 @@
                                     'Accept': 'application/json',
                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                                     'X-API-KEY': apiKey,
-                                    'X-MY-ORIGIN' : origin
+                                    'X-MY-ORIGIN': origin
                                 },
                                 credentials: 'same-origin'
                             });
 
                             const result = await response.json();
-                            if(!response.ok || !result.success){
+
+                            if (!response.ok || !result.success) {
                                 throw new Error(result.message);
                             }
 
                             sessionStorage.setItem('success_message', result.message);
                             window.location.href = window.location.href;
 
-                        } catch(error) {
+                        } catch (error) {
                             console.error('Error:', error);
                             displayGlobalError(error.message);
                         }

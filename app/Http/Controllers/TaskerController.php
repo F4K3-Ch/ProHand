@@ -449,7 +449,7 @@ class TaskerController extends Controller
 
         if (!$errand) {
             return response()->json([
-                'success' => false, 
+                'success' => false,
                 'message' => 'Errand not found.'
             ], 404);
         }
@@ -461,33 +461,34 @@ class TaskerController extends Controller
 
         $errand_id = $errand->id;
         $errand_title = $errand->title;
-        
+        $errand_fee = number_format((float) $errand->fee, 2);
+
         $client_id = $errand->client_id;
         $client = User::find($client_id);
-        $client_full_name = $client ? trim("{$client->first_name} " . ($client->middle_name ? "{$client->middle_name} " : "") . "{$client->last_name}") : 'Client';
+        $client_full_name = trim("{$client->first_name} " . ($client->middle_name ? "{$client->middle_name} " : "") . "{$client->last_name}");
 
         $tasker_id = $tasker->id;
         $tasker_full_name = trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}");
 
-        $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) was Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
-        $admin_msg = "Errand Accepted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}).";
+        $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) has been accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Please pay the exact amount of ₱{$errand_fee} via GCash and submit your payment proof.";
+
+        $admin_msg = "Errand Accepted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Amount: ₱{$errand_fee}. Waiting for the client's GCash payment proof.";
 
         $notif_type = "errand";
 
         $client_link = route('client.view-errand', ['id' => $errand_id]) . '?from=notifications';
         $admin_link = route('admin.view-errand', ['id' => $errand_id]) . '?from=notifications';
 
-        if ($client_id) {
-            Notification::create([
-                'user_id' => $client_id,
-                'type' => $notif_type,
-                'message' => $client_msg,
-                'link' => $client_link,
-                'is_read' => false,
-            ]);
-        }
+        Notification::create([
+            'user_id' => $client_id,
+            'type' => $notif_type,
+            'message' => $client_msg,
+            'link' => $client_link,
+            'is_read' => false,
+        ]);
 
         $admins = User::where('role', 'admin')->get();
+
         foreach ($admins as $admin) {
             Notification::create([
                 'user_id' => $admin->id,

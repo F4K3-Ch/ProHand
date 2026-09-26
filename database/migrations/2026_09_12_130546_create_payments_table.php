@@ -17,9 +17,11 @@ return new class extends Migration
             $table->foreignId('client_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('tasker_id')->nullable()->constrained('users')->nullOnDelete();
             $table->decimal('amount', 10, 2);
-            $table->enum('method', ['cash', 'gcash', 'card'])->default('cash');
-            $table->enum('status', ['pending', 'paid', 'unpaid', 'refunded'])->default('pending');
+            $table->enum('method', ['gcash'])->default('gcash');
+            $table->enum('status', ['pending', 'proof_submitted', 'paid', 'refunded'])->default('pending');
             $table->string('reference')->nullable();
+            $table->string('proof_path')->nullable();
+            $table->timestamp('proof_submitted_at')->nullable();
             $table->timestamp('paid_at')->nullable();
             $table->timestamps();
         });

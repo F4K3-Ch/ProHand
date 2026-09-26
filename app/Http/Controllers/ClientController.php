@@ -215,7 +215,7 @@ class ClientController extends Controller
             'category' => ['required', 'in:delivery,moving,cleaning,repair,grocery,laundry,project,other'],
             'description' => ['required', 'string'],
             'fee' => ['required', 'numeric', 'min:0'],
-            'payment_method' => ['required', 'in:cash'],
+            'payment_method' => ['required', 'in:gcash'],
             'deadline' => ['required', 'date', 'after:now'],
             'location' => ['required', 'string', 'max:200'],
             'contact' => ['required', 'string'],
@@ -343,10 +343,13 @@ class ClientController extends Controller
                     'status' => Str::title($errand->payment->status),
                     'raw_status' => $errand->payment->status,
                     'status_class' => 'status-field status-' . $errand->payment->status,
-                    'amount' => $errand->payment->amount,
+                    'amount' => '₱' . number_format($errand->payment->amount, 2),
                     'paid_at' => $errand->payment->paid_at
                         ? Carbon::parse($errand->payment->paid_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                         : 'Not paid yet',
+                    'proof' => $errand->payment->proof_path
+                        ? Storage::url($errand->payment->proof_path)
+                        : null,
                 ] : null,
             ];
 
@@ -428,12 +431,113 @@ class ClientController extends Controller
                 'paid_at' => $history->payment_paid_at
                     ? Carbon::parse($history->payment_paid_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                     : 'None',
+                'proof' => $history->payment_proof_path
+                    ? Storage::url($history->payment_proof_path)
+                    : null,
             ] : null,
         ];
 
         return response()->json([
             'success' => true,
             'errand' => $formattedErrand
+        ]);
+    }
+
+    public function submitPaymentProof(Request $request, $id)
+    {
+        $client = $request->user();
+
+        $request->validate([
+            'payment_proof' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:10240'],
+        ]);
+
+        $errand = Errand::with('payment')
+            ->where('id', $id)
+            ->where('client_id', $client->id)
+            ->where('status', 'accepted')
+            ->first();
+
+        if (!$errand) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errand not found.'
+            ], 404);
+        }
+
+        if (!$errand->payment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment record not found.'
+            ], 404);
+        }
+
+        $file = $request->file('payment_proof');
+
+        $filename = 'payment_' . $errand->id . '_' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+
+        $path = $file->storeAs(
+            'uploads/payment_proofs',
+            $filename,
+            'public'
+        );
+
+        $errand->payment->proof_path = $path;
+        $errand->payment->proof_submitted_at = Carbon::now();
+        $errand->payment->status = 'proof_submitted';
+        $errand->payment->save();
+
+        $errand_id = $errand->id;
+        $errand_title = $errand->title;
+        $errand_fee = number_format((float) $errand->payment->amount, 2);
+
+        $client_id = $client->id;
+        $client_full_name = trim(
+            "{$client->first_name} " .
+            ($client->middle_name ? "{$client->middle_name} " : "") .
+            "{$client->last_name}"
+        );
+
+        $tasker_id = $errand->tasker_id;
+        $tasker = User::find($tasker_id);
+
+        $tasker_full_name = trim(
+            "{$tasker->first_name} " .
+            ($tasker->middle_name ? "{$tasker->middle_name} " : "") .
+            "{$tasker->last_name}"
+        );
+
+        $tasker_msg = "Payment Proof Submitted | Your Errand: \"{$errand_title}\" (ID: {$errand_id}) has received a GCash payment proof from Client: \"{$client_full_name}\" (ID: {$client_id}) for ₱{$errand_fee}. Please wait for admin verification.";
+
+        $admin_msg = "Payment Proof Submitted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Amount: ₱{$errand_fee}. The client's GCash payment proof is waiting for verification.";
+
+        $notif_type = "errand";
+
+        $tasker_link = route('tasker.view-errand', ['id' => $errand_id]) . '?from=notifications';
+        $admin_link = route('admin.view-errand', ['id' => $errand_id]) . '?from=notifications';
+
+        Notification::create([
+            'user_id' => $tasker_id,
+            'type' => $notif_type,
+            'message' => $tasker_msg,
+            'link' => $tasker_link,
+            'is_read' => false,
+        ]);
+
+        $admins = User::where('role', 'admin')->get();
+
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id' => $admin->id,
+                'type' => $notif_type,
+                'message' => $admin_msg,
+                'link' => $admin_link,
+                'is_read' => false,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment proof uploaded successfully.'
         ]);
     }
 
@@ -465,7 +569,7 @@ class ClientController extends Controller
             'category' => ['required', 'in:delivery,moving,cleaning,repair,grocery,laundry,project,other'],
             'description' => ['required', 'string'],
             'fee' => ['required', 'numeric', 'min:0'],
-            'payment_method' => ['required', 'in:cash,gcash,card'],
+            'payment_method' => ['required', 'in:gcash'],
             'deadline' => ['required', 'date'],
             'location' => ['required', 'string', 'max:200'],
             'contact' => ['required', 'string'],
