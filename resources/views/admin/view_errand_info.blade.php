@@ -573,7 +573,6 @@
                     });
 
                 } else if (errand.raw_status === 'accepted') {
-                    const deleteBtn = document.getElementById('deleteErrandBtn');
                     const paymentProofSection = document.getElementById('paymentProofSection');
                     const gcashPaymentForm = document.getElementById('gcashPaymentForm');
                     const paymentVerificationPanel = document.getElementById('paymentVerificationPanel');
@@ -585,7 +584,6 @@
                     const acceptPaymentProofBtn = document.getElementById('acceptPaymentProofBtn');
                     const denyPaymentProofBtn = document.getElementById('denyPaymentProofBtn');
 
-                    deleteBtn.style.display = 'flex';
                     paymentProofSection.style.display = 'none';
                     gcashPaymentForm.style.display = 'none';
                     paymentVerificationPanel.style.display = 'none';
@@ -681,36 +679,36 @@
                         }
                     });
 
-                    deleteBtn.addEventListener('click', async function() {
-                        const isConfirmed = await showConfirmation(
-                            'Confirm Deletion',
-                            'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.'
-                        );
-
-                        if (!isConfirmed) return;
-
+                    const cancelBtn = document.getElementById('cancelBtn');
+                    cancelBtn.style.display = 'flex';
+                    cancelBtn.addEventListener('click', async function(){
+                        const customTitle = 'Confirm Cancellation';
+                        const customMessage = 'Force-cancel this errand? The errand status will be reset back to "Pending" status.';
+                        const isConfirmed = await showConfirmation(customTitle, customMessage);
+                        
+                        if(!isConfirmed) return;
+                        
                         try {
-                            const response = await fetch('/api/admin/errands/' + errand.id + '/delete', {
+                            const response = await fetch('/api/admin/errands/' + errand.id + '/reset-to-pending', {
                                 method: 'POST',
                                 headers: {
                                     'Accept': 'application/json',
                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                                     'X-API-KEY': apiKey,
-                                    'X-MY-ORIGIN': origin
+                                    'X-MY-ORIGIN' : origin
                                 },
                                 credentials: 'same-origin'
                             });
 
                             const result = await response.json();
-
-                            if (!response.ok || !result.success) {
-                                throw new Error(result.message || 'Failed to delete errand.');
+                            if(!response.ok || !result.success){
+                                throw new Error(result.message);
                             }
 
                             sessionStorage.setItem('success_message', result.message);
-                            window.location.href = '{{ route("admin.dashboard") }}';
+                            window.location.href = window.location.href;
 
-                        } catch (error) {
+                        } catch(error) {
                             console.error('Error:', error);
                             displayGlobalError(error.message);
                         }
