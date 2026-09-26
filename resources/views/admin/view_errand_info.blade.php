@@ -571,7 +571,7 @@
                             displayGlobalError(error.message);
                         }
                     });
-                                    
+
                 } else if (errand.raw_status === 'accepted') {
                     const deleteBtn = document.getElementById('deleteErrandBtn');
                     const paymentProofSection = document.getElementById('paymentProofSection');
@@ -620,7 +620,7 @@
                         if (!isConfirmed) return;
 
                         try {
-                            const response = await fetch('/api/admin/errands/' + errand.id + '/accept-payment-proof', {
+                            const response = await fetch('/api/admin/errands/' + errand.id + '/accept-receipt', {
                                 method: 'POST',
                                 headers: {
                                     'Accept': 'application/json',
@@ -655,7 +655,7 @@
                         if (!isConfirmed) return;
 
                         try {
-                            const response = await fetch('/api/admin/errands/' + errand.id + '/deny-payment-proof', {
+                            const response = await fetch('/api/admin/errands/' + errand.id + '/deny-receipt', {
                                 method: 'POST',
                                 headers: {
                                     'Accept': 'application/json',

@@ -58,6 +58,8 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
         Route::get('/admin/history/history-metrics', [AdminController::class, 'allHistoryMetrics']);
         Route::get('/admin/history/history-errands', [AdminController::class, 'allHistoryErrands']);
         Route::get('/admin/errands/{id}', [AdminController::class, 'getErrandDetails']);
+        Route::post('/admin/errands/{id}/accept-receipt', [AdminController::class, 'acceptReceipt']);
+        Route::post('/admin/errands/{id}/deny-receipt', [AdminController::class, 'denyReceipt']);
         Route::post('/admin/errands/{id}/reset-to-pending', [AdminController::class, 'resetErrandToPending']);
         Route::post('/admin/errands/{id}/approve-cancellation', [AdminController::class, 'approveCancellation']);
         Route::post('/admin/errands/{id}/deny-cancellation', [AdminController::class, 'denyCancellation']);

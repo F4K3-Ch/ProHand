@@ -460,6 +460,206 @@ class AdminController extends Controller
         ]);
     }
 
+public function acceptReceipt(Request $request, $id)
+{
+    $admin = $request->user();
+
+    $errand = Errand::where('id', $id)
+        ->where('status', 'accepted')
+        ->first();
+
+    if (!$errand) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Errand not found or is not in an accepted state.'
+        ], 404);
+    }
+
+    $payment = $errand->payment;
+
+    if (!$payment || !$payment->proof_path) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Payment receipt not found.'
+        ], 404);
+    }
+
+    $payment->status = 'paid';
+    $payment->paid_at = Carbon::now();
+    $payment->save();
+
+    $errand->status = 'in_progress';
+    $errand->in_progress_at = Carbon::now();
+    $errand->save();
+
+    $errand_id = $errand->id;
+    $errand_title = $errand->title;
+
+    $client_id = $errand->client_id;
+    $tasker_id = $errand->tasker_id;
+
+    $admin_full_name = trim(
+        "{$admin->first_name} " .
+        ($admin->middle_name ? "{$admin->middle_name} " : "") .
+        "{$admin->last_name}"
+    );
+
+    $client = User::find($client_id);
+    $tasker = User::find($tasker_id);
+
+    $client_full_name = $client
+        ? trim(
+            "{$client->first_name} " .
+            ($client->middle_name ? "{$client->middle_name} " : "") .
+            "{$client->last_name}"
+        )
+        : 'Client';
+
+    $tasker_full_name = $tasker
+        ? trim(
+            "{$tasker->first_name} " .
+            ($tasker->middle_name ? "{$tasker->middle_name} " : "") .
+            "{$tasker->last_name}"
+        )
+        : 'Tasker';
+
+    $client_msg = "Your payment receipt for Errand: \"{$errand_title}\" (ID: {$errand_id}) has been accepted by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}). The errand is now in progress.";
+
+    $tasker_msg = "Payment for Errand: \"{$errand_title}\" (ID: {$errand_id}) has been verified by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}). You may now proceed with the errand.";
+
+    $admin_msg = "Payment Receipt Accepted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Accepted by Admin: \"{$admin_full_name}\" (ID: {$admin->id}).";
+
+    $notif_type = 'errand';
+
+    $client_link = route('client.view-errand', ['id' => $errand_id]) . '?from=notifications';
+    $tasker_link = route('tasker.view-errand', ['id' => $errand_id]) . '?from=notifications';
+    $admin_link = route('admin.view-errand', ['id' => $errand_id]) . '?from=notifications';
+
+    if ($client_id) {
+        Notification::create([
+            'user_id' => $client_id,
+            'type' => $notif_type,
+            'message' => $client_msg,
+            'link' => $client_link,
+            'is_read' => false,
+        ]);
+    }
+
+    if ($tasker_id) {
+        Notification::create([
+            'user_id' => $tasker_id,
+            'type' => $notif_type,
+            'message' => $tasker_msg,
+            'link' => $tasker_link,
+            'is_read' => false,
+        ]);
+    }
+
+    $admins = User::where('role', 'admin')
+        ->where('id', '!=', $admin->id)
+        ->get();
+
+    foreach ($admins as $adm) {
+        Notification::create([
+            'user_id' => $adm->id,
+            'type' => $notif_type,
+            'message' => $admin_msg,
+            'link' => $admin_link,
+            'is_read' => false,
+        ]);
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Payment receipt accepted and errand started successfully!',
+    ]);
+}
+
+public function denyReceipt(Request $request, $id)
+{
+    $admin = $request->user();
+
+    $errand = Errand::where('id', $id)
+        ->where('status', 'accepted')
+        ->first();
+
+    if (!$errand) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Errand not found or is not in an accepted state.'
+        ], 404);
+    }
+
+    $payment = $errand->payment;
+
+    if (!$payment || !$payment->proof_path) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Payment receipt not found.'
+        ], 404);
+    }
+
+    $proof_path = $payment->proof_path;
+
+    if (Storage::disk('public')->exists($proof_path)) {
+        Storage::disk('public')->delete($proof_path);
+    }
+
+    $payment->proof_path = null;
+    $payment->status = 'pending';
+    $payment->proof_submitted_at = null;
+    $payment->paid_at = null;
+    $payment->save();
+
+    $errand_id = $errand->id;
+    $errand_title = $errand->title;
+    $client_id = $errand->client_id;
+
+    $admin_full_name = trim(
+        "{$admin->first_name} " .
+        ($admin->middle_name ? "{$admin->middle_name} " : "") .
+        "{$admin->last_name}"
+    );
+
+    $client_msg = "Your payment receipt for Errand: \"{$errand_title}\" (ID: {$errand_id}) was denied by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}). Please upload a valid payment receipt.";
+
+    $admin_msg = "Payment Receipt Denied | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Payment receipt was denied by Admin: \"{$admin_full_name}\" (ID: {$admin->id}). The client was asked to upload a valid receipt.";
+
+    $notif_type = 'errand';
+
+    $client_link = route('client.view-errand', ['id' => $errand_id]) . '?from=notifications';
+    $admin_link = route('admin.view-errand', ['id' => $errand_id]) . '?from=notifications';
+
+    if ($client_id) {
+        Notification::create([
+            'user_id' => $client_id,
+            'type' => $notif_type,
+            'message' => $client_msg,
+            'link' => $client_link,
+            'is_read' => false,
+        ]);
+    }
+
+    $admins = User::where('role', 'admin')
+        ->where('id', '!=', $admin->id)
+        ->get();
+
+    foreach ($admins as $adm) {
+        Notification::create([
+            'user_id' => $adm->id,
+            'type' => $notif_type,
+            'message' => $admin_msg,
+            'link' => $admin_link,
+            'is_read' => false,
+        ]);
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Payment receipt denied. The client can upload a new receipt.',
+    ]);
+}
+
     public function resetErrandToPending(Request $request, $id)
     {
         $admin = $request->user();

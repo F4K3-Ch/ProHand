@@ -201,10 +201,6 @@
                             Waiting for Admin Verification of Payment
                         </span>
 
-                        <button type="button" id="cancelRequestBtn" class="btn-cancel" style="display:none;">
-                            <i class="fa-solid fa-hand-holding-hand"></i> Request Cancel
-                        </button>
-
                         <span class="descriptive-status-badge" id="cashPaymentConfirmedBadge" style="display:none;">
                             <i class="fa-solid fa-circle-check"></i>
                             Cash payment has been confirmed.
@@ -215,6 +211,10 @@
                             Awaiting client confirmation
                         </span>
                     </div>
+
+                    <button type="button" id="cancelRequestBtn" class="btn-cancel" style="display:none;">
+                        <i class="fa-solid fa-hand-holding-hand"></i> Request Cancel
+                    </button>
 
                     <span class="descriptive-status-badge" id="disputeBadge" style="display:none;">
                         <i class="fa-solid fa-triangle-exclamation"></i>
