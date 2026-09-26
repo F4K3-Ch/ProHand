@@ -182,10 +182,6 @@
                         <i class="fa-solid fa-check"></i> Accept
                     </button>
 
-                    <button type="button" id="startErrandBtn" class="btn-start-errand" style="display:none;">
-                        <i class="fa-solid fa-play"></i> Start Errand
-                    </button>
-
                     <button type="button" id="completeErrandBtn" class="btn-complete-errand" style="display:none;">
                         <i class="fa-solid fa-check"></i> Mark as Finished
                     </button>
@@ -199,11 +195,16 @@
                         Waiting for Admin Decision on your Cancellation request...
                     </span>
 
-                    <button type="button" id="cancelRequestBtn" class="btn-cancel" style="display:none;">
-                        <i class="fa-solid fa-hand-holding-hand"></i> Request Cancel
-                    </button>
-
                     <div class="badge-button-column" id="paymentContainer" style="display:none;">
+                        <span class="descriptive-status-badge" id="waitingPaymentVerificationBadge" style="display:none;">
+                            <i class="fa-solid fa-hourglass-half"></i>
+                            Waiting for Admin Verification of Payment
+                        </span>
+
+                        <button type="button" id="cancelRequestBtn" class="btn-cancel" style="display:none;">
+                            <i class="fa-solid fa-hand-holding-hand"></i> Request Cancel
+                        </button>
+
                         <span class="descriptive-status-badge" id="cashPaymentConfirmedBadge" style="display:none;">
                             <i class="fa-solid fa-circle-check"></i>
                             Cash payment has been confirmed.
@@ -380,52 +381,17 @@
                     });
 
                 } else if (errand.raw_status === 'accepted') {
-                    const startErrandBtn = document.getElementById('startErrandBtn');
+                    const paymentContainer = document.getElementById('paymentContainer');
+                    const waitingPaymentVerificationBadge = document.getElementById('waitingPaymentVerificationBadge');
                     const cancelRequestBtn = document.getElementById('cancelRequestBtn');
                     const pendingCancelBadge = document.getElementById('pendingCancelBadge');
 
+                    paymentContainer.style.display = 'flex';
+
                     if (Number(errand.cancel_requested_by_tasker) === 0) {
-                        startErrandBtn.style.display = 'flex';
+                        waitingPaymentVerificationBadge.style.display = 'flex';
                         cancelRequestBtn.style.display = 'flex';
                         pendingCancelBadge.style.display = 'none';
-
-                        startErrandBtn.addEventListener('click', async function() {
-                            const customTitle = 'Start Errand';
-                            const customMessage = 'Are you ready to start errand #' + errand.id +' ("' + errand.title + '")?';
-                            const isConfirmed = await showConfirmation(customTitle, customMessage);
-
-                            if (!isConfirmed) return;
-
-                            try {
-                                const response = await fetch('/api/tasker/errands/' + errand.id + '/start', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Accept': 'application/json',
-                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                        'X-API-KEY': apiKey,
-                                        'X-MY-ORIGIN': origin
-                                    },
-                                    credentials: 'same-origin'
-                                });
-
-                                const result = await response.json();
-
-                                if (!response.ok || !result.success) {
-                                    throw new Error(result.message || 'Failed to start errand.');
-                                }
-
-                                sessionStorage.setItem(
-                                    'success_message',
-                                    result.message || 'Errand started successfully.'
-                                );
-
-                                window.location.href = window.location.href;
-
-                            } catch (error) {
-                                console.error('Error:', error);
-                                displayGlobalError(error.message);
-                            }
-                        });
 
                         cancelRequestBtn.addEventListener('click', async function() {
                             const customTitle = 'Confirm Cancellation Request';
@@ -469,7 +435,7 @@
                         });
 
                     } else {
-                        startErrandBtn.style.display = 'none';
+                        waitingPaymentVerificationBadge.style.display = 'none';
                         cancelRequestBtn.style.display = 'none';
                         pendingCancelBadge.style.display = 'flex';
                     }
