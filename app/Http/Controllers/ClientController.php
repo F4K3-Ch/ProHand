@@ -682,6 +682,14 @@ class ClientController extends Controller
             $errand->attachment()->delete();
         }
 
+        if ($errand->payment && $errand->payment->proof_path) {
+            $proof_path = $errand->payment->proof_path;
+
+            if (Storage::disk('public')->exists($proof_path)) {
+                Storage::disk('public')->delete($proof_path);
+            }
+        }
+
         $errand->delete();
 
         return response()->json([

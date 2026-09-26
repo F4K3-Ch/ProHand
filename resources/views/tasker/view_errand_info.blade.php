@@ -186,31 +186,20 @@
                         <i class="fa-solid fa-check"></i> Mark as Finished
                     </button>
 
-                    <button type="button" id="confirmCashBtn" class="btn-complete-errand" style="display:none;">
-                        <i class="fa-solid fa-money-bill-wave"></i> Confirm Cash Received
-                    </button>
-
                     <span class="descriptive-status-badge" id="pendingCancelBadge" style="display:none;">
                         <i class="fa-solid fa-spinner fa-spin"></i>
                         Waiting for Admin Decision on your Cancellation request...
                     </span>
 
-                    <div class="badge-button-column" id="paymentContainer" style="display:none;">
-                        <span class="descriptive-status-badge" id="waitingPaymentVerificationBadge" style="display:none;">
-                            <i class="fa-solid fa-hourglass-half"></i>
-                            Waiting for Admin Verification of Payment
-                        </span>
+                    <span class="descriptive-status-badge" id="waitingPaymentVerificationBadge" style="display:none;">
+                        <i class="fa-solid fa-hourglass-half"></i>
+                        Waiting for Admin Verification of Payment
+                    </span>
 
-                        <span class="descriptive-status-badge" id="cashPaymentConfirmedBadge" style="display:none;">
-                            <i class="fa-solid fa-circle-check"></i>
-                            Cash payment has been confirmed.
-                        </span>
-
-                        <span class="descriptive-status-badge" id="awaitingClientConfirmationBadge" style="display:none;">
-                            <i class="fa-solid fa-spinner fa-spin"></i>
-                            Awaiting client confirmation
-                        </span>
-                    </div>
+                    <span class="descriptive-status-badge" id="awaitingClientConfirmationBadge" style="display:none;">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        Awaiting client confirmation
+                    </span>
 
                     <button type="button" id="cancelRequestBtn" class="btn-cancel" style="display:none;">
                         <i class="fa-solid fa-hand-holding-hand"></i> Request Cancel
@@ -538,59 +527,8 @@
                     }
 
                 } else if (errand.raw_status === 'awaiting_confirmation') {
-                    const confirmCashBtn = document.getElementById('confirmCashBtn');
-                    const paymentContainer = document.getElementById('paymentContainer');
                     const awaitingClientConfirmationBadge = document.getElementById('awaitingClientConfirmationBadge');
-                    const cashPaymentConfirmedBadge = document.getElementById('cashPaymentConfirmedBadge');
-
-                    paymentContainer.style.display = 'flex';
-
-                    if (errand.payment.raw_status === 'pending') {
-                        confirmCashBtn.style.display = 'flex';
-
-                        confirmCashBtn.addEventListener('click', async function() {
-                            const customTitle = 'Confirm Cash Received';
-                            const customMessage = 'Confirm that you have received the agreed cash payment of ' + errand.payment.amount + ' for errand #' + errand.id + ' ("' + errand.title + '").';
-
-                            const isConfirmed = await showConfirmation(customTitle, customMessage);
-
-                            if (!isConfirmed) return;
-
-                            try {
-                                const response = await fetch('/api/tasker/errands/' + errand.id + '/confirm-cash', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Accept': 'application/json',
-                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                        'X-API-KEY': apiKey,
-                                        'X-MY-ORIGIN': origin
-                                    },
-                                    credentials: 'same-origin'
-                                });
-
-                                const result = await response.json();
-
-                                if (!response.ok || !result.success) {
-                                    throw new Error(result.message || 'Failed to confirm cash payment.');
-                                }
-
-                                sessionStorage.setItem(
-                                    'success_message',
-                                    result.message || 'Cash payment confirmed successfully.'
-                                );
-
-                                window.location.href = window.location.href;
-
-                            } catch (error) {
-                                console.error('Error:', error);
-                                displayGlobalError(error.message);
-                            }
-                        });
-
-                    } else if (errand.payment.raw_status === 'paid') {
-                        awaitingClientConfirmationBadge.style.display = 'flex';
-                        cashPaymentConfirmedBadge.style.display = 'flex';
-                    }
+                    awaitingClientConfirmationBadge.style.display = 'flex';
                 } else if (errand.raw_status === 'dispute') {
                     const disputeBadge = document.getElementById('disputeBadge');
                     disputeBadge.style.display = 'flex';

@@ -23,6 +23,8 @@ return new class extends Migration
             $table->decimal('payment_amount', 10, 2)->nullable();
             $table->string('payment_status')->nullable();
             $table->string('payment_reference')->nullable();
+            $table->string('payment_proof_path')->nullable();
+            $table->timestamp('payment_proof_submitted_at')->nullable();
             $table->timestamp('payment_paid_at')->nullable();
 
             $table->dateTime('deadline');
