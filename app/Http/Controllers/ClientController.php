@@ -340,7 +340,7 @@ class ClientController extends Controller
 
                 'payment' => $errand->payment ? [
                     'method' => Str::title($errand->payment->method),
-                    'status' => Str::title($errand->payment->status),
+                    'status' => Str::title(str_replace('_', ' ', $errand->payment->status)),
                     'raw_status' => $errand->payment->status,
                     'status_class' => 'status-field status-' . $errand->payment->status,
                     'amount' => '₱' . number_format($errand->payment->amount, 2),
@@ -449,98 +449,108 @@ class ClientController extends Controller
     {
         $client = $request->user();
 
-        $request->validate([
+        $validated = $request->validate([
             'payment_proof' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:10240'],
         ]);
 
-        $errand = Errand::with('payment')
-            ->where('id', $id)
-            ->where('client_id', $client->id)
-            ->where('status', 'accepted')
-            ->first();
+        DB::beginTransaction();
 
-        if (!$errand) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Errand not found.'
-            ], 404);
-        }
+        try {
+            $errand = Errand::with('payment')
+                ->where('id', $id)
+                ->where('client_id', $client->id)
+                ->where('status', 'accepted')
+                ->first();
 
-        if (!$errand->payment) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Payment record not found.'
-            ], 404);
-        }
+            if (!$errand) {
+                DB::rollBack();
 
-        $file = $request->file('payment_proof');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Errand not found.'
+                ], 404);
+            }
 
-        $filename = 'payment_' . $errand->id . '_' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+            if (!$errand->payment) {
+                DB::rollBack();
 
-        $path = $file->storeAs(
-            'uploads/payment_proofs',
-            $filename,
-            'public'
-        );
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Payment record not found.'
+                ], 404);
+            }
 
-        $errand->payment->proof_path = $path;
-        $errand->payment->proof_submitted_at = Carbon::now();
-        $errand->payment->status = 'proof_submitted';
-        $errand->payment->save();
+            $file = $request->file('payment_proof');
+            $path = $file->store('uploads/payment_proofs', 'public');
 
-        $errand_id = $errand->id;
-        $errand_title = $errand->title;
-        $errand_fee = number_format((float) $errand->payment->amount, 2);
+            $errand->payment->proof_path = $path;
+            $errand->payment->proof_submitted_at = Carbon::now();
+            $errand->payment->status = 'proof_submitted';
+            $errand->payment->save();
 
-        $client_id = $client->id;
-        $client_full_name = trim(
-            "{$client->first_name} " .
-            ($client->middle_name ? "{$client->middle_name} " : "") .
-            "{$client->last_name}"
-        );
+            $errand_id = $errand->id;
+            $errand_title = $errand->title;
+            $errand_fee = number_format((float) $errand->payment->amount, 2);
 
-        $tasker_id = $errand->tasker_id;
-        $tasker = User::find($tasker_id);
+            $client_id = $client->id;
+            $client_full_name = trim(
+                "{$client->first_name} " .
+                ($client->middle_name ? "{$client->middle_name} " : "") .
+                "{$client->last_name}"
+            );
 
-        $tasker_full_name = trim(
-            "{$tasker->first_name} " .
-            ($tasker->middle_name ? "{$tasker->middle_name} " : "") .
-            "{$tasker->last_name}"
-        );
+            $tasker_id = $errand->tasker_id;
+            $tasker = User::find($tasker_id);
 
-        $tasker_msg = "Payment Proof Submitted | Your Errand: \"{$errand_title}\" (ID: {$errand_id}) has received a GCash payment proof from Client: \"{$client_full_name}\" (ID: {$client_id}) for ₱{$errand_fee}. Please wait for admin verification.";
+            $tasker_full_name = trim(
+                "{$tasker->first_name} " .
+                ($tasker->middle_name ? "{$tasker->middle_name} " : "") .
+                "{$tasker->last_name}"
+            );
 
-        $admin_msg = "Payment Proof Submitted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Amount: ₱{$errand_fee}. The client's GCash payment proof is waiting for verification.";
+            $tasker_msg = "Payment Proof Submitted | Your Errand: \"{$errand_title}\" (ID: {$errand_id}) has received a GCash payment proof from Client: \"{$client_full_name}\" (ID: {$client_id}) for ₱{$errand_fee}. Please wait for admin verification.";
+            $admin_msg = "Payment Proof Submitted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Created by Client: \"{$client_full_name}\" (ID: {$client_id}) | Accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Amount: ₱{$errand_fee}. The client's GCash payment proof is waiting for verification.";
 
-        $notif_type = "errand";
+            $notif_type = 'errand';
 
-        $tasker_link = route('tasker.view-errand', ['id' => $errand_id]) . '?from=notifications';
-        $admin_link = route('admin.view-errand', ['id' => $errand_id]) . '?from=notifications';
+            $tasker_link = route('tasker.view-errand', ['id' => $errand_id]) . '?from=notifications';
+            $admin_link = route('admin.view-errand', ['id' => $errand_id]) . '?from=notifications';
 
-        Notification::create([
-            'user_id' => $tasker_id,
-            'type' => $notif_type,
-            'message' => $tasker_msg,
-            'link' => $tasker_link,
-            'is_read' => false,
-        ]);
-
-        $admins = User::where('role', 'admin')->get();
-
-        foreach ($admins as $admin) {
             Notification::create([
-                'user_id' => $admin->id,
+                'user_id' => $tasker_id,
                 'type' => $notif_type,
-                'message' => $admin_msg,
-                'link' => $admin_link,
+                'message' => $tasker_msg,
+                'link' => $tasker_link,
                 'is_read' => false,
             ]);
-        }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Payment proof uploaded successfully.'
-        ]);
+            $admins = User::where('role', 'admin')->get();
+
+            foreach ($admins as $admin) {
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'type' => $notif_type,
+                    'message' => $admin_msg,
+                    'link' => $admin_link,
+                    'is_read' => false,
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Payment proof uploaded successfully.'
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function editErrand(Request $request, $id)

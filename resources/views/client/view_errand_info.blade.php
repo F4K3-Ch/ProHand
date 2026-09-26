@@ -438,6 +438,9 @@
                     const gcashPaymentContainer = document.getElementById('gcashPaymentContainer');
                     const gcashPaymentForm = document.getElementById('gcashPaymentForm');
                     const gcashReceipt = document.getElementById('gcashReceipt');
+                    const paymentProof = document.getElementById('paymentProof');
+                    const submitPaymentBtn = document.getElementById('submitPaymentBtn');
+                    const paymentSpinner = document.getElementById('paymentSpinner');
 
                     cancelAcceptedBtn.style.display = 'flex';
 
@@ -462,6 +465,49 @@
                         }
                     }
 
+                    submitPaymentBtn.addEventListener('click', async function() {
+                        if (!paymentProof.files.length) {
+                            displayGlobalError('Please select a payment proof image.');
+                            return;
+                        }
+
+                        const formData = new FormData();
+                        formData.append('payment_proof', paymentProof.files[0]);
+
+                        submitPaymentBtn.disabled = true;
+                        paymentSpinner.style.display = 'inline-block';
+
+                        try {
+                            const response = await fetch('/api/client/errands/' + errand.id + '/payment-proof', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN': origin
+                                },
+                                body: formData,
+                                credentials: 'same-origin'
+                            });
+
+                            const result = await response.json();
+
+                            if (!response.ok || !result.success) {
+                                throw new Error(result.message || 'Failed to upload payment proof.');
+                            }
+
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.href = window.location.href;
+
+                        } catch (error) {
+                            console.error('Error:', error);
+                            displayGlobalError(error.message);
+                        } finally {
+                            submitPaymentBtn.disabled = false;
+                            paymentSpinner.style.display = 'none';
+                        }
+                    });
+
                     cancelAcceptedBtn.addEventListener('click', async function() {
                         const isConfirmed = await showConfirmation(
                             'Confirm Cancellation',
@@ -484,10 +530,13 @@
 
                             const result = await response.json();
 
-                            if (!response.ok || !result.success) throw new Error(result.message || 'Failed to cancel errand.');
+                            if (!response.ok || !result.success) {
+                                throw new Error(result.message || 'Failed to cancel errand.');
+                            }
 
                             sessionStorage.setItem('success_message', result.message);
                             window.location.href = window.location.href;
+
                         } catch (error) {
                             console.error('Error:', error);
                             displayGlobalError(error.message);
