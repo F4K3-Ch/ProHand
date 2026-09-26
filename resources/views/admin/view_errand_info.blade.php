@@ -191,84 +191,84 @@
                     </div>
                 </div>
 
-<div class="gcash-payment-container" id="paymentProofSection" style="display:none;">
-    <h1>
-        <i class="fa-solid fa-receipt"></i>
-        Payment Verification
-    </h1>
+                <div class="gcash-payment-container" id="paymentProofSection" style="display:none;">
+                    <h1>
+                        <i class="fa-solid fa-receipt"></i>
+                        Payment Verification
+                    </h1>
 
-    <div id="gcashPaymentForm" class="payment-verification-panel" style="display:none;">
-        <div class="payment-status-header">
-            <i class="fa-solid fa-receipt status-icon-orange"></i>
-            <h2 class="status-title-orange">Payment Receipt Submitted</h2>
-        </div>
+                    <div id="gcashPaymentForm" class="payment-verification-panel" style="display:none;">
+                        <div class="payment-status-header">
+                            <i class="fa-solid fa-receipt status-icon-orange"></i>
+                            <h2 class="status-title-orange">Payment Receipt Submitted</h2>
+                        </div>
 
-        <p class="payment-status-message">
-            <strong>This errand is currently pending, but a payment receipt has been submitted.</strong>
-            Please review the uploaded payment receipt before taking further action.
-        </p>
+                        <p class="payment-status-message">
+                            <strong>This errand is currently pending, but a payment receipt has been submitted.</strong>
+                            Please review the uploaded payment receipt before taking further action.
+                        </p>
 
-        <div class="errand-attachment-section">
-            <label>
-                <i class="fa-solid fa-file-invoice-dollar"></i>
-                Uploaded Payment Receipt
-            </label>
+                        <div class="errand-attachment-section">
+                            <label>
+                                <i class="fa-solid fa-file-invoice-dollar"></i>
+                                Uploaded Payment Receipt
+                            </label>
 
-            <div id="pendingPaymentProofAttachment">
-                <div class="attachment-item">
-                    <a href="#" target="_blank" class="attachment-name" id="pendingPaymentProofPreview" title="Preview Payment Receipt">
-                        <i class="fa-solid fa-file"></i>
-                        <span id="pendingPaymentProofFilename"></span>
-                    </a>
+                            <div id="pendingPaymentProofAttachment">
+                                <div class="attachment-item">
+                                    <a href="#" target="_blank" class="attachment-name" id="pendingPaymentProofPreview" title="Preview Payment Receipt">
+                                        <i class="fa-solid fa-file"></i>
+                                        <span id="pendingPaymentProofFilename"></span>
+                                    </a>
 
-                    <a href="#" class="btn-download" id="pendingPaymentProofDownload" download>
-                        <i class="fa-solid fa-download"></i>
-                        Download
-                    </a>
+                                    <a href="#" class="btn-download" id="pendingPaymentProofDownload" download>
+                                        <i class="fa-solid fa-download"></i>
+                                        Download
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="paymentVerificationPanel" class="payment-verification-panel" style="display:none;">
+                        <div class="payment-status-header">
+                            <i class="fa-solid fa-receipt status-icon-orange"></i>
+                            <h2 class="status-title-orange">Payment Receipt Submitted</h2>
+                        </div>
+
+                        <p class="payment-status-message">
+                            <strong>Please review the uploaded payment receipt.</strong>
+                            Accept the receipt if the payment details are valid or deny it if the receipt is invalid.
+                        </p>
+
+                        <div class="errand-attachment-section">
+                            <label>
+                                <i class="fa-solid fa-file-invoice-dollar"></i>
+                                Uploaded Payment Receipt
+                            </label>
+
+                            <div id="paymentProofAttachment">
+                                <div class="attachment-item">
+                                    <a href="#" target="_blank" class="attachment-name" id="paymentProofPreview" title="Preview Payment Receipt">
+                                        <i class="fa-solid fa-file"></i>
+                                        <span id="paymentProofFilename"></span>
+                                    </a>
+
+                                    <a href="#" class="btn-download" id="paymentProofDownload" download>
+                                        <i class="fa-solid fa-download"></i>
+                                        Download
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="paymentVerificationPanel" class="payment-verification-panel" style="display:none;">
-        <div class="payment-status-header">
-            <i class="fa-solid fa-receipt status-icon-orange"></i>
-            <h2 class="status-title-orange">Payment Receipt Submitted</h2>
-        </div>
-
-        <p class="payment-status-message">
-            <strong>Please review the uploaded payment receipt.</strong>
-            Accept the receipt if the payment details are valid or deny it if the receipt is invalid.
-        </p>
-
-        <div class="errand-attachment-section">
-            <label>
-                <i class="fa-solid fa-file-invoice-dollar"></i>
-                Uploaded Payment Receipt
-            </label>
-
-            <div id="paymentProofAttachment">
-                <div class="attachment-item">
-                    <a href="#" target="_blank" class="attachment-name" id="paymentProofPreview" title="Preview Payment Receipt">
-                        <i class="fa-solid fa-file"></i>
-                        <span id="paymentProofFilename"></span>
-                    </a>
-
-                    <a href="#" class="btn-download" id="paymentProofDownload" download>
-                        <i class="fa-solid fa-download"></i>
-                        Download
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
                 <div class="info-bot-btn">
                     <button type="button" id="acceptPaymentProofBtn" class="btn-approve" style="display:none;">
                         <i class="fa-solid fa-circle-check"></i> Accept Receipt
                     </button>
-                    <button type="button" id="denyPaymentProofBtn" class="btn-cancel" style="display:none;">
+                    <button type="button" id="denyPaymentProofBtn" class="btn-delete" style="display:none;">
                         <i class="fa-solid fa-circle-xmark"></i> Deny Receipt
                     </button>
                     <button type="button" id="deleteErrandBtn" class="btn-delete" style="display:none;">
