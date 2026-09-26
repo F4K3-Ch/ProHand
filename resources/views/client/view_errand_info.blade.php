@@ -206,11 +206,11 @@
 
                     <div id="gcashReceipt" class="payment-verification-panel" style="display:none;">
                         <div class="payment-status-header">
-                            <i id="gcashReceiptIcon" class="fa-solid fa-spinner fa-spin status-icon-orange"></i>
-                            <h2 id="gcashReceiptTitle" class="status-title-orange">Pending Admin Verification</h2>
+                            <i class="fa-solid fa-spinner fa-spin status-icon-orange"></i>
+                            <h2 class="status-title-orange">Pending Admin Verification</h2>
                         </div>
 
-                        <p id="gcashReceiptMessage" class="payment-status-message">
+                        <p class="payment-status-message">
                             <strong>Please wait until the admin checks your uploaded receipt.</strong>
                             Once verified, your tasker will be notified immediately.
                         </p>
@@ -218,14 +218,13 @@
                         <div class="errand-attachment-section">
                             <label><i class="fa-solid fa-file-invoice-dollar"></i> Your Uploaded Receipt</label>
 
-                            <div id="errand-attachment">
+                            <div id="gcash-receipt-attachment">
                                 <div class="attachment-item">
-                                    <a href="#" id="gcashReceiptPreview" target="_blank" class="attachment-name" title="Preview File">
+                                    <a href="#" target="_blank" class="attachment-name" title="Preview File">
                                         <i class="fa-solid fa-file"></i>
-                                        <span id="gcashReceiptFilename">Loading...</span>
+                                        <span class="attachment-filename"></span>
                                     </a>
-
-                                    <a href="#" id="gcashReceiptDownload" class="btn-download" download>
+                                    <a href="#" class="btn-download" download>
                                         <i class="fa-solid fa-download"></i> Download
                                     </a>
                                 </div>
@@ -434,76 +433,66 @@
                         }
                     });
 
-} else if (errand.raw_status === 'accepted') {
-    const cancelAcceptedBtn = document.getElementById('cancelAcceptedBtn');
-    const gcashPaymentContainer = document.getElementById('gcashPaymentContainer');
-    const gcashPaymentForm = document.getElementById('gcashPaymentForm');
-    const gcashReceipt = document.getElementById('gcashReceipt');
+                } else if (errand.raw_status === 'accepted') {
+                    const cancelAcceptedBtn = document.getElementById('cancelAcceptedBtn');
+                    const gcashPaymentContainer = document.getElementById('gcashPaymentContainer');
+                    const gcashPaymentForm = document.getElementById('gcashPaymentForm');
+                    const gcashReceipt = document.getElementById('gcashReceipt');
 
-    cancelAcceptedBtn.style.display = 'flex';
+                    cancelAcceptedBtn.style.display = 'flex';
 
-    if (errand.payment && errand.payment.method.toLowerCase() === 'gcash') {
-        gcashPaymentContainer.style.display = 'flex';
+                    if (errand.payment && errand.payment.method.toLowerCase() === 'gcash') {
+                        gcashPaymentContainer.style.display = 'flex';
 
-        if (!errand.payment.proof) {
-            gcashPaymentForm.style.display = 'flex';
-            gcashReceipt.style.display = 'none';
+                        if (errand.payment.proof) {
+                            gcashPaymentForm.style.display = 'none';
+                            gcashReceipt.style.display = 'flex';
 
-            document.getElementById('gcashAmount').textContent =
-                errand.payment.amount;
+                            const receiptItem = document.querySelector('#gcash-receipt-attachment .attachment-item');
+                            receiptItem.querySelector('.attachment-filename').textContent = errand.payment.proof.name;
+                            receiptItem.querySelector('.attachment-name').href = errand.payment.proof.url;
 
-        } else {
-            gcashPaymentForm.style.display = 'none';
-            gcashReceipt.style.display = 'flex';
+                            const downloadBtn = receiptItem.querySelector('.btn-download');
+                            downloadBtn.href = errand.payment.proof.url;
+                            downloadBtn.setAttribute('download', errand.payment.proof.name);
+                        } else {
+                            gcashPaymentForm.style.display = 'flex';
+                            gcashReceipt.style.display = 'none';
+                            document.getElementById('gcashAmount').textContent = errand.payment.amount;
+                        }
+                    }
 
-            gcashReceiptPreview.href = errand.payment.proof;
-            gcashReceiptDownload.href = errand.payment.proof;
+                    cancelAcceptedBtn.addEventListener('click', async function() {
+                        const isConfirmed = await showConfirmation(
+                            'Confirm Cancellation',
+                            'Are you sure you want to cancel this errand? It will return to "Pending" status.'
+                        );
 
-            const filename = errand.payment.proof.split('/').pop();
+                        if (!isConfirmed) return;
 
-            gcashReceiptFilename.textContent = filename;
-            gcashReceiptDownload.setAttribute('download', filename);
-        }
-    }
+                        try {
+                            const response = await fetch('/api/client/errands/' + errand.id + '/cancel', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                    'X-API-KEY': apiKey,
+                                    'X-MY-ORIGIN': origin
+                                },
+                                credentials: 'same-origin'
+                            });
 
-    cancelAcceptedBtn.addEventListener('click', async function() {
-        const customTitle = 'Confirm Cancellation';
-        const customMessage =
-            'Are you sure you want to cancel this errand? It will return to "Pending" status.';
+                            const result = await response.json();
 
-        const isConfirmed = await showConfirmation(customTitle, customMessage);
+                            if (!response.ok || !result.success) throw new Error(result.message || 'Failed to cancel errand.');
 
-        if (!isConfirmed) return;
-
-        try {
-            const response = await fetch(
-                '/api/client/errands/' + errand.id + '/cancel',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                        'X-API-KEY': apiKey,
-                        'X-MY-ORIGIN': origin
-                    },
-                    credentials: 'same-origin'
-                }
-            );
-
-            const result = await response.json();
-
-            if (!response.ok || !result.success) {
-                throw new Error(result.message || 'Failed to cancel errand.');
-            }
-
-            sessionStorage.setItem('success_message', result.message);
-            window.location.href = window.location.href;
-
-        } catch (error) {
-            console.error('Error:', error);
-            displayGlobalError(error.message);
-        }
-    });
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.href = window.location.href;
+                        } catch (error) {
+                            console.error('Error:', error);
+                            displayGlobalError(error.message);
+                        }
+                    });
 
                 } else if (errand.raw_status === 'in_progress') {
                     const inProgressBadgeContainer = document.getElementById('inProgressBadgeContainer');

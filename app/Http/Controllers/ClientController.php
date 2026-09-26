@@ -347,9 +347,10 @@ class ClientController extends Controller
                     'paid_at' => $errand->payment->paid_at
                         ? Carbon::parse($errand->payment->paid_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                         : 'Not paid yet',
-                    'proof' => $errand->payment->proof_path
-                        ? Storage::url($errand->payment->proof_path)
-                        : null,
+                    'proof' => $errand->payment->proof_path ? [
+                        'name' => basename($errand->payment->proof_path),
+                        'url' => Storage::url($errand->payment->proof_path)
+                    ] : null,
                 ] : null,
             ];
 
@@ -431,9 +432,10 @@ class ClientController extends Controller
                 'paid_at' => $history->payment_paid_at
                     ? Carbon::parse($history->payment_paid_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                     : 'None',
-                'proof' => $history->payment_proof_path
-                    ? Storage::url($history->payment_proof_path)
-                    : null,
+                'proof' => $history->payment_proof_path ? [
+                    'name' => basename($history->payment_proof_path),
+                    'url' => Storage::url($history->payment_proof_path)
+                ] : null,
             ] : null,
         ];
 
