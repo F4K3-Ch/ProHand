@@ -271,13 +271,34 @@
                     <div id="failedRefundProofPanel" class="payment-verification-panel" style="display:none;">
                         <div class="payment-status-header">
                             <i class="fa-solid fa-money-bill-transfer status-icon-orange"></i>
-                            <h2 class="status-title-orange">Refund Receipt</h2>
+                            <h2 class="status-title-orange">Payment & Refund Receipts</h2>
                         </div>
 
                         <p class="payment-status-message">
                             <strong>This errand has been marked as failed and refunded.</strong>
-                            The refund receipt has been preserved in the errand history.
+                            The original payment receipt and refund receipt have been preserved in the errand history.
                         </p>
+
+                        <div class="errand-attachment-section">
+                            <label>
+                                <i class="fa-solid fa-file-invoice-dollar"></i>
+                                Original Payment Receipt
+                            </label>
+
+                            <div id="failedPaymentProofAttachment">
+                                <div class="attachment-item">
+                                    <a href="#" target="_blank" class="attachment-name" id="failedPaymentProofPreview" title="Preview Payment Receipt">
+                                        <i class="fa-solid fa-file"></i>
+                                        <span id="failedPaymentProofFilename"></span>
+                                    </a>
+
+                                    <a href="#" class="btn-download" id="failedPaymentProofDownload" download>
+                                        <i class="fa-solid fa-download"></i>
+                                        Download
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="errand-attachment-section">
                             <label>
@@ -735,11 +756,10 @@
                 } else if (errand.raw_status === 'dispute') {
                     const disputeBadge = document.getElementById('disputeBadge');
                     disputeBadge.style.display = 'flex';
-                } else if (errand.raw_status === 'completed' || errand.raw_status === 'failed') {
+                } else if (errand.raw_status === 'completed') {
                     const deleteBtn = document.getElementById('deleteErrandBtn');
                     const gcashPaymentContainer = document.getElementById('gcashPaymentContainer');
                     const completedPaymentProofPanel = document.getElementById('completedPaymentProofPanel');
-                    const failedRefundProofPanel = document.getElementById('failedRefundProofPanel');
 
                     deleteBtn.style.display = 'flex';
 
@@ -768,26 +788,112 @@
                                 errand.payment.proof.name
                             );
                         }
+                    }
 
-                        if (
-                            errand.raw_status === 'failed' &&
-                            errand.payment.refund_proof
-                        ) {
+                    deleteBtn.addEventListener('click', async function() {
+                        const customTitle = 'Confirm Deletion';
+                        const customMessage =
+                            'Are you sure you want to delete errand #' +
+                            errand.id +
+                            ' ("' +
+                            errand.title +
+                            '")? It will be deleted permanently.';
+
+                        const isConfirmed = await showConfirmation(
+                            customTitle,
+                            customMessage
+                        );
+
+                        if (!isConfirmed) return;
+
+                        try {
+                            const response = await fetch(
+                                '/api/client/history/' + errand.id + '/delete',
+                                {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN':
+                                            document.querySelector('meta[name="csrf-token"]')
+                                                ?.getAttribute('content') || '',
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN': origin
+                                    },
+                                    credentials: 'same-origin'
+                                }
+                            );
+
+                            const result = await response.json();
+
+                            if (!response.ok || !result.success) {
+                                throw new Error(result.message);
+                            }
+
+                            sessionStorage.setItem(
+                                'success_message',
+                                result.message
+                            );
+
+                            window.location.href = '{{ route("client.history") }}';
+
+                        } catch (error) {
+                            console.error('Error:', error);
+                            displayGlobalError(error.message);
+                        }
+                    });
+
+                } else if (errand.raw_status === 'failed') {
+                    const deleteBtn = document.getElementById('deleteErrandBtn');
+                    const gcashPaymentContainer = document.getElementById('gcashPaymentContainer');
+                    const failedRefundProofPanel = document.getElementById('failedRefundProofPanel');
+
+                    deleteBtn.style.display = 'flex';
+
+                    if (
+                        errand.payment &&
+                        errand.payment.method &&
+                        errand.payment.method.toLowerCase() === 'gcash'
+                    ) {
+                        gcashPaymentContainer.style.display = 'flex';
+
+                        const paymentProof = errand.payment.proof;
+                        const refundProof = errand.payment.refund_proof;
+
+                        if (paymentProof || refundProof) {
                             failedRefundProofPanel.style.display = 'flex';
+                        }
 
+                        if (paymentProof) {
+                            document.getElementById('failedPaymentProofFilename').textContent =
+                                paymentProof.name;
+
+                            document.getElementById('failedPaymentProofPreview').href =
+                                paymentProof.url;
+
+                            const paymentDownload =
+                                document.getElementById('failedPaymentProofDownload');
+
+                            paymentDownload.href = paymentProof.url;
+                            paymentDownload.setAttribute(
+                                'download',
+                                paymentProof.name
+                            );
+                        }
+
+                        if (refundProof) {
                             document.getElementById('failedRefundProofFilename').textContent =
-                                errand.payment.refund_proof.name;
+                                refundProof.name;
 
                             document.getElementById('failedRefundProofPreview').href =
-                                errand.payment.refund_proof.url;
+                                refundProof.url;
 
                             const refundDownload =
                                 document.getElementById('failedRefundProofDownload');
 
-                            refundDownload.href = errand.payment.refund_proof.url;
+                            refundDownload.href = refundProof.url;
                             refundDownload.setAttribute(
                                 'download',
-                                errand.payment.refund_proof.name
+                                refundProof.name
                             );
                         }
                     }
@@ -816,9 +922,8 @@
                                     headers: {
                                         'Accept': 'application/json',
                                         'X-CSRF-TOKEN':
-                                            document.querySelector(
-                                                'meta[name="csrf-token"]'
-                                            )?.getAttribute('content') || '',
+                                            document.querySelector('meta[name="csrf-token"]')
+                                                ?.getAttribute('content') || '',
                                         'X-API-KEY': apiKey,
                                         'X-MY-ORIGIN': origin
                                     },
