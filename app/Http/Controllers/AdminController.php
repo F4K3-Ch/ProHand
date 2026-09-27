@@ -1690,6 +1690,131 @@ class AdminController extends Controller
         }
     }
 
+    public function deleteHistory(Request $request, $id)
+    {
+        $admin = $request->user();
+
+        $history = History::with('attachment')
+            ->where('errand_id', $id)
+            ->first();
+
+        if (!$history) {
+            return response()->json([
+                'success' => false,
+                'message' => 'History record not found.'
+            ], 404);
+        }
+
+        $client_id = $history->client_id;
+        $tasker_id = $history->tasker_id;
+
+        $errand_id = $history->errand_id;
+        $history_title = $history->title;
+
+        $client_deleted = $history->client_deleted;
+        $tasker_deleted = $history->tasker_deleted;
+
+        $admin_full_name = trim(
+            "{$admin->first_name} " .
+            ($admin->middle_name ? "{$admin->middle_name} " : "") .
+            "{$admin->last_name}"
+        );
+
+        $client_full_name = trim(
+            "{$history->client_first_name} " .
+            ($history->client_middle_name ? "{$history->client_middle_name} " : "") .
+            "{$history->client_last_name}"
+        );
+
+        $tasker_full_name = trim(
+            "{$history->tasker_first_name} " .
+            ($history->tasker_middle_name ? "{$history->tasker_middle_name} " : "") .
+            "{$history->tasker_last_name}"
+        );
+
+        if ($history->attachment) {
+            Storage::disk('public')->delete($history->attachment->file_path);
+            $history->attachment()->delete();
+        }
+
+        if (
+            $history->client_profile_picture &&
+            $history->client_profile_picture !== 'uploads/history/profile_pictures/default.jpg' &&
+            Storage::disk('public')->exists($history->client_profile_picture)
+        ) {
+            Storage::disk('public')->delete($history->client_profile_picture);
+        }
+
+        if (
+            $history->tasker_profile_picture &&
+            $history->tasker_profile_picture !== 'uploads/history/profile_pictures/default.jpg' &&
+            Storage::disk('public')->exists($history->tasker_profile_picture)
+        ) {
+            Storage::disk('public')->delete($history->tasker_profile_picture);
+        }
+
+        if (
+            $history->payment_proof_path &&
+            Storage::disk('public')->exists($history->payment_proof_path)
+        ) {
+            Storage::disk('public')->delete($history->payment_proof_path);
+        }
+
+        if (
+            $history->payment_refund_proof_path &&
+            Storage::disk('public')->exists($history->payment_refund_proof_path)
+        ) {
+            Storage::disk('public')->delete($history->payment_refund_proof_path);
+        }
+
+        $history->delete();
+
+        $client_msg = "Your History Errand: \"{$history_title}\" (ID: {$errand_id}) has been deleted by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
+        $tasker_msg = "Your History Errand: \"{$history_title}\" (ID: {$errand_id}) has been deleted by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
+        $admin_msg = "History Errand Deleted | Errand: \"{$history_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin->id}).";
+
+        $notif_type = 'errand';
+
+        if ($client_id && !$client_deleted && User::where('id', $client_id)->exists()) {
+            Notification::create([
+                'user_id' => $client_id,
+                'type' => $notif_type,
+                'message' => $client_msg,
+                'link' => null,
+                'is_read' => false,
+            ]);
+        }
+
+        if ($tasker_id && !$tasker_deleted && User::where('id', $tasker_id)->exists()) {
+            Notification::create([
+                'user_id' => $tasker_id,
+                'type' => $notif_type,
+                'message' => $tasker_msg,
+                'link' => null,
+                'is_read' => false,
+            ]);
+        }
+
+        $otherAdmins = User::where('role', 'admin')
+            ->where('id', '!=', $admin->id)
+            ->get();
+
+        foreach ($otherAdmins as $adm) {
+            Notification::create([
+                'user_id' => $adm->id,
+                'type' => $notif_type,
+                'message' => $admin_msg,
+                'link' => null,
+                'is_read' => false,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'History record deleted successfully.',
+        ]);
+    }
+
     public function showUserData(Request $request ,$id)
     {
         $user = User::where('id', $id)
