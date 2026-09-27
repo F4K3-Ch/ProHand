@@ -1056,7 +1056,10 @@ class ClientController extends Controller
         $tasker = $tasker_id ? User::find($tasker_id) : null;
 
         if ($errand->payment) {
-            $errand->payment->status = 'proof_submitted';
+            $errand->payment->status = $errand->payment->proof_path
+                ? 'proof_submitted'
+                : 'pending';
+
             $errand->payment->save();
         }
 

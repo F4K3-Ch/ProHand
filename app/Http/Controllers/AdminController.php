@@ -692,7 +692,10 @@ class AdminController extends Controller
         $client_id = $errand->client_id;
 
         if ($errand->payment) {
-            $errand->payment->status = 'proof_submitted';
+            $errand->payment->status = $errand->payment->proof_path
+                ? 'proof_submitted'
+                : 'pending';
+
             $errand->payment->save();
         }
 
@@ -764,7 +767,7 @@ class AdminController extends Controller
     public function approveCancellation(Request $request, $id)
     {
         $admin = $request->user();
-        $requester = $request->input('requester'); // 'client' or 'tasker'
+        $requester = $request->input('requester');
 
         $errand = Errand::with('payment')
             ->where('id', $id)
@@ -776,7 +779,7 @@ class AdminController extends Controller
 
         if (!$errand) {
             return response()->json([
-                'success' => false, 
+                'success' => false,
                 'message' => 'Errand not found or has no pending cancellation request.'
             ], 404);
         }
@@ -785,7 +788,10 @@ class AdminController extends Controller
         $client_id = $errand->client_id;
 
         if ($errand->payment) {
-            $errand->payment->status = 'proof_submitted';
+            $errand->payment->status = $errand->payment->proof_path
+                ? 'proof_submitted'
+                : 'pending';
+
             $errand->payment->save();
         }
 
@@ -799,8 +805,12 @@ class AdminController extends Controller
 
         $errand_id = $errand->id;
         $errand_title = $errand->title;
-        
-        $admin_full_name = trim("{$admin->first_name} " . ($admin->middle_name ? "{$admin->middle_name} " : "") . "{$admin->last_name}");
+
+        $admin_full_name = trim(
+            "{$admin->first_name} " .
+            ($admin->middle_name ? "{$admin->middle_name} " : "") .
+            "{$admin->last_name}"
+        );
 
         if ($requester === 'client') {
             $client_msg = "Your cancellation request for Errand: \"{$errand_title}\" (ID: {$errand_id}) was approved by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}). Status reset to Pending.";
@@ -812,7 +822,7 @@ class AdminController extends Controller
             $admin_msg = "Cancellation Approved (Tasker Request) | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Reset to Pending by Admin: \"{$admin_full_name}\" (ID: {$admin->id}).";
         }
 
-        $notif_type = "errand";
+        $notif_type = 'errand';
 
         $client_link = route('client.view-errand', ['id' => $errand_id]) . '?from=notifications';
         $tasker_link = route('tasker.view-errand', ['id' => $errand_id]) . '?from=notifications';
@@ -838,7 +848,10 @@ class AdminController extends Controller
             ]);
         }
 
-        $admins = User::where('role', 'admin')->where('id', '!=', $admin->id)->get();
+        $admins = User::where('role', 'admin')
+            ->where('id', '!=', $admin->id)
+            ->get();
+
         foreach ($admins as $adm) {
             Notification::create([
                 'user_id' => $adm->id,
