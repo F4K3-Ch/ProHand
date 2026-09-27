@@ -121,10 +121,12 @@ class ErrandFactory extends Factory
                 'amount' => $errand->fee,
                 'method' => 'gcash',
                 'status' => 'pending',
-                'reference' => null,
                 'proof_path' => null,
                 'proof_submitted_at' => null,
                 'paid_at' => null,
+                'refund_proof_path' => null,
+                'refund_submitted_at' => null,
+                'refunded_at' => null,
             ]);
         });
     }
