@@ -475,9 +475,7 @@ class TaskerController extends Controller
         $tasker_id = $tasker->id;
         $tasker_full_name = trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}");
 
-        $has_payment_proof = $errand->payment &&
-            $errand->payment->proof_path &&
-            $errand->payment->status === 'proof_submitted';
+        $has_payment_proof = $errand->payment && !empty($errand->payment->proof_path);
 
         if ($has_payment_proof) {
             $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) has been accepted by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). Your GCash payment proof has already been submitted and is now waiting for admin verification.";

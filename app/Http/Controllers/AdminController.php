@@ -676,19 +676,25 @@ class AdminController extends Controller
     {
         $admin = $request->user();
 
-        $errand = Errand::where('id', $id)
+        $errand = Errand::with('payment')
+            ->where('id', $id)
             ->whereIn('status', ['accepted', 'in_progress', 'awaiting_confirmation'])
             ->first();
 
         if (!$errand) {
             return response()->json([
-                'success' => false, 
+                'success' => false,
                 'message' => 'Errand not found or is not in an accepted, in-progress or awaiting_confirmation state.'
             ], 404);
         }
 
         $tasker_id = $errand->tasker_id;
         $client_id = $errand->client_id;
+
+        if ($errand->payment) {
+            $errand->payment->status = 'pending';
+            $errand->payment->save();
+        }
 
         $errand->status = 'pending';
         $errand->tasker_id = null;
@@ -700,11 +706,13 @@ class AdminController extends Controller
 
         $errand_id = $errand->id;
         $errand_title = $errand->title;
-        
+
         $admin_full_name = trim("{$admin->first_name} " . ($admin->middle_name ? "{$admin->middle_name} " : "") . "{$admin->last_name}");
 
         $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) status was reset to \"Pending\" by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
+
         $tasker_msg = "The Errand: \"{$errand_title}\" (ID: {$errand_id}) you were assigned to has been reset to \"Pending\" by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
+
         $admin_msg = "Errand Reset | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Reset to Pending by Admin: \"{$admin_full_name}\" (ID: {$admin->id}).";
 
         $notif_type = "errand";
@@ -733,7 +741,10 @@ class AdminController extends Controller
             ]);
         }
 
-        $admins = User::where('role', 'admin')->where('id', '!=', $admin->id)->get();
+        $admins = User::where('role', 'admin')
+            ->where('id', '!=', $admin->id)
+            ->get();
+
         foreach ($admins as $adm) {
             Notification::create([
                 'user_id' => $adm->id,

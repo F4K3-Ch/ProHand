@@ -1020,25 +1020,31 @@ class ClientController extends Controller
             ], 500);
         }
     }
-
+    
     public function cancelErrand(Request $request, $id)
     {
         $client = $request->user();
 
-        $errand = Errand::where('id', $id)
+        $errand = Errand::with('payment')
+            ->where('id', $id)
             ->where('status', 'accepted')
             ->where('client_id', $client->id)
             ->first();
 
         if (!$errand) {
             return response()->json([
-                'success' => false, 
+                'success' => false,
                 'message' => 'Errand not found or cannot be cancelled.'
             ], 404);
         }
 
         $tasker_id = $errand->tasker_id;
         $tasker = $tasker_id ? User::find($tasker_id) : null;
+
+        if ($errand->payment) {
+            $errand->payment->status = 'pending';
+            $errand->payment->save();
+        }
 
         $errand->status = 'pending';
         $errand->tasker_id = null;
@@ -1047,13 +1053,16 @@ class ClientController extends Controller
 
         $errand_id = $errand->id;
         $errand_title = $errand->title;
-        
+
         $client_id = $client->id;
         $client_full_name = trim("{$client->first_name} " . ($client->middle_name ? "{$client->middle_name} " : "") . "{$client->last_name}");
 
-        $tasker_full_name = $tasker ? trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}") : 'Tasker';
+        $tasker_full_name = $tasker
+            ? trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}")
+            : 'Tasker';
 
         $tasker_msg = "The Errand: \"{$errand_title}\" (ID: {$errand_id}) you accepted earlier was Cancelled by the Client: \"{$client_full_name}\" (ID: {$client_id}). Status returned to \"Pending\".";
+
         $admin_msg = "Errand Cancelled | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Previously Assigned to Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Cancelled by Client: \"{$client_full_name}\" (ID: {$client_id}). Status returned to \"Pending\".";
 
         $notif_type = "errand";
@@ -1072,6 +1081,7 @@ class ClientController extends Controller
         }
 
         $admins = User::where('role', 'admin')->get();
+
         foreach ($admins as $admin) {
             Notification::create([
                 'user_id' => $admin->id,
