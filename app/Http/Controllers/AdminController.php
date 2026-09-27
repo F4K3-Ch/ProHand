@@ -1215,6 +1215,13 @@ class AdminController extends Controller
 
                 Storage::disk('public')->delete($payment->proof_path);
 
+                if (
+                    $payment->refund_proof_path &&
+                    Storage::disk('public')->exists($payment->refund_proof_path)
+                ) {
+                    Storage::disk('public')->delete($payment->refund_proof_path);
+                }
+
                 $errand_id = $errand->id;
                 $errand_title = $errand->title;
 
