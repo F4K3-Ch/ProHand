@@ -262,6 +262,96 @@
                             </div>
                         </div>
                     </div>
+
+                    <div id="refundProofPanel" class="payment-verification-panel" style="display:none;">
+                        <div class="payment-status-header">
+                            <i class="fa-solid fa-money-bill-transfer status-icon-orange"></i>
+                            <h2 class="status-title-orange">Refund Required</h2>
+                        </div>
+
+                        <p class="payment-status-message">
+                            <strong>If this errand cannot be resolved, you may mark it as failed.</strong>
+                            Since the errand has already been paid, refund the paid amount to the client and upload the refund receipt below before marking the errand as failed.
+                        </p>
+
+                        <div class="info-box create-errand-input-box payment-right-upload">
+                            <label>Upload Refund Receipt</label>
+                            <input type="file" id="refundProof" accept=".jpg,.jpeg,.png">
+                            <small>Only PNG, JPG, or JPEG allowed. Max: 10 MB</small>
+                        </div>
+
+                        <button type="button" id="uploadRefundProofBtn" class="btn-submit-proof">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            Submit Refund Receipt
+                            <div class="circle-spinner" id="refundProofSpinner" style="display:none;"></div>
+                        </button>
+                    </div>
+
+                    <div id="completedPaymentProofPanel" class="payment-verification-panel" style="display:none;">
+                        <div class="payment-status-header">
+                            <i class="fa-solid fa-circle-check status-icon-orange"></i>
+                            <h2 class="status-title-orange">Payment Receipt</h2>
+                        </div>
+
+                        <p class="payment-status-message">
+                            <strong>This errand has been completed.</strong>
+                            The original payment receipt has been preserved in the errand history.
+                        </p>
+
+                        <div class="errand-attachment-section">
+                            <label>
+                                <i class="fa-solid fa-file-invoice-dollar"></i>
+                                Original Payment Receipt
+                            </label>
+
+                            <div id="completedPaymentProofAttachment">
+                                <div class="attachment-item">
+                                    <a href="#" target="_blank" class="attachment-name" id="completedPaymentProofPreview" title="Preview Payment Receipt">
+                                        <i class="fa-solid fa-file"></i>
+                                        <span id="completedPaymentProofFilename"></span>
+                                    </a>
+
+                                    <a href="#" class="btn-download" id="completedPaymentProofDownload" download>
+                                        <i class="fa-solid fa-download"></i>
+                                        Download
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="failedRefundProofPanel" class="payment-verification-panel" style="display:none;">
+                        <div class="payment-status-header">
+                            <i class="fa-solid fa-money-bill-transfer status-icon-orange"></i>
+                            <h2 class="status-title-orange">Refund Receipt</h2>
+                        </div>
+
+                        <p class="payment-status-message">
+                            <strong>This errand has been marked as failed and refunded.</strong>
+                            The refund receipt has been preserved in the errand history.
+                        </p>
+
+                        <div class="errand-attachment-section">
+                            <label>
+                                <i class="fa-solid fa-file-invoice-dollar"></i>
+                                Refund Receipt
+                            </label>
+
+                            <div id="failedRefundProofAttachment">
+                                <div class="attachment-item">
+                                    <a href="#" target="_blank" class="attachment-name" id="failedRefundProofPreview" title="Preview Refund Receipt">
+                                        <i class="fa-solid fa-file"></i>
+                                        <span id="failedRefundProofFilename"></span>
+                                    </a>
+
+                                    <a href="#" class="btn-download" id="failedRefundProofDownload" download>
+                                        <i class="fa-solid fa-download"></i>
+                                        Download
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="info-bot-btn">
@@ -282,9 +372,6 @@
                     </button>
                     <button type="button" id="completeDisputeBtn" class="btn-approve" style="display:none;">
                         <i class="fa-solid fa-circle-check"></i> Mark as Completed
-                    </button>
-                    <button type="button" id="failDisputeBtn" class="btn-delete" style="display:none;">
-                        <i class="fa-solid fa-circle-xmark"></i> Mark as Failed
                     </button>
                     <button type="button" id="failRefundBtn" class="btn-delete" style="display:none;">
                         <i class="fa-solid fa-money-bill-transfer"></i> Mark as Failed & Refund
@@ -819,61 +906,94 @@
                             displayGlobalError(error.message);
                         }
                     });
+
                 } else if (errand.raw_status === 'dispute') {
+                    const paymentProofSection = document.getElementById('paymentProofSection');
+                    const refundProofPanel = document.getElementById('refundProofPanel');
+
                     const completeDisputeBtn = document.getElementById('completeDisputeBtn');
-                    const failDisputeBtn = document.getElementById('failDisputeBtn');
                     const failRefundBtn = document.getElementById('failRefundBtn');
 
+                    const refundProof = document.getElementById('refundProof');
+                    const uploadRefundProofBtn = document.getElementById('uploadRefundProofBtn');
+                    const refundProofSpinner = document.getElementById('refundProofSpinner');
+
+                    paymentProofSection.style.display = 'flex';
+                    refundProofPanel.style.display = 'flex';
+
                     completeDisputeBtn.style.display = 'flex';
+                    failRefundBtn.style.display = 'none';
 
-                    completeDisputeBtn.addEventListener('click', async function() {
-                        const customTitle = 'Confirm Completion';
-                        const customMessage = 'Mark this disputed errand as "Completed"? This will resolve the dispute and finish the errand. This action cannot be undone.';
-                        const isConfirmed = await showConfirmation(customTitle, customMessage);
+                    if (errand.payment && errand.payment.refund_proof) {
+                        refundProof.value = '';
+                        uploadRefundProofBtn.style.display = 'none';
+                        failRefundBtn.style.display = 'flex';
+                    } else {
+                        uploadRefundProofBtn.style.display = 'flex';
+                        failRefundBtn.style.display = 'none';
+                    }
 
-                        if (!isConfirmed) return;
+                    uploadRefundProofBtn.addEventListener('click', async function() {
+                        if (!refundProof.files.length) {
+                            displayGlobalError('Please select a refund receipt first.');
+                            return;
+                        }
+
+                        const formData = new FormData();
+                        formData.append('refund_proof', refundProof.files[0]);
+
+                        uploadRefundProofBtn.disabled = true;
+                        refundProofSpinner.style.display = 'inline-block';
 
                         try {
-                            const response = await fetch('/api/admin/errands/' + errand.id + '/completed', {
-                                method: 'POST',
-                                headers: {
-                                    'Accept': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                                    'X-API-KEY': apiKey,
-                                    'X-MY-ORIGIN': origin
-                                },
-                                credentials: 'same-origin'
-                            });
+                            const response = await fetch(
+                                '/api/admin/errands/' + errand.id + '/refund-proof',
+                                {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN': origin
+                                    },
+                                    body: formData,
+                                    credentials: 'same-origin'
+                                }
+                            );
 
                             const result = await response.json();
 
                             if (!response.ok || !result.success) {
-                                throw new Error(result.message);
+                                throw new Error(result.message || 'Failed to upload refund receipt.');
                             }
 
                             sessionStorage.setItem('success_message', result.message);
-                            window.location.href = '{{ route("admin.history") }}';
+                            window.location.href = window.location.href;
 
                         } catch (error) {
                             console.error('Error:', error);
                             displayGlobalError(error.message);
+                        } finally {
+                            uploadRefundProofBtn.disabled = false;
+                            refundProofSpinner.style.display = 'none';
                         }
                     });
 
-                    const paymentStatus = errand.payment ? errand.payment.raw_status : 'pending';
+                    failRefundBtn.addEventListener('click', async function() {
+                        const customTitle = 'Confirm Failure & Refund';
+                        const customMessage = 'Mark this disputed errand as "Failed" and confirm that the paid amount has been refunded to the Client? This action cannot be undone.';
 
-                    if (paymentStatus === 'paid') {
-                        failRefundBtn.style.display = 'flex';
+                        const isConfirmed = await showConfirmation(
+                            customTitle,
+                            customMessage
+                        );
 
-                        failRefundBtn.addEventListener('click', async function() {
-                            const customTitle = 'Confirm Failure & Refund';
-                            const customMessage = 'Mark this disputed errand as "Failed" and refund the paid amount to the Client? This action cannot be undone.';
-                            const isConfirmed = await showConfirmation(customTitle, customMessage);
+                        if (!isConfirmed) return;
 
-                            if (!isConfirmed) return;
-
-                            try {
-                                const response = await fetch('/api/admin/errands/' + errand.id + '/failed', {
+                        try {
+                            const response = await fetch(
+                                '/api/admin/errands/' + errand.id + '/failed',
+                                {
                                     method: 'POST',
                                     headers: {
                                         'Accept': 'application/json',
@@ -886,96 +1006,118 @@
                                         refund: true
                                     }),
                                     credentials: 'same-origin'
-                                });
-
-                                const result = await response.json();
-
-                                if (!response.ok || !result.success) {
-                                    throw new Error(result.message);
                                 }
+                            );
 
-                                sessionStorage.setItem('success_message', result.message);
-                                window.location.href = '{{ route("admin.history") }}';
+                            const result = await response.json();
 
-                            } catch (error) {
-                                console.error('Error:', error);
-                                displayGlobalError(error.message);
+                            if (!response.ok || !result.success) {
+                                throw new Error(result.message || 'Failed to mark errand as failed.');
                             }
-                        });
 
-                    } else {
-                        failDisputeBtn.style.display = 'flex';
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.href = '{{ route("admin.history") }}';
 
-                        failDisputeBtn.addEventListener('click', async function() {
-                            const customTitle = 'Confirm Failure';
-                            const customMessage = 'Mark this disputed errand as "Failed"? Since the payment has not been paid, no refund is required. This action cannot be undone.';
-                            const isConfirmed = await showConfirmation(customTitle, customMessage);
+                        } catch (error) {
+                            console.error('Error:', error);
+                            displayGlobalError(error.message);
+                        }
+                    });
 
-                            if (!isConfirmed) return;
+                    completeDisputeBtn.addEventListener('click', async function() {
+                        const customTitle = 'Confirm Completion';
+                        const customMessage = 'Mark this disputed errand as "Completed"? This will resolve the dispute and finish the errand. This action cannot be undone.';
 
-                            try {
-                                const response = await fetch('/api/admin/errands/' + errand.id + '/failed', {
+                        const isConfirmed = await showConfirmation(
+                            customTitle,
+                            customMessage
+                        );
+
+                        if (!isConfirmed) return;
+
+                        try {
+                            const response = await fetch(
+                                '/api/admin/errands/' + errand.id + '/completed',
+                                {
                                     method: 'POST',
                                     headers: {
                                         'Accept': 'application/json',
-                                        'Content-Type': 'application/json',
                                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                                         'X-API-KEY': apiKey,
                                         'X-MY-ORIGIN': origin
                                     },
-                                    body: JSON.stringify({
-                                        refund: false
-                                    }),
                                     credentials: 'same-origin'
-                                });
-
-                                const result = await response.json();
-
-                                if (!response.ok || !result.success) {
-                                    throw new Error(result.message);
                                 }
+                            );
 
-                                sessionStorage.setItem('success_message', result.message);
-                                window.location.href = '{{ route("admin.history") }}';
+                            const result = await response.json();
 
-                            } catch (error) {
-                                console.error('Error:', error);
-                                displayGlobalError(error.message);
+                            if (!response.ok || !result.success) {
+                                throw new Error(result.message || 'Failed to complete errand.');
                             }
-                        });
-                    }
+
+                            sessionStorage.setItem('success_message', result.message);
+                            window.location.href = '{{ route("admin.history") }}';
+
+                        } catch (error) {
+                            console.error('Error:', error);
+                            displayGlobalError(error.message);
+                        }
+                    });
+
                 } else if (errand.raw_status === 'completed' || errand.raw_status === 'failed') {
+                    const paymentProofSection = document.getElementById('paymentProofSection');
+                    const completedPaymentProofPanel = document.getElementById('completedPaymentProofPanel');
+                    const failedRefundProofPanel = document.getElementById('failedRefundProofPanel');
                     const deleteBtn = document.getElementById('deleteErrandBtn');
+
+                    paymentProofSection.style.display = 'flex';
+
+                    completedPaymentProofPanel.style.display = 'none';
+                    failedRefundProofPanel.style.display = 'none';
+
                     deleteBtn.style.display = 'flex';
+
+                    if (errand.raw_status === 'completed') {
+                        completedPaymentProofPanel.style.display = 'flex';
+                    }
+
+                    if (errand.raw_status === 'failed') {
+                        failedRefundProofPanel.style.display = 'flex';
+                    }
 
                     deleteBtn.addEventListener('click', async function() {
                         const customTitle = 'Confirm Deletion';
                         const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
                         const isConfirmed = await showConfirmation(customTitle, customMessage);
-                        
-                        if(!isConfirmed) return;
+
+                        if (!isConfirmed) return;
 
                         try {
-                            const response = await fetch('/api/admin/history/' + errand.id + '/delete', {
-                                method: 'POST',
-                                headers: {
-                                    'Accept': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                                    'X-API-KEY': apiKey,
-                                    'X-MY-ORIGIN' : origin
-                                },
-                                credentials: 'same-origin'
-                            });
+                            const response = await fetch(
+                                '/api/admin/history/' + errand.id + '/delete',
+                                {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN': origin
+                                    },
+                                    credentials: 'same-origin'
+                                }
+                            );
 
                             const result = await response.json();
-                            if(!response.ok || !result.success){
+
+                            if (!response.ok || !result.success) {
                                 throw new Error(result.message);
                             }
 
                             sessionStorage.setItem('success_message', result.message);
                             window.location.href = '{{ route("admin.history") }}';
 
-                        } catch(error) {
+                        } catch (error) {
                             console.error('Error:', error);
                             displayGlobalError(error.message);
                         }

@@ -19,10 +19,12 @@ return new class extends Migration
             $table->decimal('amount', 10, 2);
             $table->enum('method', ['gcash'])->default('gcash');
             $table->enum('status', ['pending', 'proof_submitted', 'paid', 'refunded'])->default('pending');
-            $table->string('reference')->nullable();
             $table->string('proof_path')->nullable();
             $table->timestamp('proof_submitted_at')->nullable();
             $table->timestamp('paid_at')->nullable();
+            $table->string('refund_proof_path')->nullable();
+            $table->timestamp('refund_submitted_at')->nullable();
+            $table->timestamp('refunded_at')->nullable();
             $table->timestamps();
         });
     }

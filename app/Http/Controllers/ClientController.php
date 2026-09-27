@@ -761,7 +761,7 @@ class ClientController extends Controller
             'message' => 'Errand dispute raised successfully!',
         ]);
     }
-
+    
     public function confirmCompletion(Request $request, $id)
     {
         $client = $request->user();
@@ -788,12 +788,36 @@ class ClientController extends Controller
             ], 422);
         }
 
+        if (
+            !$payment->proof_path ||
+            !Storage::disk('public')->exists($payment->proof_path)
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment proof not found.'
+            ], 422);
+        }
+
         $tasker = $errand->tasker_id
             ? User::find($errand->tasker_id)
             : null;
 
         try {
             $history = DB::transaction(function () use ($errand, $client, $tasker, $payment) {
+
+                $paymentProofExtension = pathinfo(
+                    $payment->proof_path,
+                    PATHINFO_EXTENSION
+                );
+
+                $paymentProofPath =
+                    'uploads/history/payment_proofs/' .
+                    'errand_payment_proof' . $errand->id . '.' . $paymentProofExtension;
+
+                Storage::disk('public')->copy(
+                    $payment->proof_path,
+                    $paymentProofPath
+                );
 
                 $history = History::create([
                     'errand_id' => $errand->id,
@@ -805,7 +829,8 @@ class ClientController extends Controller
                     'payment_method' => $payment->method,
                     'payment_amount' => $payment->amount,
                     'payment_status' => $payment->status,
-                    'payment_reference' => $payment->reference,
+                    'payment_proof_path' => $paymentProofPath,
+                    'payment_proof_submitted_at' => $payment->proof_submitted_at,
                     'payment_paid_at' => $payment->paid_at,
 
                     'deadline' => $errand->deadline,
@@ -841,7 +866,10 @@ class ClientController extends Controller
                     $client->profile_picture !== 'uploads/profile_pictures/default.jpg' &&
                     Storage::disk('public')->exists($client->profile_picture)
                 ) {
-                    $extension = pathinfo($client->profile_picture, PATHINFO_EXTENSION);
+                    $extension = pathinfo(
+                        $client->profile_picture,
+                        PATHINFO_EXTENSION
+                    );
 
                     $clientProfilePicture =
                         'uploads/history/profile_pictures/client_' .
@@ -859,7 +887,10 @@ class ClientController extends Controller
                     $tasker->profile_picture !== 'uploads/profile_pictures/default.jpg' &&
                     Storage::disk('public')->exists($tasker->profile_picture)
                 ) {
-                    $extension = pathinfo($tasker->profile_picture, PATHINFO_EXTENSION);
+                    $extension = pathinfo(
+                        $tasker->profile_picture,
+                        PATHINFO_EXTENSION
+                    );
 
                     $taskerProfilePicture =
                         'uploads/history/profile_pictures/tasker_' .
@@ -878,7 +909,10 @@ class ClientController extends Controller
 
                 $attachment = $errand->attachment;
 
-                if ($attachment && Storage::disk('public')->exists($attachment->file_path)) {
+                if (
+                    $attachment &&
+                    Storage::disk('public')->exists($attachment->file_path)
+                ) {
                     $extension = pathinfo(
                         $attachment->file_path,
                         PATHINFO_EXTENSION
@@ -886,7 +920,7 @@ class ClientController extends Controller
 
                     $historyPath =
                         'uploads/history/attachments/' .
-                        Str::uuid() . '.' . $extension;
+                        'errand_' . $history->errand_id . '.' . $extension;
 
                     Storage::disk('public')->copy(
                         $attachment->file_path,
@@ -903,9 +937,10 @@ class ClientController extends Controller
                     Storage::disk('public')->delete($attachment->file_path);
                 }
 
+                Storage::disk('public')->delete($payment->proof_path);
+
                 $errand_id = $errand->id;
                 $errand_title = $errand->title;
-
                 $client_id = $client->id;
 
                 $client_full_name = trim(
@@ -925,6 +960,7 @@ class ClientController extends Controller
                     : 'None';
 
                 $tasker_msg = "Your Assigned Errand: \"{$errand_title}\" (ID: {$errand_id}) has been confirmed as completed by Client: \"{$client_full_name}\" (ID: {$client_id}) and has been moved to history.";
+
                 $admin_msg = "Errand Completed | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). The client confirmed the errand as completed and it has been transferred to history.";
 
                 $notif_type = "errand";

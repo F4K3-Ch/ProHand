@@ -542,8 +542,9 @@ class TaskerController extends Controller
         $tasker_id = $tasker->id;
         $tasker_full_name = trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}");
 
-        $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) is awaiting confirmation from you. Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) has finished the errand.";
-        $admin_msg = "Errand Awaiting Confirmation | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Tasker has finished the errand and is awaiting client confirmation.";
+        $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) is awaiting your confirmation. Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) has marked the errand as completed.";
+
+        $admin_msg = "Errand Awaiting Confirmation | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | The tasker has marked the errand as completed and is awaiting client confirmation.";
 
         $notif_type = "errand";
 
@@ -574,86 +575,6 @@ class TaskerController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Errand marked as awaiting confirmation successfully!',
-        ]);
-    }
-
-    public function confirmCashReceived(Request $request, $id)
-    {
-        $tasker = $request->user();
-
-        $errand = Errand::with('payment')
-            ->where('id', $id)
-            ->where('status', 'awaiting_confirmation')
-            ->where('tasker_id', $tasker->id)
-            ->first();
-
-        if (!$errand) {
-            return response()->json([
-                'success' => false, 
-                'message' => 'Errand not found.'
-            ], 404);
-        }
-
-        if (!$errand->payment || $errand->payment->method !== 'cash') {
-            return response()->json([
-                'success' => false, 
-                'message' => 'This errand does not use cash payment.'
-            ], 422);
-        }
-
-        if ($errand->payment->status !== 'pending') {
-            return response()->json([
-                'success' => false, 
-                'message' => 'Payment has already been processed.'
-            ], 422);
-        }
-
-        $errand->payment->status = 'paid';
-        $errand->payment->paid_at = Carbon::now();
-        $errand->payment->save();
-
-        $errand_id = $errand->id;
-        $errand_title = $errand->title;
-
-        $client_id = $errand->client_id;
-        $client = User::find($client_id);
-        $client_full_name = $client ? trim("{$client->first_name} " . ($client->middle_name ? "{$client->middle_name} " : "") . "{$client->last_name}") : 'Client';
-
-        $tasker_id = $tasker->id;
-        $tasker_full_name = trim("{$tasker->first_name} " . ($tasker->middle_name ? "{$tasker->middle_name} " : "") . "{$tasker->last_name}");
-
-        $client_msg = "Payment for your Errand: \"{$errand_title}\" (ID: {$errand_id}) has been confirmed by Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}). You may now confirm the completion of the errand.";
-        $admin_msg = "Payment Confirmed | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) has confirmed receipt of the cash payment.";
-
-        $notif_type = "errand";
-
-        $client_link = route('client.view-errand', ['id' => $errand_id]) . '?from=notifications';
-        $admin_link = route('admin.view-errand', ['id' => $errand_id]) . '?from=notifications';
-
-        if ($client_id) {
-            Notification::create([
-                'user_id' => $client_id,
-                'type' => $notif_type,
-                'message' => $client_msg,
-                'link' => $client_link,
-                'is_read' => false,
-            ]);
-        }
-
-        $admins = User::where('role', 'admin')->get();
-        foreach ($admins as $admin) {
-            Notification::create([
-                'user_id' => $admin->id,
-                'type' => $notif_type,
-                'message' => $admin_msg,
-                'link' => $admin_link,
-                'is_read' => false,
-            ]);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Cash payment confirmed successfully!',
         ]);
     }
 

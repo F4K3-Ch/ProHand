@@ -234,6 +234,39 @@
                             </div>
                         </div>
                     </div>
+
+                    <div id="gcashHistoryReceipt" class="payment-verification-panel" style="display:none;">
+                        <div class="payment-status-header">
+                            <i class="fa-solid fa-circle-check status-icon-orange"></i>
+                            <h2 class="status-title-orange">Payment Receipt</h2>
+                        </div>
+
+                        <p class="payment-status-message">
+                            <strong>Your payment receipt is saved with this errand's history.</strong>
+                            You can preview or download the original payment proof below.
+                        </p>
+
+                        <div class="errand-attachment-section">
+                            <label>
+                                <i class="fa-solid fa-file-invoice-dollar"></i>
+                                Payment Receipt
+                            </label>
+
+                            <div id="gcash-history-receipt-attachment">
+                                <div class="attachment-item">
+                                    <a href="#" target="_blank" class="attachment-name" title="Preview File">
+                                        <i class="fa-solid fa-file"></i>
+                                        <span class="attachment-filename"></span>
+                                    </a>
+
+                                    <a href="#" class="btn-download" download>
+                                        <i class="fa-solid fa-download"></i>
+                                        Download
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="info-bot-btn">
@@ -671,14 +704,40 @@
                     disputeBadge.style.display = 'flex';
                 } else if (errand.raw_status === 'completed' || errand.raw_status === 'failed') {
                     const deleteBtn = document.getElementById('deleteErrandBtn');
+                    const gcashPaymentContainer = document.getElementById('gcashPaymentContainer');
+                    const gcashHistoryReceipt = document.getElementById('gcashHistoryReceipt');
+
                     deleteBtn.style.display = 'flex';
+
+                    if (
+                        errand.payment &&
+                        errand.payment.method &&
+                        errand.payment.method.toLowerCase() === 'gcash' &&
+                        errand.payment.proof
+                    ) {
+                        gcashPaymentContainer.style.display = 'flex';
+                        gcashHistoryReceipt.style.display = 'flex';
+
+                        const receiptItem = document.querySelector('#gcash-history-receipt-attachment .attachment-item');
+
+                        receiptItem.querySelector('.attachment-filename').textContent =
+                            errand.payment.proof.name;
+
+                        receiptItem.querySelector('.attachment-name').href =
+                            errand.payment.proof.url;
+
+                        const downloadBtn = receiptItem.querySelector('.btn-download');
+
+                        downloadBtn.href = errand.payment.proof.url;
+                        downloadBtn.setAttribute('download', errand.payment.proof.name);
+                    }
 
                     deleteBtn.addEventListener('click', async function() {
                         const customTitle = 'Confirm Deletion';
                         const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
                         const isConfirmed = await showConfirmation(customTitle, customMessage);
                         
-                        if(!isConfirmed) return;
+                        if (!isConfirmed) return;
 
                         try {
                             const response = await fetch('/api/client/history/' + errand.id + '/delete', {
@@ -687,13 +746,14 @@
                                     'Accept': 'application/json',
                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                                     'X-API-KEY': apiKey,
-                                    'X-MY-ORIGIN' : origin
+                                    'X-MY-ORIGIN': origin
                                 },
                                 credentials: 'same-origin'
                             });
 
                             const result = await response.json();
-                            if(!response.ok || !result.success){
+
+                            if (!response.ok || !result.success) {
                                 throw new Error(result.message);
                             }
 

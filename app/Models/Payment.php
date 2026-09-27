@@ -19,16 +19,20 @@ class Payment extends Model
         'amount',
         'method',
         'status',
-        'reference',
         'proof_path',
         'proof_submitted_at',
         'paid_at',
+        'refund_proof_path',
+        'refund_submitted_at',
+        'refunded_at',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
         'proof_submitted_at' => 'datetime',
         'paid_at' => 'datetime',
+        'refund_submitted_at' => 'datetime',
+        'refunded_at' => 'datetime',
     ];
 
     public function errand(): BelongsTo

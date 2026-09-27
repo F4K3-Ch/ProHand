@@ -46,7 +46,6 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
         Route::get('/tasker/errands/{id}', [TaskerController::class, 'getErrandDetails']);
         Route::post('/tasker/errands/{id}/accept', [TaskerController::class, 'acceptErrand']);
         Route::post('/tasker/errands/{id}/awaiting-confirmation', [TaskerController::class, 'markAwaitingConfirmation']);
-        Route::post('/tasker/errands/{id}/confirm-cash', [TaskerController::class, 'confirmCashReceived']);
         Route::post('/tasker/errands/{id}/request-cancel', [TaskerController::class, 'requestCancellation']);
         Route::post('/tasker/history/{id}/delete', [TaskerController::class, 'destroyHistory']);
     });
@@ -64,6 +63,7 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
         Route::post('/admin/errands/{id}/deny-cancellation', [AdminController::class, 'denyCancellation']);
         Route::post('/admin/errands/{id}/delete', [AdminController::class, 'destroyErrand']);
         Route::post('/admin/errands/{id}/completed', [AdminController::class, 'updateCompleted']);
+        Route::post('/admin/errands/{id}/refund-proof', [AdminController::class, 'submitRefundProof']);
         Route::post('/admin/errands/{id}/failed', [AdminController::class, 'updateFailed']);
         Route::post('/admin/history/{id}/delete', [AdminController::class, 'deleteHistory']);
         Route::get('/admin/users-metrics', [AdminController::class, 'usersMetrics']);

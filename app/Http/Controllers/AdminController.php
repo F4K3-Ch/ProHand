@@ -1014,7 +1014,18 @@ class AdminController extends Controller
             ], 422);
         }
 
+        if (
+            !$payment->proof_path ||
+            !Storage::disk('public')->exists($payment->proof_path)
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment proof not found.'
+            ], 422);
+        }
+
         $client = User::find($errand->client_id);
+
         $tasker = $errand->tasker_id
             ? User::find($errand->tasker_id)
             : null;
@@ -1027,6 +1038,20 @@ class AdminController extends Controller
                     'paid_at' => $payment->paid_at ?? Carbon::now(),
                 ]);
 
+                $paymentProofExtension = pathinfo(
+                    $payment->proof_path,
+                    PATHINFO_EXTENSION
+                );
+
+                $paymentProofPath =
+                    'uploads/history/payment_proofs/' .
+                    'errand_payment_proof' . $errand->id . '.' . $paymentProofExtension;
+
+                Storage::disk('public')->copy(
+                    $payment->proof_path,
+                    $paymentProofPath
+                );
+
                 $history = History::create([
                     'errand_id' => $errand->id,
                     'title' => $errand->title,
@@ -1037,7 +1062,8 @@ class AdminController extends Controller
                     'payment_method' => $payment->method,
                     'payment_amount' => $payment->amount,
                     'payment_status' => $payment->status,
-                    'payment_reference' => $payment->reference,
+                    'payment_proof_path' => $paymentProofPath,
+                    'payment_proof_submitted_at' => $payment->proof_submitted_at,
                     'payment_paid_at' => $payment->paid_at,
 
                     'deadline' => $errand->deadline,
@@ -1074,7 +1100,10 @@ class AdminController extends Controller
                     $client->profile_picture !== 'uploads/profile_pictures/default.jpg' &&
                     Storage::disk('public')->exists($client->profile_picture)
                 ) {
-                    $extension = pathinfo($client->profile_picture, PATHINFO_EXTENSION);
+                    $extension = pathinfo(
+                        $client->profile_picture,
+                        PATHINFO_EXTENSION
+                    );
 
                     $clientProfilePicture =
                         'uploads/history/profile_pictures/client_' .
@@ -1092,7 +1121,10 @@ class AdminController extends Controller
                     $tasker->profile_picture !== 'uploads/profile_pictures/default.jpg' &&
                     Storage::disk('public')->exists($tasker->profile_picture)
                 ) {
-                    $extension = pathinfo($tasker->profile_picture, PATHINFO_EXTENSION);
+                    $extension = pathinfo(
+                        $tasker->profile_picture,
+                        PATHINFO_EXTENSION
+                    );
 
                     $taskerProfilePicture =
                         'uploads/history/profile_pictures/tasker_' .
@@ -1111,7 +1143,10 @@ class AdminController extends Controller
 
                 $attachment = $errand->attachment;
 
-                if ($attachment && Storage::disk('public')->exists($attachment->file_path)) {
+                if (
+                    $attachment &&
+                    Storage::disk('public')->exists($attachment->file_path)
+                ) {
                     $extension = pathinfo(
                         $attachment->file_path,
                         PATHINFO_EXTENSION
@@ -1119,7 +1154,7 @@ class AdminController extends Controller
 
                     $historyPath =
                         'uploads/history/attachments/' .
-                        Str::uuid() . '.' . $extension;
+                        'errand_' . $history->errand_id . '.' . $extension;
 
                     Storage::disk('public')->copy(
                         $attachment->file_path,
@@ -1135,6 +1170,8 @@ class AdminController extends Controller
 
                     Storage::disk('public')->delete($attachment->file_path);
                 }
+
+                Storage::disk('public')->delete($payment->proof_path);
 
                 $errand_id = $errand->id;
                 $errand_title = $errand->title;
@@ -1166,16 +1203,16 @@ class AdminController extends Controller
                     : 'Tasker';
 
                 if ($errand->status === 'dispute') {
-                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been resolved and marked as completed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and moved to history.";
-                    $tasker_msg = "Your Assigned Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been resolved and marked as completed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and moved to history.";
-                    $admin_msg = "Errand Dispute Marked Complete | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Marked Complete by Admin: \"{$admin_full_name}\" (ID: {$admin->id}). Transferred to history.";
-                } else { 
-                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) has been confirmed as completed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and has been moved to history.";
-                    $tasker_msg = "Your Assigned Errand: \"{$errand_title}\" (ID: {$errand_id}) has been confirmed as completed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}) and has been moved to history.";
-                    $admin_msg = "Errand Confirmed Completed | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Confirmed Complete by Admin: \"{$admin_full_name}\" (ID: {$admin->id}). Transferred to history.";
+                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been resolved and marked as completed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}). The errand, payment details, and payment proof have been moved to history.";
+                    $tasker_msg = "Your Assigned Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been resolved and marked as completed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}). The errand, payment details, and payment proof have been moved to history.";
+                    $admin_msg = "Errand Dispute Marked Complete | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Marked Complete by Admin: \"{$admin_full_name}\" (ID: {$admin->id}). The errand, payment details, and payment proof have been transferred to history.";
+                } else {
+                    $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) has been confirmed as completed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}). The errand, payment details, and payment proof have been moved to history.";
+                    $tasker_msg = "Your Assigned Errand: \"{$errand_title}\" (ID: {$errand_id}) has been confirmed as completed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}). The errand, payment details, and payment proof have been moved to history.";
+                    $admin_msg = "Errand Confirmed Completed | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Confirmed Complete by Admin: \"{$admin_full_name}\" (ID: {$admin->id}). The errand, payment details, and payment proof have been transferred to history.";
                 }
 
-                $notif_type = "errand";
+                $notif_type = 'errand';
 
                 $client_link = route('client.view-errand', ['id' => $errand_id]) . '?from=notifications';
                 $tasker_link = route('tasker.view-errand', ['id' => $errand_id]) . '?from=notifications';
@@ -1234,10 +1271,85 @@ class AdminController extends Controller
         }
     }
 
+    public function submitRefundProof(Request $request, $id)
+    {
+        $admin = $request->user();
+
+        $validated = $request->validate([
+            'refund_proof' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:10240'],
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $errand = Errand::with('payment')
+                ->where('id', $id)
+                ->where('status', 'dispute')
+                ->first();
+
+            if (!$errand) {
+                DB::rollBack();
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Errand not found or is not in dispute.'
+                ], 404);
+            }
+
+            if (!$errand->payment) {
+                DB::rollBack();
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Payment record not found.'
+                ], 422);
+            }
+
+            if ($errand->payment->status !== 'paid') {
+                DB::rollBack();
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Payment must be paid before submitting a refund receipt.'
+                ], 422);
+            }
+
+            if (
+                $errand->payment->refund_proof_path &&
+                Storage::disk('public')->exists($errand->payment->refund_proof_path)
+            ) {
+                Storage::disk('public')->delete(
+                    $errand->payment->refund_proof_path
+                );
+            }
+
+            $file = $request->file('refund_proof');
+            $path = $file->store('uploads/refund_proofs', 'public');
+
+            $errand->payment->refund_proof_path = $path;
+            $errand->payment->refund_submitted_at = Carbon::now();
+            $errand->payment->save();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Refund receipt uploaded successfully.'
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function updateFailed(Request $request, $id)
     {
         $admin = $request->user();
-        $should_refund = $request->boolean('refund');
 
         $errand = Errand::with(['attachment', 'payment'])
             ->where('id', $id)
@@ -1260,43 +1372,74 @@ class AdminController extends Controller
             ], 422);
         }
 
-        if ($should_refund && $payment->status !== 'paid') {
+        if ($payment->status !== 'paid') {
             return response()->json([
                 'success' => false,
-                'message' => 'Only paid errands can be marked as failed with a refund.'
+                'message' => 'Payment must be paid before marking the errand as failed.'
             ], 422);
         }
 
-        if (!$should_refund && $payment->status === 'paid') {
+        if (
+            !$payment->proof_path ||
+            !Storage::disk('public')->exists($payment->proof_path)
+        ) {
             return response()->json([
                 'success' => false,
-                'message' => 'This errand has already been paid. Use the failed and refund action instead.'
+                'message' => 'Original payment proof not found.'
+            ], 422);
+        }
+
+        if (
+            !$payment->refund_proof_path ||
+            !Storage::disk('public')->exists($payment->refund_proof_path)
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Refund receipt must be uploaded before marking the errand as failed.'
             ], 422);
         }
 
         $client = User::find($errand->client_id);
+
         $tasker = $errand->tasker_id
             ? User::find($errand->tasker_id)
             : null;
 
         try {
-            $history = DB::transaction(function () use (
-                $errand,
-                $admin,
-                $client,
-                $tasker,
-                $payment,
-                $should_refund,
-            ) {
-                if ($should_refund) {
-                    $payment->update([
-                        'status' => 'refunded',
-                    ]);
-                } else {
-                    $payment->update([
-                        'status' => 'unpaid',
-                    ]);
-                }
+            $history = DB::transaction(function () use ($errand, $admin, $client, $tasker, $payment) {
+
+                $payment->update([
+                    'status' => 'refunded',
+                    'refunded_at' => Carbon::now(),
+                ]);
+
+                $paymentProofExtension = pathinfo(
+                    $payment->proof_path,
+                    PATHINFO_EXTENSION
+                );
+
+                $paymentProofPath =
+                    'uploads/history/payment_proofs/' .
+                    'errand_payment_proof' . $errand->id . '.' . $paymentProofExtension;
+
+                Storage::disk('public')->copy(
+                    $payment->proof_path,
+                    $paymentProofPath
+                );
+
+                $refundProofExtension = pathinfo(
+                    $payment->refund_proof_path,
+                    PATHINFO_EXTENSION
+                );
+
+                $refundProofPath =
+                    'uploads/history/refund_proofs/' .
+                    'errand_refund_proof' . $errand->id . '.' . $refundProofExtension;
+
+                Storage::disk('public')->copy(
+                    $payment->refund_proof_path,
+                    $refundProofPath
+                );
 
                 $history = History::create([
                     'errand_id' => $errand->id,
@@ -1308,8 +1451,13 @@ class AdminController extends Controller
                     'payment_method' => $payment->method,
                     'payment_amount' => $payment->amount,
                     'payment_status' => $payment->status,
-                    'payment_reference' => $payment->reference,
+                    'payment_proof_path' => $paymentProofPath,
+                    'payment_proof_submitted_at' => $payment->proof_submitted_at,
                     'payment_paid_at' => $payment->paid_at,
+
+                    'payment_refund_proof_path' => $refundProofPath,
+                    'payment_refund_proof_submitted_at' => $payment->refund_submitted_at,
+                    'payment_refunded_at' => $payment->refunded_at,
 
                     'deadline' => $errand->deadline,
                     'location' => $errand->location,
@@ -1336,8 +1484,8 @@ class AdminController extends Controller
                     'finished_at' => Carbon::now(),
                 ]);
 
-                $client_profile_picture = 'uploads/history/profile_pictures/default.jpg';
-                $tasker_profile_picture = 'uploads/history/profile_pictures/default.jpg';
+                $clientProfilePicture = 'uploads/history/profile_pictures/default.jpg';
+                $taskerProfilePicture = 'uploads/history/profile_pictures/default.jpg';
 
                 if (
                     $client &&
@@ -1345,15 +1493,18 @@ class AdminController extends Controller
                     $client->profile_picture !== 'uploads/profile_pictures/default.jpg' &&
                     Storage::disk('public')->exists($client->profile_picture)
                 ) {
-                    $extension = pathinfo($client->profile_picture, PATHINFO_EXTENSION);
+                    $extension = pathinfo(
+                        $client->profile_picture,
+                        PATHINFO_EXTENSION
+                    );
 
-                    $client_profile_picture =
+                    $clientProfilePicture =
                         'uploads/history/profile_pictures/client_' .
                         $history->errand_id . '.' . $extension;
 
                     Storage::disk('public')->copy(
                         $client->profile_picture,
-                        $client_profile_picture
+                        $clientProfilePicture
                     );
                 }
 
@@ -1363,43 +1514,49 @@ class AdminController extends Controller
                     $tasker->profile_picture !== 'uploads/profile_pictures/default.jpg' &&
                     Storage::disk('public')->exists($tasker->profile_picture)
                 ) {
-                    $extension = pathinfo($tasker->profile_picture, PATHINFO_EXTENSION);
+                    $extension = pathinfo(
+                        $tasker->profile_picture,
+                        PATHINFO_EXTENSION
+                    );
 
-                    $tasker_profile_picture =
+                    $taskerProfilePicture =
                         'uploads/history/profile_pictures/tasker_' .
                         $history->errand_id . '.' . $extension;
 
                     Storage::disk('public')->copy(
                         $tasker->profile_picture,
-                        $tasker_profile_picture
+                        $taskerProfilePicture
                     );
                 }
 
                 $history->update([
-                    'client_profile_picture' => $client_profile_picture,
-                    'tasker_profile_picture' => $tasker_profile_picture,
+                    'client_profile_picture' => $clientProfilePicture,
+                    'tasker_profile_picture' => $taskerProfilePicture,
                 ]);
 
                 $attachment = $errand->attachment;
 
-                if ($attachment && Storage::disk('public')->exists($attachment->file_path)) {
+                if (
+                    $attachment &&
+                    Storage::disk('public')->exists($attachment->file_path)
+                ) {
                     $extension = pathinfo(
                         $attachment->file_path,
                         PATHINFO_EXTENSION
                     );
 
-                    $history_path =
+                    $historyPath =
                         'uploads/history/attachments/' .
-                        Str::uuid() . '.' . $extension;
+                        'errand_' . $history->errand_id . '.' . $extension;
 
                     Storage::disk('public')->copy(
                         $attachment->file_path,
-                        $history_path
+                        $historyPath
                     );
 
                     HistoryAttachment::create([
                         'history_errand_id' => $history->id,
-                        'file_path' => $history_path,
+                        'file_path' => $historyPath,
                         'original_name' => $attachment->original_name,
                         'uploaded_at' => $attachment->uploaded_at,
                     ]);
@@ -1407,10 +1564,12 @@ class AdminController extends Controller
                     Storage::disk('public')->delete($attachment->file_path);
                 }
 
+                Storage::disk('public')->delete($payment->proof_path);
+                Storage::disk('public')->delete($payment->refund_proof_path);
+
                 $errand_id = $errand->id;
                 $errand_title = $errand->title;
 
-                $admin_id = $admin->id;
                 $admin_full_name = trim(
                     "{$admin->first_name} " .
                     ($admin->middle_name ? "{$admin->middle_name} " : "") .
@@ -1418,6 +1577,7 @@ class AdminController extends Controller
                 );
 
                 $client_id = $errand->client_id;
+
                 $client_full_name = $client
                     ? trim(
                         "{$client->first_name} " .
@@ -1427,6 +1587,7 @@ class AdminController extends Controller
                     : 'Client';
 
                 $tasker_id = $errand->tasker_id;
+
                 $tasker_full_name = $tasker
                     ? trim(
                         "{$tasker->first_name} " .
@@ -1435,18 +1596,11 @@ class AdminController extends Controller
                     )
                     : 'Tasker';
 
-                $payment_message = $should_refund
-                    ? ' The paid amount has been marked as refunded.'
-                    : '';
+                $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been resolved and marked as failed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}). The paid amount has been refunded and the errand, payment details, payment proof, and refund proof have been moved to history.";
 
-                $client_msg = "Your Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been marked as failed by Administrator: \"{$admin_full_name}\" (ID: {$admin_id}) and moved to history.{$payment_message}";
+                $tasker_msg = "Your Assigned Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been resolved and marked as failed by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}). The paid amount has been refunded and the errand, payment details, payment proof, and refund proof have been moved to history.";
 
-                $tasker_msg = "Your Assigned Errand: \"{$errand_title}\" (ID: {$errand_id}) dispute has been marked as failed by Administrator: \"{$admin_full_name}\" (ID: {$admin_id}) and moved to history.{$payment_message}";
-
-                $admin_msg =
-                    "Errand Dispute Marked Failed" .
-                    ($should_refund ? " & Refunded" : "") .
-                    " | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Marked Failed by Admin: \"{$admin_full_name}\" (ID: {$admin_id}). Transferred to history.";
+                $admin_msg = "Errand Dispute Marked Failed & Refunded | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Marked Failed by Admin: \"{$admin_full_name}\" (ID: {$admin->id}). The payment was marked as refunded and the errand, payment details, payment proof, and refund proof were transferred to history.";
 
                 $notif_type = 'errand';
 
@@ -1474,13 +1628,13 @@ class AdminController extends Controller
                     ]);
                 }
 
-                $other_admins = User::where('role', 'admin')
-                    ->where('id', '!=', $admin_id)
+                $otherAdmins = User::where('role', 'admin')
+                    ->where('id', '!=', $admin->id)
                     ->get();
 
-                foreach ($other_admins as $other_admin) {
+                foreach ($otherAdmins as $adm) {
                     Notification::create([
-                        'user_id' => $other_admin->id,
+                        'user_id' => $adm->id,
                         'type' => $notif_type,
                         'message' => $admin_msg,
                         'link' => $admin_link,
@@ -1495,9 +1649,7 @@ class AdminController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => $should_refund
-                    ? 'Errand marked as failed, payment refunded, and moved to history successfully.'
-                    : 'Errand marked as failed and moved to history successfully.',
+                'message' => 'Errand marked as failed, payment refunded, and moved to history successfully.',
                 'history_id' => $history->id,
             ]);
 
@@ -1507,117 +1659,6 @@ class AdminController extends Controller
                 'message' => $e->getMessage(),
             ], 500);
         }
-    }
-
-    public function deleteHistory(Request $request, $id)
-    {
-        $admin = $request->user();
-
-        $history = History::with('attachment')
-            ->where('errand_id', $id)
-            ->first();
-
-        if (!$history) {
-            return response()->json([
-                'success' => false,
-                'message' => 'History record not found.'
-            ], 404);
-        }
-
-        $client_id = $history->client_id;
-        $tasker_id = $history->tasker_id;
-
-        $errand_id = $history->errand_id;
-        $history_title = $history->title;
-
-        $client_deleted = $history->client_deleted;
-        $tasker_deleted = $history->tasker_deleted;
-
-        $admin_full_name = trim(
-            "{$admin->first_name} " .
-            ($admin->middle_name ? "{$admin->middle_name} " : "") .
-            "{$admin->last_name}"
-        );
-
-        $client_full_name = trim(
-            "{$history->client_first_name} " .
-            ($history->client_middle_name ? "{$history->client_middle_name} " : "") .
-            "{$history->client_last_name}"
-        );
-
-        $tasker_full_name = trim(
-            "{$history->tasker_first_name} " .
-            ($history->tasker_middle_name ? "{$history->tasker_middle_name} " : "") .
-            "{$history->tasker_last_name}"
-        );
-
-        if ($history->attachment) {
-            Storage::disk('public')->delete($history->attachment->file_path);
-            $history->attachment()->delete();
-        }
-
-        if (
-            $history->client_profile_picture &&
-            $history->client_profile_picture !== 'uploads/history/profile_pictures/default.jpg' &&
-            Storage::disk('public')->exists($history->client_profile_picture)
-        ) {
-            Storage::disk('public')->delete($history->client_profile_picture);
-        }
-
-        if (
-            $history->tasker_profile_picture &&
-            $history->tasker_profile_picture !== 'uploads/history/profile_pictures/default.jpg' &&
-            Storage::disk('public')->exists($history->tasker_profile_picture)
-        ) {
-            Storage::disk('public')->delete($history->tasker_profile_picture);
-        }
-
-        $history->delete();
-
-        $client_msg = "Your History Errand: \"{$history_title}\" (ID: {$errand_id}) has been deleted by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
-        $tasker_msg = "Your History Errand: \"{$history_title}\" (ID: {$errand_id}) has been deleted by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}).";
-        $admin_msg = "History Errand Deleted | Errand: \"{$history_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin->id}).";
-
-        $notif_type = 'errand';
-
-        if ($client_id && !$client_deleted && User::where('id', $client_id)->exists()) {
-            Notification::create([
-                'user_id' => $client_id,
-                'type' => $notif_type,
-                'message' => $client_msg,
-                'link' => null,
-                'is_read' => false,
-            ]);
-        }
-
-        if ($tasker_id && !$tasker_deleted && User::where('id', $tasker_id)->exists()) {
-            Notification::create([
-                'user_id' => $tasker_id,
-                'type' => $notif_type,
-                'message' => $tasker_msg,
-                'link' => null,
-                'is_read' => false,
-            ]);
-        }
-
-        $otherAdmins = User::where('role', 'admin')
-            ->where('id', '!=', $admin->id)
-            ->get();
-
-        foreach ($otherAdmins as $adm) {
-            Notification::create([
-                'user_id' => $adm->id,
-                'type' => $notif_type,
-                'message' => $admin_msg,
-                'link' => null,
-                'is_read' => false,
-            ]);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'History record deleted successfully.',
-        ]);
     }
 
     public function showUserData(Request $request ,$id)
