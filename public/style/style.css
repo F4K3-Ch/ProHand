@@ -6956,6 +6956,126 @@ select[name="role"] option[value="client"] {
         font-weight: 400;
     }
 
+    .gcash-payment-container {
+        padding: 12px;
+        border-radius: 10px;
+        gap: 10px;
+    }
+
+    .gcash-payment-container h1 {
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+        gap: 6px;
+    }
+
+    .gcash-payment-container h1 i {
+        font-size: 1rem;
+    }
+
+    .split-payment-container {
+        gap: 10px;
+    }
+
+    .payment-action-panel {
+        padding: 6px;
+    }
+
+    .payment-action-panel a {
+        width: min(190px, 70vw);
+        height: min(190px, 70vw);
+    }
+
+    .payment-info-panel {
+        padding: 10px;
+        gap: 8px;
+        border-radius: 7px;
+    }
+
+    .payment-text-details {
+        gap: 6px;
+    }
+
+    .payment-text-details .alert-text {
+        padding: 8px 9px;
+        font-size: 0.82rem;
+        line-height: 1.45;
+    }
+
+    .merchant-number {
+        padding: 7px 8px;
+        font-size: 0.82rem;
+        gap: 7px;
+        overflow-wrap: anywhere;
+    }
+
+    .merchant-number i {
+        flex-shrink: 0;
+    }
+
+    .qr-hint-text {
+        font-size: 0.75rem;
+        line-height: 1.4;
+        gap: 5px;
+    }
+
+    .payment-right-upload {
+        padding: 8px;
+    }
+
+    .payment-right-upload label {
+        font-size: 0.82rem;
+    }
+
+    .payment-right-upload input[type="file"] {
+        width: 100%;
+        max-width: 100%;
+        font-size: 0.78rem;
+        box-sizing: border-box;
+    }
+
+    .payment-right-upload small {
+        font-size: 0.72rem;
+        line-height: 1.4;
+    }
+
+    .btn-submit-proof {
+        padding: 8px 10px;
+        font-size: 0.82rem;
+    }
+
+    .payment-verification-panel {
+        padding: 10px;
+        gap: 8px;
+        border-radius: 7px;
+    }
+
+    .payment-status-header {
+        gap: 7px;
+        padding-bottom: 8px;
+    }
+
+    .payment-status-header .status-icon-orange {
+        font-size: 0.95rem;
+    }
+
+    .payment-status-header .status-title-orange {
+        font-size: 0.88rem;
+    }
+
+    .payment-status-message {
+        padding: 8px 9px;
+        font-size: 0.78rem;
+        line-height: 1.45;
+    }
+
+    .payment-receipt-section {
+        gap: 5px;
+    }
+
+    .receipt-section-label {
+        font-size: 0.78rem;
+    }
+
     .create-errand-container {
         max-width: 100%;
         padding: 12px;
