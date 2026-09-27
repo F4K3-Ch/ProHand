@@ -604,6 +604,9 @@ class ClientController extends Controller
         DB::beginTransaction();
 
         try {
+            $oldFee = (float) $errand->fee;
+            $newFee = (float) $validated['fee'];
+
             $errand->update([
                 'title' => $validated['title'],
                 'category' => $validated['category'],
@@ -615,14 +618,25 @@ class ClientController extends Controller
             ]);
 
             if ($errand->payment) {
-                if ($errand->payment->status !== 'pending') {
-                    throw new \Exception('Payment can no longer be changed.');
-                }
+                $feeChanged = $oldFee !== $newFee;
 
-                $errand->payment->update([
-                    'amount' => $validated['fee'],
-                    'method' => $validated['payment_method'],
-                ]);
+                if ($feeChanged && !empty($errand->payment->proof_path)) {
+                    Storage::disk('public')->delete($errand->payment->proof_path);
+
+                    $errand->payment->update([
+                        'amount' => $validated['fee'],
+                        'method' => $validated['payment_method'],
+                        'status' => 'pending',
+                        'proof_path' => null,
+                        'proof_submitted_at' => null,
+                        'paid_at' => null,
+                    ]);
+                } else {
+                    $errand->payment->update([
+                        'amount' => $validated['fee'],
+                        'method' => $validated['payment_method'],
+                    ]);
+                }
             }
 
             if ($request->filled('remove_current_file') && $errand->attachment) {
@@ -824,7 +838,7 @@ class ClientController extends Controller
 
                 $paymentProofPath =
                     'uploads/history/payment_proofs/' .
-                    'errand_payment_proof' . $errand->id . '.' . $paymentProofExtension;
+                    'errand_payment_proof_' . $errand->id . '.' . $paymentProofExtension;
 
                 Storage::disk('public')->copy(
                     $payment->proof_path,
@@ -1020,7 +1034,7 @@ class ClientController extends Controller
             ], 500);
         }
     }
-    
+
     public function cancelErrand(Request $request, $id)
     {
         $client = $request->user();
@@ -1042,7 +1056,7 @@ class ClientController extends Controller
         $tasker = $tasker_id ? User::find($tasker_id) : null;
 
         if ($errand->payment) {
-            $errand->payment->status = 'pending';
+            $errand->payment->status = 'proof_submitted';
             $errand->payment->save();
         }
 

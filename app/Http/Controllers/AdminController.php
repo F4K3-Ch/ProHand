@@ -537,7 +537,7 @@ class AdminController extends Controller
 
         $client_msg = "Your payment receipt for Errand: \"{$errand_title}\" (ID: {$errand_id}) has been accepted by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}). The errand is now in progress.";
 
-        $tasker_msg = "Payment for Errand: \"{$errand_title}\" (ID: {$errand_id}) has been verified by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}). You may now proceed with the errand.";
+        $tasker_msg = "Payment for Errand: \"{$errand_title}\" (ID: {$errand_id}) has been verified by Administrator: \"{$admin_full_name}\" (ID: {$admin->id}). You can now start working on the errand.";
 
         $admin_msg = "Payment Receipt Accepted | Errand: \"{$errand_title}\" (ID: {$errand_id}) | Client: \"{$client_full_name}\" (ID: {$client_id}) | Tasker: \"{$tasker_full_name}\" (ID: {$tasker_id}) | Accepted by Admin: \"{$admin_full_name}\" (ID: {$admin->id}).";
 
@@ -692,7 +692,7 @@ class AdminController extends Controller
         $client_id = $errand->client_id;
 
         if ($errand->payment) {
-            $errand->payment->status = 'pending';
+            $errand->payment->status = 'proof_submitted';
             $errand->payment->save();
         }
 
@@ -766,7 +766,8 @@ class AdminController extends Controller
         $admin = $request->user();
         $requester = $request->input('requester'); // 'client' or 'tasker'
 
-        $errand = Errand::where('id', $id)
+        $errand = Errand::with('payment')
+            ->where('id', $id)
             ->where(function ($query) {
                 $query->where('cancel_requested_by_client', true)
                     ->orWhere('cancel_requested_by_tasker', true);
@@ -782,6 +783,11 @@ class AdminController extends Controller
 
         $tasker_id = $errand->tasker_id;
         $client_id = $errand->client_id;
+
+        if ($errand->payment) {
+            $errand->payment->status = 'proof_submitted';
+            $errand->payment->save();
+        }
 
         $errand->status = 'pending';
         $errand->tasker_id = null;
@@ -1068,7 +1074,7 @@ class AdminController extends Controller
 
                 $paymentProofPath =
                     'uploads/history/payment_proofs/' .
-                    'errand_payment_proof' . $errand->id . '.' . $paymentProofExtension;
+                    'errand_payment_proof_' . $errand->id . '.' . $paymentProofExtension;
 
                 Storage::disk('public')->copy(
                     $payment->proof_path,
@@ -1443,7 +1449,7 @@ class AdminController extends Controller
 
                 $paymentProofPath =
                     'uploads/history/payment_proofs/' .
-                    'errand_payment_proof' . $errand->id . '.' . $paymentProofExtension;
+                    'errand_payment_proof_' . $errand->id . '.' . $paymentProofExtension;
 
                 Storage::disk('public')->copy(
                     $payment->proof_path,
@@ -1457,7 +1463,7 @@ class AdminController extends Controller
 
                 $refundProofPath =
                     'uploads/history/refund_proofs/' .
-                    'errand_refund_proof' . $errand->id . '.' . $refundProofExtension;
+                    'errand_refund_proof_' . $errand->id . '.' . $refundProofExtension;
 
                 Storage::disk('public')->copy(
                     $payment->refund_proof_path,

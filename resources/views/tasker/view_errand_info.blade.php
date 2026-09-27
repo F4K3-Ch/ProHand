@@ -441,7 +441,7 @@
 
                         completeErrandBtn.addEventListener('click', async function() {
                             const customTitle = 'Mark Errand as Finished';
-                            const customMessage = 'Are you sure you want to mark errand #' + errand.id + ' ("' + errand.title + '") as finished? The errand will then await client confirmation and cash payment.';
+                            const customMessage = 'Are you sure you want to mark errand #' + errand.id + ' ("' + errand.title + '") as finished? The errand will then await client confirmation.';
                             const isConfirmed = await showConfirmation(customTitle, customMessage);
 
                             if (!isConfirmed) return;
