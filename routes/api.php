@@ -70,5 +70,6 @@ Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
         Route::get('/admin/users', [AdminController::class, 'allUsers']);
         Route::post('/admin/add-user', [AdminController::class, 'storeUser']);
         Route::get('/admin/users/{id}', [AdminController::class, 'showUserData']);
+        Route::post('/admin/users/{id}/delete', [AdminController::class, 'deleteUser']);
     });
 });

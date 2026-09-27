@@ -1963,4 +1963,137 @@ class AdminController extends Controller
             'user' => $user
         ], $existingUser ? 200 : 201);
     }
+
+    public function deleteUser(Request $request, $id)
+    {
+        $admin = $request->user();
+
+        $user = User::where('id', $id)
+            ->where('id', '!=', $admin->id)
+            ->first();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found or you cannot delete your own account from here.'
+            ], 404);
+        }
+
+        $activeErrandExists = Errand::where(function ($query) use ($user) {
+            $query->where('client_id', $user->id)
+                ->orWhere('tasker_id', $user->id);
+        })
+        ->whereIn('status', [
+            'accepted',
+            'in_progress',
+            'awaiting_confirmation',
+            'dispute'
+        ])
+        ->exists();
+
+        if ($activeErrandExists) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You cannot delete this user while they have an active errand.'
+            ], 422);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $user_id = $user->id;
+
+            $user_full_name = trim(
+                "{$user->first_name} " .
+                ($user->middle_name ? "{$user->middle_name} " : "") .
+                "{$user->last_name}"
+            );
+
+            $formatted_role = ucfirst($user->role);
+
+            $errands = Errand::with(['attachment', 'payment'])
+                ->where(function ($query) use ($user) {
+                    $query->where('client_id', $user->id)
+                        ->orWhere('tasker_id', $user->id);
+                })
+                ->get();
+
+            foreach ($errands as $errand) {
+                if ($errand->attachment) {
+                    if (
+                        $errand->attachment->file_path &&
+                        Storage::disk('public')->exists($errand->attachment->file_path)
+                    ) {
+                        Storage::disk('public')->delete(
+                            $errand->attachment->file_path
+                        );
+                    }
+
+                    $errand->attachment()->delete();
+                }
+
+                if ($errand->payment) {
+                    if (
+                        $errand->payment->proof_path &&
+                        Storage::disk('public')->exists($errand->payment->proof_path)
+                    ) {
+                        Storage::disk('public')->delete(
+                            $errand->payment->proof_path
+                        );
+                    }
+
+                    $errand->payment->delete();
+                }
+
+                $errand->delete();
+            }
+
+            if (
+                $user->profile_picture &&
+                $user->profile_picture !== 'uploads/profile_pictures/default.jpg' &&
+                Storage::disk('public')->exists($user->profile_picture)
+            ) {
+                Storage::disk('public')->delete($user->profile_picture);
+            }
+
+            $admin_full_name = trim(
+                "{$admin->first_name} " .
+                ($admin->middle_name ? "{$admin->middle_name} " : "") .
+                "{$admin->last_name}"
+            );
+
+            $admin_msg = "User Deleted | User: \"{$user_full_name}\" (ID: {$user_id}, Role: {$formatted_role}) | Deleted by Admin: \"{$admin_full_name}\" (ID: {$admin->id}).";
+
+            $otherAdmins = User::where('role', 'admin')
+                ->where('id', '!=', $admin->id)
+                ->get();
+
+            foreach ($otherAdmins as $adm) {
+                Notification::create([
+                    'user_id' => $adm->id,
+                    'type' => 'system',
+                    'message' => $admin_msg,
+                    'link' => null,
+                    'is_read' => false,
+                ]);
+            }
+
+            $user->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User deleted successfully.'
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to delete the user. Please try again.'
+            ], 500);
+        }
+    }
 }

@@ -151,11 +151,28 @@ class ProfileController extends Controller
 
             foreach ($errands as $errand) {
                 if ($errand->attachment) {
-                    Storage::disk('public')->delete($errand->attachment->file_path);
+                    if (
+                        $errand->attachment->file_path &&
+                        Storage::disk('public')->exists($errand->attachment->file_path)
+                    ) {
+                        Storage::disk('public')->delete(
+                            $errand->attachment->file_path
+                        );
+                    }
+
                     $errand->attachment()->delete();
                 }
 
                 if ($errand->payment) {
+                    if (
+                        $errand->payment->proof_path &&
+                        Storage::disk('public')->exists($errand->payment->proof_path)
+                    ) {
+                        Storage::disk('public')->delete(
+                            $errand->payment->proof_path
+                        );
+                    }
+
                     $errand->payment->delete();
                 }
 
@@ -171,6 +188,7 @@ class ProfileController extends Controller
             }
 
             $user_id = $user->id;
+
             $user_full_name = trim(
                 "{$user->first_name} " .
                 ($user->middle_name ? "{$user->middle_name} " : "") .
@@ -223,6 +241,7 @@ class ProfileController extends Controller
                 'success' => true,
                 'message' => 'Account deleted successfully.'
             ]);
+
         } catch (\Throwable $e) {
             DB::rollBack();
 

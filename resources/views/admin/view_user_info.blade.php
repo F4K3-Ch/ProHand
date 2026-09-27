@@ -234,15 +234,36 @@
                         ' ' + user.last_name;
 
                     const customTitle = 'Confirm Account Deletion';
-                    const customMessage = 'Are you sure you want to delete the account of "' +
-                        fullName + '" (ID: ' + user.id +
-                        ')? The account and associated data will be permanently deleted.';
-
+                    const customMessage = 'Are you sure you want to delete the account of "' + fullName + '" (ID: ' + user.id + ')? The account and associated data will be permanently deleted.';
                     const isConfirmed = await showConfirmation(customTitle, customMessage);
 
                     if (!isConfirmed) return;
 
-                    console.log('Delete account confirmed.');
+                    try {
+                        const response = await fetch('/api/admin/users/' + user.id + '/delete', {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                'X-API-KEY': apiKey,
+                                'X-MY-ORIGIN': origin
+                            },
+                            credentials: 'same-origin'
+                        });
+
+                        const result = await response.json();
+
+                        if (!response.ok || !result.success) {
+                            throw new Error(result.message || 'Failed to delete user.');
+                        }
+
+                        sessionStorage.setItem('success_message', result.message);
+                        window.location.href = '{{ route("admin.manage-users") }}';
+
+                    } catch (error) {
+                        console.error('Error:', error);
+                        displayGlobalError(error.message);
+                    }
                 });
             }
         });
