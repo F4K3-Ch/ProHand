@@ -305,26 +305,26 @@ class TaskerController extends Controller
                 'raw_status' => $errand->status,
                 'cancel_requested_by_tasker' => $errand->cancel_requested_by_tasker,
                 'status_class' => 'status-field status-' . $errand->status,
-                
-                'created_at' => $errand->created_at 
-                    ? Carbon::parse($errand->created_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+
+                'created_at' => $errand->created_at
+                    ? Carbon::parse($errand->created_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                     : 'Not Set',
-                'updated_at' => $errand->updated_at 
-                    ? Carbon::parse($errand->updated_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                'updated_at' => $errand->updated_at
+                    ? Carbon::parse($errand->updated_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                     : 'Not Set',
-                'accepted_at' => $errand->accepted_at 
-                    ? Carbon::parse($errand->accepted_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                'accepted_at' => $errand->accepted_at
+                    ? Carbon::parse($errand->accepted_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                     : 'Not Set',
-                'in_progress_at' => $errand->in_progress_at 
-                    ? Carbon::parse($errand->in_progress_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                'in_progress_at' => $errand->in_progress_at
+                    ? Carbon::parse($errand->in_progress_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                     : 'Not Set',
-                'deadline' => $errand->deadline 
-                    ? Carbon::parse($errand->deadline)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                'deadline' => $errand->deadline
+                    ? Carbon::parse($errand->deadline)->timezone('Asia/Manila')->format('M d, Y h:i A')
                     : 'Not Set',
                 'finished_at' => $errand->finished_at
-                    ? Carbon::parse($errand->finished_at)->timezone('Asia/Manila')->format('M d, Y h:i A') 
+                    ? Carbon::parse($errand->finished_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                     : 'Not Set',
-                
+
                 'attachment' => $errand->attachment ? [
                     'name' => $errand->attachment->original_name,
                     'url' => Storage::url($errand->attachment->file_path)
@@ -332,11 +332,15 @@ class TaskerController extends Controller
 
                 'client' => $errand->client ? [
                     'id' => $errand->client->id,
-                    'name' => trim("{$errand->client->first_name} " . ($errand->client->middle_name ? "{$errand->client->middle_name} " : "") . "{$errand->client->last_name}"),
+                    'name' => trim(
+                        "{$errand->client->first_name} " .
+                        ($errand->client->middle_name ? "{$errand->client->middle_name} " : "") .
+                        "{$errand->client->last_name}"
+                    ),
                     'email' => $errand->client->email,
                     'contact_number' => $errand->client->contact_number,
-                    'profile_picture' => $errand->client->profile_picture 
-                        ? Storage::url($errand->client->profile_picture) 
+                    'profile_picture' => $errand->client->profile_picture
+                        ? Storage::url($errand->client->profile_picture)
                         : asset('storage/uploads/profile_pictures/default.jpg')
                 ] : null,
 
@@ -349,15 +353,11 @@ class TaskerController extends Controller
                     'paid_at' => $errand->payment->paid_at
                         ? Carbon::parse($errand->payment->paid_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                         : 'Not paid yet',
-                    'proof' => $errand->payment->proof_path ? [
-                        'name' => basename($errand->payment->proof_path),
-                        'url' => Storage::url($errand->payment->proof_path)
-                    ] : null,
                 ] : null,
             ];
 
             return response()->json([
-                'success' => true, 
+                'success' => true,
                 'errand' => $formattedErrand
             ]);
         }
@@ -427,17 +427,13 @@ class TaskerController extends Controller
 
             'payment' => $history->payment_method ? [
                 'method' => Str::title($history->payment_method),
-                'status' => Str::title($history->payment_status),
+                'status' => Str::title(str_replace('_', ' ', $history->payment_status)),
                 'raw_status' => $history->payment_status,
                 'status_class' => 'status-field status-' . $history->payment_status,
-                'amount' => $history->payment_amount,
+                'amount' => '₱' . number_format($history->payment_amount, 2),
                 'paid_at' => $history->payment_paid_at
                     ? Carbon::parse($history->payment_paid_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                     : 'None',
-                'proof' => $history->payment_proof_path ? [
-                    'name' => basename($history->payment_proof_path),
-                    'url' => Storage::url($history->payment_proof_path)
-                ] : null,
             ] : null,
         ];
 

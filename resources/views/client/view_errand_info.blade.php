@@ -235,31 +235,64 @@
                         </div>
                     </div>
 
-                    <div id="gcashHistoryReceipt" class="payment-verification-panel" style="display:none;">
+                    <div id="completedPaymentProofPanel" class="payment-verification-panel" style="display:none;">
                         <div class="payment-status-header">
                             <i class="fa-solid fa-circle-check status-icon-orange"></i>
                             <h2 class="status-title-orange">Payment Receipt</h2>
                         </div>
 
                         <p class="payment-status-message">
-                            <strong>Your payment receipt is saved with this errand's history.</strong>
-                            You can preview or download the original payment proof below.
+                            <strong>This errand has been completed.</strong>
+                            The original payment receipt has been preserved in the errand history.
                         </p>
 
                         <div class="errand-attachment-section">
                             <label>
                                 <i class="fa-solid fa-file-invoice-dollar"></i>
-                                Payment Receipt
+                                Original Payment Receipt
                             </label>
 
-                            <div id="gcash-history-receipt-attachment">
+                            <div id="completedPaymentProofAttachment">
                                 <div class="attachment-item">
-                                    <a href="#" target="_blank" class="attachment-name" title="Preview File">
+                                    <a href="#" target="_blank" class="attachment-name" id="completedPaymentProofPreview" title="Preview Payment Receipt">
                                         <i class="fa-solid fa-file"></i>
-                                        <span class="attachment-filename"></span>
+                                        <span id="completedPaymentProofFilename"></span>
                                     </a>
 
-                                    <a href="#" class="btn-download" download>
+                                    <a href="#" class="btn-download" id="completedPaymentProofDownload" download>
+                                        <i class="fa-solid fa-download"></i>
+                                        Download
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="failedRefundProofPanel" class="payment-verification-panel" style="display:none;">
+                        <div class="payment-status-header">
+                            <i class="fa-solid fa-money-bill-transfer status-icon-orange"></i>
+                            <h2 class="status-title-orange">Refund Receipt</h2>
+                        </div>
+
+                        <p class="payment-status-message">
+                            <strong>This errand has been marked as failed and refunded.</strong>
+                            The refund receipt has been preserved in the errand history.
+                        </p>
+
+                        <div class="errand-attachment-section">
+                            <label>
+                                <i class="fa-solid fa-file-invoice-dollar"></i>
+                                Refund Receipt
+                            </label>
+
+                            <div id="failedRefundProofAttachment">
+                                <div class="attachment-item">
+                                    <a href="#" target="_blank" class="attachment-name" id="failedRefundProofPreview" title="Preview Refund Receipt">
+                                        <i class="fa-solid fa-file"></i>
+                                        <span id="failedRefundProofFilename"></span>
+                                    </a>
+
+                                    <a href="#" class="btn-download" id="failedRefundProofDownload" download>
                                         <i class="fa-solid fa-download"></i>
                                         Download
                                     </a>
@@ -705,51 +738,93 @@
                 } else if (errand.raw_status === 'completed' || errand.raw_status === 'failed') {
                     const deleteBtn = document.getElementById('deleteErrandBtn');
                     const gcashPaymentContainer = document.getElementById('gcashPaymentContainer');
-                    const gcashHistoryReceipt = document.getElementById('gcashHistoryReceipt');
+                    const completedPaymentProofPanel = document.getElementById('completedPaymentProofPanel');
+                    const failedRefundProofPanel = document.getElementById('failedRefundProofPanel');
 
                     deleteBtn.style.display = 'flex';
 
                     if (
                         errand.payment &&
                         errand.payment.method &&
-                        errand.payment.method.toLowerCase() === 'gcash' &&
-                        errand.payment.proof
+                        errand.payment.method.toLowerCase() === 'gcash'
                     ) {
                         gcashPaymentContainer.style.display = 'flex';
-                        gcashHistoryReceipt.style.display = 'flex';
 
-                        const receiptItem = document.querySelector('#gcash-history-receipt-attachment .attachment-item');
+                        if (errand.payment.proof) {
+                            completedPaymentProofPanel.style.display = 'flex';
 
-                        receiptItem.querySelector('.attachment-filename').textContent =
-                            errand.payment.proof.name;
+                            document.getElementById('completedPaymentProofFilename').textContent =
+                                errand.payment.proof.name;
 
-                        receiptItem.querySelector('.attachment-name').href =
-                            errand.payment.proof.url;
+                            document.getElementById('completedPaymentProofPreview').href =
+                                errand.payment.proof.url;
 
-                        const downloadBtn = receiptItem.querySelector('.btn-download');
+                            const paymentDownload =
+                                document.getElementById('completedPaymentProofDownload');
 
-                        downloadBtn.href = errand.payment.proof.url;
-                        downloadBtn.setAttribute('download', errand.payment.proof.name);
+                            paymentDownload.href = errand.payment.proof.url;
+                            paymentDownload.setAttribute(
+                                'download',
+                                errand.payment.proof.name
+                            );
+                        }
+
+                        if (
+                            errand.raw_status === 'failed' &&
+                            errand.payment.refund_proof
+                        ) {
+                            failedRefundProofPanel.style.display = 'flex';
+
+                            document.getElementById('failedRefundProofFilename').textContent =
+                                errand.payment.refund_proof.name;
+
+                            document.getElementById('failedRefundProofPreview').href =
+                                errand.payment.refund_proof.url;
+
+                            const refundDownload =
+                                document.getElementById('failedRefundProofDownload');
+
+                            refundDownload.href = errand.payment.refund_proof.url;
+                            refundDownload.setAttribute(
+                                'download',
+                                errand.payment.refund_proof.name
+                            );
+                        }
                     }
 
                     deleteBtn.addEventListener('click', async function() {
                         const customTitle = 'Confirm Deletion';
-                        const customMessage = 'Are you sure you want to delete errand #' + errand.id + ' ("' + errand.title + '")? It will be deleted permanently.';
-                        const isConfirmed = await showConfirmation(customTitle, customMessage);
-                        
+                        const customMessage =
+                            'Are you sure you want to delete errand #' +
+                            errand.id +
+                            ' ("' +
+                            errand.title +
+                            '")? It will be deleted permanently.';
+
+                        const isConfirmed = await showConfirmation(
+                            customTitle,
+                            customMessage
+                        );
+
                         if (!isConfirmed) return;
 
                         try {
-                            const response = await fetch('/api/client/history/' + errand.id + '/delete', {
-                                method: 'POST',
-                                headers: {
-                                    'Accept': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                                    'X-API-KEY': apiKey,
-                                    'X-MY-ORIGIN': origin
-                                },
-                                credentials: 'same-origin'
-                            });
+                            const response = await fetch(
+                                '/api/client/history/' + errand.id + '/delete',
+                                {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN':
+                                            document.querySelector(
+                                                'meta[name="csrf-token"]'
+                                            )?.getAttribute('content') || '',
+                                        'X-API-KEY': apiKey,
+                                        'X-MY-ORIGIN': origin
+                                    },
+                                    credentials: 'same-origin'
+                                }
+                            );
 
                             const result = await response.json();
 
@@ -757,10 +832,14 @@
                                 throw new Error(result.message);
                             }
 
-                            sessionStorage.setItem('success_message', result.message);
+                            sessionStorage.setItem(
+                                'success_message',
+                                result.message
+                            );
+
                             window.location.href = '{{ route("client.history") }}';
 
-                        } catch(error) {
+                        } catch (error) {
                             console.error('Error:', error);
                             displayGlobalError(error.message);
                         }

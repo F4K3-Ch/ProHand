@@ -350,9 +350,15 @@ class AdminController extends Controller
                     'paid_at' => $errand->payment->paid_at
                         ? Carbon::parse($errand->payment->paid_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                         : 'Not paid yet',
+
                     'proof' => $errand->payment->proof_path ? [
                         'name' => basename($errand->payment->proof_path),
                         'url' => Storage::url($errand->payment->proof_path)
+                    ] : null,
+
+                    'refund_proof' => $errand->payment->refund_proof_path ? [
+                        'name' => basename($errand->payment->refund_proof_path),
+                        'url' => Storage::url($errand->payment->refund_proof_path)
                     ] : null,
                 ] : null,
             ];
@@ -440,16 +446,22 @@ class AdminController extends Controller
 
             'payment' => $history->payment_method ? [
                 'method' => Str::title($history->payment_method),
-                'status' => Str::title($history->payment_status),
+                'status' => Str::title(str_replace('_', ' ', $history->payment_status)),
                 'raw_status' => $history->payment_status,
                 'status_class' => 'status-field status-' . $history->payment_status,
-                'amount' => $history->payment_amount,
+                'amount' => '₱' . number_format($history->payment_amount, 2),
                 'paid_at' => $history->payment_paid_at
                     ? Carbon::parse($history->payment_paid_at)->timezone('Asia/Manila')->format('M d, Y h:i A')
                     : 'None',
+
                 'proof' => $history->payment_proof_path ? [
                     'name' => basename($history->payment_proof_path),
                     'url' => Storage::url($history->payment_proof_path)
+                ] : null,
+
+                'refund_proof' => $history->payment_refund_proof_path ? [
+                    'name' => basename($history->payment_refund_proof_path),
+                    'url' => Storage::url($history->payment_refund_proof_path)
                 ] : null,
             ] : null,
         ];
