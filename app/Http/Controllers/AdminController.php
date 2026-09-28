@@ -1873,6 +1873,126 @@ class AdminController extends Controller
         ]);
     }
 
+    public function showUserMetrics(Request $request, $id)
+    {
+        $user = User::where('id', $id)
+            ->where('id', '!=', $request->user()->id)
+            ->first();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found.'
+            ], 404);
+        }
+
+        if ($user->role === 'client') {
+            $clientId = $user->id;
+
+            $metrics = Errand::where('client_id', $clientId)
+                ->selectRaw('status, COUNT(*) as total')
+                ->groupBy('status')
+                ->pluck('total', 'status');
+
+            $pending = $metrics['pending'] ?? 0;
+            $accepted = $metrics['accepted'] ?? 0;
+            $inProgress = $metrics['in_progress'] ?? 0;
+            $awaitingConfirmation = $metrics['awaiting_confirmation'] ?? 0;
+            $dispute = $metrics['dispute'] ?? 0;
+
+            $totalActiveErrands = $metrics->sum();
+
+            $historyMetrics = History::where('client_id', $clientId)
+                ->where('client_deleted', false)
+                ->selectRaw('status, COUNT(*) as total')
+                ->groupBy('status')
+                ->pluck('total', 'status');
+
+            $completed = $historyMetrics['completed'] ?? 0;
+            $failed = $historyMetrics['failed'] ?? 0;
+            $totalHistoryErrands = $historyMetrics->sum();
+
+            return response()->json([
+                'success' => true,
+                'role' => $user->role,
+                'metrics' => [
+                    'pending' => $pending,
+                    'accepted' => $accepted,
+                    'in_progress' => $inProgress,
+                    'awaiting_confirmation' => $awaitingConfirmation,
+                    'dispute' => $dispute,
+                    'total_active' => $totalActiveErrands,
+                    'total_history' => $totalHistoryErrands,
+                    'completed' => $completed,
+                    'failed' => $failed,
+                ],
+            ]);
+        }
+
+        if ($user->role === 'tasker') {
+            $taskerId = $user->id;
+
+            $metrics = Errand::where('tasker_id', $taskerId)
+                ->whereIn('status', [
+                    'accepted',
+                    'in_progress',
+                    'awaiting_confirmation',
+                    'dispute'
+                ])
+                ->selectRaw('status, COUNT(*) as total')
+                ->groupBy('status')
+                ->pluck('total', 'status');
+
+            $accepted = $metrics['accepted'] ?? 0;
+            $inProgress = $metrics['in_progress'] ?? 0;
+            $awaitingConfirmation = $metrics['awaiting_confirmation'] ?? 0;
+            $dispute = $metrics['dispute'] ?? 0;
+
+            $totalActiveErrands = $metrics->sum();
+
+            $historyMetrics = History::where('tasker_id', $taskerId)
+                ->where('tasker_deleted', false)
+                ->selectRaw('status, COUNT(*) as total')
+                ->groupBy('status')
+                ->pluck('total', 'status');
+
+            $completed = $historyMetrics['completed'] ?? 0;
+            $failed = $historyMetrics['failed'] ?? 0;
+            $totalHistoryErrands = $historyMetrics->sum();
+
+            $incomeMetrics = History::where('tasker_id', $taskerId)
+                ->where('tasker_deleted', false)
+                ->where('status', 'completed')
+                ->where('payment_status', 'paid')
+                ->selectRaw('COALESCE(SUM(payment_amount), 0) as income')
+                ->first();
+
+            $income = $incomeMetrics->income * 0.80;
+
+            return response()->json([
+                'success' => true,
+                'role' => $user->role,
+                'metrics' => [
+                    'accepted' => $accepted,
+                    'in_progress' => $inProgress,
+                    'awaiting_confirmation' => $awaitingConfirmation,
+                    'dispute' => $dispute,
+                    'total_active' => $totalActiveErrands,
+                    'total_history' => $totalHistoryErrands,
+                    'completed' => $completed,
+                    'failed' => $failed,
+                    'income' => '₱' . number_format($income, 2),
+                ],
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'role' => $user->role,
+            'metrics' => [],
+        ]);
+    }
+
     public function storeUser(Request $request)
     {
         $validated = $request->validate(
