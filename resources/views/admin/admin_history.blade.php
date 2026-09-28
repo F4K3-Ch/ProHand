@@ -81,25 +81,25 @@
                             </p>
                         </div>
 
-                        <div class="total-card bg-completed" id="metric-card-tasker-share">
+                        <div class="total-card bg-accepted" id="metric-card-tasker-share">
                             <div class="card-header">
-                                <span class="status-circle circle-completed"></span>
+                                <span class="status-circle circle-accepted"></span>
                                 <h3>Tasker Share</h3>
                             </div>
                             <p id="metric-tasker-share">₱0.00</p>
                         </div>
 
-                        <div class="total-card bg-completed" id="metric-card-prohand-share">
+                        <div class="total-card bg-awaiting-confirmation" id="metric-card-prohand-share">
                             <div class="card-header">
-                                <span class="status-circle circle-completed"></span>
+                                <span class="status-circle circle-awaiting-confirmation"></span>
                                 <h3>ProHand Share</h3>
                             </div>
                             <p id="metric-prohand-share">₱0.00</p>
                         </div>
 
-                        <div class="total-card bg-total" id="metric-card-total-income">
+                        <div class="total-card bg-completed" id="metric-card-total-income">
                             <div class="card-header">
-                                <span class="status-circle circle-total"></span>
+                                <span class="status-circle circle-completed"></span>
                                 <h3>Total Income</h3>
                             </div>
                             <p id="metric-total-income">₱0.00</p>

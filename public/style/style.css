@@ -967,9 +967,9 @@
     }
 
     .profile-info-row span.role-field.role-admin {
-        background-color: rgba(239, 68, 68, 0.15) !important;
-        color: #ef4444 !important;
-        border-color: rgba(239, 68, 68, 0.3) !important;
+        background-color: rgba(147, 51, 234, 0.15) !important;
+        color: #9333ea !important;
+        border-color: rgba(147, 51, 234, 0.3) !important;
     }
 
     .profile-info-row span.role-field.role-tasker {
@@ -2882,8 +2882,8 @@ body {
 
 /* Role Background + Font Color Mapping */
 .role-admin {
-    background-color: rgba(239, 68, 68, 0.15);  
-    color: #ef4444; 
+    background-color: rgba(147, 51, 234, 0.15); 
+    color: #9333ea;   
 }
 
 .role-tasker {
@@ -2898,7 +2898,7 @@ body {
 
 /* Role cards with semi-transparent background matching the circle color */
 .total-card.bg-admin {
-    background-color: rgba(239, 68, 68, 0.12); 
+    background-color: rgba(147, 51, 234, 0.15); 
 }
 
 .total-card.bg-tasker {
@@ -2910,7 +2910,7 @@ body {
 }
 
 /* Role Circle Colors */
-.circle-admin { background-color: #ef4444; color: #ef4444; } 
+.circle-admin { background-color: #9333ea; color: #9333ea; }
 .circle-tasker { background-color: #3b82f6; color: #3b82f6; }
 .circle-client { background-color: #16a34a; color: #16a34a; }
 
@@ -3905,9 +3905,9 @@ body {
 
 /* Force override browser native user-agent styles on readonly inputs using attribute selectors */
 .profile-info-row span.role-field.role-admin {
-    background-color: rgba(239, 68, 68, 0.15);
-    color: #ef4444;
-    border-color: rgba(239, 68, 68, 0.3);
+    background-color: rgba(147, 51, 234, 0.15);
+    color: #9333ea;
+    border-color: rgba(147, 51, 234, 0.3);
 }
 
 .profile-info-row span.role-field.role-tasker {
