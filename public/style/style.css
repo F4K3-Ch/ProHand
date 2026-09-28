@@ -776,15 +776,32 @@
         display: none !important;
     }
 
-    .view-main > .profile-info-container {
-        display: block !important;
+    .view-main > .profile-info-container,
+    .view-main > .profile-metrics {
+        display: flex !important;
+    }
+
+    .view-main > .profile-info-container,
+    .view-main > .profile-metrics {
         width: 100% !important;
         max-width: 620px !important;
-        margin: 0 auto !important;
+        box-sizing: border-box !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        zoom: 0.78 !important;
+    }
+
+    .view-main > .profile-info-container {
+        display: block !important;
+        margin-top: 0 !important;
         padding: 0 !important;
         background: #ffffff !important;
         color: #24292e !important;
-        zoom: 0.78 !important;
+    }
+
+    .view-main > .profile-metrics {
+        display: flex !important;
+        margin-top: 12px !important;
     }
 
     .profile-container {
@@ -1009,6 +1026,167 @@
     .profile-info-list,
     .profile-extra-info,
     .profile-info-row {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+    }
+
+    .profile-metrics {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        max-width: 620px !important;
+        margin: 12px auto 0 !important;
+        padding: 12px !important;
+        gap: 8px !important;
+        box-sizing: border-box !important;
+        background: #ffffff !important;
+        color: #24292e !important;
+        border: 1px solid #cfcfcf !important;
+        border-radius: 8px !important;
+        box-shadow: none !important;
+    }
+
+    .profile-metrics > h3 {
+        width: 100% !important;
+        margin: 0 !important;
+        padding-bottom: 8px !important;
+        color: #24292e !important;
+        background: #ffffff !important;
+        font-size: 1.05rem !important;
+        font-weight: 700 !important;
+        text-align: left !important;
+    }
+
+    .profile-total-cards {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        width: 100% !important;
+        gap: 7px !important;
+        background: #ffffff !important;
+    }
+
+    .profile-total-cards .total-card {
+        flex: 0 0 calc(50% - 3.5px) !important;
+        min-width: 0 !important;
+        padding: 8px 9px !important;
+        box-sizing: border-box !important;
+        background: #f5f5f5 !important;
+        color: #24292e !important;
+        border: 1px solid #cfcfcf !important;
+        border-radius: 5px !important;
+        box-shadow: none !important;
+        text-align: center !important;
+    }
+
+    .profile-total-cards .total-card.span-full {
+        flex: 0 0 100% !important;
+    }
+
+    .profile-total-cards .card-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 5px !important;
+    }
+
+    .profile-total-cards .total-card h3 {
+        margin: 0 !important;
+        color: #555555 !important;
+        font-size: 0.78rem !important;
+        font-weight: 600 !important;
+    }
+
+    .profile-total-cards .total-card p {
+        margin: 3px 0 0 !important;
+        color: #24292e !important;
+        font-size: 1rem !important;
+        font-weight: 700 !important;
+        line-height: 1.2 !important;
+    }
+
+    .profile-total-cards .status-circle {
+        width: 7px !important;
+        height: 7px !important;
+        flex-shrink: 0 !important;
+        border-radius: 50% !important;
+        box-shadow: none !important;
+    }
+
+    #profile-metric-income {
+        font-size: 0.95rem !important;
+    }
+
+    .profile-total-cards .circle-spinner {
+        display: none !important;
+    }
+
+    .total-card.bg-pending {
+        background-color: #fff9db !important;
+    }
+
+    .total-card.bg-accepted {
+        background-color: #eef5ff !important;
+    }
+
+    .total-card.bg-in-progress {
+        background-color: #fff4e8 !important;
+    }
+
+    .total-card.bg-awaiting-confirmation {
+        background-color: #f5edff !important;
+    }
+
+    .total-card.bg-dispute {
+        background-color: #fff0f0 !important;
+    }
+
+    .total-card.bg-completed {
+        background-color: #edf9f0 !important;
+    }
+
+    .total-card.bg-failed {
+        background-color: #fff0f0 !important;
+    }
+
+    .total-card.bg-total {
+        background-color: #f5f5f5 !important;
+    }
+
+    .circle-pending {
+        background-color: #facc15 !important;
+    }
+
+    .circle-accepted {
+        background-color: #3b82f6 !important;
+    }
+
+    .circle-progress {
+        background-color: #fb923c !important;
+    }
+
+    .circle-awaiting-confirmation {
+        background-color: #9333ea !important;
+    }
+
+    .circle-dispute {
+        background-color: #ef4444 !important;
+    }
+
+    .circle-completed {
+        background-color: #16a34a !important;
+    }
+
+    .circle-failed {
+        background-color: #dc2626 !important;
+    }
+
+    .circle-total {
+        background-color: #6b7280 !important;
+    }
+
+    .profile-metrics,
+    .profile-total-cards,
+    .profile-total-cards .total-card {
         break-inside: avoid !important;
         page-break-inside: avoid !important;
     }
@@ -3780,6 +3958,102 @@ body {
     justify-content: center;
     align-items: center;
     gap: 7px;
+}
+
+/* Profile Metrics */
+.profile-metrics {
+    width: 100%;
+    max-width: 620px;
+    padding: 10px;
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.profile-metrics > h3 {
+    width: 100%;
+    color: var(--color-text);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+    text-align: left;
+}
+
+.profile-total-cards {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.profile-total-cards .total-card {
+    flex: 0 0 calc(50% - 4px);
+    min-width: 0;
+    padding: 8px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.profile-total-cards .total-card.span-full {
+    flex: 0 0 100%;
+}
+
+.profile-total-cards .total-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    border-color: var(--color-span);
+}
+
+.profile-total-cards .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.profile-total-cards .total-card h3 {
+    color: var(--color-sec-text);
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.profile-total-cards .total-card p {
+    color: var(--color-text);
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 4px 0 0;
+    line-height: 1.2;
+}
+
+.profile-total-cards .status-circle {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 6px currentColor;
+}
+
+.profile-total-cards .circle-spinner {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+#profile-metric-income {
+    font-size: 1.05rem;
 }
 
 .tasker-errand-metrics h3{
@@ -7501,6 +7775,58 @@ select[name="role"] option[value="client"] {
         font-weight: 600;
         border-radius: 5px;
         gap: 5px;
+    }
+
+    .profile-metrics {
+        padding: 8px;
+        gap: 6px;
+        border-radius: 7px;
+    }
+
+    .profile-metrics > h3 {
+        font-size: 1rem;
+    }
+
+    .profile-total-cards {
+        gap: 6px;
+    }
+
+    .profile-total-cards .total-card {
+        flex: 0 0 calc(50% - 3px);
+        padding: 6px 7px;
+        border-radius: 5px;
+    }
+
+    .profile-total-cards .card-header {
+        gap: 4px;
+    }
+
+    .profile-total-cards .total-card h3 {
+        font-size: 0.72rem;
+    }
+
+    .profile-total-cards .total-card p {
+        font-size: 0.95rem;
+        margin-top: 3px;
+    }
+
+    .profile-total-cards .status-circle {
+        width: 6px;
+        height: 6px;
+    }
+
+    .profile-total-cards .circle-spinner {
+        width: 12px;
+        height: 12px;
+        border-width: 2px;
+    }
+
+    #profile-metric-income {
+        font-size: 0.88rem;
+    }
+
+    .profile-total-cards .total-card.span-full {
+        flex: 0 0 100%;
     }
 
     .edit-profile-container {

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web', 'preventAccess', 'auth'])->group(function () {
     Route::get('/profile/data', [ProfileController::class, 'data']);
+    Route::get('/profile/metrics', [ProfileController::class, 'metrics']);
     Route::post('/profile/update', [ProfileController::class, 'update']);
     Route::post('/profile/update-password', [ProfileController::class, 'updatePassword']);
     Route::post('/profile/delete-account', [ProfileController::class, 'deleteAccount']);
