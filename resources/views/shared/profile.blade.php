@@ -326,6 +326,7 @@
                         document.getElementById('profile-metric-income').textContent = metrics.income;
                     } else if (role === 'admin') {
                         profileMetrics.style.display = 'none';
+                        profileMetrics.setAttribute('data-print', 'hidden');
                     }
 
                 } catch (error) {

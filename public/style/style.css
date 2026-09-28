@@ -1030,6 +1030,10 @@
         page-break-inside: avoid !important;
     }
 
+    .profile-metrics[data-print="hidden"] {
+        display: none !important;
+    }
+
     .profile-metrics {
         display: flex !important;
         flex-direction: column !important;
