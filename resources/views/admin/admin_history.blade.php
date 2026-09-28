@@ -53,6 +53,7 @@
             <div class="contents">
                 <section class="totals">
                     <h3>Errand Status Metrics</h3>
+
                     <div class="total-cards-container">
                         <div class="total-card bg-completed" id="metric-card-completed" style="display:none;">
                             <div class="card-header">
@@ -78,6 +79,30 @@
                             <p id="metric-total">
                                 <span id="metric-spinner" class="circle-spinner" style="width:15px;height:15px;border-width:2px;"></span>
                             </p>
+                        </div>
+
+                        <div class="total-card bg-completed" id="metric-card-tasker-share">
+                            <div class="card-header">
+                                <span class="status-circle circle-completed"></span>
+                                <h3>Tasker Share</h3>
+                            </div>
+                            <p id="metric-tasker-share">₱0.00</p>
+                        </div>
+
+                        <div class="total-card bg-completed" id="metric-card-prohand-share">
+                            <div class="card-header">
+                                <span class="status-circle circle-completed"></span>
+                                <h3>ProHand Share</h3>
+                            </div>
+                            <p id="metric-prohand-share">₱0.00</p>
+                        </div>
+
+                        <div class="total-card bg-total" id="metric-card-total-income">
+                            <div class="card-header">
+                                <span class="status-circle circle-total"></span>
+                                <h3>Total Income</h3>
+                            </div>
+                            <p id="metric-total-income">₱0.00</p>
                         </div>
                     </div>
                 </section>
@@ -185,15 +210,16 @@
 
             async function loadMetrics(){
                 try{
-                    const response = await fetch('/api/admin/history/history-metrics', {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/json',
-                            'X-API-KEY': apiKey,
-                            'X-MY-ORIGIN' : origin
+                    const response = await fetch('/api/admin/history/history-metrics',{
+                        method:'GET',
+                        headers:{
+                            'Accept':'application/json',
+                            'X-API-KEY':apiKey,
+                            'X-MY-ORIGIN':origin
                         },
-                        credentials: 'same-origin'
+                        credentials:'same-origin'
                     });
+
                     const result = await response.json();
 
                     if(!response.ok || !result.success){
@@ -205,27 +231,29 @@
                     document.getElementById('metric-completed').textContent = metrics.completed;
                     document.getElementById('metric-failed').textContent = metrics.failed;
                     document.getElementById('metric-total').textContent = metrics.total;
+                    document.getElementById('metric-tasker-share').textContent = metrics.tasker_share;
+                    document.getElementById('metric-prohand-share').textContent = metrics.prohand_share;
+                    document.getElementById('metric-total-income').textContent = metrics.total_income;
 
-                    const cardToggles = {
-                        'metric-card-completed': metrics.completed,
-                        'metric-card-failed': metrics.failed
-                    };
+                    ['completed','failed'].forEach(function(status){
+                        const card = document.getElementById('metric-card-' + status);
 
-                    Object.entries(cardToggles).forEach(([cardId, val]) => {
-                        const card = document.getElementById(cardId);
-                        if (card) {
-                            card.style.display = val > 0 ? 'flex' : 'none';
+                        if(card){
+                            card.style.display = metrics[status] > 0 ? 'flex' : 'none';
                         }
                     });
-                    
+
                     const totalCard = document.getElementById('metric-card-total');
-                    if(totalCard) totalCard.style.display = 'flex';
+
+                    if(totalCard){
+                        totalCard.style.display = 'flex';
+                    }
 
                 }catch(error){
                     console.error('Metrics error:', error);
                     displayGlobalError(error.message);
                 }
-            }
+}
 
             async function loadErrands(page){
                 if(page) currentPage = page;

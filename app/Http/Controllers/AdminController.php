@@ -115,16 +115,28 @@ class AdminController extends Controller
         $failed = $metrics['failed'] ?? 0;
         $total = $metrics->sum();
 
+        $incomeMetrics = History::where('status', 'completed')
+            ->where('payment_status', 'paid')
+            ->selectRaw('COALESCE(SUM(payment_amount), 0) as total_income')
+            ->first();
+
+        $totalIncome = (float) $incomeMetrics->total_income;
+        $taskerShare = $totalIncome * 0.80;
+        $proHandShare = $totalIncome * 0.20;
+
         return response()->json([
             'success' => true,
             'metrics' => [
                 'completed' => $completed,
                 'failed' => $failed,
                 'total' => $total,
+                'tasker_share' => '₱' . number_format($taskerShare, 2),
+                'prohand_share' => '₱' . number_format($proHandShare, 2),
+                'total_income' => '₱' . number_format($totalIncome, 2),
             ],
         ]);
     }
-
+    
     public function allHistoryErrands(Request $request)
     {
         $search = $request->query('search');
@@ -1903,7 +1915,6 @@ class AdminController extends Controller
             $totalActiveErrands = $metrics->sum();
 
             $historyMetrics = History::where('client_id', $clientId)
-                ->where('client_deleted', false)
                 ->selectRaw('status, COUNT(*) as total')
                 ->groupBy('status')
                 ->pluck('total', 'status');
@@ -1951,7 +1962,6 @@ class AdminController extends Controller
             $totalActiveErrands = $metrics->sum();
 
             $historyMetrics = History::where('tasker_id', $taskerId)
-                ->where('tasker_deleted', false)
                 ->selectRaw('status, COUNT(*) as total')
                 ->groupBy('status')
                 ->pluck('total', 'status');
@@ -1961,7 +1971,6 @@ class AdminController extends Controller
             $totalHistoryErrands = $historyMetrics->sum();
 
             $incomeMetrics = History::where('tasker_id', $taskerId)
-                ->where('tasker_deleted', false)
                 ->where('status', 'completed')
                 ->where('payment_status', 'paid')
                 ->selectRaw('COALESCE(SUM(payment_amount), 0) as income')
