@@ -253,7 +253,7 @@
                     console.error('Metrics error:', error);
                     displayGlobalError(error.message);
                 }
-}
+            }
 
             async function loadErrands(page){
                 if(page) currentPage = page;
