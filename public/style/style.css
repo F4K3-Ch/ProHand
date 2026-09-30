@@ -450,6 +450,7 @@
     }
 
     .attachment-item {
+        border: 1px solid #cfcfcf !important;
         background-color: #ffffff !important;
     }
 
@@ -462,7 +463,6 @@
     }
 
     .no-attachments {
-        display: flex !important;
         align-items: center !important;
         background-color: #ffffff !important;
         border: 1px dashed #d1d5da !important;
@@ -7831,6 +7831,7 @@ select[name="role"] option[value="client"] {
 
     .profile-total-cards .total-card.span-full {
         flex: 0 0 100%;
+
     }
 
     .edit-profile-container {
