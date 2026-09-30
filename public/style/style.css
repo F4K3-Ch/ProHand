@@ -5267,7 +5267,7 @@ select[name="role"] option[value="client"] {
     display: flex;
     flex-direction: column;
     width: 100%;
-    background-color: var(--color-card-bg);
+    background-color: var(--color-bg);
     border: 1px solid var(--color-border);
     border-radius: 12px;
     padding: 16px;
@@ -5456,7 +5456,7 @@ select[name="role"] option[value="client"] {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    background-color: var(--color-bg);
+    background-color: var(--color-card-bg);
     border: 1px solid var(--color-border);
     border-radius: 8px;
     padding: 12px;
