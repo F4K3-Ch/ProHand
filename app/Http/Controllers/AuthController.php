@@ -7,6 +7,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AuthController extends Controller
 {
@@ -24,9 +25,23 @@ class AuthController extends Controller
             ]
         );
 
-        $user = User::where('email', $credentials['email'])->first();
+        $email = strtolower(trim($credentials['email']));
+        $key = 'login:' . $email . '|' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            $seconds = RateLimiter::availableIn($key);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Too many failed login attempts. Please try again in ' . ceil($seconds / 60) . ' minute(s).'
+            ], 429);
+        }
+
+        $user = User::where('email', $email)->first();
 
         if (!$user) {
+            RateLimiter::hit($key, 180);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Email is not registered.'
@@ -34,11 +49,15 @@ class AuthController extends Controller
         }
 
         if (!Hash::check($credentials['password'], $user->password)) {
+            RateLimiter::hit($key, 180);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Wrong password.'
             ], 401);
         }
+
+        RateLimiter::clear($key);
 
         if (!$user->hasVerifiedEmail()) {
             return response()->json([
@@ -46,7 +65,7 @@ class AuthController extends Controller
                 'message' => 'Your email is not verified. Please register again using this email address to continue.'
             ], 403);
         }
-        
+
         Auth::login($user);
 
         $request->session()->regenerate();
