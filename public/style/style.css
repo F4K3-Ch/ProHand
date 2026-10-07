@@ -1854,7 +1854,7 @@ span {
 }
 
 .register-input-box input {
-    background-color: var(--color-card-bg);
+    background-color: var(--color-input-bg);
     color: var(--color-text);
     border: 1px solid var(--color-input-border);
     width: 100%;
@@ -6449,13 +6449,12 @@ select[name="role"] option[value="client"] {
 @media screen and (max-width: 768px) {
     .navbar {
         height: 58px;
-        padding: 0 12px;
+        padding: 12px;
     }
 
     .landing-theme-toggle {
-        padding: 6px 9px;
-        font-size: .68rem;
-        border-radius: 4px;
+        padding: 8px;
+        font-size: 0.8rem;
     }
 
     .logo {
@@ -6476,9 +6475,8 @@ select[name="role"] option[value="client"] {
     }
 
     .nav-actions a {
-        padding: 6px 9px;
-        font-size: .68rem;
-        border-radius: 4px;
+        padding: 8px;
+        font-size: 0.8rem;
     }
 
     .index-info-container {
@@ -6604,11 +6602,18 @@ select[name="role"] option[value="client"] {
     }
 
     .auth-theme-toggle {
-        top:12px;
-        right:12px;
-        gap:5px;
-        padding:7px 9px;
-        font-size:.75rem;
+        top: 10px;
+        right: 8px;
+        gap: 4px;
+        padding: 8px;
+        font-size: 0.8rem;
+    }
+
+    .btn-back-auth {
+        top: 10px;
+        left: 8px;
+        font-size: 0.8rem;
+        padding: 8px;
     }
 
     .register-page {
@@ -7131,15 +7136,15 @@ select[name="role"] option[value="client"] {
     /* View Main */
     .view-main {
         margin-left: 0 !important; /* Strips sidebar gutter gap tracking completely */
-        padding: 70px 14px 20px 14px; /* Taller top padding leaves room for the fixed back button */
+        padding: 60px 14px 20px 14px; /* Taller top padding leaves room for the fixed back button */
         min-height: calc(100vh - 90px);
         justify-content: flex-start; /* Flows naturally on short mobile phone viewports */
     }
 
-    .btn-back {
-        position: fixed;
-        top: 12px;
-        left: 14px; /* Glues the back action to the phone screen frame margin */
+    .btn-back,
+    .btn-print {
+        font-size: 0.8rem;
+        padding: 8px;
     }
 
     .info-container {
