@@ -418,9 +418,11 @@
                     <button type="button" id="deleteErrandBtn" class="btn-delete" style="display:none;">
                         <i class="fa-solid fa-trash"></i> Delete Errand
                     </button>
-                    <span id="performingBadge" class="descriptive-status-badge" style="display:none;">
-                        <i class="fa-solid fa-spinner fa-spin"></i> Tasker is performing errand...
-                    </span>
+                    <div class="badge-button-column" id="inProgressBadgeContainer" style="display:none;">
+                        <span id="performingBadge" class="descriptive-status-badge" style="display:none;">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Tasker is currently working on this errand...
+                        </span>
+                    </div>
                     <button type="button" id="confirmCompletionBtn" class="btn-confirm-completion" style="display:none;">
                         <i class="fa-solid fa-check"></i> Confirm Completion
                     </button>
@@ -856,6 +858,8 @@
                     });
 
                 } else if (errand.raw_status === 'in_progress') {
+                    const inProgressBadgeContainer = document.getElementById('inProgressBadgeContainer');
+                    inProgressBadgeContainer.style.display = 'flex';
                     document.getElementById('performingBadge').style.display = 'flex';
                     cancelBtn.style.display = 'flex';
                     cancelBtn.addEventListener('click', async function(){
