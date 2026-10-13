@@ -1,7 +1,10 @@
 <div class="sidebar">
     <div class="sidebar-top">
         <div class="profile-info">
-            <img src="{{ asset(auth()->user()->profile_picture) }}" class="profile-img">
+            <img src="{{ auth()->user()->profile_picture
+                ? \Illuminate\Support\Facades\Storage::url(auth()->user()->profile_picture)
+                : asset('storage/uploads/profile_pictures/default.jpg') }}"
+                class="profile-img">
             <div class="profile-text">
                 <p class="role">{{ ucfirst(auth()->user()->role) }}</p>
                 <p class="name">{{ auth()->user()->first_name }} {{ auth()->user()->middle_name }}  {{ auth()->user()->last_name }}</p>
