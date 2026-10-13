@@ -41,7 +41,7 @@ class ProfileController extends Controller
                     : asset('storage/uploads/profile_pictures/default.jpg'),
                 'created_at' => $user->created_at
                     ->timezone('Asia/Manila')
-                    ->format('F d, Y h:i A'),
+                    ->format('M d, Y h:i A'),
             ]
         ]);
     }

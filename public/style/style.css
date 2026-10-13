@@ -6448,265 +6448,299 @@ select[name="role"] option[value="client"] {
 /* 2. Mobile Breakthrough (Max-width: 768px) */
 @media screen and (max-width: 768px) {
     .navbar {
-        height: 58px;
-        padding: 12px;
+        height: 64px;
+        padding: 10px 16px;
     }
 
     .landing-theme-toggle {
-        padding: 8px;
-        font-size: 0.8rem;
+        padding: 10px;
+        font-size: 0.9rem;
     }
 
     .logo {
-        gap: 6px;
+        gap: 8px;
     }
 
     .logo-img {
-        width: 40px;
-        height: 40px;
+        width: 42px;
+        height: 42px;
     }
 
     .logo p {
-        font-size: 1.1rem;
+        font-size: 1.2rem;
     }
 
     .nav-actions {
-        gap: 5px;
+        gap: 8px;
     }
 
     .nav-actions a {
-        padding: 8px;
-        font-size: 0.8rem;
+        padding: 10px 12px;
+        font-size: 0.9rem;
     }
 
     .index-info-container {
-        padding-top: 58px;
+        padding-top: 64px;
     }
 
     .hero {
-        margin: 70px auto 65px;
-        padding: 0 14px;
+        margin: 60px auto 55px;
+        padding: 0 18px;
     }
 
     .hero-badge {
-        font-size: .65rem;
-        padding: 5px 9px;
-        margin-bottom: 15px;
+        font-size: 0.8rem;
+        padding: 7px 11px;
+        margin-bottom: 18px;
     }
 
     .hero h1 {
-        font-size: 1.8rem;
-        line-height: 1.2;
-        margin-bottom: 14px;
+        font-size: 2rem;
+        line-height: 1.25;
+        margin-bottom: 16px;
     }
 
     .hero p {
-        font-size: .78rem;
-        line-height: 1.5;
-        margin-bottom: 24px;
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 26px;
     }
 
     .get-started {
-        font-size: .75rem;
-        padding: 8px 12px;
-        border-radius: 5px;
+        font-size: 0.95rem;
+        padding: 12px 18px;
+        border-radius: 6px;
     }
 
     .services {
-        padding: 55px 12px;
+        padding: 50px 16px;
     }
 
     .section-title {
-        font-size: 1.4rem;
+        font-size: 1.5rem;
+        line-height: 1.3;
     }
 
     .section-subtitle {
-        font-size: .72rem;
-        margin-bottom: 22px;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 26px;
     }
 
     .services-container {
-        gap: 9px;
+        gap: 14px;
     }
 
     .service-card {
         max-width: 100%;
-        padding: 14px;
-        border-radius: 7px;
+        padding: 18px;
+        border-radius: 10px;
     }
 
     .service-icon {
-        width: 32px;
-        height: 32px;
-        margin-bottom: 10px;
-        border-radius: 6px;
-        font-size: .75rem;
+        width: 40px;
+        height: 40px;
+        margin-bottom: 12px;
+        border-radius: 8px;
+        font-size: 1rem;
     }
 
     .service-card h3 {
-        font-size: .85rem;
-        margin-bottom: 5px;
+        font-size: 1.05rem;
+        line-height: 1.4;
+        margin-bottom: 8px;
     }
 
     .service-card p {
-        font-size: .7rem;
-        line-height: 1.45;
+        font-size: 0.95rem;
+        line-height: 1.6;
     }
 
     .support-section {
-        width: calc(100% - 24px);
-        margin-top: 45px;
-        padding: 13px;
-        gap: 10px;
-        border-radius: 7px;
+        width: calc(100% - 32px);
+        margin-top: 40px;
+        padding: 18px;
+        gap: 14px;
+        border-radius: 10px;
         align-items: flex-start;
+        box-sizing: border-box;
     }
 
     .support-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 6px;
-        font-size: .75rem;
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        border-radius: 8px;
+        font-size: 1rem;
     }
 
     .support-content h2 {
-        font-size: .8rem;
-        margin-bottom: 3px;
+        font-size: 1rem;
+        line-height: 1.4;
+        margin-bottom: 6px;
     }
 
     .support-content p {
-        font-size: .65rem;
-        line-height: 1.4;
+        font-size: 0.9rem;
+        line-height: 1.6;
     }
 
     .support-email {
-        font-size: .62rem;
+        font-size: 0.9rem;
+        overflow-wrap: anywhere;
     }
 
     .final-cta {
-        padding: 60px 14px;
+        padding: 55px 18px;
     }
 
     .final-cta h2 {
-        font-size: 1.2rem;
+        font-size: 1.5rem;
+        line-height: 1.3;
     }
 
     .final-cta p {
-        font-size: .72rem;
-        margin-bottom: 20px;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 24px;
     }
 
     .index-footer {
-        padding: 14px;
-        font-size: .65rem;
+        padding: 18px 16px;
+        font-size: 0.85rem;
+        line-height: 1.5;
     }
 
     .auth-theme-toggle {
-        top: 10px;
-        right: 8px;
-        gap: 4px;
-        padding: 8px;
-        font-size: 0.8rem;
+        top: 12px;
+        right: 12px;
+        gap: 6px;
+        padding: 10px 12px;
+        font-size: 1rem;
     }
 
     .btn-back-auth {
-        top: 10px;
-        left: 8px;
-        font-size: 0.8rem;
-        padding: 8px;
+        top: 12px;
+        left: 12px;
+        font-size: 0.9rem;
+        padding: 10px 12px;
     }
 
     .register-page {
-        padding:60px 12px 20px;
-        box-sizing:border-box;
+        padding: 70px 16px 24px;
+        box-sizing: border-box;
     }
 
     .register-container,
     .add-user-container {
-        max-width:100%;
-        min-height:auto;
-        padding:24px 18px;
-        border-radius:8px;
+        max-width: 100%;
+        min-height: auto;
+        padding: 28px 20px;
+        border-radius: 10px;
+        box-sizing: border-box;
     }
 
     .register-container h1 {
-        font-size:1.35rem;
+        font-size: 1.5rem;
+        line-height: 1.3;
+        margin-bottom: 18px;
     }
 
     .register-error-success-message p {
-        font-size:.85rem;
+        font-size: 0.9rem;
+        line-height: 1.5;
     }
 
     .register-input-box {
-        margin-bottom:9px;
+        margin-bottom: 14px;
     }
 
     .register-input-box label {
-        font-size:.88rem;
+        font-size: 1rem;
+        display: block;
+        margin-bottom: 6px;
     }
 
     .register-input-box input {
-        padding:7px 8px;
-        font-size:.88rem;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 11px 12px;
+        font-size: 1rem;
+        min-height: 44px;
     }
 
     .register-container .btn {
-        padding:9px;
-        font-size:.88rem;
+        width: 100%;
+        min-height: 44px;
+        padding: 11px 14px;
+        font-size: 0.95rem;
     }
 
     .register-container .login-link {
-        margin-top:16px;
-        font-size:.88rem;
+        margin-top: 18px;
+        font-size: 0.95rem;
+        line-height: 1.5;
     }
 
     .login-wrapper {
-        padding:60px 15px 20px;
-        box-sizing:border-box;
+        padding: 70px 16px 24px;
+        box-sizing: border-box;
     }
 
     .login-container {
-        max-width:100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 28px 20px;
     }
 
     .login-logo {
-        gap:8px;
+        gap: 10px;
     }
 
     .login-logo .logo-img {
-        width:60px;
-        height:60px;
+        width: 64px;
+        height: 64px;
     }
 
     .login-logo h1 {
-        font-size:1.35rem;
+        font-size: 1.5rem;
+        line-height: 1.3;
     }
 
     .login-error-success-message p {
-        font-size:.9rem;
+        font-size: 0.9rem;
+        line-height: 1.5;
     }
 
     .login-input-box {
-        margin-bottom:13px;
+        margin-bottom: 16px;
     }
 
     .login-input-box label {
-        font-size:.88rem;
+        font-size: 1rem;
+        display: block;
+        margin-bottom: 6px;
     }
 
     .login-input-box input {
-        padding:7px 8px;
-        font-size:.88rem;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 11px 12px;
+        font-size: 1rem;
+        min-height: 44px;
     }
 
     .login-container .btn {
-        padding:9px;
-        font-size:.88rem;
+        width: 100%;
+        min-height: 44px;
+        padding: 11px 14px;
+        font-size: 0.95rem;
     }
 
     .login-container .register-link {
-        margin-top:16px;
-        font-size:.88rem;
+        margin-top: 18px;
+        font-size: 0.95rem;
+        line-height: 1.5;
     }
 
     /* Sidebar */
@@ -6826,11 +6860,17 @@ select[name="role"] option[value="client"] {
     .table-header-controls .rows-per-page {
         width: 100%;
         justify-content: space-between;
+        font-size: 0.85rem;
     }
 
     .table-header-controls .rows-per-page select.form-control {
         flex-grow: 1;
         max-width: 80px;
+        font-size: 1rem;
+    }
+
+    .table-header-controls .rows-per-page label h4 {
+        font-size: 1rem;
     }
 
     .pagination-container {
@@ -6841,8 +6881,8 @@ select[name="role"] option[value="client"] {
     }
 
     .pagination-container button {
-        padding: 4px 8px;
-        font-size: 0.8rem;
+        padding: 6px 12px;
+        font-size: 1rem;
     }
 
     .welcome-banner-card {
@@ -6859,19 +6899,19 @@ select[name="role"] option[value="client"] {
     }
 
     .welcome-banner-text h4 {
-        font-size: 0.9rem;
+        font-size: 1.2rem;
         margin-bottom: 4px;
     }
 
     .welcome-banner-text p {
-        font-size: 0.7rem;
+        font-size: 0.9rem;
         line-height: 1.3;
     }
 
     .welcome-banner-card .btn-welcome {
-        padding: 7px 9px;
-        gap: 5px;
-        font-size: 0.7rem;
+        padding: 7px;
+        gap: 3px;
+        font-size: 1rem;
         border-radius: 5px;
         flex-shrink: 0;
     }
@@ -6897,21 +6937,19 @@ select[name="role"] option[value="client"] {
     }
 
     .errand-id-badge {
-        font-size: 0.75rem;
+        font-size: 1rem;
         font-weight: 600;
-        padding: 2px 6px;
-        border-radius: 5px;
     }
 
     .errand-post-card .errand-title {
-        font-size: 0.85rem;
+        font-size: 1.2rem;
         font-weight: 600;
         margin-bottom: 8px;
     }
 
     .errand-card-details {
         gap: 5px;
-        font-size: 0.7rem;
+        font-size: 1rem;
         margin-bottom: 9px;
     }
 
@@ -6920,13 +6958,13 @@ select[name="role"] option[value="client"] {
     }
 
     .errand-card-details p span:first-child {
-        gap: 4px;
-        font-size: 0.68rem;
+        gap: 12px;
+        font-size: 1rem;
         font-weight: 400;
     }
 
     .errand-card-details p span:first-child i {
-        font-size: 0.65rem;
+        font-size: 1rem;
         width: 11px;
     }
 
@@ -6936,12 +6974,12 @@ select[name="role"] option[value="client"] {
     .errand-card-details span.errand-finished-at,
     .errand-card-details span.errand-deadline {
         max-width: 58%;
-        font-size: 0.68rem;
+        font-size: 1rem;
         font-weight: 500;
     }
 
     .errand-card-details strong.errand-fee {
-        font-size: 0.7rem;
+        font-size: 1rem;
         font-weight: 500;
         padding: 2px 5px;
         border-radius: 4px;
@@ -6955,8 +6993,8 @@ select[name="role"] option[value="client"] {
     .errand-card-actions a,
     .errand-card-actions button {
         min-width: 65px;
-        padding: 5px 7px;
-        font-size: 0.68rem;
+        padding: 7px;
+        font-size: 1rem;
         font-weight: 500;
         border-radius: 5px;
         gap: 4px;
@@ -7017,8 +7055,8 @@ select[name="role"] option[value="client"] {
     }
 
     .users-table .table-profile-img {
-        width: 28px;
-        height: 28px;
+        width: 38px;
+        height: 38px;
     }
 
     .users-table .button-row {
@@ -7028,8 +7066,8 @@ select[name="role"] option[value="client"] {
 
     .users-table .button-row a,
     .users-table .button-row button {
-        padding: 4px 7px;
-        font-size: 0.68rem;
+        padding: 7px 12px;
+        font-size: 1rem;
         border-radius: 4px;
     }
 
@@ -7040,9 +7078,8 @@ select[name="role"] option[value="client"] {
     }
 
     .users-table .pagination-container button {
-        padding: 4px 7px;
-        font-size: 0.7rem;
-        border-radius: 5px;
+        padding: 6px 12px;
+        font-size: 1rem;
     }
 
     /* Notifications */
@@ -7061,14 +7098,14 @@ select[name="role"] option[value="client"] {
     }
 
     .notif-contents-header h3 {
-        font-size: 0.9rem;
+        font-size: 1rem;
         font-weight: 600;
     }
 
     .btn-delete-all {
-        font-size: 0.7rem;
-        padding: 5px 7px;
-        border-radius: 4px;
+        font-size: 1rem;
+        padding: 7px;
+        border-radius: 5px;
     }
 
     .notifications-list {
@@ -7078,13 +7115,8 @@ select[name="role"] option[value="client"] {
 
     .notification-card {
         position: relative;
-        flex-direction: column;
-        align-items: stretch;
-        padding: 8px;
-        padding-bottom: 30px;
-        margin-bottom: 5px;
-        gap: 7px;
-        border-radius: 6px;
+        padding: 12px;
+        padding-bottom: 48px;
     }
 
     .notif-message {
@@ -7093,29 +7125,31 @@ select[name="role"] option[value="client"] {
     }
 
     .notif-message h3 {
-        margin-bottom: 3px;
-        font-size: 0.8rem;
+        margin-bottom: 5px;
+        font-size: 1rem;
         font-weight: 600;
+        overflow-wrap: anywhere;
     }
 
     .notif-message p {
-        font-size: 0.72rem;
+        font-size: 0.9rem;
         font-weight: 400;
-        line-height: 1.35;
+        line-height: 1.3;
+        overflow-wrap: anywhere;
     }
 
     .notif-message small.notification-date {
         position: absolute;
         left: 8px;
-        bottom: 7px;
-        font-size: 0.62rem;
+        bottom: 12px;
+        font-size: 0.8rem;
         font-weight: 400;
     }
 
     .notification-buttons {
         position: absolute;
         right: 8px;
-        bottom: 5px;
+        bottom: 6px;
         display: flex;
         gap: 5px;
         justify-content: flex-end;
@@ -7124,8 +7158,8 @@ select[name="role"] option[value="client"] {
 
     .notification-buttons button,
     .notification-buttons a {
-        font-size: 0.68rem;
-        padding: 5px 8px;
+        font-size: 0.9rem;
+        padding: 5px 10px;
         border-radius: 4px;
     }
 
@@ -7136,15 +7170,15 @@ select[name="role"] option[value="client"] {
     /* View Main */
     .view-main {
         margin-left: 0 !important; /* Strips sidebar gutter gap tracking completely */
-        padding: 60px 14px 20px 14px; /* Taller top padding leaves room for the fixed back button */
+        padding: 65px 14px 20px 14px; /* Taller top padding leaves room for the fixed back button */
         min-height: calc(100vh - 90px);
         justify-content: flex-start; /* Flows naturally on short mobile phone viewports */
     }
 
     .btn-back,
     .btn-print {
-        font-size: 0.8rem;
-        padding: 8px;
+        font-size: 1rem;
+        padding: 10px 12px;
     }
 
     .info-container {
@@ -7158,25 +7192,25 @@ select[name="role"] option[value="client"] {
     }
 
     .errand-info-header h1 {
-        font-size: 1.15rem;
+        font-size: 1.5rem;
         font-weight: 600;
     }
 
     .errand-details-container .errand-id-badge {
-        font-size: 0.8rem;
+        font-size: 1.2rem;
         font-weight: 600;
         padding: 2px 6px;
     }
 
     .errand-details-container .errand-card-top span.status-field,
     .errand-details-container .errand-card-top > span:last-child {
-        font-size: 0.9rem;
+        font-size: 1.3rem;
         font-weight: 600;
         padding: 3px;
     }
 
     .errand-details-container .errand-title {
-        font-size: 0.95rem;
+        font-size: 1.4rem;
         font-weight: 600;
         padding-bottom: 7px;
     }
@@ -7193,25 +7227,25 @@ select[name="role"] option[value="client"] {
     }
 
     .errand-details-container .detail-row span:first-child {
-        gap: 4px;
-        font-size: 0.72rem;
+        gap: 10px;
+        font-size: 1rem;
         font-weight: 400;
     }
 
     .errand-details-container .detail-row span:first-child i {
         width: 12px;
-        font-size: 0.7rem;
+        font-size: 1rem;
     }
 
     .errand-details-container .detail-row .errand-val {
-        font-size: 0.72rem;
+        font-size: 1rem;
         font-weight: 500;
         max-width: 58%;
     }
 
     .errand-details-container .detail-row span.status-field,
     .errand-details-container .detail-row strong.errand-fee {
-        font-size: 0.72rem;
+        font-size: 1rem;
         font-weight: 500;
         padding: 2px 5px;
     }
@@ -7229,14 +7263,14 @@ select[name="role"] option[value="client"] {
 
     .text-section-box label,
     .errand-attachment-section label {
-        font-size: 0.75rem;
+        font-size: 1rem;
         font-weight: 400;
         gap: 5px;
         margin-bottom: 3px;
     }
 
     .text-area {
-        font-size: 0.75rem;
+        font-size: 1rem;
         font-weight: 400;
     }
 
@@ -7281,13 +7315,13 @@ select[name="role"] option[value="client"] {
 
     .payment-text-details .alert-text {
         padding: 8px 9px;
-        font-size: 0.82rem;
+        font-size: 1rem;
         line-height: 1.45;
     }
 
     .merchant-number {
         padding: 7px 8px;
-        font-size: 0.82rem;
+        font-size: 1rem;
         gap: 7px;
         overflow-wrap: anywhere;
     }
@@ -7297,7 +7331,7 @@ select[name="role"] option[value="client"] {
     }
 
     .qr-hint-text {
-        font-size: 0.75rem;
+        font-size: 0.8rem;
         line-height: 1.4;
         gap: 5px;
     }
@@ -7307,24 +7341,24 @@ select[name="role"] option[value="client"] {
     }
 
     .payment-right-upload label {
-        font-size: 0.82rem;
+        font-size: 1rem;
     }
 
     .payment-right-upload input[type="file"] {
         width: 100%;
         max-width: 100%;
-        font-size: 0.78rem;
+        font-size: 1rem;
         box-sizing: border-box;
     }
 
     .payment-right-upload small {
-        font-size: 0.72rem;
-        line-height: 1.4;
+        font-size: 0.8rem;
+        line-height: 1;
     }
 
     .btn-submit-proof {
         padding: 8px 10px;
-        font-size: 0.82rem;
+        font-size: 0.9rem;
     }
 
     .payment-verification-panel {
@@ -7339,17 +7373,17 @@ select[name="role"] option[value="client"] {
     }
 
     .payment-status-header .status-icon-orange {
-        font-size: 0.95rem;
+        font-size: 1rem;
     }
 
     .payment-status-header .status-title-orange {
-        font-size: 0.88rem;
+        font-size: 1rem;
     }
 
     .payment-status-message {
         padding: 8px 9px;
-        font-size: 0.78rem;
-        line-height: 1.45;
+        font-size: 1rem;
+        line-height: 1.3;
     }
 
     .payment-receipt-section {
@@ -7373,65 +7407,65 @@ select[name="role"] option[value="client"] {
     }
 
     .header-icon-wrapper {
-        width: 30px;
-        height: 30px;
+        width: 40px;
+        height: 40px;
         border-radius: 6px;
-        font-size: 0.85rem;
+        font-size: 1.3rem;
     }
 
     .header-text-group {
-        gap: 1px;
+        gap: 2px;
         min-width: 0;
     }
 
     .errand-form-header h1,
     .create-errand-container h1 {
-        font-size: 1.15rem;
+        font-size: 1.5rem;
         font-weight: 600;
     }
 
     .errand-form-header p {
-        font-size: 0.68rem;
-        line-height: 1.3;
+        font-size: 0.9rem;
+        line-height: 1.2;
     }
 
-    .create-errand-input-box {
-        gap: 4px;
-        margin-bottom: 8px;
+    .create-errand-input-box,
+    .edit-errand-input-box {
+        gap: 5px;
+        margin-bottom: 10px;
     }
 
-    .create-errand-input-box label {
-        font-size: 0.75rem;
+    .create-errand-input-box label,
+    .edit-errand-input-box label {
+        font-size: 1rem;
         font-weight: 500;
     }
 
-    .create-errand-input-box input,
-    .create-errand-input-box select {
-        padding: 5px 7px;
+    .create-errand-input-box input:not([type="file"]),
+    .create-errand-input-box select,
+    .edit-errand-input-box input:not([type="file"]),
+    .edit-errand-input-box select {
+        width: 100%;
+        min-height: 42px;
+        padding: 9px 10px;
         border-radius: 5px;
-        font-size: 0.75rem;
+        font-size: 1rem;
     }
 
-    .create-errand-input-box small {
-        font-size: 0.65rem;
-        line-height: 1.3;
+    .create-errand-input-box small,
+    .edit-errand-input-box small {
+        font-size: 0.8rem;
+        line-height: 1.4;
     }
 
-    .create-errand-input-box textarea {
-        min-height: 70px;
-        padding: 5px 7px;
+    .create-errand-input-box textarea,
+    .edit-errand-input-box textarea {
+        width: 100%;
+        min-height: 90px;
+        padding: 9px 10px;
         border-radius: 5px;
-        font-size: 0.75rem;
-    }
-
-    .create-errand-input-box input[type="file"] {
-        font-size: 0.68rem;
-        border-radius: 5px;
-    }
-
-    .create-errand-input-box input[type="file"]::-webkit-file-upload-button {
-        padding: 5px 7px;
-        font-size: 0.68rem;
+        font-size: 1rem;
+        line-height: 1.4;
     }
 
     .create-errand-container .price-display {
@@ -7440,11 +7474,12 @@ select[name="role"] option[value="client"] {
         border-radius: 5px;
     }
 
-    .create-errand-container .btn {
+    .create-errand-container .btn,
+    .edit-errand-container .btn {
         padding: 8px;
         margin-top: 8px;
         border-radius: 5px;
-        font-size: 0.75rem;
+        font-size: 1rem;
     }
 
     .edit-errand-container {
@@ -7454,92 +7489,57 @@ select[name="role"] option[value="client"] {
     }
 
     .edit-errand-container h1 {
-        font-size: 1.15rem;
+        font-size: 1.5rem;
         font-weight: 600;
-    }
-
-    .edit-errand-input-box {
-        gap: 4px;
-        margin-bottom: 8px;
-    }
-
-    .edit-errand-input-box label {
-        font-size: 0.75rem;
-        font-weight: 500;
-    }
-
-    .edit-errand-input-box input,
-    .edit-errand-input-box select {
-        padding: 5px 7px;
-        border-radius: 5px;
-        font-size: 0.75rem;
-    }
-
-    .edit-errand-input-box small {
-        font-size: 0.65rem;
-        line-height: 1.3;
-    }
-
-    .edit-errand-input-box textarea {
-        min-height: 70px;
-        padding: 5px 7px;
-        border-radius: 5px;
-        font-size: 0.75rem;
-    }
-
-    .edit-errand-input-box input[type="file"] {
-        font-size: 0.68rem;
-        border-radius: 5px;
-    }
-
-    .edit-errand-input-box input[type="file"]::-webkit-file-upload-button {
-        padding: 5px 7px;
-        font-size: 0.68rem;
-    }
-
-    .edit-errand-container .btn {
-        padding: 8px;
-        margin-top: 8px;
-        border-radius: 5px;
-        font-size: 0.75rem;
     }
 
     .edit-attachment-item,
     .attachment-item {
-        padding: 5px 6px;
+        padding: 8px;
         gap: 6px;
         border-radius: 5px;
     }
 
     .edit-attachment-name,
     .attachment-name {
-        font-size: 0.68rem;
+        font-size: 1rem;
     }
 
     .edit-attachment-name i,
     .attachment-name i {
         margin-right: 3px;
-        font-size: 0.65rem;
+        font-size: 1rem;
     }
 
     .delete-checkbox {
-        gap: 4px;
+        gap: 6px;
     }
 
     .delete-checkbox span {
-        font-size: 0.65rem;
+        font-size: 1rem;
         font-weight: 500;
     }
 
     .delete-checkbox input[type="checkbox"] {
-        width: 12px;
-        height: 12px;
+        width: 16px;
+        height: 16px;
     }
 
     .edit-attachment-empty-input {
         padding: 5px 7px;
         border-radius: 5px;
-        font-size: 0.68rem;
+        font-size: 1rem;
+    }
+
+    .create-errand-input-box input[type="file"],
+    .edit-errand-input-box input[type="file"] {
+        font-size: 1rem;
+    }
+
+    .create-errand-input-box input[type="file"]::-webkit-file-upload-button,
+    .edit-errand-input-box input[type="file"]::-webkit-file-upload-button {
+        padding: 9px 10px;
+        font-size: 1rem;
     }
 
     /* User Card */
@@ -7554,7 +7554,7 @@ select[name="role"] option[value="client"] {
     }
 
     .user-details-container h2 {
-        font-size: 0.78rem;
+        font-size: 1rem;
         font-weight: 500;
         padding-bottom: 5px;
     }
@@ -7583,14 +7583,14 @@ select[name="role"] option[value="client"] {
     }
 
     .user-details-container .detail-row span:first-child {
-        font-size: 0.67rem;
+        font-size: 0.8rem;
         font-weight: 400;
     }
 
     .user-details-container .detail-row .errand-val {
-        font-size: 0.67rem;
+        font-size: 0.8rem;
         font-weight: 500;
-        max-width: 62%;
+        max-width: 100%;
     }
 
     /* Cancellation Box */
@@ -7601,7 +7601,7 @@ select[name="role"] option[value="client"] {
     }
 
     .alert-title {
-        font-size: 0.65rem;
+        font-size: 0.9rem;
         font-weight: 500;
         gap: 4px;
     }
@@ -7614,12 +7614,14 @@ select[name="role"] option[value="client"] {
     .btn-approve-release,
     .btn-deny-release {
         padding: 5px;
-        font-size: 0.65rem;
+        font-size: 0.8rem;
         font-weight: 500;
     }
 
     /* Bottom Buttons */
     .info-bot-btn {
+        display: flex;
+        flex-direction: column;
         margin-top: 8px;
         gap: 7px;
     }
@@ -7633,7 +7635,7 @@ select[name="role"] option[value="client"] {
     .info-bot-btn button,
     .info-bot-btn form button {
         padding: 7px;
-        font-size: 0.72rem;
+        font-size: 1rem;
         font-weight: 500;
         border-radius: 5px;
     }
@@ -7643,22 +7645,23 @@ select[name="role"] option[value="client"] {
     }
 
     .info-bot-btn .descriptive-status-badge {
+        text-align: left;
         gap: 6px;
         padding: 7px;
         border-radius: 6px;
-        font-size: 0.7rem;
+        font-size: 1rem;
         font-weight: 400;
-        line-height: 1.3;
+        line-height: 1.2;
     }
 
     .info-bot-btn .descriptive-status-badge i {
-        font-size: 0.8rem;
+        font-size: 1rem;
     }
 
     .info-bot-btn select,
     .info-bot-btn .btn-update {
         padding: 7px;
-        font-size: 0.72rem;
+        font-size: 1rem;
         font-weight: 500;
     }
 
@@ -7688,7 +7691,7 @@ select[name="role"] option[value="client"] {
         gap: 6px;
         padding-bottom: 9px;
         margin-bottom: 5px;
-        font-size: 1.15rem;
+        font-size: 1.5rem;
         font-weight: 600;
     }
 
@@ -7725,20 +7728,20 @@ select[name="role"] option[value="client"] {
     }
 
     .profile-info-row > span:first-child {
-        font-size: 0.74rem;
+        font-size: 1rem;
         font-weight: 500;
-        gap: 5px;
+        gap: 10px;
     }
 
     .profile-info-row > span:first-child i {
         width: 12px;
-        font-size: 0.72rem;
+        font-size: 1rem;
     }
 
     .profile-value {
-        font-size: 0.74rem;
+        font-size: 1rem;
         font-weight: 500;
-        max-width: 62%;
+        max-width: 100%;
     }
 
     .profile-info-row span.role-field {
@@ -7747,7 +7750,7 @@ select[name="role"] option[value="client"] {
     }
 
     .profile-extra-info {
-        gap: 5px;
+        gap: 10px;
     }
 
     .profile-extra-info .profile-info-row {
@@ -7755,16 +7758,16 @@ select[name="role"] option[value="client"] {
     }
 
     .profile-extra-info .profile-info-row > span:first-child {
-        font-size: 0.76rem;
+        font-size: 1rem;
         font-weight: 500;
     }
 
     .profile-extra-info .profile-info-row > span:first-child i {
-        font-size: 0.72rem;
+        font-size: 1rem;
     }
 
     .profile-extra-info .profile-value {
-        font-size: 0.76rem;
+        font-size: 1rem;
         font-weight: 500;
     }
 
@@ -7779,8 +7782,8 @@ select[name="role"] option[value="client"] {
     .profile-bot-btn button {
         width: 100%;
         min-width: 0;
-        padding: 8px;
-        font-size: 0.74rem;
+        padding: 7px;
+        font-size: 1rem;
         font-weight: 600;
         border-radius: 5px;
         gap: 5px;
@@ -7849,7 +7852,7 @@ select[name="role"] option[value="client"] {
         gap: 6px;
         padding-bottom: 9px;
         margin-bottom: 5px;
-        font-size: 1.15rem;
+        font-size: 1.5rem;
         font-weight: 600;
     }
 
@@ -7870,7 +7873,7 @@ select[name="role"] option[value="client"] {
     .btn-upload-file,
     .btn-remove-file {
         padding: 6px 9px;
-        font-size: 0.75rem;
+        font-size: 1rem;
         border-radius: 5px;
     }
 
@@ -7880,19 +7883,19 @@ select[name="role"] option[value="client"] {
     }
 
     .edit-profile-input-box label {
-        font-size: 0.75rem;
+        font-size: 1rem;
         font-weight: 500;
     }
 
     .edit-profile-input-box input {
-        padding: 5px 7px;
+        padding: 7px;
         border-radius: 5px;
-        font-size: 0.75rem;
+        font-size: 1rem;
     }
 
     .edit-profile-container .profile-bot-btn button {
         padding: 8px;
-        font-size: 0.78rem;
+        font-size: 1rem;
         border-radius: 5px;
     }
 
@@ -7906,12 +7909,12 @@ select[name="role"] option[value="client"] {
         gap: 6px;
         padding-bottom: 9px;
         margin-bottom: 5px;
-        font-size: 1.15rem;
+        font-size: 1.5rem;
         font-weight: 600;
     }
 
     .change-password-error-success-message p {
-        font-size: 0.75rem;
+        font-size: 1rem;
         padding: 6px;
     }
 
@@ -7921,25 +7924,25 @@ select[name="role"] option[value="client"] {
     }
 
     .change-password-box label {
-        font-size: 0.75rem;
+        font-size: 1rem;
         font-weight: 500;
     }
 
     .change-password-box input {
-        padding: 7px 36px 7px 7px;
+        padding: 7px;
         border-radius: 5px;
-        font-size: 0.75rem;
+        font-size: 1rem;
     }
 
     .toggle-password {
         right: 10px;
-        font-size: 0.8rem;
+        font-size: 1rem;
     }
 
     .change-password-container .btn {
         padding: 8px;
         margin-top: 7px;
         border-radius: 5px;
-        font-size: 0.75rem;
+        font-size: 1rem;
     }
 }

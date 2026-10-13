@@ -49,10 +49,6 @@
                         <span id="errand-category" class="errand-val">Loading...</span>
                     </div>
                     <div class="detail-row">
-                        <span><i class="fa-solid fa-location-dot"></i> Location</span>
-                        <span id="errand-location" class="errand-val">Loading...</span>
-                    </div>
-                    <div class="detail-row">
                         <span><i class="fa-solid fa-peso-sign"></i> Fee</span>
                         <strong id="errand-fee" class="errand-fee">Loading...</strong>
                     </div>
@@ -95,6 +91,11 @@
                 </div>
 
                 <div class="errand-text-sections">
+                    <div class="text-section-box">
+                        <label><i class="fa-solid fa-location-dot"></i> Location</label>
+                        <div id="errand-location" class="text-area">Loading...</div>
+                    </div>
+
                     <div class="text-section-box">
                         <label><i class="fa-solid fa-align-left"></i> Description</label>
                         <div id="errand-description" class="text-area">Loading...</div>
