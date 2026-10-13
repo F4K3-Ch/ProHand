@@ -126,11 +126,11 @@
 
             profilePictureInput.addEventListener('change', function(event) {
                 const file = event.target.files[0];
-                const maxSize = 2 * 1024 * 1024;
+                const maxSize = 5 * 1024 * 1024;
 
                 if (file) {
                     if (file.size > maxSize) {
-                        errorMessage.textContent = 'This image is too large. Please choose a file smaller than 2MB.';
+                        errorMessage.textContent = 'This image is too large. Please choose a file smaller than 5MB.';
                         errorMessage.style.display = 'block';
                         this.value = '';
                         return;

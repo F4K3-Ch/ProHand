@@ -173,7 +173,7 @@ class ProfileController extends Controller
             'middle_name' => 'nullable|string|max:50',
             'last_name' => 'required|string|max:50',
             'contact_number' => 'required|string|max:20',
-            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'remove_picture' => 'nullable|boolean',
         ]);
 
