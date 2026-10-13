@@ -6973,7 +6973,7 @@ select[name="role"] option[value="client"] {
     .errand-card-details span.errand-created-at,
     .errand-card-details span.errand-finished-at,
     .errand-card-details span.errand-deadline {
-        max-width: 58%;
+        max-width: 60%;
         font-size: 1rem;
         font-weight: 500;
     }
@@ -7002,7 +7002,7 @@ select[name="role"] option[value="client"] {
 
     .errand-card-message {
         padding: 20px 10px;
-        font-size: 0.75rem;
+        font-size: 1.3rem;
         border-radius: 7px;
     }
 
@@ -7240,7 +7240,7 @@ select[name="role"] option[value="client"] {
     .errand-details-container .detail-row .errand-val {
         font-size: 1rem;
         font-weight: 500;
-        max-width: 58%;
+        max-width: 90%;
     }
 
     .errand-details-container .detail-row span.status-field,
@@ -7590,7 +7590,7 @@ select[name="role"] option[value="client"] {
     .user-details-container .detail-row .errand-val {
         font-size: 0.8rem;
         font-weight: 500;
-        max-width: 100%;
+        max-width: 90%;
     }
 
     /* Cancellation Box */
@@ -7741,7 +7741,7 @@ select[name="role"] option[value="client"] {
     .profile-value {
         font-size: 1rem;
         font-weight: 500;
-        max-width: 100%;
+        max-width: 90%;
     }
 
     .profile-info-row span.role-field {
