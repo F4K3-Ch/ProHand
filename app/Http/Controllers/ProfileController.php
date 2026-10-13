@@ -36,7 +36,9 @@ class ProfileController extends Controller
                 'formatted_role' => Str::ucfirst(strtolower($user->role)),
                 'role_class' => 'role-' . strtolower($user->role),
                 'contact_number' => $user->contact_number,
-                'profile_picture' => asset($user->profile_picture),
+                'profile_picture' => $user->profile_picture
+                    ? Storage::url($user->profile_picture)
+                    : asset('storage/uploads/profile_pictures/default.jpg'),
                 'created_at' => $user->created_at
                     ->timezone('Asia/Manila')
                     ->format('F d, Y h:i A'),
